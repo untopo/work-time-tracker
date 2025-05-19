@@ -20,146 +20,6 @@
             }
         }
     </script>
-
-    <script>
-// -- UI and Logic for Call Log --
-
-function renderCallList(dateKey) {
-    const callList = getCallsForDate(dateKey);
-    const rates = getRates();
-    const tbody = document.getElementById('call-list');
-    tbody.innerHTML = '';
-    let totalMinutes = 0;
-    let totalEarnings = 0;
-
-    callList.forEach((call, idx) => {
-        const rate = rates.find(r => r.id === call.rateId) || {name: "?", rate: 0};
-        const minutes = call.minutes !== undefined && call.minutes !== null
-            ? call.minutes
-            : durationBetween(call.start, call.end);
-        const earning = minutes * rate.rate;
-        totalMinutes += minutes || 0;
-        totalEarnings += earning || 0;
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${call.start || ''}</td>
-            <td>${call.end || ''}</td>
-            <td>${minutes || ''}</td>
-            <td>${rate.name} ($${rate.rate.toFixed(2)})</td>
-            <td>$${earning ? earning.toFixed(2) : ''}</td>
-            <td>
-                <button onclick="editCall('${dateKey}','${call.id}')">Edit</button>
-                <button onclick="deleteCall('${dateKey}','${call.id}')">Delete</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-    document.getElementById('total-minutes').textContent = totalMinutes;
-    document.getElementById('total-earnings').textContent = "$" + totalEarnings.toFixed(2);
-}
-
-// Fill rates in the add/edit form
-function fillRateOptions() {
-    const rateSel = document.getElementById('call-rate');
-    rateSel.innerHTML = '';
-    getRates().forEach(r => {
-        const opt = document.createElement('option');
-        opt.value = r.id;
-        opt.textContent = `${r.name} ($${r.rate.toFixed(2)}/min)`;
-        rateSel.appendChild(opt);
-    });
-}
-
-// Open add/edit call modal
-function openCallModal(dateKey, call) {
-    fillRateOptions();
-    document.getElementById('call-modal').style.display = '';
-    document.getElementById('call-date').value = dateKey || getTodayKey();
-    document.getElementById('call-start').value = call?.start || '';
-    document.getElementById('call-end').value = call?.end || '';
-    document.getElementById('call-minutes').value = call?.minutes || '';
-    document.getElementById('call-rate').value = call?.rateId || getRates()[0].id;
-    document.getElementById('call-form').dataset.editing = call ? call.id : '';
-}
-
-// Close modal
-function closeCallModal() {
-    document.getElementById('call-modal').style.display = 'none';
-}
-
-// Add or Edit call
-document.getElementById('call-form').onsubmit = function(e) {
-    e.preventDefault();
-    const dateKey = document.getElementById('call-date').value;
-    let start = document.getElementById('call-start').value;
-    let end = document.getElementById('call-end').value;
-    let minutes = parseInt(document.getElementById('call-minutes').value, 10);
-    if (!minutes && start && end) {
-        minutes = durationBetween(start, end);
-    }
-    const rateId = document.getElementById('call-rate').value;
-    if (!minutes || minutes < 1) {
-        alert("Enter valid times or minutes!");
-        return;
-    }
-    const calls = getCallsForDate(dateKey);
-    const editingId = this.dataset.editing;
-    if (editingId) {
-        // Edit existing call
-        const idx = calls.findIndex(c => c.id === editingId);
-        if (idx !== -1) {
-            calls[idx] = { id: editingId, start, end, minutes, rateId };
-        }
-    } else {
-        // Add new call
-        calls.push({
-            id: makeCallId(),
-            start,
-            end,
-            minutes,
-            rateId
-        });
-    }
-    setCallsForDate(dateKey, calls);
-    closeCallModal();
-    renderCallList(document.getElementById('date-picker').value);
-};
-
-// Cancel button
-document.getElementById('cancel-call-btn').onclick = closeCallModal;
-
-// "Add Call" button
-document.getElementById('add-call-btn').onclick = function() {
-    openCallModal(document.getElementById('date-picker').value || getTodayKey());
-};
-
-// Edit call
-window.editCall = function(dateKey, callId) {
-    const calls = getCallsForDate(dateKey);
-    const call = calls.find(c => c.id === callId);
-    if (call) openCallModal(dateKey, call);
-};
-
-// Delete call
-window.deleteCall = function(dateKey, callId) {
-    if (!confirm("Delete this call?")) return;
-    const calls = getCallsForDate(dateKey).filter(c => c.id !== callId);
-    setCallsForDate(dateKey, calls);
-    renderCallList(dateKey);
-};
-
-// Date picker logic
-const datePicker = document.getElementById('date-picker');
-datePicker.value = getTodayKey();
-datePicker.onchange = function() {
-    renderCallList(this.value);
-};
-
-// Initial render
-renderCallList(getTodayKey());
-
-</script>
     <style>
         .time-input {
             width: 80px;
@@ -190,432 +50,320 @@ renderCallList(getTodayKey());
             <p class="text-gray-600">Track your work hours and earnings</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Date Selection -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold mb-4 text-dark">Select Month</h2>
-                <div class="flex items-center space-x-4">
-                    <select id="month-select" class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
-                        <option value="0">January</option>
-                        <option value="1">February</option>
-                        <option value="2">March</option>
-                        <option value="3">April</option>
-                        <option value="4">May</option>
-                        <option value="5">June</option>
-                        <option value="6">July</option>
-                        <option value="7">August</option>
-                        <option value="8">September</option>
-                        <option value="9">October</option>
-                        <option value="10">November</option>
-                        <option value="11">December</option>
-                    </select>
-                    <select id="year-select" class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary">
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                    </select>
-                    <button id="load-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                        <i class="fas fa-sync-alt mr-2"></i>Load
-                    </button>
-                </div>
-            </div>
-
-            <!-- Rate Settings -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold mb-4 text-dark">Rate Settings</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">DS Rate</label>
-                        <div class="flex items-center">
-                            <span class="mr-2">$</span>
-                            <input type="number" id="ds-rate" value="0.10" step="0.01" class="amount-input border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">FL Rate</label>
-                        <div class="flex items-center">
-                            <span class="mr-2">$</span>
-                            <input type="number" id="fl-rate" value="0.21" step="0.01" class="amount-input border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Daily Goal</label>
-                        <div class="flex items-center">
-                            <span class="mr-2">$</span>
-                            <input type="number" id="daily-goal" value="1.00" step="0.01" class="amount-input border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Work Type</label>
-                        <select id="work-type" class="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary">
-                            <option value="FL">FL</option>
-                            <option value="DS">DS</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Stats -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold mb-4 text-dark">Today's Summary</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-blue-50 p-3 rounded">
-                        <p class="text-sm text-blue-800">Worked Time</p>
-                        <p class="text-xl font-bold text-blue-900">0:00</p>
-                    </div>
-                    <div class="bg-green-50 p-3 rounded">
-                        <p class="text-sm text-green-800">Earnings</p>
-                        <p class="text-xl font-bold text-green-900">$0.00</p>
-                    </div>
-                    <div class="bg-purple-50 p-3 rounded">
-                        <p class="text-sm text-purple-800">Goal Progress</p>
-                        <p class="text-xl font-bold text-purple-900">0%</p>
-                    </div>
-                    <div class="bg-yellow-50 p-3 rounded">
-                        <p class="text-sm text-yellow-800">Remaining</p>
-                        <p class="text-xl font-bold text-yellow-900">$1.00</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Daily Tracking -->
-        <div class="bg-white rounded-lg shadow mb-8 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-dark">Daily Time Tracking</h2>
+        <!-- Call Tracker App -->
+        <div id="call-tracker-app" class="mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-dark">
+                Call Log for
+                <input type="date" id="date-picker" class="border rounded px-2 py-1"/>
+            </h2>
+            <div class="space-x-2 mb-4">
+                <button id="add-call-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition">Add Call</button>
+                <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Start Call</button>
+                <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">End Call</button>
             </div>
             <div class="scrollable-table">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table border="1" cellpadding="5" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Time</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Time</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Worked</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Minutes</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Earnings</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Minutes</th>
+                            <th>Rate</th>
+                            <th>Earnings</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="daily-entries" class="bg-white divide-y divide-gray-200">
-                        <!-- Entries will be added here dynamically -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <button id="add-entry-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-                    <i class="fas fa-plus mr-2"></i>Add Entry
-                </button>
-            </div>
-        </div>
-
-        <!-- Monthly Summary -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- First Half Summary -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold mb-4 text-dark">1st Half Summary</h2>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="summary-card bg-blue-50 p-4 rounded">
-                        <p class="text-sm text-blue-800">Total Worked</p>
-                        <p class="text-xl font-bold text-blue-900">0:00</p>
-                    </div>
-                    <div class="summary-card bg-green-50 p-4 rounded">
-                        <p class="text-sm text-green-800">Total Earnings</p>
-                        <p class="text-xl font-bold text-green-900">$0.00</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="summary-card bg-purple-50 p-4 rounded">
-                        <p class="text-sm text-purple-800">Goal Progress</p>
-                        <p class="text-xl font-bold text-purple-900">0%</p>
-                    </div>
-                    <div class="summary-card bg-yellow-50 p-4 rounded">
-                        <p class="text-sm text-yellow-800">Remaining</p>
-                        <p class="text-xl font-bold text-yellow-900">$1.00</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Second Half Summary -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-semibold mb-4 text-dark">2nd Half Summary</h2>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div class="summary-card bg-blue-50 p-4 rounded">
-                        <p class="text-sm text-blue-800">Total Worked</p>
-                        <p class="text-xl font-bold text-blue-900">0:00</p>
-                    </div>
-                    <div class="summary-card bg-green-50 p-4 rounded">
-                        <p class="text-sm text-green-800">Total Earnings</p>
-                        <p class="text-xl font-bold text-green-900">$0.00</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="summary-card bg-purple-50 p-4 rounded">
-                        <p class="text-sm text-purple-800">Goal Progress</p>
-                        <p class="text-xl font-bold text-purple-900">0%</p>
-                    </div>
-                    <div class="summary-card bg-yellow-50 p-4 rounded">
-                        <p class="text-sm text-yellow-800">Remaining</p>
-                        <p class="text-xl font-bold text-yellow-900">$1.00</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Annual Overview -->
-        <div class="bg-white rounded-lg shadow mb-8">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-dark">Annual Overview</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <tbody id="call-list"></tbody>
+                    <tfoot>
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feb</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mar</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apr</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">May</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jun</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jul</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aug</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sep</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oct</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nov</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dec</th>
+                            <td colspan="2"><b>Total</b></td>
+                            <td id="total-minutes">0</td>
+                            <td></td>
+                            <td id="total-earnings">$0.00</td>
+                            <td></td>
                         </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">1-15</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">16-31</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$0.00</td>
-                        </tr>
-                        <tr class="bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">Total</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">$0.00</td>
-                        </tr>
-                    </tbody>
+                    </tfoot>
                 </table>
             </div>
         </div>
-
-        <!-- Call Statistics -->
-        <div class="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-dark">Call Statistics</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Total Calls</label>
-                        <input type="number" id="total-calls" value="0" class="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Average Minutes per Call</label>
-                        <input type="text" id="avg-minutes" value="0" readonly class="border border-gray-300 rounded px-3 py-2 w-full bg-gray-100">
-                    </div>
-                </div>
-                <div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Average Earnings per Call</label>
-                        <input type="text" id="avg-earnings" value="$0.00" readonly class="border border-gray-300 rounded px-3 py-2 w-full bg-gray-100">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Calls Needed to Reach Goal</label>
-                        <input type="text" id="calls-needed" value="0" readonly class="border border-gray-300 rounded px-3 py-2 w-full bg-gray-100">
-                    </div>
-                </div>
-            </div>
+        <!-- Modal for Add/Edit Call -->
+        <div id="call-modal" style="display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #333;padding:20px;z-index:999;">
+            <h3 class="text-lg font-semibold mb-2">Add/Edit Call</h3>
+            <form id="call-form">
+                <label>Date:
+                    <input type="date" id="call-date" required class="border rounded px-2 py-1"/>
+                </label>
+                <br>
+                <label>Start Time:
+                    <input type="time" id="call-start" class="border rounded px-2 py-1"/>
+                </label>
+                <br>
+                <label>End Time:
+                    <input type="time" id="call-end" class="border rounded px-2 py-1"/>
+                </label>
+                <br>
+                <label>OR Minutes:
+                    <input type="number" id="call-minutes" min="1" class="border rounded px-2 py-1"/>
+                </label>
+                <br>
+                <label>Rate:
+                    <select id="call-rate" class="border rounded px-2 py-1"></select>
+                </label>
+                <br><br>
+                <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition">Save</button>
+                <button type="button" id="cancel-call-btn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition ml-2">Cancel</button>
+            </form>
         </div>
     </div>
-
     <script>
-// --- Data Model and Helper Functions ---
-
-function getData() {
-    // Get all tracker data from localStorage or initialize it if missing
-    const data = localStorage.getItem('workTimeTracker');
-    if (data) {
-        return JSON.parse(data);
-    } else {
-        // Default structure
-        const initial = {
-            rates: [
-                { id: 'fl', name: 'FL', rate: 0.21 },
-                { id: 'ds', name: 'DS', rate: 0.10 },
-            ],
-            calls: {} // date (YYYY-MM-DD) : [ { id, start, end, minutes, rateId } ]
-        };
-        localStorage.setItem('workTimeTracker', JSON.stringify(initial));
-        return initial;
-    }
-}
-
-function saveData(data) {
-    localStorage.setItem('workTimeTracker', JSON.stringify(data));
-}
-
-// Returns string like "2025-05-19"
-function getTodayKey() {
-    const now = new Date();
-    return now.toISOString().slice(0,10);
-}
-
-// Generate unique call ID (for delete/edit)
-function makeCallId() {
-    return 'call-' + Math.random().toString(36).substr(2,9);
-}
-
-// Get calls for a given date (YYYY-MM-DD)
-function getCallsForDate(dateKey) {
-    const data = getData();
-    return data.calls[dateKey] || [];
-}
-
-// Set calls for a given date (YYYY-MM-DD)
-function setCallsForDate(dateKey, callList) {
-    const data = getData();
-    data.calls[dateKey] = callList;
-    saveData(data);
-}
-
-// Get all rates
-function getRates() {
-    return getData().rates;
-}
-
-// Add a new rate
-function addRate(name, rate) {
-    const data = getData();
-    const newRate = {
-        id: 'rate-' + Math.random().toString(36).substr(2,9),
-        name,
-        rate: parseFloat(rate)
-    };
-    data.rates.push(newRate);
-    saveData(data);
-    return newRate;
-}
-
-// Edit a rate
-function editRate(rateId, name, rate) {
-    const data = getData();
-    const idx = data.rates.findIndex(r => r.id === rateId);
-    if (idx !== -1) {
-        data.rates[idx].name = name;
-        data.rates[idx].rate = parseFloat(rate);
-        saveData(data);
-    }
-}
-
-// Delete a rate
-function deleteRate(rateId) {
-    const data = getData();
-    data.rates = data.rates.filter(r => r.id !== rateId);
-    saveData(data);
-}
-
-// Utility: parse time string "HH:MM" to minutes since midnight
-function timeStrToMinutes(t) {
-    if (!t) return null;
-    const [h, m] = t.split(':').map(Number);
-    return h * 60 + m;
-}
-
-// Utility: minutes to "HH:MM"
-function minutesToTimeStr(mins) {
-    if (typeof mins !== 'number' || isNaN(mins)) return '';
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return `${h}:${m.toString().padStart(2, '0')}`;
-}
-
-// Utility: calculate duration (in minutes) between two "HH:MM" strings (handles overnight)
-function durationBetween(start, end) {
-    if (!start || !end) return null;
-    let startM = timeStrToMinutes(start);
-    let endM = timeStrToMinutes(end);
-    let diff = endM - startM;
-    if (diff < 0) diff += 24 * 60; // overnight
-    return diff;
-}
-        document.getElementById('start-call-btn').onclick = function() {
-    const dateKey = document.getElementById('date-picker').value || getTodayKey();
-    const now = new Date();
-    const timeStr = now.toTimeString().slice(0,5); // "HH:MM"
-    const rates = getRates();
-    const defaultRate = rates.length > 0 ? rates[0].id : null;
-    if (!defaultRate) {
-        alert("Please set up at least one rate first!");
-        return;
-    }
-    // Add a new call entry with only start time
-    const calls = getCallsForDate(dateKey);
-    calls.push({
-        id: makeCallId(),
-        start: timeStr,
-        end: '',
-        minutes: null,
-        rateId: defaultRate
-    });
-    setCallsForDate(dateKey, calls);
-    renderCallList(dateKey);
-};
-
-document.getElementById('end-call-btn').onclick = function() {
-    const dateKey = document.getElementById('date-picker').value || getTodayKey();
-    const now = new Date();
-    const timeStr = now.toTimeString().slice(0,5); // "HH:MM"
-    const calls = getCallsForDate(dateKey);
-    // Find the last call without an end time
-    for (let i = calls.length - 1; i >= 0; i--) {
-        if (calls[i].start && !calls[i].end) {
-            calls[i].end = timeStr;
-            // Calculate minutes
-            const mins = durationBetween(calls[i].start, calls[i].end);
-            calls[i].minutes = mins;
-            setCallsForDate(dateKey, calls);
-            renderCallList(dateKey);
-            return;
+    // --- Data Model and Helper Functions ---
+    function getData() {
+        const data = localStorage.getItem('workTimeTracker');
+        if (data) {
+            return JSON.parse(data);
+        } else {
+            const initial = {
+                rates: [
+                    { id: 'fl', name: 'FL', rate: 0.21 },
+                    { id: 'ds', name: 'DS', rate: 0.10 },
+                ],
+                calls: {} // date (YYYY-MM-DD) : [ { id, start, end, minutes, rateId } ]
+            };
+            localStorage.setItem('workTimeTracker', JSON.stringify(initial));
+            return initial;
         }
     }
-    alert("No call found to end! Start a call first.");
-};
-</script>
+    function saveData(data) {
+        localStorage.setItem('workTimeTracker', JSON.stringify(data));
+    }
+    function getTodayKey() {
+        const now = new Date();
+        return now.toISOString().slice(0,10);
+    }
+    function makeCallId() {
+        return 'call-' + Math.random().toString(36).substr(2,9);
+    }
+    function getCallsForDate(dateKey) {
+        const data = getData();
+        return data.calls[dateKey] || [];
+    }
+    function setCallsForDate(dateKey, callList) {
+        const data = getData();
+        data.calls[dateKey] = callList;
+        saveData(data);
+    }
+    function getRates() {
+        return getData().rates;
+    }
+    function addRate(name, rate) {
+        const data = getData();
+        const newRate = {
+            id: 'rate-' + Math.random().toString(36).substr(2,9),
+            name,
+            rate: parseFloat(rate)
+        };
+        data.rates.push(newRate);
+        saveData(data);
+        return newRate;
+    }
+    function editRate(rateId, name, rate) {
+        const data = getData();
+        const idx = data.rates.findIndex(r => r.id === rateId);
+        if (idx !== -1) {
+            data.rates[idx].name = name;
+            data.rates[idx].rate = parseFloat(rate);
+            saveData(data);
+        }
+    }
+    function deleteRate(rateId) {
+        const data = getData();
+        data.rates = data.rates.filter(r => r.id !== rateId);
+        saveData(data);
+    }
+    function timeStrToMinutes(t) {
+        if (!t) return null;
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+    }
+    function minutesToTimeStr(mins) {
+        if (typeof mins !== 'number' || isNaN(mins)) return '';
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return `${h}:${m.toString().padStart(2, '0')}`;
+    }
+    function durationBetween(start, end) {
+        if (!start || !end) return null;
+        let startM = timeStrToMinutes(start);
+        let endM = timeStrToMinutes(end);
+        let diff = endM - startM;
+        if (diff < 0) diff += 24 * 60;
+        return diff;
+    }
+    // --- UI and Logic for Call Log ---
+    function renderCallList(dateKey) {
+        const callList = getCallsForDate(dateKey);
+        const rates = getRates();
+        const tbody = document.getElementById('call-list');
+        tbody.innerHTML = '';
+        let totalMinutes = 0;
+        let totalEarnings = 0;
+
+        callList.forEach((call, idx) => {
+            const rate = rates.find(r => r.id === call.rateId) || {name: "?", rate: 0};
+            const minutes = call.minutes !== undefined && call.minutes !== null
+                ? call.minutes
+                : durationBetween(call.start, call.end);
+            const earning = minutes * rate.rate;
+            totalMinutes += minutes || 0;
+            totalEarnings += earning || 0;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${call.start || ''}</td>
+                <td>${call.end || ''}</td>
+                <td>${minutes || ''}</td>
+                <td>${rate.name} ($${rate.rate.toFixed(2)})</td>
+                <td>$${earning ? earning.toFixed(2) : ''}</td>
+                <td>
+                    <button onclick="editCall('${dateKey}','${call.id}')" class="bg-yellow-400 px-2 py-1 rounded mr-1">Edit</button>
+                    <button onclick="deleteCall('${dateKey}','${call.id}')" class="bg-red-400 px-2 py-1 rounded">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        document.getElementById('total-minutes').textContent = totalMinutes;
+        document.getElementById('total-earnings').textContent = "$" + totalEarnings.toFixed(2);
+    }
+    // Fill rates in the add/edit form
+    function fillRateOptions() {
+        const rateSel = document.getElementById('call-rate');
+        rateSel.innerHTML = '';
+        getRates().forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r.id;
+            opt.textContent = `${r.name} ($${r.rate.toFixed(2)}/min)`;
+            rateSel.appendChild(opt);
+        });
+    }
+    // Open add/edit call modal
+    function openCallModal(dateKey, call) {
+        fillRateOptions();
+        document.getElementById('call-modal').style.display = '';
+        document.getElementById('call-date').value = dateKey || getTodayKey();
+        document.getElementById('call-start').value = call?.start || '';
+        document.getElementById('call-end').value = call?.end || '';
+        document.getElementById('call-minutes').value = call?.minutes || '';
+        document.getElementById('call-rate').value = call?.rateId || getRates()[0].id;
+        document.getElementById('call-form').dataset.editing = call ? call.id : '';
+    }
+    // Close modal
+    function closeCallModal() {
+        document.getElementById('call-modal').style.display = 'none';
+    }
+    // Add or Edit call
+    document.getElementById('call-form').onsubmit = function(e) {
+        e.preventDefault();
+        const dateKey = document.getElementById('call-date').value;
+        let start = document.getElementById('call-start').value;
+        let end = document.getElementById('call-end').value;
+        let minutes = parseInt(document.getElementById('call-minutes').value, 10);
+        if (!minutes && start && end) {
+            minutes = durationBetween(start, end);
+        }
+        const rateId = document.getElementById('call-rate').value;
+        if (!minutes || minutes < 1) {
+            alert("Enter valid times or minutes!");
+            return;
+        }
+        const calls = getCallsForDate(dateKey);
+        const editingId = this.dataset.editing;
+        if (editingId) {
+            // Edit existing call
+            const idx = calls.findIndex(c => c.id === editingId);
+            if (idx !== -1) {
+                calls[idx] = { id: editingId, start, end, minutes, rateId };
+            }
+        } else {
+            // Add new call
+            calls.push({
+                id: makeCallId(),
+                start,
+                end,
+                minutes,
+                rateId
+            });
+        }
+        setCallsForDate(dateKey, calls);
+        closeCallModal();
+        renderCallList(document.getElementById('date-picker').value);
+    };
+    // Cancel button
+    document.getElementById('cancel-call-btn').onclick = closeCallModal;
+    // "Add Call" button
+    document.getElementById('add-call-btn').onclick = function() {
+        openCallModal(document.getElementById('date-picker').value || getTodayKey());
+    };
+    // Edit call
+    window.editCall = function(dateKey, callId) {
+        const calls = getCallsForDate(dateKey);
+        const call = calls.find(c => c.id === callId);
+        if (call) openCallModal(dateKey, call);
+    };
+    // Delete call
+    window.deleteCall = function(dateKey, callId) {
+        if (!confirm("Delete this call?")) return;
+        const calls = getCallsForDate(dateKey).filter(c => c.id !== callId);
+        setCallsForDate(dateKey, calls);
+        renderCallList(dateKey);
+    };
+    // Date picker logic
+    const datePicker = document.getElementById('date-picker');
+    datePicker.value = getTodayKey();
+    datePicker.onchange = function() {
+        renderCallList(this.value);
+    };
+    // Start Call button
+    document.getElementById('start-call-btn').onclick = function() {
+        const dateKey = document.getElementById('date-picker').value || getTodayKey();
+        const now = new Date();
+        const timeStr = now.toTimeString().slice(0,5);
+        const rates = getRates();
+        const defaultRate = rates.length > 0 ? rates[0].id : null;
+        if (!defaultRate) {
+            alert("Please set up at least one rate first!");
+            return;
+        }
+        const calls = getCallsForDate(dateKey);
+        calls.push({
+            id: makeCallId(),
+            start: timeStr,
+            end: '',
+            minutes: null,
+            rateId: defaultRate
+        });
+        setCallsForDate(dateKey, calls);
+        renderCallList(dateKey);
+    };
+    // End Call button
+    document.getElementById('end-call-btn').onclick = function() {
+        const dateKey = document.getElementById('date-picker').value || getTodayKey();
+        const now = new Date();
+        const timeStr = now.toTimeString().slice(0,5);
+        const calls = getCallsForDate(dateKey);
+        for (let i = calls.length - 1; i >= 0; i--) {
+            if (calls[i].start && !calls[i].end) {
+                calls[i].end = timeStr;
+                const mins = durationBetween(calls[i].start, calls[i].end);
+                calls[i].minutes = mins;
+                setCallsForDate(dateKey, calls);
+                renderCallList(dateKey);
+                return;
+            }
+        }
+        alert("No call found to end! Start a call first.");
+    };
+    // Initial render
+    renderCallList(getTodayKey());
+    </script>
 </body>
 </html>
