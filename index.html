@@ -23,6 +23,8 @@
     <div id="call-tracker-app">
     <h2>Call Log for <input type="date" id="date-picker" /></h2>
     <button id="add-call-btn">Add Call</button>
+    <button id="start-call-btn">Start Call</button>
+    <button id="end-call-btn">End Call</button>
     <table border="1" cellpadding="5" style="margin-top:10px;min-width:400px;">
         <thead>
             <tr>
@@ -627,6 +629,48 @@ function durationBetween(start, end) {
     if (diff < 0) diff += 24 * 60; // overnight
     return diff;
 }
+        document.getElementById('start-call-btn').onclick = function() {
+    const dateKey = document.getElementById('date-picker').value || getTodayKey();
+    const now = new Date();
+    const timeStr = now.toTimeString().slice(0,5); // "HH:MM"
+    const rates = getRates();
+    const defaultRate = rates.length > 0 ? rates[0].id : null;
+    if (!defaultRate) {
+        alert("Please set up at least one rate first!");
+        return;
+    }
+    // Add a new call entry with only start time
+    const calls = getCallsForDate(dateKey);
+    calls.push({
+        id: makeCallId(),
+        start: timeStr,
+        end: '',
+        minutes: null,
+        rateId: defaultRate
+    });
+    setCallsForDate(dateKey, calls);
+    renderCallList(dateKey);
+};
+
+document.getElementById('end-call-btn').onclick = function() {
+    const dateKey = document.getElementById('date-picker').value || getTodayKey();
+    const now = new Date();
+    const timeStr = now.toTimeString().slice(0,5); // "HH:MM"
+    const calls = getCallsForDate(dateKey);
+    // Find the last call without an end time
+    for (let i = calls.length - 1; i >= 0; i--) {
+        if (calls[i].start && !calls[i].end) {
+            calls[i].end = timeStr;
+            // Calculate minutes
+            const mins = durationBetween(calls[i].start, calls[i].end);
+            calls[i].minutes = mins;
+            setCallsForDate(dateKey, calls);
+            renderCallList(dateKey);
+            return;
+        }
+    }
+    alert("No call found to end! Start a call first.");
+};
 </script>
 </body>
 </html>
