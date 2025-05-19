@@ -138,6 +138,111 @@
             <button id="close-rates-btn" class="mt-4 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition w-full">Close</button>
         </div>
 
+        <!-- Dashboard and Stats -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Quick Stats (Today's Summary) -->
+    <div class="bg-white rounded-lg shadow p-6 col-span-1">
+        <h2 class="text-xl font-semibold mb-4 text-dark">Today's Summary</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-blue-50 p-3 rounded">
+                <p class="text-sm text-blue-800">Worked Time</p>
+                <p id="summary-worked-time" class="text-xl font-bold text-blue-900">0:00</p>
+            </div>
+            <div class="bg-green-50 p-3 rounded">
+                <p class="text-sm text-green-800">Earnings</p>
+                <p id="summary-earnings" class="text-xl font-bold text-green-900">$0.00</p>
+            </div>
+            <div class="bg-purple-50 p-3 rounded">
+                <p class="text-sm text-purple-800">Goal Progress</p>
+                <p id="summary-goal-progress" class="text-xl font-bold text-purple-900">0%</p>
+            </div>
+            <div class="bg-yellow-50 p-3 rounded">
+                <p class="text-sm text-yellow-800">Remaining</p>
+                <p id="summary-remaining" class="text-xl font-bold text-yellow-900">$1.00</p>
+            </div>
+        </div>
+    </div>
+    <!-- 1st Half Summary -->
+    <div class="bg-white rounded-lg shadow p-6 col-span-1">
+        <h2 class="text-xl font-semibold mb-4 text-dark">1st Half Summary</h2>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="summary-card bg-blue-50 p-4 rounded">
+                <p class="text-sm text-blue-800">Total Worked</p>
+                <p id="firsthalf-worked" class="text-xl font-bold text-blue-900">0:00</p>
+            </div>
+            <div class="summary-card bg-green-50 p-4 rounded">
+                <p class="text-sm text-green-800">Total Earnings</p>
+                <p id="firsthalf-earnings" class="text-xl font-bold text-green-900">$0.00</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="summary-card bg-purple-50 p-4 rounded">
+                <p class="text-sm text-purple-800">Goal Progress</p>
+                <p id="firsthalf-goal" class="text-xl font-bold text-purple-900">0%</p>
+            </div>
+            <div class="summary-card bg-yellow-50 p-4 rounded">
+                <p class="text-sm text-yellow-800">Remaining</p>
+                <p id="firsthalf-remaining" class="text-xl font-bold text-yellow-900">$0.00</p>
+            </div>
+        </div>
+    </div>
+    <!-- 2nd Half Summary -->
+    <div class="bg-white rounded-lg shadow p-6 col-span-1">
+        <h2 class="text-xl font-semibold mb-4 text-dark">2nd Half Summary</h2>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="summary-card bg-blue-50 p-4 rounded">
+                <p class="text-sm text-blue-800">Total Worked</p>
+                <p id="secondhalf-worked" class="text-xl font-bold text-blue-900">0:00</p>
+            </div>
+            <div class="summary-card bg-green-50 p-4 rounded">
+                <p class="text-sm text-green-800">Total Earnings</p>
+                <p id="secondhalf-earnings" class="text-xl font-bold text-green-900">$0.00</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="summary-card bg-purple-50 p-4 rounded">
+                <p class="text-sm text-purple-800">Goal Progress</p>
+                <p id="secondhalf-goal" class="text-xl font-bold text-purple-900">0%</p>
+            </div>
+            <div class="summary-card bg-yellow-50 p-4 rounded">
+                <p class="text-sm text-yellow-800">Remaining</p>
+                <p id="secondhalf-remaining" class="text-xl font-bold text-yellow-900">$0.00</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Annual Overview -->
+<div class="bg-white rounded-lg shadow mb-8">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold text-dark">Annual Overview</h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jan</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feb</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mar</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apr</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">May</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jun</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jul</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aug</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sep</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oct</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nov</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dec</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200" id="annual-overview-body">
+                <!-- Filled by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
         <!-- Dashboard and Stats (copy from above as in previous answers) -->
         <!-- ... all summary, monthly/annual/daily/call-statistics widgets as above ... -->
         <!-- ... (see your previous question for this markup, it stays unchanged and working) ... -->
