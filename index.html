@@ -20,6 +20,145 @@
             }
         }
     </script>
+    <script>
+// -- UI and Logic for Call Log --
+
+function renderCallList(dateKey) {
+    const callList = getCallsForDate(dateKey);
+    const rates = getRates();
+    const tbody = document.getElementById('call-list');
+    tbody.innerHTML = '';
+    let totalMinutes = 0;
+    let totalEarnings = 0;
+
+    callList.forEach((call, idx) => {
+        const rate = rates.find(r => r.id === call.rateId) || {name: "?", rate: 0};
+        const minutes = call.minutes !== undefined && call.minutes !== null
+            ? call.minutes
+            : durationBetween(call.start, call.end);
+        const earning = minutes * rate.rate;
+        totalMinutes += minutes || 0;
+        totalEarnings += earning || 0;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${call.start || ''}</td>
+            <td>${call.end || ''}</td>
+            <td>${minutes || ''}</td>
+            <td>${rate.name} ($${rate.rate.toFixed(2)})</td>
+            <td>$${earning ? earning.toFixed(2) : ''}</td>
+            <td>
+                <button onclick="editCall('${dateKey}','${call.id}')">Edit</button>
+                <button onclick="deleteCall('${dateKey}','${call.id}')">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+    document.getElementById('total-minutes').textContent = totalMinutes;
+    document.getElementById('total-earnings').textContent = "$" + totalEarnings.toFixed(2);
+}
+
+// Fill rates in the add/edit form
+function fillRateOptions() {
+    const rateSel = document.getElementById('call-rate');
+    rateSel.innerHTML = '';
+    getRates().forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.id;
+        opt.textContent = `${r.name} ($${r.rate.toFixed(2)}/min)`;
+        rateSel.appendChild(opt);
+    });
+}
+
+// Open add/edit call modal
+function openCallModal(dateKey, call) {
+    fillRateOptions();
+    document.getElementById('call-modal').style.display = '';
+    document.getElementById('call-date').value = dateKey || getTodayKey();
+    document.getElementById('call-start').value = call?.start || '';
+    document.getElementById('call-end').value = call?.end || '';
+    document.getElementById('call-minutes').value = call?.minutes || '';
+    document.getElementById('call-rate').value = call?.rateId || getRates()[0].id;
+    document.getElementById('call-form').dataset.editing = call ? call.id : '';
+}
+
+// Close modal
+function closeCallModal() {
+    document.getElementById('call-modal').style.display = 'none';
+}
+
+// Add or Edit call
+document.getElementById('call-form').onsubmit = function(e) {
+    e.preventDefault();
+    const dateKey = document.getElementById('call-date').value;
+    let start = document.getElementById('call-start').value;
+    let end = document.getElementById('call-end').value;
+    let minutes = parseInt(document.getElementById('call-minutes').value, 10);
+    if (!minutes && start && end) {
+        minutes = durationBetween(start, end);
+    }
+    const rateId = document.getElementById('call-rate').value;
+    if (!minutes || minutes < 1) {
+        alert("Enter valid times or minutes!");
+        return;
+    }
+    const calls = getCallsForDate(dateKey);
+    const editingId = this.dataset.editing;
+    if (editingId) {
+        // Edit existing call
+        const idx = calls.findIndex(c => c.id === editingId);
+        if (idx !== -1) {
+            calls[idx] = { id: editingId, start, end, minutes, rateId };
+        }
+    } else {
+        // Add new call
+        calls.push({
+            id: makeCallId(),
+            start,
+            end,
+            minutes,
+            rateId
+        });
+    }
+    setCallsForDate(dateKey, calls);
+    closeCallModal();
+    renderCallList(document.getElementById('date-picker').value);
+};
+
+// Cancel button
+document.getElementById('cancel-call-btn').onclick = closeCallModal;
+
+// "Add Call" button
+document.getElementById('add-call-btn').onclick = function() {
+    openCallModal(document.getElementById('date-picker').value || getTodayKey());
+};
+
+// Edit call
+window.editCall = function(dateKey, callId) {
+    const calls = getCallsForDate(dateKey);
+    const call = calls.find(c => c.id === callId);
+    if (call) openCallModal(dateKey, call);
+};
+
+// Delete call
+window.deleteCall = function(dateKey, callId) {
+    if (!confirm("Delete this call?")) return;
+    const calls = getCallsForDate(dateKey).filter(c => c.id !== callId);
+    setCallsForDate(dateKey, calls);
+    renderCallList(dateKey);
+};
+
+// Date picker logic
+const datePicker = document.getElementById('date-picker');
+datePicker.value = getTodayKey();
+datePicker.onchange = function() {
+    renderCallList(this.value);
+};
+
+// Initial render
+renderCallList(getTodayKey());
+
+</script>
     <style>
         .time-input {
             width: 80px;
