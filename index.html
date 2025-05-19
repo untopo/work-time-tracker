@@ -43,7 +43,28 @@
             <h1 class="text-3xl font-bold text-dark mb-2">Work Time Tracker</h1>
             <p class="text-gray-600">Track your work hours and earnings</p>
         </header>
-
+<!-- Settings: Goal and Rates -->
+<div class="mb-8 flex flex-col md:flex-row gap-8">
+    <!-- Daily Goal Card -->
+    <div class="bg-white rounded-lg shadow p-6 flex-1 max-w-lg">
+        <h2 class="text-lg font-semibold mb-3 text-dark">Daily Goal</h2>
+        <div class="input-group mb-2">
+            <label for="daily-goal" class="text-gray-700">Goal ($):</label>
+            <input type="number" id="daily-goal" min="0.01" step="0.01" class="border rounded px-2 py-1 w-32" />
+            <span class="text-gray-500 text-sm">(Saved automatically)</span>
+        </div>
+    </div>
+    <!-- Rates Card -->
+    <div class="bg-white rounded-lg shadow p-6 flex-1 max-w-lg">
+        <h2 class="text-lg font-semibold mb-3 text-dark">Rates</h2>
+        <form id="rate-add-form" class="flex items-center gap-2 mb-4">
+            <input type="text" id="new-rate-name" placeholder="Name" required class="border px-2 py-1 rounded w-1/3"/>
+            <input type="number" id="new-rate-value" placeholder="Rate/min" step="0.01" required class="border px-2 py-1 rounded w-1/3"/>
+            <button type="submit" class="bg-primary text-white px-3 py-1 rounded">Add</button>
+        </form>
+        <div id="rates-list"></div>
+    </div>
+</div>
         <!-- Call Tracker App -->
         <div id="call-tracker-app" class="mb-8">
             <h2 class="text-xl font-semibold mb-4 text-dark flex items-center gap-2">
