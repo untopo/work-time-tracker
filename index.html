@@ -20,62 +20,7 @@
             }
         }
     </script>
-    <div id="call-tracker-app">
-    <h2>Call Log for <input type="date" id="date-picker" /></h2>
-    <button id="add-call-btn">Add Call</button>
-    <button id="start-call-btn">Start Call</button>
-    <button id="end-call-btn">End Call</button>
-    <table border="1" cellpadding="5" style="margin-top:10px;min-width:400px;">
-        <thead>
-            <tr>
-                <th>Start</th>
-                <th>End</th>
-                <th>Minutes</th>
-                <th>Rate</th>
-                <th>Earnings</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="call-list"></tbody>
-        <tfoot>
-            <tr>
-                <td colspan="2"><b>Total</b></td>
-                <td id="total-minutes">0</td>
-                <td></td>
-                <td id="total-earnings">$0.00</td>
-                <td></td>
-            </tr>
-        </tfoot>
-    </table>
-</div>
-<!-- Modal for manual entry, will add functionality soon -->
-<div id="call-modal" style="display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #333;padding:20px;z-index:999;">
-    <h3>Add/Edit Call</h3>
-    <form id="call-form">
-        <label>
-            Date:
-            <input type="date" id="call-date" required />
-        </label><br>
-        <label>
-            Start Time:
-            <input type="time" id="call-start" />
-        </label><br>
-        <label>
-            End Time:
-            <input type="time" id="call-end" />
-        </label><br>
-        <label>
-            OR Minutes:
-            <input type="number" id="call-minutes" min="1" />
-        </label><br>
-        <label>
-            Rate:
-            <select id="call-rate"></select>
-        </label><br><br>
-        <button type="submit">Save</button>
-        <button type="button" id="cancel-call-btn">Cancel</button>
-    </form>
-</div>
+
     <script>
 // -- UI and Logic for Call Log --
 
@@ -239,6 +184,41 @@ renderCallList(getTodayKey());
     </style>
 </head>
 <body class="bg-gray-50">
+    <div id="call-tracker-app">
+    <h2>Call Log for <input type="date" id="date-picker" /></h2>
+    <button id="add-call-btn">Add Call</button>
+    <button id="start-call-btn">Start Call</button>
+    <button id="end-call-btn">End Call</button>
+    <table border="1" cellpadding="5" style="margin-top:10px;min-width:400px;">
+        <thead>
+            <tr>
+                <th>Start</th><th>End</th><th>Minutes</th><th>Rate</th><th>Earnings</th><th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="call-list"></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2"><b>Total</b></td>
+                <td id="total-minutes">0</td>
+                <td></td>
+                <td id="total-earnings">$0.00</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+<div id="call-modal" style="display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #333;padding:20px;z-index:999;">
+    <h3>Add/Edit Call</h3>
+    <form id="call-form">
+        <label>Date: <input type="date" id="call-date" required /></label><br>
+        <label>Start Time: <input type="time" id="call-start" /></label><br>
+        <label>End Time: <input type="time" id="call-end" /></label><br>
+        <label>OR Minutes: <input type="number" id="call-minutes" min="1" /></label><br>
+        <label>Rate: <select id="call-rate"></select></label><br><br>
+        <button type="submit">Save</button>
+        <button type="button" id="cancel-call-btn">Cancel</button>
+    </form>
+</div>
     <div class="container mx-auto px-4 py-8">
         <header class="mb-8">
             <h1 class="text-3xl font-bold text-dark mb-2">Work Time Tracker</h1>
