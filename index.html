@@ -55,6 +55,63 @@
                 <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Start Call</button>
                 <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">End Call</button>
             </div>
+<!-- Monthly & Total Summary (Below Main Stage) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <!-- 1st Half Summary -->
+  <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+    <h2 class="text-lg font-semibold mb-2 text-dark">1st Half</h2>
+    <div class="text-4xl font-bold text-blue-900 mb-2" id="firsthalf-earnings">$0.00</div>
+    <div class="text-md text-gray-500">Worked: <span id="firsthalf-worked">0:00</span></div>
+  </div>
+  <!-- 2nd Half Summary -->
+  <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+    <h2 class="text-lg font-semibold mb-2 text-dark">2nd Half</h2>
+    <div class="text-4xl font-bold text-green-900 mb-2" id="secondhalf-earnings">$0.00</div>
+    <div class="text-md text-gray-500">Worked: <span id="secondhalf-worked">0:00</span></div>
+  </div>
+  <!-- Total Month Summary -->
+  <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+    <h2 class="text-lg font-semibold mb-2 text-dark">Total (Month)</h2>
+    <div class="text-4xl font-bold text-purple-900 mb-2" id="month-total-earnings">$0.00</div>
+    <div class="text-md text-gray-500">Worked: <span id="month-total-worked">0:00</span></div>
+  </div>
+</div>
+
+<!-- Annual Overview -->
+<div class="bg-white rounded-lg shadow mb-8">
+  <div class="px-6 py-4 border-b border-gray-200 flex flex-wrap gap-4 items-center">
+    <h2 class="text-xl font-semibold text-dark">Annual Overview</h2>
+    <label class="ml-4 flex items-center gap-2">
+      <span class="text-gray-600">Year:</span>
+      <select id="annual-year-select" class="border rounded px-2 py-1"></select>
+    </label>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jan</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feb</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mar</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apr</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">May</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jun</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jul</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aug</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sep</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oct</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nov</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dec</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200" id="annual-overview-body">
+        <!-- Filled by JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+            
             <div id="live-call-info" class="mb-4" style="display:none;">
                 <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-5 p-4 bg-green-100 rounded-xl shadow">
                     <div class="flex items-center gap-2">
