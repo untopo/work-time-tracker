@@ -6,20 +6,6 @@
     <title>Work Time Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3b82f6',
-                        secondary: '#10b981',
-                        dark: '#1e293b',
-                        light: '#f8fafc'
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         .amount-input { width: 100px; }
         .scrollable-table { max-height: 400px; overflow-y: auto; }
@@ -32,9 +18,17 @@
         .call-log-table td { background: #fff; }
         .call-log-table tfoot td { background: #f3f4f6; font-weight: 700; }
         .tag { display: inline-block; padding: 2px 8px; border-radius: 6px; background: #f1f5f9; color: #2563eb; font-size: 0.9em; margin: 0 2px;}
-        .action-btn { padding: 3px 10px; border-radius: 6px; font-size: 0.95em; margin: 0 2px; cursor: pointer;}
-        .action-btn.edit { background: #fde68a; color: #b45309; border: none; }
-        .action-btn.delete { background: #fecaca; color: #b91c1c; border: none; }
+        .input-group label { min-width: 90px; }
+        .input-group { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;}
+        .fade-in-out {
+            animation: fadeInOut 2.5s forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px);}
+            10% { opacity: 1; transform: translateY(0);}
+            90% { opacity: 1;}
+            100% { opacity: 0; transform: translateY(-10px);}
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -43,55 +37,78 @@
             <h1 class="text-3xl font-bold text-dark mb-2">Work Time Tracker</h1>
             <p class="text-gray-600">Track your work hours and earnings</p>
         </header>
-<!-- Settings: Goal and Rates -->
-<div class="mb-8 flex flex-col md:flex-row gap-8">
-    <!-- Daily Goal Card -->
-    <div class="bg-white rounded-lg shadow p-6 flex-1 max-w-lg">
-        <h2 class="text-lg font-semibold mb-3 text-dark">Daily Goal</h2>
-        <div class="input-group mb-2">
-            <label for="daily-goal" class="text-gray-700">Goal ($):</label>
-            <input type="number" id="daily-goal" min="0.01" step="0.01" class="border rounded px-2 py-1 w-32" />
-            <span class="text-gray-500 text-sm">(Saved automatically)</span>
+
+        <!-- Call Box & Rates/Goal Section -->
+        <div class="flex flex-row gap-8 mb-8">
+            <!-- Call Box -->
+            <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center min-w-[275px] max-w-xs w-full">
+                <div class="flex flex-col items-center mb-2">
+                    <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                        <i class="fas fa-phone-volume text-3xl text-primary"></i>
+                    </div>
+                    <h2 class="text-lg font-semibold mb-2 text-dark">Call Controls</h2>
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <button id="add-call-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition w-full flex items-center justify-center gap-2">
+                        <i class="fas fa-plus"></i> Add Call
+                    </button>
+                    <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition w-full flex items-center justify-center gap-2">
+                        <i class="fas fa-play"></i> Start Call
+                    </button>
+                    <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition w-full flex items-center justify-center gap-2">
+                        <i class="fas fa-stop"></i> End Call
+                    </button>
+                </div>
+                <div id="live-call-info" class="mt-4 w-full" style="display:none;">
+                    <div class="flex flex-col items-center bg-green-50 rounded-lg p-3 shadow-inner">
+                        <span class="text-green-700 font-semibold text-sm mb-1">Ongoing Call</span>
+                        <span id="live-call-timer" class="font-mono text-xl text-green-900 mb-1">00:00:00</span>
+                        <span id="live-call-earnings" class="font-mono text-lg text-green-800">$0.00 earned</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Rates & Goal Section -->
+            <div class="flex-1 flex flex-col gap-4">
+                <div class="bg-white rounded-xl shadow p-6 flex flex-col gap-4">
+                    <!-- Current Rate Selector -->
+                    <div>
+                        <label for="current-rate" class="block text-gray-700 font-semibold mb-2">Current Rate</label>
+                        <select id="current-rate" class="border px-2 py-1 rounded w-full md:w-64 mb-4"></select>
+                    </div>
+                    <!-- Rates List -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h2 class="text-lg font-semibold text-dark">Rates</h2>
+                            <button id="show-rate-add" class="text-primary text-sm font-medium hover:underline">+ Add</button>
+                        </div>
+                        <form id="rate-add-form" class="flex items-center gap-2 mb-4 hidden">
+                            <input type="text" id="new-rate-name" placeholder="Name" required class="border px-2 py-1 rounded w-1/3"/>
+                            <input type="number" id="new-rate-value" placeholder="Rate/min" step="0.01" min="0.01" required class="border px-2 py-1 rounded w-1/3"/>
+                            <button type="submit" class="bg-primary text-white px-3 py-1 rounded">Add</button>
+                            <button type="button" id="cancel-rate-add" class="text-gray-500 px-2 py-1 rounded hover:bg-gray-100">Cancel</button>
+                        </form>
+                        <div id="rates-list"></div>
+                    </div>
+                    <!-- Daily Goal -->
+                    <div>
+                        <h2 class="text-lg font-semibold text-dark mb-2">Daily Goal</h2>
+                        <form id="goal-form" class="flex items-center gap-2">
+                            <input type="number" id="daily-goal" min="0.01" step="0.01" class="border rounded px-2 py-1 w-32" />
+                            <button type="submit" class="bg-secondary text-white px-3 py-1 rounded">Save</button>
+                            <span class="text-gray-500 text-sm">(Used for progress stats)</span>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    <!-- Rates Card -->
-    <div class="bg-white rounded-lg shadow p-6 flex-1 max-w-lg">
-        <h2 class="text-lg font-semibold mb-3 text-dark">Rates</h2>
-        <form id="rate-add-form" class="flex items-center gap-2 mb-4">
-            <input type="text" id="new-rate-name" placeholder="Name" required class="border px-2 py-1 rounded w-1/3"/>
-            <input type="number" id="new-rate-value" placeholder="Rate/min" step="0.01" required class="border px-2 py-1 rounded w-1/3"/>
-            <button type="submit" class="bg-primary text-white px-3 py-1 rounded">Add</button>
-        </form>
-        <div id="rates-list"></div>
-    </div>
-</div>
+        <div id="notification-area" class="fixed top-6 right-6 z-50"></div>
+
         <!-- Call Tracker App -->
         <div id="call-tracker-app" class="mb-8">
             <h2 class="text-xl font-semibold mb-4 text-dark flex items-center gap-2">
                 <span>Call Log for</span>
                 <input type="date" id="date-picker" class="border rounded px-2 py-1"/>
             </h2>
-            <div class="space-x-2 mb-4 flex items-center">
-                <button id="add-call-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition">Add Call</button>
-                <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Start Call</button>
-                <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">End Call</button>
-            </div>            
-            <div id="live-call-info" class="mb-4" style="display:none;">
-                <div class="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-5 p-4 bg-green-100 rounded-xl shadow">
-                    <div class="flex items-center gap-2">
-                        <i class="fas fa-phone-volume text-green-600 text-xl"></i>
-                        <span class="font-semibold text-green-700">Ongoing call:</span>
-                    </div>
-                    <div>
-                        <span id="live-call-timer" class="font-mono text-xl text-green-900">00:00:00</span>
-                        <span class="ml-2 text-sm text-gray-600">elapsed</span>
-                    </div>
-                    <div>
-                        <span id="live-call-earnings" class="font-mono text-xl text-green-900">$0.00</span>
-                        <span class="ml-2 text-sm text-gray-600">earned</span>
-                    </div>
-                </div>
-            </div>
             <div class="scrollable-table rounded-xl bg-white shadow">
                 <table class="call-log-table min-w-full">
                     <thead>
@@ -140,112 +157,93 @@
                 <br>
                 <label>Rate:
                     <select id="call-rate" class="border rounded px-2 py-1"></select>
-                    <button id="manage-rates-btn" type="button" class="ml-2 text-xs px-2 py-1 bg-gray-200 rounded">Manage Rates</button>
                 </label>
                 <br><br>
                 <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition">Save</button>
                 <button type="button" id="cancel-call-btn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition ml-2">Cancel</button>
             </form>
         </div>
-        <!-- Modal for Manage Rates -->
-        <div id="rates-modal" style="display:none;position:fixed;top:15%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #333;padding:20px;z-index:1000;min-width:300px;">
-            <h3 class="text-lg font-semibold mb-3">Manage Rates</h3>
-            <div id="rates-list" class="mb-4"></div>
-            <form id="rate-add-form" class="flex gap-2">
-                <input type="text" id="new-rate-name" placeholder="Name" required class="border px-2 py-1 rounded w-1/2"/>
-                <input type="number" id="new-rate-value" placeholder="Rate/min" step="0.01" required class="border px-2 py-1 rounded w-1/2"/>
-                <button type="submit" class="bg-primary text-white px-3 py-1 rounded">Add</button>
-            </form>
-            <button id="close-rates-btn" class="mt-4 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition w-full">Close</button>
-        </div>
 
+        <!-- Dashboard and Stats -->
         <!-- Main Stage: Today's Summary -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-  <div class="col-span-3 bg-white rounded-lg shadow p-6 flex flex-col items-center">
-    <h2 class="text-2xl font-semibold mb-2 text-dark">Today's Earnings</h2>
-    <div class="flex gap-10 items-center mb-4">
-      <div class="text-center">
-        <div class="text-4xl font-bold text-blue-900 mb-2" id="summary-earnings">$0.00</div>
-        <div class="text-gray-500">Earnings</div>
-      </div>
-      <div class="text-center">
-        <div class="text-4xl font-bold text-green-900 mb-2" id="summary-worked-time">0:00</div>
-        <div class="text-gray-500">Worked Time</div>
-      </div>
-      <div class="text-center">
-        <div class="text-4xl font-bold text-purple-900 mb-2" id="summary-goal-progress">0%</div>
-        <div class="text-gray-500">Goal Progress</div>
-      </div>
-      <div class="text-center">
-        <div class="text-4xl font-bold text-yellow-900 mb-2" id="summary-remaining">$1.00</div>
-        <div class="text-gray-500">Remaining</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Monthly & Total Summary (Below Main Stage) -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-  <!-- 1st Half Summary -->
-  <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-    <h2 class="text-lg font-semibold mb-2 text-dark">1st Half</h2>
-    <div class="text-4xl font-bold text-blue-900 mb-2" id="firsthalf-earnings">$0.00</div>
-    <div class="text-md text-gray-500">Worked: <span id="firsthalf-worked">0:00</span></div>
-  </div>
-  <!-- 2nd Half Summary -->
-  <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-    <h2 class="text-lg font-semibold mb-2 text-dark">2nd Half</h2>
-    <div class="text-4xl font-bold text-green-900 mb-2" id="secondhalf-earnings">$0.00</div>
-    <div class="text-md text-gray-500">Worked: <span id="secondhalf-worked">0:00</span></div>
-  </div>
-  <!-- Total Month Summary -->
-  <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-    <h2 class="text-lg font-semibold mb-2 text-dark">Total (Month)</h2>
-    <div class="text-4xl font-bold text-purple-900 mb-2" id="month-total-earnings">$0.00</div>
-    <div class="text-md text-gray-500">Worked: <span id="month-total-worked">0:00</span></div>
-  </div>
-</div>
-
-<!-- Annual Overview -->
-<div class="bg-white rounded-lg shadow mb-8">
-  <div class="px-6 py-4 border-b border-gray-200 flex flex-wrap gap-4 items-center">
-    <h2 class="text-xl font-semibold text-dark">Annual Overview</h2>
-    <label class="ml-4 flex items-center gap-2">
-      <span class="text-gray-600">Year:</span>
-      <select id="annual-year-select" class="border rounded px-2 py-1"></select>
-    </label>
-  </div>
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jan</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feb</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mar</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apr</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">May</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jun</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jul</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aug</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sep</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oct</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nov</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dec</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200" id="annual-overview-body">
-        <!-- Filled by JS -->
-      </tbody>
-    </table>
-  </div>
-</div>
-
-        <!-- Dashboard and Stats (copy from above as in previous answers) -->
-        <!-- ... all summary, monthly/annual/daily/call-statistics widgets as above ... -->
-        <!-- ... (see your previous question for this markup, it stays unchanged and working) ... -->
-
-        <!-- For brevity, copy all dashboard/statistics HTML from previous answer here. -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="col-span-3 bg-white rounded-lg shadow p-6 flex flex-col items-center">
+            <h2 class="text-2xl font-semibold mb-2 text-dark">Today's Earnings</h2>
+            <div class="flex gap-10 items-center mb-4 flex-wrap">
+              <div class="text-center">
+                <div class="text-4xl font-bold text-blue-900 mb-2" id="summary-earnings">$0.00</div>
+                <div class="text-gray-500">Earnings</div>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-green-900 mb-2" id="summary-worked-time">0:00</div>
+                <div class="text-gray-500">Worked Time</div>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-purple-900 mb-2" id="summary-goal-progress">0%</div>
+                <div class="text-gray-500">Goal Progress</div>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl font-bold text-yellow-900 mb-2" id="summary-remaining">$1.00</div>
+                <div class="text-gray-500">Remaining</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Monthly & Total Summary (Below Main Stage) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <!-- 1st Half Summary -->
+          <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+            <h2 class="text-lg font-semibold mb-2 text-dark">1st Half</h2>
+            <div class="text-4xl font-bold text-blue-900 mb-2" id="firsthalf-earnings">$0.00</div>
+            <div class="text-md text-gray-500">Worked: <span id="firsthalf-worked">0:00</span></div>
+          </div>
+          <!-- 2nd Half Summary -->
+          <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+            <h2 class="text-lg font-semibold mb-2 text-dark">2nd Half</h2>
+            <div class="text-4xl font-bold text-green-900 mb-2" id="secondhalf-earnings">$0.00</div>
+            <div class="text-md text-gray-500">Worked: <span id="secondhalf-worked">0:00</span></div>
+          </div>
+          <!-- Total Month Summary -->
+          <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+            <h2 class="text-lg font-semibold mb-2 text-dark">Total (Month)</h2>
+            <div class="text-4xl font-bold text-purple-900 mb-2" id="month-total-earnings">$0.00</div>
+            <div class="text-md text-gray-500">Worked: <span id="month-total-worked">0:00</span></div>
+          </div>
+        </div>
+        <!-- Annual Overview -->
+        <div class="bg-white rounded-lg shadow mb-8">
+          <div class="px-6 py-4 border-b border-gray-200 flex flex-wrap gap-4 items-center">
+            <h2 class="text-xl font-semibold text-dark">Annual Overview</h2>
+            <label class="ml-4 flex items-center gap-2">
+              <span class="text-gray-600">Year:</span>
+              <select id="annual-year-select" class="border rounded px-2 py-1"></select>
+            </label>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jan</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feb</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mar</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Apr</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">May</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jun</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jul</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aug</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sep</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Oct</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nov</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dec</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200" id="annual-overview-body">
+                <!-- Filled by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
     </div>
     <script>
     // --- Data Model and Helper Functions ---
@@ -257,7 +255,9 @@
                 { id: 'fl', name: 'FL', rate: 0.21 },
                 { id: 'ds', name: 'DS', rate: 0.10 },
             ],
-            calls: {}
+            calls: {},
+            goal: 20,
+            currentRate: 'fl',
         };
         localStorage.setItem('workTimeTracker', JSON.stringify(initial));
         return initial;
@@ -287,6 +287,26 @@
     function setRates(rates) {
         const data = getData();
         data.rates = rates;
+        // If rates were removed, ensure the currentRate is valid
+        if (!rates.find(r=>r.id === data.currentRate)) {
+            data.currentRate = rates.length ? rates[0].id : null;
+        }
+        saveData(data);
+    }
+    function getGoal() {
+        return getData().goal || 1;
+    }
+    function setGoal(goal) {
+        const data = getData();
+        data.goal = goal;
+        saveData(data);
+    }
+    function getCurrentRateId() {
+        return getData().currentRate || (getRates()[0]?.id ?? '');
+    }
+    function setCurrentRateId(rateId) {
+        const data = getData();
+        data.currentRate = rateId;
         saveData(data);
     }
     function timeStrToMinutes(t) {
@@ -307,6 +327,17 @@
         let diff = endM - startM;
         if (diff < 0) diff += 24 * 60;
         return diff;
+    }
+
+    // --- Notification ---
+    function showNotification(msg) {
+        const area = document.getElementById('notification-area');
+        const note = document.createElement('div');
+        note.className = "bg-green-600 text-white px-4 py-2 rounded shadow mb-2 fade-in-out flex items-center gap-2";
+        note.innerHTML = `<i class="fas fa-check-circle"></i> <span>${msg}</span>
+                          <button class="ml-2 px-2 py-1 text-white rounded hover:bg-green-800 focus:outline-none" style="background:none;border:none;" onclick="this.parentElement.remove()">×</button>`;
+        area.appendChild(note);
+        setTimeout(() => { note.remove(); }, 2400);
     }
 
     // --- Live Ongoing Call Timer ---
@@ -335,7 +366,7 @@
             timerSpan.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
             let mins = totalSecs / 60;
             let earnings = mins * (rate?.rate || 0);
-            earnSpan.textContent = `$${earnings.toFixed(2)}`;
+            earnSpan.textContent = `$${earnings.toFixed(2)} earned`;
         }
         updateLiveTimer();
         if (liveTimerInterval) clearInterval(liveTimerInterval);
@@ -393,14 +424,13 @@
 
         showLiveCall(ongoingCall, ongoingRate);
         updateAllSummaries();
-        renderDailyTracking();
         renderAnnualOverview();
-        renderCallStatistics();
     }
 
     // --- Modal Logic ---
-    function fillRateOptions() {
-        const rateSel = document.getElementById('call-rate');
+    function fillRateOptions(forCallModal=false) {
+        const rateSel = forCallModal ? document.getElementById('call-rate') : document.getElementById('current-rate');
+        if (!rateSel) return;
         rateSel.innerHTML = '';
         getRates().forEach(r => {
             const opt = document.createElement('option');
@@ -408,15 +438,20 @@
             opt.textContent = `${r.name} ($${r.rate.toFixed(2)}/min)`;
             rateSel.appendChild(opt);
         });
+        // For main selector, set to currently selected
+        if (!forCallModal) {
+            const currentRateId = getCurrentRateId();
+            rateSel.value = currentRateId;
+        }
     }
     function openCallModal(dateKey, call) {
-        fillRateOptions();
+        fillRateOptions(true);
         document.getElementById('call-modal').style.display = '';
         document.getElementById('call-date').value = dateKey || getTodayKey();
         document.getElementById('call-start').value = call?.start || '';
         document.getElementById('call-end').value = call?.end || '';
         document.getElementById('call-minutes').value = call?.minutes || '';
-        document.getElementById('call-rate').value = call?.rateId || getRates()[0].id;
+        document.getElementById('call-rate').value = call?.rateId || getCurrentRateId();
         document.getElementById('call-form').dataset.editing = call ? call.id : '';
     }
     function closeCallModal() {
@@ -472,75 +507,6 @@
         renderCallList(dateKey);
     };
 
-    // --- Rate Manager Modal ---
-    function showRatesModal() {
-        const modal = document.getElementById('rates-modal');
-        const list = document.getElementById('rates-list');
-        const rates = getRates();
-        list.innerHTML = '';
-        rates.forEach((r, idx) => {
-            const div = document.createElement('div');
-            div.className = 'flex items-center gap-2 mb-2';
-            div.innerHTML = `
-                <input type="text" value="${r.name}" data-idx="${idx}" class="border px-2 py-1 rounded w-1/3 rate-name-edit"/>
-                <input type="number" value="${r.rate}" step="0.01" data-idx="${idx}" class="border px-2 py-1 rounded w-1/3 rate-value-edit"/>
-                <button data-idx="${idx}" class="bg-red-200 text-red-800 px-2 py-1 rounded rate-delete-btn">Delete</button>
-            `;
-            list.appendChild(div);
-        });
-        modal.style.display = '';
-        // Edit handlers
-        list.querySelectorAll('.rate-name-edit').forEach(inp => {
-            inp.onchange = function() {
-                const idx = +this.dataset.idx;
-                rates[idx].name = this.value;
-                setRates(rates);
-                fillRateOptions();
-                renderCallList(getTodayKey());
-                showRatesModal();
-            };
-        });
-        list.querySelectorAll('.rate-value-edit').forEach(inp => {
-            inp.onchange = function() {
-                const idx = +this.dataset.idx;
-                rates[idx].rate = parseFloat(this.value);
-                setRates(rates);
-                fillRateOptions();
-                renderCallList(getTodayKey());
-                showRatesModal();
-            };
-        });
-        list.querySelectorAll('.rate-delete-btn').forEach(btn => {
-            btn.onclick = function() {
-                const idx = +this.dataset.idx;
-                if (rates.length <= 1) { alert("At least one rate is required."); return; }
-                rates.splice(idx,1);
-                setRates(rates);
-                fillRateOptions();
-                renderCallList(getTodayKey());
-                showRatesModal();
-            };
-        });
-    }
-    document.getElementById('manage-rates-btn').onclick = showRatesModal;
-    document.getElementById('close-rates-btn').onclick = function() {
-        document.getElementById('rates-modal').style.display = 'none';
-        fillRateOptions();
-    };
-    document.getElementById('rate-add-form').onsubmit = function(e) {
-        e.preventDefault();
-        const name = document.getElementById('new-rate-name').value.trim();
-        const rate = parseFloat(document.getElementById('new-rate-value').value);
-        if (!name || isNaN(rate) || rate <= 0) return;
-        const rates = getRates();
-        rates.push({id: `rate-${Math.random().toString(36).substr(2,9)}`, name, rate});
-        setRates(rates);
-        fillRateOptions();
-        renderCallList(getTodayKey());
-        this.reset();
-        showRatesModal();
-    };
-
     // --- Date Picker + Start/End Call ---
     const datePicker = document.getElementById('date-picker');
     datePicker.value = getTodayKey();
@@ -551,7 +517,7 @@
     document.getElementById('start-call-btn').onclick = function() {
         const dateKey = document.getElementById('date-picker').value || getTodayKey();
         const rates = getRates();
-        const defaultRate = rates.length > 0 ? rates[0].id : null;
+        const defaultRate = getCurrentRateId();
         if (!defaultRate) {
             alert("Please set up at least one rate first!");
             return;
@@ -593,159 +559,242 @@
         alert("No call found to end! Start a call first.");
     };
 
-// --- Summaries and Stats ---
-
-function updateAllSummaries() {
-    // Today's summary
-    const todayKey = getTodayKey();
-    const calls = getCallsForDate(todayKey);
-    let mins = 0, earn = 0;
-    let rates = getRates();
-    calls.forEach(call => {
-        let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
-        let m = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
-        mins += m || 0;
-        earn += (m || 0) * rate.rate;
-    });
-    document.getElementById('summary-worked-time').textContent = minutesToTimeStr(mins);
-    document.getElementById('summary-earnings').textContent = `$${earn.toFixed(2)}`;
-    const dailyGoal = parseFloat(document.getElementById('daily-goal').value) || 1;
-    document.getElementById('summary-goal-progress').textContent = `${Math.round((earn/dailyGoal)*100)}%`;
-    document.getElementById('summary-remaining').textContent = `$${Math.max(0, dailyGoal-earn).toFixed(2)}`;
-
-    // 1st/2nd half summary for current month
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = d.getMonth();
-    let fh_mins=0, fh_earn=0, sh_mins=0, sh_earn=0;
-    for(let day=1; day<=31; ++day) {
-        let dateStr = `${year}-${(month+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
-        let cs = getCallsForDate(dateStr);
-        if (!cs.length) continue;
-        let dayMins = 0, dayEarn = 0;
-        cs.forEach(call => {
-            let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
-            let m = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
-            dayMins += m || 0;
-            dayEarn += (m || 0) * rate.rate;
+    // --- Rates List Management ---
+    function renderRatesList() {
+        const list = document.getElementById('rates-list');
+        const rates = getRates();
+        list.innerHTML = '';
+        rates.forEach(r => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center mb-2 gap-2';
+            row.innerHTML = `
+                <span class="flex-1">${r.name} <span class="text-gray-500 text-xs">($${r.rate.toFixed(2)}/min)</span></span>
+                <button class="text-blue-600 hover:underline text-sm edit-rate-btn" data-id="${r.id}">Edit</button>
+            `;
+            list.appendChild(row);
         });
-        if (day <= 15) {
-            fh_mins += dayMins; fh_earn += dayEarn;
-        } else {
-            sh_mins += dayMins; sh_earn += dayEarn;
-        }
+        // Wire up edit buttons
+        list.querySelectorAll('.edit-rate-btn').forEach(btn => {
+            btn.onclick = function() {
+                showEditRateForm(this.dataset.id);
+            };
+        });
     }
-    // 1st half
-    document.getElementById('firsthalf-worked').textContent = minutesToTimeStr(fh_mins);
-    document.getElementById('firsthalf-earnings').textContent = `$${fh_earn.toFixed(2)}`;
-    document.getElementById('firsthalf-goal').textContent = `${Math.round((fh_earn/(15*(parseFloat(document.getElementById('daily-goal').value)||1)))*100)}%`;
-    document.getElementById('firsthalf-remaining').textContent = `$${Math.max(0,15*(parseFloat(document.getElementById('daily-goal').value)||1)-fh_earn).toFixed(2)}`;
-    // 2nd half
-    document.getElementById('secondhalf-worked').textContent = minutesToTimeStr(sh_mins);
-    document.getElementById('secondhalf-earnings').textContent = `$${sh_earn.toFixed(2)}`;
-    document.getElementById('secondhalf-goal').textContent = `${Math.round((sh_earn/(16*(parseFloat(document.getElementById('daily-goal').value)||1)))*100)}%`;
-    document.getElementById('secondhalf-remaining').textContent = `$${Math.max(0,16*(parseFloat(document.getElementById('daily-goal').value)||1)-sh_earn).toFixed(2)}`;
-}
-
-function renderDailyTracking() {
-    // Fills daily-entries for current month
-    const tbody = document.getElementById('daily-entries');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = d.getMonth();
-    const rates = getRates();
-    for(let day=1; day<=31; ++day) {
-        let dateStr = `${year}-${(month+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
-        let cs = getCallsForDate(dateStr);
-        if (!cs.length) continue;
-        let dayMins = 0, dayEarn = 0;
-        cs.forEach(call => {
-            let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
-            let m = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
-            dayMins += m || 0;
-            dayEarn += (m || 0) * rate.rate;
-        });
-        let row = document.createElement('tr');
-        row.innerHTML = `
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${dateStr}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${cs.length}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${minutesToTimeStr(dayMins)}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dayMins}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${dayEarn.toFixed(2)}</td>
+    function showEditRateForm(rateId) {
+        const rates = getRates();
+        const idx = rates.findIndex(r => r.id === rateId);
+        if (idx === -1) return;
+        const r = rates[idx];
+        const list = document.getElementById('rates-list');
+        const editDiv = document.createElement('div');
+        editDiv.className = 'flex items-center gap-2 mb-2 bg-gray-50 rounded p-2';
+        editDiv.innerHTML = `
+            <input type="text" value="${r.name}" class="border rounded px-2 py-1 w-1/3" id="edit-rate-name"/>
+            <input type="number" step="0.01" min="0.01" value="${r.rate}" class="border rounded px-2 py-1 w-1/3" id="edit-rate-value"/>
+            <button class="bg-primary text-white px-3 py-1 rounded save-edit-rate">Save</button>
+            <button class="bg-red-500 text-white px-3 py-1 rounded delete-rate">Delete</button>
+            <button class="text-gray-500 px-2 py-1 hover:bg-gray-100 rounded cancel-edit-rate">Cancel</button>
         `;
-        tbody.appendChild(row);
+        const oldRow = list.querySelectorAll('.flex.items-center')[idx];
+        oldRow.style.display = 'none';
+        oldRow.parentElement.insertBefore(editDiv, oldRow);
+
+        editDiv.querySelector('.save-edit-rate').onclick = function() {
+            const newName = editDiv.querySelector('#edit-rate-name').value.trim();
+            const newRate = parseFloat(editDiv.querySelector('#edit-rate-value').value);
+            if (!newName || isNaN(newRate) || newRate <= 0) {
+                alert("Enter a valid name and rate");
+                return;
+            }
+            rates[idx].name = newName;
+            rates[idx].rate = newRate;
+            setRates(rates);
+            renderRatesList();
+            fillRateOptions();
+            updateAllSummaries();
+            showNotification('Rate updated!');
+        };
+        editDiv.querySelector('.delete-rate').onclick = function() {
+            if (!confirm("Delete this rate?")) return;
+            rates.splice(idx,1);
+            setRates(rates);
+            renderRatesList();
+            fillRateOptions();
+            updateAllSummaries();
+            showNotification('Rate deleted!');
+        };
+        editDiv.querySelector('.cancel-edit-rate').onclick = function() {
+            renderRatesList();
+        };
     }
-}
+    document.getElementById('show-rate-add').onclick = function() {
+        document.getElementById('rate-add-form').classList.remove('hidden');
+        document.getElementById('show-rate-add').classList.add('hidden');
+        document.getElementById('new-rate-name').focus();
+    };
+    document.getElementById('cancel-rate-add').onclick = function() {
+        document.getElementById('rate-add-form').classList.add('hidden');
+        document.getElementById('show-rate-add').classList.remove('hidden');
+    };
+    document.getElementById('rate-add-form').onsubmit = function(e) {
+        e.preventDefault();
+        const name = document.getElementById('new-rate-name').value.trim();
+        const rate = parseFloat(document.getElementById('new-rate-value').value);
+        if (!name || isNaN(rate) || rate <= 0) return;
+        const rates = getRates();
+        rates.push({id: `rate-${Math.random().toString(36).substr(2,9)}`, name, rate});
+        setRates(rates);
+        renderRatesList();
+        fillRateOptions();
+        updateAllSummaries();
+        showNotification('New rate added!');
+        this.reset();
+        this.classList.add('hidden');
+        document.getElementById('show-rate-add').classList.remove('hidden');
+    };
 
-function renderAnnualOverview() {
-    // fill annual-overview-body
-    const tbody = document.getElementById('annual-overview-body');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    const d = new Date();
-    const year = d.getFullYear();
-    const rates = getRates();
+    // --- Goal Form ---
+    document.getElementById('goal-form').onsubmit = function(e) {
+        e.preventDefault();
+        const val = parseFloat(document.getElementById('daily-goal').value);
+        if (isNaN(val) || val <= 0) {
+            alert("Enter a valid goal amount.");
+            return;
+        }
+        setGoal(val);
+        updateAllSummaries();
+        showNotification('Goal updated!');
+    };
 
-    // Fill two rows: 1-15 and 16-31
-    let half1 = [], half2 = [];
-    for (let m=0; m<12; ++m) {
-        let h1_earn=0, h2_earn=0;
-        for (let day=1; day<=31; ++day) {
-            let dateStr = `${year}-${(m+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
+    // --- Current Rate Selector ---
+    document.getElementById('current-rate').onchange = function() {
+        setCurrentRateId(this.value);
+        fillRateOptions(true); // Also update call modal rates
+        showNotification('Current rate set!');
+    };
+
+    // --- Summaries and Stats ---
+    function updateAllSummaries() {
+        // Determine date for which to show stats (selected in picker)
+        const dateKey = document.getElementById('date-picker').value || getTodayKey();
+        const d = new Date(dateKey);
+        const year = d.getFullYear();
+        const month = d.getMonth();
+        const todayKey = getTodayKey();
+        // Get rates and goal
+        const rates = getRates();
+        const goal = getGoal();
+
+        // Today's summary (if dateKey matches today)
+        let isToday = (dateKey === todayKey);
+
+        // Calls for selected day
+        const calls = getCallsForDate(dateKey);
+        let mins = 0, earn = 0;
+        calls.forEach(call => {
+            let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
+            let m = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
+            mins += m || 0;
+            earn += (m || 0) * rate.rate;
+        });
+        document.getElementById('summary-worked-time').textContent = minutesToTimeStr(mins);
+        document.getElementById('summary-earnings').textContent = `$${earn.toFixed(2)}`;
+        document.getElementById('summary-goal-progress').textContent = `${Math.round((earn/goal)*100)}%`;
+        document.getElementById('summary-remaining').textContent = `$${Math.max(0, goal-earn).toFixed(2)}`;
+
+        // 1st/2nd half/monthly stats (for selected month)
+        let fh_mins=0, fh_earn=0, sh_mins=0, sh_earn=0, month_total_mins=0, month_total_earn=0;
+        for(let day=1; day<=31; ++day) {
+            let dateStr = `${year}-${(month+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
             let cs = getCallsForDate(dateStr);
             if (!cs.length) continue;
-            let dayEarn = 0;
+            let dayMins = 0, dayEarn = 0;
             cs.forEach(call => {
                 let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
                 let m = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
+                dayMins += m || 0;
                 dayEarn += (m || 0) * rate.rate;
             });
-            if (day <= 15) h1_earn += dayEarn;
-            else h2_earn += dayEarn;
+            month_total_mins += dayMins;
+            month_total_earn += dayEarn;
+            if (day <= 15) {
+                fh_mins += dayMins; fh_earn += dayEarn;
+            } else {
+                sh_mins += dayMins; sh_earn += dayEarn;
+            }
         }
-        half1.push(h1_earn);
-        half2.push(h2_earn);
+        document.getElementById('firsthalf-worked').textContent = minutesToTimeStr(fh_mins);
+        document.getElementById('firsthalf-earnings').textContent = `$${fh_earn.toFixed(2)}`;
+        document.getElementById('secondhalf-worked').textContent = minutesToTimeStr(sh_mins);
+        document.getElementById('secondhalf-earnings').textContent = `$${sh_earn.toFixed(2)}`;
+        document.getElementById('month-total-worked').textContent = minutesToTimeStr(month_total_mins);
+        document.getElementById('month-total-earnings').textContent = `$${month_total_earn.toFixed(2)}`;
     }
-    function rowHTML(label, arr) {
-        return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${label}</td>` +
-            arr.map(v=>`<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${v.toFixed(2)}</td>`).join('') + `</tr>`;
-    }
-    tbody.innerHTML = rowHTML('1-15', half1) + rowHTML('16-31', half2) +
-        rowHTML('Total', half1.map((v,i)=>v+half2[i]));
-}
 
-function renderCallStatistics() {
-    // fill total-calls, avg-minutes, avg-earnings, calls-needed
-    let allCalls = [];
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = d.getMonth();
-    const rates = getRates();
-    for (let day=1; day<=31; ++day) {
-        let dateStr = `${year}-${(month+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
-        let cs = getCallsForDate(dateStr);
-        if (!cs.length) continue;
-        allCalls = allCalls.concat(cs);
+    // --- Annual Overview ---
+    function renderAnnualOverview() {
+        // fill year select
+        const sel = document.getElementById('annual-year-select');
+        const thisYear = new Date().getFullYear();
+        if (!sel.dataset.filled) {
+            for (let y = thisYear - 3; y <= thisYear + 1; ++y) {
+                let opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                sel.appendChild(opt);
+            }
+            sel.value = thisYear;
+            sel.dataset.filled = "1";
+        }
+        const year = parseInt(sel.value,10);
+        const rates = getRates();
+
+        // Fill two rows: 1-15 and 16-31, and total
+        let half1 = [], half2 = [], total = [];
+        for (let m=0; m<12; ++m) {
+            let h1_earn=0, h2_earn=0;
+            for (let day=1; day<=31; ++day) {
+                let dateStr = `${year}-${(m+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
+                let cs = getCallsForDate(dateStr);
+                if (!cs.length) continue;
+                let dayEarn = 0;
+                cs.forEach(call => {
+                    let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
+                    let mm = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
+                    dayEarn += (mm || 0) * rate.rate;
+                });
+                if (day <= 15) h1_earn += dayEarn;
+                else h2_earn += dayEarn;
+            }
+            half1.push(h1_earn);
+            half2.push(h2_earn);
+            total.push(h1_earn + h2_earn);
+        }
+        function rowHTML(label, arr) {
+            return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${label}</td>` +
+                arr.map(v=>`<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${v.toFixed(2)}</td>`).join('') + `</tr>`;
+        }
+        document.getElementById('annual-overview-body').innerHTML =
+            rowHTML('1-15', half1) + rowHTML('16-31', half2) + rowHTML('Total', total);
     }
-    let totalCalls = allCalls.length;
-    let totalMinutes = 0;
-    let totalEarnings = 0;
-    allCalls.forEach(call => {
-        let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
-        let m = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
-        totalMinutes += m || 0;
-        totalEarnings += (m || 0) * rate.rate;
-    });
-    document.getElementById('total-calls').value = totalCalls;
-    document.getElementById('avg-minutes').value = totalCalls ? (totalMinutes/totalCalls).toFixed(1) : '0';
-    document.getElementById('avg-earnings').value = totalCalls ? `$${(totalEarnings/totalCalls).toFixed(2)}` : '$0.00';
-    const dailyGoal = parseFloat(document.getElementById('daily-goal').value) || 1;
-    document.getElementById('calls-needed').value = totalCalls ? Math.ceil((dailyGoal-totalEarnings)/((totalEarnings/totalCalls)||1)) : '0';
+    document.getElementById('annual-year-select').onchange = function() {
+        renderAnnualOverview();
+    };
+
+    // --- Initialize ---
+    function initialize() {
+        // Fill rates/goal UI
+        renderRatesList();
+        fillRateOptions();
+        document.getElementById('daily-goal').value = getGoal();
+        document.getElementById('current-rate').value = getCurrentRateId();
+
+        // Initial call list
+        renderCallList(getTodayKey());
+        updateAllSummaries();
+        renderAnnualOverview();
     }
-    // Initial render
-    renderCallList(getTodayKey());
+    initialize();
     </script>
 </body>
 </html>
