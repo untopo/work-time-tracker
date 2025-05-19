@@ -21,70 +21,20 @@
         }
     </script>
     <style>
-        .amount-input {
-            width: 100px;
-        }
-        .scrollable-table {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .summary-card {
-            transition: all 0.3s ease;
-        }
-        .summary-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        .call-log-table th, .call-log-table td {
-            padding: 0.75rem 1rem;
-            text-align: center;
-            font-size: 1rem;
-        }
-        .call-log-table th {
-            background: #f1f5f9;
-            color: #334155;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-        }
-        .call-log-table tr {
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .call-log-table tr:last-child {
-            border-bottom: none;
-        }
-        .call-log-table td {
-            background: #fff;
-        }
-        .call-log-table tfoot td {
-            background: #f3f4f6;
-            font-weight: 700;
-        }
-        .tag {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 6px;
-            background: #f1f5f9;
-            color: #2563eb;
-            font-size: 0.9em;
-            margin: 0 2px;
-        }
-        .action-btn {
-            padding: 3px 10px;
-            border-radius: 6px;
-            font-size: 0.95em;
-            margin: 0 2px;
-            cursor: pointer;
-        }
-        .action-btn.edit {
-            background: #fde68a;
-            color: #b45309;
-            border: none;
-        }
-        .action-btn.delete {
-            background: #fecaca;
-            color: #b91c1c;
-            border: none;
-        }
+        .amount-input { width: 100px; }
+        .scrollable-table { max-height: 400px; overflow-y: auto; }
+        .summary-card { transition: all 0.3s ease; }
+        .summary-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);}
+        .call-log-table th, .call-log-table td { padding: 0.75rem 1rem; text-align: center; font-size: 1rem;}
+        .call-log-table th { background: #f1f5f9; color: #334155; font-weight: 600; letter-spacing: 0.05em; }
+        .call-log-table tr { border-bottom: 1px solid #e5e7eb; }
+        .call-log-table tr:last-child { border-bottom: none; }
+        .call-log-table td { background: #fff; }
+        .call-log-table tfoot td { background: #f3f4f6; font-weight: 700; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 6px; background: #f1f5f9; color: #2563eb; font-size: 0.9em; margin: 0 2px;}
+        .action-btn { padding: 3px 10px; border-radius: 6px; font-size: 0.95em; margin: 0 2px; cursor: pointer;}
+        .action-btn.edit { background: #fde68a; color: #b45309; border: none; }
+        .action-btn.delete { background: #fecaca; color: #b91c1c; border: none; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -169,23 +119,33 @@
                 <br>
                 <label>Rate:
                     <select id="call-rate" class="border rounded px-2 py-1"></select>
+                    <button id="manage-rates-btn" type="button" class="ml-2 text-xs px-2 py-1 bg-gray-200 rounded">Manage Rates</button>
                 </label>
                 <br><br>
                 <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition">Save</button>
                 <button type="button" id="cancel-call-btn" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition ml-2">Cancel</button>
             </form>
         </div>
+        <!-- Modal for Manage Rates -->
+        <div id="rates-modal" style="display:none;position:fixed;top:15%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #333;padding:20px;z-index:1000;min-width:300px;">
+            <h3 class="text-lg font-semibold mb-3">Manage Rates</h3>
+            <div id="rates-list" class="mb-4"></div>
+            <form id="rate-add-form" class="flex gap-2">
+                <input type="text" id="new-rate-name" placeholder="Name" required class="border px-2 py-1 rounded w-1/2"/>
+                <input type="number" id="new-rate-value" placeholder="Rate/min" step="0.01" required class="border px-2 py-1 rounded w-1/2"/>
+                <button type="submit" class="bg-primary text-white px-3 py-1 rounded">Add</button>
+            </form>
+            <button id="close-rates-btn" class="mt-4 bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition w-full">Close</button>
+        </div>
 
-        <!-- Dashboard and Stats -->
+        <!-- Dashboard and Stats (copy from above as in previous answers) -->
         <!-- ... all summary, monthly/annual/daily/call-statistics widgets as above ... -->
-        <!-- ... (for brevity, these are already included and unchanged from your previous code) ... -->
+        <!-- ... (see your previous question for this markup, it stays unchanged and working) ... -->
 
-        <!-- (Copy in all dashboard/statistics HTML from previous answer here) -->
-        <!-- ... see previous message for the complete markup ... -->
-
+        <!-- For brevity, copy all dashboard/statistics HTML from previous answer here. -->
     </div>
     <script>
-    // Data Model and Helper Functions
+    // --- Data Model and Helper Functions ---
     function getData() {
         const data = localStorage.getItem('workTimeTracker');
         if (data) return JSON.parse(data);
@@ -221,6 +181,11 @@
     function getRates() {
         return getData().rates;
     }
+    function setRates(rates) {
+        const data = getData();
+        data.rates = rates;
+        saveData(data);
+    }
     function timeStrToMinutes(t) {
         if (!t) return null;
         const [h, m] = t.split(':').map(Number);
@@ -243,8 +208,7 @@
 
     // --- Live Ongoing Call Timer ---
     let liveTimerInterval = null;
-    let liveCallStartTime = null; // JS Date object
-    let liveCallRate = 0;
+    let liveCallStartTime = null;
     function showLiveCall(call, rate) {
         const liveInfo = document.getElementById('live-call-info');
         const timerSpan = document.getElementById('live-call-timer');
@@ -255,10 +219,7 @@
             liveCallStartTime = null;
             return;
         }
-        // Always display as 00:00:00 and $0.00 when just started
-        if (!liveCallStartTime) {
-            liveCallStartTime = new Date();
-        }
+        if (!liveCallStartTime) { liveCallStartTime = new Date(); }
         liveInfo.style.display = '';
         function updateLiveTimer() {
             if (!liveCallStartTime) return;
@@ -408,6 +369,75 @@
         renderCallList(dateKey);
     };
 
+    // --- Rate Manager Modal ---
+    function showRatesModal() {
+        const modal = document.getElementById('rates-modal');
+        const list = document.getElementById('rates-list');
+        const rates = getRates();
+        list.innerHTML = '';
+        rates.forEach((r, idx) => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 mb-2';
+            div.innerHTML = `
+                <input type="text" value="${r.name}" data-idx="${idx}" class="border px-2 py-1 rounded w-1/3 rate-name-edit"/>
+                <input type="number" value="${r.rate}" step="0.01" data-idx="${idx}" class="border px-2 py-1 rounded w-1/3 rate-value-edit"/>
+                <button data-idx="${idx}" class="bg-red-200 text-red-800 px-2 py-1 rounded rate-delete-btn">Delete</button>
+            `;
+            list.appendChild(div);
+        });
+        modal.style.display = '';
+        // Edit handlers
+        list.querySelectorAll('.rate-name-edit').forEach(inp => {
+            inp.onchange = function() {
+                const idx = +this.dataset.idx;
+                rates[idx].name = this.value;
+                setRates(rates);
+                fillRateOptions();
+                renderCallList(getTodayKey());
+                showRatesModal();
+            };
+        });
+        list.querySelectorAll('.rate-value-edit').forEach(inp => {
+            inp.onchange = function() {
+                const idx = +this.dataset.idx;
+                rates[idx].rate = parseFloat(this.value);
+                setRates(rates);
+                fillRateOptions();
+                renderCallList(getTodayKey());
+                showRatesModal();
+            };
+        });
+        list.querySelectorAll('.rate-delete-btn').forEach(btn => {
+            btn.onclick = function() {
+                const idx = +this.dataset.idx;
+                if (rates.length <= 1) { alert("At least one rate is required."); return; }
+                rates.splice(idx,1);
+                setRates(rates);
+                fillRateOptions();
+                renderCallList(getTodayKey());
+                showRatesModal();
+            };
+        });
+    }
+    document.getElementById('manage-rates-btn').onclick = showRatesModal;
+    document.getElementById('close-rates-btn').onclick = function() {
+        document.getElementById('rates-modal').style.display = 'none';
+        fillRateOptions();
+    };
+    document.getElementById('rate-add-form').onsubmit = function(e) {
+        e.preventDefault();
+        const name = document.getElementById('new-rate-name').value.trim();
+        const rate = parseFloat(document.getElementById('new-rate-value').value);
+        if (!name || isNaN(rate) || rate <= 0) return;
+        const rates = getRates();
+        rates.push({id: `rate-${Math.random().toString(36).substr(2,9)}`, name, rate});
+        setRates(rates);
+        fillRateOptions();
+        renderCallList(getTodayKey());
+        this.reset();
+        showRatesModal();
+    };
+
     // --- Date Picker + Start/End Call ---
     const datePicker = document.getElementById('date-picker');
     datePicker.value = getTodayKey();
@@ -438,7 +468,6 @@
             minutes: null,
             rateId: defaultRate
         });
-        
         setCallsForDate(dateKey, calls);
         renderCallList(dateKey);
     };
@@ -612,9 +641,6 @@ function renderCallStatistics() {
     const dailyGoal = parseFloat(document.getElementById('daily-goal').value) || 1;
     document.getElementById('calls-needed').value = totalCalls ? Math.ceil((dailyGoal-totalEarnings)/((totalEarnings/totalCalls)||1)) : '0';
     }
-        
-
-
     // Initial render
     renderCallList(getTodayKey());
     </script>
