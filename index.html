@@ -17,6 +17,17 @@
             100% { opacity: 0; transform: translateY(-10px);}
         }
 
+        @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+    background-size: 200% auto;
+    animation: gradient 4s linear infinite;
+}
+
         /* Dark Mode Toggle & Date Picker Styles */
 #dark-toggle {
     transform: scale(1);
