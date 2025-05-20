@@ -47,18 +47,51 @@
     transform: rotate(360deg);
 }
 
-        input[type="date"] {
-    color-scheme: light dark;
-    background-color: transparent !important;
+     /* Date picker styles */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+    background-color: white !important;
+    border: 1px solid #e2e8f0;
+    color: #1a202c;
+    border-radius: 0.375rem;
 }
 
-html.dark input[type="date"] {
-    color: #f1f5f9 !important;
-    border-color: #374151 !important;
-    color-scheme: dark;
-    background-color: transparent !important;
+html.dark input[type="date"],
+html.dark input[type="time"],
+html.dark input[type="datetime-local"] {
+    background-color: #1e293b !important;
+    border-color: #475569;
+    color: #f1f5f9;
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    background-color: transparent;
+    cursor: pointer;
+}
+
+html.dark input[type="date"]::-webkit-calendar-picker-indicator,
+html.dark input[type="time"]::-webkit-calendar-picker-indicator,
+html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+
+/* Focus states */
+input[type="date"]:focus,
+input[type="time"]:focus,
+input[type="datetime-local"]:focus {
+    outline: none;
+    border-color: #3b82f6;
+    ring: 2px solid rgba(59, 130, 246, 0.5);
+}
+
+html.dark input[type="date"]:focus,
+html.dark input[type="time"]:focus,
+html.dark input[type="datetime-local"]:focus {
+    border-color: #60a5fa;
+}
 input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(0.8) brightness(1.2) saturate(0.8);
 }
@@ -416,10 +449,9 @@ html.dark input[type="time"]:focus {
         <div class="flex justify-between items-center mb-4">
             <div></div>
             <!-- Replace the dark mode toggle button -->
-<button id="dark-toggle" aria-label="Toggle dark mode"
-    class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
-    <i class="fas fa-moon text-gray-600 block dark:hidden transition-transform duration-300"></i>
-    <i class="fas fa-sun hidden dark:block text-yellow-300 transition-transform duration-300"></i>
+<button id="add-call" class="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition-colors">
+    <i class="fas fa-plus"></i>
+    <span>Add</span>
 </button>
         </div>
                 <header class="mb-8 text-center">
@@ -541,8 +573,9 @@ html.dark input[type="time"]:focus {
                 </div>
                 <label class="flex items-center gap-2 ml-3 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1 shadow-inner border dark:border-gray-700">
     <i class="fas fa-calendar-alt text-primary dark:text-blue-200 text-lg"></i>
-    <input type="date" id="date-picker"
-        class="border-none outline-none rounded-full px-2 py-1 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary w-36"/>
+    <input type="date" 
+       id="date-picker" 
+       class="w-36 px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none"/>
 </label>
             </div>
             <div class="scrollable-table rounded-xl bg-white dark:bg-gray-800 shadow overflow-hidden">
