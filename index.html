@@ -34,18 +34,29 @@
         }
 
         input[type="date"] {
-            color-scheme: light dark;
-            background-color: transparent !important;
-        }
+    color-scheme: light dark;
+    background-color: transparent !important;
+}
 
-        html.dark input[type="date"] {
-            color: #f1f5f9 !important;
-            border-color: #374151 !important;
-        }
+html.dark input[type="date"] {
+    color: #f1f5f9 !important;
+    border-color: #374151 !important;
+    color-scheme: dark;
+    background-color: transparent !important;
+}
 
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.8) brightness(1.2) saturate(0.8);
-        }
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8) brightness(1.2) saturate(0.8);
+}
+
+html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(0.8) saturate(0.8);
+}
+
+html.dark input[type="date"]:focus {
+    outline: none;
+    ring: 2px solid rgba(59, 130, 246, 0.5);
+}
 
         /* Enhanced Dark Mode Styles */
         html.dark {
