@@ -335,7 +335,232 @@
             <p class="text-gray-600 dark:text-gray-300">Track your work hours and earnings</p>
         </header>
 
-        <!-- [Keep all existing content from "Controls and Settings Section" through "Annual Overview" exactly as it was] -->
+                <!-- Controls and Settings Section -->
+        <div class="flex flex-row gap-8 mb-8">
+            <!-- Call Box -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center min-w-[275px] max-w-xs w-full">
+                <div class="flex flex-col items-center mb-2">
+                    <div class="bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                        <i class="fas fa-phone-volume text-3xl text-primary dark:text-blue-300"></i>
+                    </div>
+                    <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <button id="add-call-btn" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 dark:hover:bg-blue-800 transition w-full flex items-center justify-center gap-2">
+                        <i class="fas fa-plus"></i> Add Call
+                    </button>
+                    <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:hover:bg-green-800 transition w-full flex items-center justify-center gap-2">
+                        <i class="fas fa-play"></i> Start Call
+                    </button>
+                    <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:hover:bg-red-800 transition w-full flex items-center justify-center gap-2">
+                        <i class="fas fa-stop"></i> End Call
+                    </button>
+                </div>
+                <div id="live-call-info" class="mt-4 w-full" style="display:none;">
+                    <div class="flex flex-col items-center bg-green-50 dark:bg-green-900 rounded-lg p-3 shadow-inner">
+                        <span class="text-green-700 dark:text-green-300 font-semibold text-sm mb-1">Ongoing Call</span>
+                        <span id="live-call-timer" class="font-mono text-xl text-green-900 dark:text-green-200 mb-1">00:00:00</span>
+                        <span id="live-call-earnings" class="font-mono text-lg text-green-800 dark:text-green-100">$0.00 earned</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rates & Goal Section -->
+            <div class="flex-1 flex flex-col justify-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 max-w-md mx-auto flex flex-col gap-4">
+                    <!-- Current Rate Selector -->
+                    <div>
+                        <label for="current-rate" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Current Rate</label>
+                        <select id="current-rate" class="border border-primary dark:border-blue-600 px-2 py-1 rounded-full w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 mb-3 focus:ring-2 focus:ring-primary">
+                        </select>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <!-- Rates List -->
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <h2 class="text-md font-semibold text-dark dark:text-gray-200">Rates</h2>
+                                <button id="show-rate-add" class="text-primary dark:text-blue-400 text-xs font-medium bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800">+ Add Rate</button>
+                            </div>
+                            <form id="rate-add-form" class="rate-edit-form hidden">
+                                <div class="flex flex-col gap-2">
+                                    <input type="text" id="new-rate-name" placeholder="Rate Name" required class="border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600"/>
+                                    <div class="flex gap-2">
+                                        <input type="number" id="new-rate-value" placeholder="Rate/min" step="0.01" min="0.01" required class="border rounded px-2 py-1 flex-1 dark:bg-gray-700 dark:border-gray-600"/>
+                                        <button type="submit" class="bg-primary text-white px-3 py-1 rounded">Add</button>
+                                        <button type="button" id="cancel-rate-add" class="text-gray-500 dark:text-gray-400 px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600">Cancel</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div id="rates-list" class="space-y-2"></div>
+                        </div>
+                        <!-- Daily Goal -->
+                        <div class="flex-1">
+                            <h2 class="text-md font-semibold text-dark dark:text-gray-200 mb-1">Daily Goal</h2>
+                            <form id="goal-form" class="flex items-center gap-2">
+                                <input type="number" id="daily-goal" min="0.01" step="0.01"
+                                    class="border border-secondary dark:border-green-600 rounded-full px-3 py-1 w-28 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"/>
+                                <button type="submit" class="bg-secondary text-white px-3 py-1 rounded shadow hover:bg-green-600">Save</button>
+                            </form>
+                            <span class="block mt-1 text-xs text-gray-500 dark:text-gray-400">(Used for progress stats)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Area -->
+        <div id="notification-area" class="fixed top-6 right-6 z-50"></div>
+
+        <!-- Call Log Section -->
+        <div class="mb-8">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-full px-5 py-2 shadow">
+                    <i class="fas fa-list-alt text-primary dark:text-blue-200 text-2xl"></i>
+                    <span class="text-xl font-bold text-dark dark:text-gray-100 tracking-tight">Call Log</span>
+                </div>
+                <label class="flex items-center gap-2 ml-3 bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1 shadow-inner">
+                    <i class="fas fa-calendar-alt text-primary dark:text-blue-200 text-lg"></i>
+                    <input type="date" id="date-picker"
+                        class="border-none outline-none rounded-full px-2 py-1 bg-transparent text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary w-36"/>
+                </label>
+            </div>
+            <div class="scrollable-table rounded-xl bg-white dark:bg-gray-800 shadow overflow-hidden">
+                <table class="call-log-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="p-4 text-left text-sm font-semibold">#</th>
+                            <th class="p-4 text-left text-sm font-semibold">Start Time</th>
+                            <th class="p-4 text-left text-sm font-semibold">End Time</th>
+                            <th class="p-4 text-left text-sm font-semibold">Duration</th>
+                            <th class="p-4 text-left text-sm font-semibold">Rate</th>
+                            <th class="p-4 text-left text-sm font-semibold">Earnings</th>
+                            <th class="p-4 text-left text-sm font-semibold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="call-list"></tbody>
+                    <tfoot>
+                        <tr class="bg-gray-50 dark:bg-gray-700">
+                            <td colspan="3" class="p-4 text-right font-semibold">Total</td>
+                            <td id="total-minutes" class="p-4 font-semibold"></td>
+                            <td></td>
+                            <td id="total-earnings" class="p-4 font-semibold"></td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Call Modal -->
+        <div id="call-modal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 z-50" style="display:none;">
+            <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add/Edit Call</h3>
+            <form id="call-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+                    <input type="date" id="call-date" required class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
+                    <input type="time" id="call-start" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
+                    <input type="time" id="call-end" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">OR Minutes</label>
+                    <input type="number" id="call-minutes" min="1" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
+                    <select id="call-rate" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"></select>
+                </div>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition">Save</button>
+                    <button type="button" id="cancel-call-btn" class="bg-gray-300 dark:bg-gray-600 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Dashboard and Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Today's Summary Card -->
+            <div class="col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col items-center">
+                <h2 class="text-2xl font-semibold mb-4 text-dark dark:text-gray-100">Today's Summary</h2>
+                <div class="flex gap-10 items-center mb-4 flex-wrap justify-center">
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2" id="summary-earnings">$0.00</div>
+                        <div class="text-gray-500 dark:text-gray-400">Earnings</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-green-600 dark:text-green-400 mb-2" id="summary-worked-time">0:00</div>
+                        <div class="text-gray-500 dark:text-gray-400">Worked Time</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2" id="summary-goal-progress">0%</div>
+                        <div class="text-gray-500 dark:text-gray-400">Goal Progress</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold text-yellow-600 dark:text-yellow-400 mb-2" id="summary-remaining">$1.00</div>
+                        <div class="text-gray-500 dark:text-gray-400">Remaining</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Period Summaries -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col items-center">
+                <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-100">1st Half</h2>
+                <div class="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2" id="firsthalf-earnings">$0.00</div>
+                <div class="text-md text-gray-500 dark:text-gray-400">Worked: <span id="firsthalf-worked">0:00</span></div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col items-center">
+                <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-100">2nd Half</h2>
+                <div class="text-4xl font-bold text-green-600 dark:text-green-400 mb-2" id="secondhalf-earnings">$0.00</div>
+                <div class="text-md text-gray-500 dark:text-gray-400">Worked: <span id="secondhalf-worked">0:00</span></div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col items-center">
+                <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-100">Total (Month)</h2>
+                <div class="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2" id="month-total-earnings">$0.00</div>
+                <div class="text-md text-gray-500 dark:text-gray-400">Worked: <span id="month-total-worked">0:00</span></div>
+            </div>
+        </div>
+
+        <!-- Annual Overview -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap gap-4 items-center">
+                <h2 class="text-xl font-semibold text-dark dark:text-gray-100">Annual Overview</h2>
+                <label class="ml-4 flex items-center gap-2">
+                    <span class="text-gray-600 dark:text-gray-400">Year:</span>
+                    <select id="annual-year-select" class="border rounded px-2 py-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"></select>
+                </label>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Period</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Feb</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mar</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Apr</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">May</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jun</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jul</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aug</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sep</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Oct</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nov</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dec</th>
+                        </tr>
+                    </thead>
+                    <tbody id="annual-overview-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     </div>
 
