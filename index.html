@@ -410,34 +410,39 @@ html.dark ::-webkit-calendar-picker-indicator {
     filter: invert(1);
 }
 
-        /* Dark mode styles for date/time inputs */
+       /* Date picker styles */
 input[type="date"],
 input[type="time"] {
-    color-scheme: light dark;
-    background-color: transparent !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0;
+    color: #1a202c;
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.75rem;
 }
 
 html.dark input[type="date"],
 html.dark input[type="time"] {
-    color: #f1f5f9 !important;
-    border-color: #374151 !important;
-    color-scheme: dark;
-    background-color: transparent !important;
+    background-color: #1e293b !important;
+    border-color: #475569;
+    color: #f1f5f9;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.8) brightness(1.2) saturate(0.8);
+    background-color: transparent;
+    cursor: pointer;
+    padding: 0.25rem;
 }
 
 html.dark input[type="date"]::-webkit-calendar-picker-indicator,
 html.dark input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) brightness(0.8) saturate(0.8);
+    filter: invert(1);
 }
 
-html.dark input[type="date"]:focus,
-html.dark input[type="time"]:focus {
+input[type="date"]:focus,
+input[type="time"]:focus {
     outline: none;
+    border-color: #3b82f6;
     ring: 2px solid rgba(59, 130, 246, 0.5);
 }
         
