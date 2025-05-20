@@ -18,19 +18,29 @@
         }
 
         /* Dark Mode Toggle Fixes */
-        #dark-toggle {
-            position: relative;
-            width: 80px;
-        }
+#dark-toggle {
+    position: relative;
+    width: 80px;
+    overflow: hidden; /* Add this */
+}
 
-        #dark-ball {
-            transform: translateX(0);
-            transition: transform 0.2s ease-in-out;
-        }
+#dark-ball {
+    transform: translateX(0);
+    transition: transform 0.2s ease-in-out;
+    width: 16px; /* Add this */
+    right: auto; /* Add this */
+}
 
-        html.dark #dark-ball {
-            transform: translateX(40px);
-        }
+.w-7 { /* Add this - ensures proper width of the track */
+    width: 1.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+html.dark #dark-ball {
+    transform: translateX(40px);
+    max-width: calc(100% - 4px); /* Add this */
+}
 
         /* Enhanced Dark Mode Styles */
         html.dark {
