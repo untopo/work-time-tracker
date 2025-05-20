@@ -333,13 +333,9 @@ html.dark input[type="date"]:focus {
             <div></div>
             <!-- Replace the dark mode toggle button -->
 <button id="dark-toggle" aria-label="Toggle dark mode"
-    class="flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg px-4 py-2 transition-all duration-200 focus:outline-none border dark:border-gray-700">
-    <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
-    <i class="fas fa-moon hidden dark:block text-blue-200"></i>
-    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">
-        <span class="dark:hidden">Light Mode</span>
-        <span class="hidden dark:inline">Dark Mode</span>
-    </span>
+    class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
+    <i class="fas fa-moon text-gray-600 dark:hidden transition-transform duration-300"></i>
+    <i class="fas fa-sun hidden dark:block text-yellow-300 transition-transform duration-300"></i>
 </button>
         </div>
                 <header class="mb-8">
