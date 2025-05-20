@@ -254,11 +254,31 @@
             background-color: #1d4ed8;
         }
 
-        /* Make call log edit buttons always visible */
+               /* Make call log edit buttons always visible and properly styled in both modes */
         .call-log-table .edit-call-btn {
             display: inline-flex !important;
             opacity: 1 !important;
             visibility: visible !important;
+            background-color: #3b82f6 !important; /* Blue background */
+            color: white !important;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            align-items: center;
+            gap: 0.25rem;
+            transition: background-color 0.2s;
+        }
+
+        .call-log-table .edit-call-btn:hover {
+            background-color: #2563eb !important;
+        }
+
+        html.dark .call-log-table .edit-call-btn {
+            background-color: #3b82f6 !important;
+        }
+
+        html.dark .call-log-table .edit-call-btn:hover {
+            background-color: #2563eb !important;
         }
 
         /* Make goal save button always visible */
