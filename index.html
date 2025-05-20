@@ -18,20 +18,23 @@
         }
 
         /* Dark Mode Toggle & Date Picker Styles */
-        #dark-toggle {
-            position: relative;
-            min-width: 85px;
-            padding: 8px 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
+#dark-toggle {
+    transform: scale(1);
+    transition: all 0.3s ease;
+}
 
-        #dark-toggle:hover {
-            transform: scale(1.05);
-        }
+#dark-toggle:hover {
+    transform: scale(1.1);
+}
+
+#dark-toggle i {
+    transform: rotate(0deg);
+    transition: transform 0.3s ease;
+}
+
+#dark-toggle:active i {
+    transform: rotate(360deg);
+}
 
         input[type="date"] {
     color-scheme: light dark;
