@@ -358,6 +358,25 @@ html.dark .rate-edit-form {
         html.dark #show-rate-add:hover {
             background-color: #1e40af !important;
         }
+
+/* Dark mode styles for date picker */
+html.dark input[type="datetime-local"] {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #e2e8f0;
+}
+
+html.dark input[type="datetime-local"]:focus {
+    border-color: #3b82f6;
+    outline: none;
+    ring-color: #3b82f6;
+}
+
+/* This ensures the calendar popup is also dark */
+html.dark ::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+        
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
