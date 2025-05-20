@@ -316,6 +316,62 @@
         html.dark #goal-form button[type="submit"]:hover {
             background-color: #16a34a;
         }
+
+        /* Make modal save button and add rate button always visible */
+        #call-form button[type="submit"],
+        #show-rate-add {
+            display: inline-flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        /* Style for Add Rate button */
+        #show-rate-add {
+            background-color: #dbeafe !important;
+            color: #2563eb !important;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        #show-rate-add:hover {
+            background-color: #bfdbfe !important;
+        }
+
+        /* Dark mode styles for Add Rate button */
+        html.dark #show-rate-add {
+            background-color: #1e3a8a !important;
+            color: #60a5fa !important;
+        }
+
+        html.dark #show-rate-add:hover {
+            background-color: #1e40af !important;
+        }
+
+        /* Call modal save button styles */
+        #call-form button[type="submit"] {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        #call-form button[type="submit"]:hover {
+            background-color: #2563eb !important;
+        }
+
+        html.dark #call-form button[type="submit"] {
+            background-color: #3b82f6 !important;
+        }
+
+        html.dark #call-form button[type="submit"]:hover {
+            background-color: #2563eb !important;
+        }
+        
     </style>
     </style>
 </head>
