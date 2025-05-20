@@ -254,31 +254,44 @@
             background-color: #1d4ed8;
         }
 
-               /* Make call log edit buttons always visible and properly styled in both modes */
-        .call-log-table .edit-call-btn {
+                /* Make all edit buttons always visible */
+        .edit-call-btn,
+        .edit-rate-btn {
             display: inline-flex !important;
-            opacity: 1 !important;
-            visibility: visible !important;
-            background-color: #3b82f6 !important; /* Blue background */
-            color: white !important;
-            padding: 0.375rem 0.75rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
             align-items: center;
+            padding: 0.375rem 0.75rem !important;
+            border-radius: 0.375rem;
+            background-color: #3b82f6 !important;
+            color: white !important;
+            font-size: 0.875rem;
+            font-weight: 500;
             gap: 0.25rem;
             transition: background-color 0.2s;
+            opacity: 1 !important;
+            visibility: visible !important;
+            border: none;
+            cursor: pointer;
         }
 
-        .call-log-table .edit-call-btn:hover {
+        .edit-call-btn:hover,
+        .edit-rate-btn:hover {
             background-color: #2563eb !important;
         }
 
-        html.dark .call-log-table .edit-call-btn {
+        html.dark .edit-call-btn,
+        html.dark .edit-rate-btn {
             background-color: #3b82f6 !important;
         }
 
-        html.dark .call-log-table .edit-call-btn:hover {
+        html.dark .edit-call-btn:hover,
+        html.dark .edit-rate-btn:hover {
             background-color: #2563eb !important;
+        }
+
+        /* Call log table specific styles */
+        .call-log-table td button {
+            opacity: 1 !important;
+            visibility: visible !important;
         }
 
         /* Make goal save button always visible */
@@ -729,58 +742,63 @@
     }
 
     // --- Call Log Table ---
-    function renderCallList(dateKey) {
-        const callList = getCallsForDate(dateKey);
-        const rates = getRates();
-        const tbody = document.getElementById('call-list');
-        tbody.innerHTML = '';
-        let totalMinutes = 0;
-        let totalEarnings = 0;
-        let ongoingCall = null, ongoingRate = null;
-        callList.forEach((call, idx) => {
-            const rate = rates.find(r => r.id === call.rateId) || {name: "?", rate: 0};
-            let minutes = null, earning = 0;
-            if (call.minutes !== undefined && call.minutes !== null) {
-                minutes = call.minutes;
-            } else if (call.start && call.end) {
-                minutes = durationBetween(call.start, call.end);
-            }
-            if (minutes !== null) {
-                earning = minutes * rate.rate;
-                totalMinutes += minutes || 0;
-                totalEarnings += earning || 0;
-            }
-            if (call.start && !call.end) {
-                ongoingCall = call;
-                ongoingRate = rate;
-            }
-            let startFmt = call.start ? `<span class="tag">${call.start}</span>` : '';
-            let endFmt = call.end ? `<span class="tag">${call.end}</span>` : '';
-            let durationFmt = minutes !== null ? `<span class="tag">${minutes} min</span>` : (call.start && !call.end ? '<span class="tag bg-yellow-100 text-yellow-700">live</span>' : '');
-            let earningFmt = earning ? `<span class="tag bg-green-100 text-green-700">$${earning.toFixed(2)}</span>` : '';
-            let rateFmt = rate.name ? `<span class="tag">${rate.name} ($${rate.rate.toFixed(2)})</span>` : '';
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${idx + 1}</td>
-                <td>${startFmt}</td>
-                <td>${endFmt}</td>
-                <td>${durationFmt}</td>
-                <td>${rateFmt}</td>
-                <td>${earningFmt}</td>
-                <td>
-                    <button onclick="editCall('${dateKey}','${call.id}')" class="inline-flex items-center px-3 py-1 rounded bg-primary text-white text-sm font-medium hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-800 transition gap-1 mr-2"><i class="fas fa-edit"></i> Edit</button>
-                </td>
-            `;
-            // Add delete button only inside the edit modal, not here
-            tbody.appendChild(row);
-        });
-        document.getElementById('total-minutes').textContent = totalMinutes + " min";
-        document.getElementById('total-earnings').textContent = "$" + totalEarnings.toFixed(2);
+ function renderCallList(dateKey) {
+    const callList = getCallsForDate(dateKey);
+    const rates = getRates();
+    const tbody = document.getElementById('call-list');
+    tbody.innerHTML = '';
+    let totalMinutes = 0;
+    let totalEarnings = 0;
+    let ongoingCall = null, ongoingRate = null;
 
-        showLiveCall(ongoingCall, ongoingRate);
-        updateAllSummaries();
-        renderAnnualOverview();
-    }
+    callList.forEach((call, idx) => {
+        const rate = rates.find(r => r.id === call.rateId) || {name: "?", rate: 0};
+        let minutes = null, earning = 0;
+        if (call.minutes !== undefined && call.minutes !== null) {
+            minutes = call.minutes;
+        } else if (call.start && call.end) {
+            minutes = durationBetween(call.start, call.end);
+        }
+        if (minutes !== null) {
+            earning = minutes * rate.rate;
+            totalMinutes += minutes || 0;
+            totalEarnings += earning || 0;
+        }
+        if (call.start && !call.end) {
+            ongoingCall = call;
+            ongoingRate = rate;
+        }
+        let startFmt = call.start ? `<span class="tag">${call.start}</span>` : '';
+        let endFmt = call.end ? `<span class="tag">${call.end}</span>` : '';
+        let durationFmt = minutes !== null ? `<span class="tag">${minutes} min</span>` : (call.start && !call.end ? '<span class="tag bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-100">live</span>' : '');
+        let earningFmt = earning ? `<span class="tag bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-100">$${earning.toFixed(2)}</span>` : '';
+        let rateFmt = rate.name ? `<span class="tag">${rate.name} ($${rate.rate.toFixed(2)})</span>` : '';
+        
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors';
+        row.innerHTML = `
+            <td class="p-4">${idx + 1}</td>
+            <td class="p-4">${startFmt}</td>
+            <td class="p-4">${endFmt}</td>
+            <td class="p-4">${durationFmt}</td>
+            <td class="p-4">${rateFmt}</td>
+            <td class="p-4">${earningFmt}</td>
+            <td class="p-4">
+                <button onclick="editCall('${dateKey}','${call.id}')" class="edit-call-btn">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    document.getElementById('total-minutes').textContent = totalMinutes + " min";
+    document.getElementById('total-earnings').textContent = "$" + totalEarnings.toFixed(2);
+
+    showLiveCall(ongoingCall, ongoingRate);
+    updateAllSummaries();
+    renderAnnualOverview();
+}
 
     // --- Modal Logic ---
     function fillRateOptions(forCallModal=false) {
