@@ -450,14 +450,14 @@ input[type="time"]:focus {
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
     <div class="container mx-auto px-4 py-8">
-        <!-- Dark mode toggle -->
-        <div class="flex justify-between items-center mb-4">
-            <div></div>
-            <!-- Replace the dark mode toggle button -->
-<button id="add-call" class="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition-colors">
-    <i class="fas fa-plus"></i>
-    <span>Add</span>
-</button>
+               <!-- Dark mode toggle -->
+        <div class="flex justify-end mb-4">
+            <button id="dark-toggle" aria-label="Toggle dark mode"
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
+                <i class="fas fa-moon text-gray-600 block dark:hidden transition-transform duration-300"></i>
+                <i class="fas fa-sun hidden dark:block text-yellow-300 transition-transform duration-300"></i>
+            </button>
+        </div>
         </div>
                 <header class="mb-8 text-center">
     <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 animate-gradient">
