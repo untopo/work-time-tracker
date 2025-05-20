@@ -21,25 +21,33 @@
 #dark-toggle {
     position: relative;
     width: 80px;
-    overflow: hidden; /* Add this */
+    height: 30px;
+}
+
+.w-7 {
+    width: 1.75rem;
+}
+
+.h-4 {
+    height: 1rem;
 }
 
 #dark-ball {
     transform: translateX(0);
     transition: transform 0.2s ease-in-out;
-    width: 16px; /* Add this */
-    right: auto; /* Add this */
-}
-
-.w-7 { /* Add this - ensures proper width of the track */
-    width: 1.75rem;
-    position: relative;
-    overflow: hidden;
+    left: 0;  /* Add this */
 }
 
 html.dark #dark-ball {
-    transform: translateX(40px);
-    max-width: calc(100% - 4px); /* Add this */
+    transform: translateX(24px);  /* Reduced from 40px */
+}
+
+/* Fix icon positioning */
+#dark-toggle .material-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;  /* Fixed width for icons */
 }
 
         /* Enhanced Dark Mode Styles */
