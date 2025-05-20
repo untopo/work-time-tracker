@@ -17,6 +17,21 @@
             100% { opacity: 0; transform: translateY(-10px);}
         }
 
+        /* Dark Mode Toggle Fixes */
+        #dark-toggle {
+            position: relative;
+            width: 80px;
+        }
+
+        #dark-ball {
+            transform: translateX(0);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        html.dark #dark-ball {
+            transform: translateX(40px);
+        }
+
         /* Enhanced Dark Mode Styles */
         html.dark {
             color-scheme: dark;
@@ -43,29 +58,45 @@
         }
 
         /* Edit button visibility fixes */
-        .edit-rate-btn {
+        .edit-rate-btn,
+        .edit-call-btn {
             display: inline-flex !important;
             align-items: center;
             padding: 0.25rem 0.5rem;
             border-radius: 0.25rem;
             background-color: #3b82f6;
-            color: white;
+            color: white !important;
             font-size: 0.75rem;
             font-weight: 600;
             gap: 0.25rem;
             transition: background-color 0.2s;
+            margin: 0 0.25rem;
         }
 
-        .edit-rate-btn:hover {
+        .edit-rate-btn:hover,
+        .edit-call-btn:hover {
             background-color: #2563eb;
         }
 
-        html.dark .edit-rate-btn {
-            background-color: #3b82f6;
+        /* Improved text contrast in dark mode */
+        html.dark .text-gray-900 {
+            color: #f1f5f9 !important;
         }
 
-        html.dark .edit-rate-btn:hover {
-            background-color: #1d4ed8;
+        html.dark .text-gray-800 {
+            color: #e2e8f0 !important;
+        }
+
+        html.dark .text-gray-700 {
+            color: #cbd5e1 !important;
+        }
+
+        html.dark .bg-white {
+            background-color: #1e293b !important;
+        }
+
+        html.dark .border-gray-200 {
+            border-color: #334155 !important;
         }
 
         /* Rates card improvements */
@@ -159,7 +190,7 @@
             color: #f1f5f9;
         }
 
-        /* Modal styles with dark mode support */
+        /* Modal styles with dark mode */
         #call-modal {
             background-color: white;
             border-radius: 8px;
@@ -222,19 +253,6 @@
         html.dark .btn-primary:hover {
             background-color: #1d4ed8;
         }
-
-        /* Improved text contrast in dark mode */
-        html.dark .text-gray-600 {
-            color: #cbd5e1;
-        }
-
-        html.dark .text-gray-500 {
-            color: #94a3b8;
-        }
-
-        html.dark .text-dark {
-            color: #f1f5f9;
-        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
@@ -247,7 +265,7 @@
                 <span class="material-icons text-yellow-500 mr-2 text-xl"><i class="fas fa-sun"></i></span>
                 <span class="mx-1">
                     <div class="w-7 h-4 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center relative transition-colors">
-                        <div id="dark-ball" class="w-4 h-4 bg-white dark:bg-gray-500 rounded-full shadow absolute left-0 group-[.dark]:left-3 transition-all"></div>
+                        <div id="dark-ball" class="w-4 h-4 bg-white dark:bg-gray-500 rounded-full shadow absolute transition-all"></div>
                     </div>
                 </span>
                 <span class="material-icons text-blue-900 dark:text-yellow-200 ml-2 text-xl"><i class="fas fa-moon"></i></span>
@@ -493,9 +511,11 @@
         if (enabled) {
             document.documentElement.classList.add('dark');
             localStorage.setItem('darkMode', '1');
+            document.getElementById('dark-ball').style.transform = 'translateX(40px)';
         } else {
             document.documentElement.classList.remove('dark');
             localStorage.setItem('darkMode', '0');
+            document.getElementById('dark-ball').style.transform = 'translateX(0)';
         }
     }
 
@@ -503,6 +523,8 @@
     if (localStorage.getItem('darkMode') === '1' ||
         (localStorage.getItem('darkMode') === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         setDarkMode(true);
+    } else {
+        setDarkMode(false);
     }
 
     document.getElementById('dark-toggle').onclick = function() {
