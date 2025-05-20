@@ -46,6 +46,39 @@ html.dark #dark-ball {
     transform: translateX(12px);  /* Reduced to stay within bounds */
 }
 
+/* Dark mode fixes for date selection and totals */
+/* Date picker container */
+html.dark .bg-gray-100 {
+    background-color: #1f2937 !important;
+}
+
+/* Date picker input */
+html.dark input[type="date"] {
+    color-scheme: light dark;
+    background-color: transparent !important;
+    color: #f1f5f9 !important;
+}
+
+/* Call log totals section */
+html.dark tfoot {
+    background-color: #1f2937 !important;
+}
+
+html.dark tfoot td {
+    color: #f1f5f9 !important;
+}
+
+html.dark #total-minutes,
+html.dark #total-earnings {
+    color: #f1f5f9 !important;
+    background-color: transparent !important;
+}
+
+/* Override any light background in dark mode */
+html.dark .bg-gray-50 {
+    background-color: #1f2937 !important;
+}
+        
 /* Date picker dark mode fix */
 input[type="date"] {
     color-scheme: light dark;
