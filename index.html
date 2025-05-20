@@ -235,7 +235,7 @@
             background-color: #1e293b;
         }
 
-        /* Button styles with dark mode */
+                /* Button styles with dark mode */
         .btn-primary {
             background-color: #3b82f6;
             color: white;
@@ -253,6 +253,37 @@
         html.dark .btn-primary:hover {
             background-color: #1d4ed8;
         }
+
+        /* Make call log edit buttons always visible */
+        .call-log-table .edit-call-btn {
+            display: inline-flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        /* Make goal save button always visible */
+        #goal-form button[type="submit"] {
+            display: inline-flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            background-color: #22c55e; /* Green color */
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+        }
+
+        #goal-form button[type="submit"]:hover {
+            background-color: #16a34a;
+        }
+
+        html.dark #goal-form button[type="submit"] {
+            background-color: #22c55e;
+        }
+
+        html.dark #goal-form button[type="submit"]:hover {
+            background-color: #16a34a;
+        }
+    </style>
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
