@@ -729,20 +729,6 @@ input[type="time"]:focus {
             document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
         });
-                // Initialize date picker with current date
-setDatePickerValue(selectedDate);
-
-// Date picker event listener
-statsDatePicker.addEventListener('change', (e) => {
-    updateStatsForDate(e.target.value);
-});
-
-// Current date button event listener
-currentDateBtn.addEventListener('click', () => {
-    const today = new Date().toISOString().split('T')[0];
-    setDatePickerValue(today);
-    updateStatsForDate(today);
-});
 
         // Initialize dark mode from localStorage
         if (localStorage.getItem('darkMode') === 'true') {
@@ -1064,9 +1050,6 @@ function editCall(index) {
                 goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
             }
         }
-function updateStatistics() {
-    updateStatsForDate(selectedYear, selectedMonth);
-}
         
         // Calculate monthly earnings
         const now = new Date();
@@ -1097,17 +1080,6 @@ function updateStatistics() {
         document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
     }
 }
-    function updateStatistics() {
-    if (!selectedDate) return;
-    
-    const dayStart = new Date(selectedDate);
-    const dayEnd = new Date(selectedDate);
-    dayEnd.setHours(23, 59, 59, 999);
-    
-    const daysCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
-        return callDate >= dayStart && callDate <= dayEnd;
-    });
     
     let totalDuration = 0;
     let totalEarnings = 0;
@@ -1293,13 +1265,18 @@ if (goal) {
     updateTotals();
 }
 
+// Set initial date
+statsDatePicker.value = selectedDate;
+
 // Ensure buttons are in correct state
 startCallBtn.disabled = false;
 endCallBtn.disabled = true;
 liveCallInfo.style.display = 'none';
 
+// Initialize displays
 displayRates();
 displayCalls();
+updateStatistics();
     </script>
 </body>
 </html>
