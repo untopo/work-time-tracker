@@ -899,15 +899,6 @@ function updateStatsForDate(date) {
         dailyTotalEarnings.textContent = '$0.00';
     }
 }
-        function displayCalls() {
-    const startOfMonth = new Date(selectedYear, selectedMonth, 1);
-    const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59);
-    
-    const filteredCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
-        return callDate >= startOfMonth && callDate <= endOfMonth;
-    });
-    
     function displayCalls() {
     // Filter calls for selected date if we have one
     let displayedCalls = calls;
