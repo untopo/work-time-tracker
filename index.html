@@ -567,7 +567,7 @@ input[type="time"]:focus {
             </div>
         </div>
     
-    <!-- Daily Stats Section -->
+     <!-- Daily Stats Section -->
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full md:w-96">
     <div class="flex flex-col items-center mb-4">
         <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
@@ -594,6 +594,7 @@ input[type="time"]:focus {
         </div>
     </div>
 </div>
+
 
         <!-- Notification Area -->
         <div id="notification-area" class="fixed top-6 right-6 z-50"></div>
@@ -1280,6 +1281,7 @@ input[type="time"]:focus {
         document.getElementById('summary-earnings').textContent = `$${earn.toFixed(2)}`;
         document.getElementById('summary-goal-progress').textContent = `${Math.round((earn/goal)*100)}%`;
         document.getElementById('summary-remaining').textContent = `$${Math.max(0, goal-earn).toFixed(2)}`;
+        updateDailyStats();
 
         // 1st/2nd half/monthly stats (for selected month)
         let fh_mins=0, fh_earn=0, sh_mins=0, sh_earn=0, month_total_mins=0, month_total_earn=0;
@@ -1371,6 +1373,45 @@ input[type="time"]:focus {
         updateAllSummaries();
         renderAnnualOverview();
     }
+        function updateDailyStats() {
+    const dateKey = document.getElementById('date-picker').value || getTodayKey();
+    const calls = getCallsForDate(dateKey);
+    const rates = getRates();
+    const goal = getGoal();
+    
+    // Calculate total minutes and earnings
+    let totalMinutes = 0;
+    let totalEarnings = 0;
+    let completedCalls = 0;
+    
+    calls.forEach(call => {
+        const rate = rates.find(r => r.id === call.rateId) || {rate: 0};
+        let minutes = call.minutes !== undefined && call.minutes !== null ? 
+            call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
+        if (minutes) {
+            totalMinutes += minutes;
+            totalEarnings += minutes * rate.rate;
+            completedCalls++;
+        }
+    });
+
+    // Average call duration
+    const avgDuration = completedCalls > 0 ? Math.round(totalMinutes / completedCalls) : 0;
+    document.getElementById('avg-call-duration').textContent = `${avgDuration} min`;
+
+    // Estimate time needed to reach goal
+    const remainingEarnings = Math.max(0, goal - totalEarnings);
+    const averageRate = totalMinutes > 0 ? totalEarnings / totalMinutes : 0;
+    const estimatedMinutesNeeded = averageRate > 0 ? Math.ceil(remainingEarnings / averageRate) : 0;
+    document.getElementById('time-to-goal').textContent = `${estimatedMinutesNeeded} min`;
+
+    // Total calls
+    document.getElementById('total-calls').textContent = calls.length;
+
+    // Hourly rate
+    const hourlyRate = totalMinutes > 0 ? (totalEarnings / totalMinutes) * 60 : 0;
+    document.getElementById('hourly-rate').textContent = `$${hourlyRate.toFixed(2)}/hr`;
+}
     initialize();
         document.getElementById('current-year').textContent = new Date().getFullYear();
     </script>
