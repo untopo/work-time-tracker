@@ -780,12 +780,12 @@ input[type="time"]:focus {
 
         // Call management
         function displayCalls() {
-            calls.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            callLog.innerHTML = calls.map((call, index) => {
-                const rate = rates[call.rateIndex];
-                const duration = call.duration;
-                const earned = (rate.amount * (duration / 3600));
+    calls.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    callLog.innerHTML = calls.map((call, index) => {
+        const rate = rates[call.rateIndex];
+        const duration = call.duration;
+        const earned = rate.amount * (duration / 3600);
                 
                 return `
                     <tr>
