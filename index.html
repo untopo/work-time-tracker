@@ -479,99 +479,73 @@ input[type="time"]:focus {
 
                 <!-- Controls and Settings Section -->
         <div class="flex flex-col md:flex-row items-start justify-center gap-12 mb-8">
-            <!-- Call Box -->
-           <div class="w-[300px]">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
-                <div class="flex flex-col items-center mb-2">
-                    <div class="bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                        <i class="fas fa-phone-volume text-3xl text-primary dark:text-blue-300"></i>
-                    </div>
-                    <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
+               <!-- Call Box -->
+    <div class="w-[300px]">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
+            <div class="flex flex-col items-center mb-2">
+                <div class="bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                    <i class="fas fa-phone-volume text-3xl text-primary dark:text-blue-300"></i>
                 </div>
-                <div class="flex flex-col gap-2 w-full">
-                    <button id="add-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600 transition w-full flex items-center justify-center gap-2">
-                        <i class="fas fa-plus"></i> Add Call
-                    </button>
-                    <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:hover:bg-green-800 transition w-full flex items-center justify-center gap-2">
-                        <i class="fas fa-play"></i> Start Call
-                    </button>
-                    <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:hover:bg-red-800 transition w-full flex items-center justify-center gap-2">
-                        <i class="fas fa-stop"></i> End Call
-                    </button>
-                </div>
-                <div id="live-call-info" class="mt-4 w-full" style="display:none;">
-                    <div class="flex flex-col items-center bg-green-50 dark:bg-green-900 rounded-lg p-3 shadow-inner">
-                        <span class="text-green-700 dark:text-green-300 font-semibold text-sm mb-1">Ongoing Call</span>
-                        <span id="live-call-timer" class="font-mono text-xl text-green-900 dark:text-green-200 mb-1">00:00:00</span>
-                        <span id="live-call-earnings" class="font-mono text-lg text-green-800 dark:text-green-100">$0.00 earned</span>
-                    </div>
+                <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
+            </div>
+            <div class="flex flex-col gap-2 w-full">
+                <button id="add-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600 transition w-full flex items-center justify-center gap-2">
+                    <i class="fas fa-plus"></i> Add Call
+                </button>
+                <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:hover:bg-green-800 transition w-full flex items-center justify-center gap-2">
+                    <i class="fas fa-play"></i> Start Call
+                </button>
+                <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:hover:bg-red-800 transition w-full flex items-center justify-center gap-2">
+                    <i class="fas fa-stop"></i> End Call
+                </button>
+            </div>
+            <div id="live-call-info" class="mt-4 w-full" style="display:none;">
+                <div class="flex flex-col items-center bg-green-50 dark:bg-green-900 rounded-lg p-3 shadow-inner">
+                    <span class="text-green-700 dark:text-green-300 font-semibold text-sm mb-1">Ongoing Call</span>
+                    <span id="live-call-timer" class="font-mono text-xl text-green-900 dark:text-green-200 mb-1">00:00:00</span>
+                    <span id="live-call-earnings" class="font-mono text-lg text-green-800 dark:text-green-100">$0.00 earned</span>
                 </div>
             </div>
-
-            <!-- Rates & Goal Section -->
-<div class="w-[300px]">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col w-full">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-8 max-w-2xl mx-auto flex flex-col gap-6">
-                    <!-- Current Rate Selector -->
-                    <div>
-                        <label for="current-rate" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Current Rate</label>
-                        <select id="current-rate" class="border border-primary dark:border-blue-600 px-2 py-1 rounded-full w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 mb-3 focus:ring-2 focus:ring-primary">
-                        </select>
-                
-                    </div>
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <!-- Rates List -->
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between mb-1">
-                                <h2 class="text-md font-semibold text-dark dark:text-gray-200">Rates</h2>
-                                <button id="show-rate-add" class="text-primary dark:text-blue-400 text-xs font-medium bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800">+ Add Rate</button>
-                            </div>
-                            <form id="rate-add-form" class="rate-edit-form hidden">
-    <div class="flex flex-col gap-3">
-        <input type="text" 
-               id="new-rate-name" 
-               placeholder="Rate Name" 
-               required 
-               class="border rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"/>
-        <div class="flex items-center gap-3">
-            <input type="number" 
-                   id="new-rate-value" 
-                   placeholder="Rate/min" 
-                   step="0.01" 
-                   min="0.01" 
-                   required 
-                   class="w-48 border rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"/>
-            <button type="submit" 
-                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium">
-                Add
-            </button>
-            <button type="button" 
-                    id="cancel-rate-add" 
-                    class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium">
-                Cancel
-            </button>
         </div>
     </div>
-</form>
-                            <div id="rates-list" class="space-y-2"></div>
-                        </div>
-                        <!-- Daily Goal -->
-                        <div class="flex-1">
-                            <h2 class="text-md font-semibold text-dark dark:text-gray-200 mb-1">Daily Goal</h2>
-                            <form id="goal-form" class="flex items-center gap-2">
-                                <input type="number" id="daily-goal" min="0.01" step="0.01"
-                                    class="border border-secondary dark:border-green-600 rounded-full px-3 py-1 w-28 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"/>
-                                <button type="submit" class="bg-secondary text-white px-3 py-1 rounded shadow hover:bg-green-600">Save</button>
-                            </form>
-                            <span class="block mt-1 text-xs text-gray-500 dark:text-gray-400">(Used for progress stats)</span>                        
-                        </div>
+
+    <!-- Rates & Goal Section -->
+    <div class="w-[300px]">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col w-full">
+            <div>
+                <label for="current-rate" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Current Rate</label>
+                <select id="current-rate" class="border border-primary dark:border-blue-600 px-2 py-1 rounded-full w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 mb-3 focus:ring-2 focus:ring-primary">
+                </select>
+            </div>
+            <div class="flex flex-col gap-4">
+                <!-- Rates List -->
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-1">
+                        <h2 class="text-md font-semibold text-dark dark:text-gray-200">Rates</h2>
+                        <button id="show-rate-add" class="text-primary dark:text-blue-400 text-xs font-medium bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800">+ Add Rate</button>
                     </div>
+                    <form id="rate-add-form" class="rate-edit-form hidden">
+                        <!-- Your rate-add-form content -->
+                    </form>
+                    <div id="rates-list" class="space-y-2"></div>
+                </div>
+                <!-- Daily Goal -->
+                <div class="flex-1">
+                    <h2 class="text-md font-semibold text-dark dark:text-gray-200 mb-1">Daily Goal</h2>
+                    <form id="goal-form" class="flex items-center gap-2">
+                        <input type="number" id="daily-goal" min="0.01" step="0.01"
+                            class="border border-secondary dark:border-green-600 rounded-full px-3 py-1 w-28 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"/>
+                        <button type="submit" class="bg-secondary text-white px-3 py-1 rounded shadow hover:bg-green-600">Save</button>
+                    </form>
+                    <span class="block mt-1 text-xs text-gray-500 dark:text-gray-400">(Used for progress stats)</span>
                 </div>
             </div>
         </div>
+    </div>
+
     <!-- Daily Stats Section -->
-      <div class="w-[300px]">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
+    <div class="w-[300px]">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
             <div class="flex flex-col items-center mb-4">
                 <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
                     <i class="fas fa-chart-pie text-3xl text-purple-600 dark:text-purple-300"></i>
@@ -596,8 +570,9 @@ input[type="time"]:focus {
                     <span id="hourly-rate" class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">$0.00/hr</span>
                 </div>
             </div>
-        </div>  
-     
+        </div>
+    </div>
+</div>     
 
         <!-- Notification Area -->
         <div id="notification-area" class="fixed top-6 right-6 z-50"></div>
