@@ -750,6 +750,11 @@ currentDateBtn.addEventListener('click', () => {
         }
 
         // State management
+        console.log("Loading stored data:", {
+            rates: localStorage.getItem('rates'),
+            calls: localStorage.getItem('calls'),
+            goal: localStorage.getItem('goal')
+        });
         let rates = JSON.parse(localStorage.getItem('rates')) || [];
         let calls = JSON.parse(localStorage.getItem('calls')) || [];
         let currentCall = null;
@@ -1281,17 +1286,20 @@ function updateStatistics() {
     }
 }
          // Initialize
-        if (goal) {
-            goalAmount.value = goal;
-            updateTotals();
-        }
-        
-        // Set initial date
-        setDatePickerValue(selectedDate);
-        displayRates();
-        displayCalls();
-        updateStatistics();
-        endCallBtn.disabled = true;
+console.log("Initializing with:", {rates, calls, goal});
+
+if (goal) {
+    goalAmount.value = goal;
+    updateTotals();
+}
+
+// Ensure buttons are in correct state
+startCallBtn.disabled = false;
+endCallBtn.disabled = true;
+liveCallInfo.style.display = 'none';
+
+displayRates();
+displayCalls();
     </script>
 </body>
 </html>
