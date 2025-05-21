@@ -592,27 +592,16 @@ input[type="time"]:focus {
             <i class="fas fa-chart-bar text-purple-500 mr-2"></i>Call Statistics
         </h2>
         <div class="flex justify-between items-center mb-6">
-    <div class="flex items-center gap-4">
-        <input type="month" id="stats-month-picker" 
-            class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-        />
-        <button id="current-month-btn" 
-            class="px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
-            Current Month
-        </button>
-    </div>
-</div>
-        <div class="flex justify-between items-center mb-6">
-    <div class="flex items-center gap-4">
-        <input type="month" id="stats-month-picker" 
-            class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
-        />
-        <button id="current-month-btn" 
-            class="px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
-            Current Month
-        </button>
-    </div>
-</div>
+            <div class="flex items-center gap-4">
+                <input type="date" id="stats-date-picker" 
+                    class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                />
+                <button id="current-date-btn" 
+                    class="px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+                    Current Date
+                </button>
+            </div>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Average Duration Card -->
             <div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
@@ -628,15 +617,13 @@ input[type="time"]:focus {
                 </h3>
                 <p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
             </div>
-            <!-- Monthly Earnings Card -->
+            <!-- Daily Earnings Card -->
             <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
                 <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-                    <i class="fas fa-money-bill-wave mr-2"></i>Monthly Earnings
+                    <i class="fas fa-money-bill-wave mr-2"></i>Daily Earnings
                 </h3>
                 <div class="space-y-2">
-                    <p class="text-sm text-purple-600 dark:text-purple-300">First Half: <span id="first-half-earnings" class="font-bold">$0.00</span></p>
-                    <p class="text-sm text-purple-600 dark:text-purple-300">Second Half: <span id="second-half-earnings" class="font-bold">$0.00</span></p>
-                    <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">Total: <span id="monthly-total-earnings">$0.00</span></p>
+                    <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">Total: <span id="daily-total-earnings">$0.00</span></p>
                 </div>
             </div>
         </div>
