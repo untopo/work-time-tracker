@@ -701,7 +701,6 @@ input[type="time"]:focus {
 
         // DOM elements
         const modalTitle = document.getElementById('modal-title');
-        let editingCallIndex = null;
         const ratesList = document.getElementById('rates-list');
         const rateForm = document.getElementById('rate-form');
         const rateName = document.getElementById('rate-name');
@@ -799,15 +798,16 @@ input[type="time"]:focus {
                         <td>${rate.name} (${formatMoney(rate.amount)}/hr)</td>
                         <td>${formatMoney(earned)}</td>
                         <td>
-                            <div class="flex gap-2">
-                               <button onclick="editCall(${index})" class="text-blue-500 hover:text-blue-700">
-                                   <i class="fas fa-edit"></i>
-                               </button>
-                               <button onclick="deleteCall(${index})" class="text-red-500 hover:text-red-700">
-                                   <i class="fas fa-trash"></i>
-                               </button>
-                            </div>
-                         </td>
+                            <td>
+    <div class="flex gap-2">
+        <button onclick="editCall(${index})" class="text-blue-500 hover:text-blue-700">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button onclick="deleteCall(${index})" class="text-red-500 hover:text-red-700">
+            <i class="fas fa-trash"></i>
+        </button>
+    </div>
+</td>
                     </tr>
                 `;
             }).join('');
@@ -820,26 +820,32 @@ input[type="time"]:focus {
             calls.splice(index, 1);
             displayCalls();
         }
-        function editCall(index) {
-            editingCallIndex = index;
-            const call = calls[index];
-            const date = new Date(call.date);
-            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                
+        function deleteCall(index) {
+    calls.splice(index, 1);
+    displayCalls();
+}
+
+function editCall(index) {
+    editingCallIndex = index;
+    const call = calls[index];
+    const date = new Date(call.date);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
     
-            modalTitle.textContent = 'Edit Call';
-            callDate.value = date.toISOString().slice(0, 16);
+    modalTitle.textContent = 'Edit Call';
+    callDate.value = date.toISOString().slice(0, 16);
     
-            const hours = Math.floor(call.duration / 3600);
-            const minutes = Math.floor((call.duration % 3600) / 60);
-            const seconds = call.duration % 60;
+    const hours = Math.floor(call.duration / 3600);
+    const minutes = Math.floor((call.duration % 3600) / 60);
+    const seconds = call.duration % 60;
     
-            document.getElementById('call-duration-hours').value = hours;
-            document.getElementById('call-duration-minutes').value = minutes;
-            document.getElementById('call-duration-seconds').value = seconds;
-            callRate.value = call.rateIndex;
+    document.getElementById('call-duration-hours').value = hours;
+    document.getElementById('call-duration-minutes').value = minutes;
+    document.getElementById('call-duration-seconds').value = seconds;
+    callRate.value = call.rateIndex;
     
-            callModal.style.display = 'flex';
-        }
+    callModal.style.display = 'flex';
+}
 
         function updateTotals() {
             let totalMins = 0;
