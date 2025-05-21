@@ -521,10 +521,11 @@ input[type="time"]:focus {
                 <!-- Rates List -->
                 <div class="flex-1">
                     <div class="flex items-center justify-between mb-1">
-                        <h2 class="text-md font-semibold text-dark dark:text-gray-200">Rates</h2>
-                        <button id="show-rate-add" class="text-primary dark:text-blue-400 text-xs font-medium bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800">+ Add Rate</button>
-                    </div>
-                <div class="flex flex-col gap-3">
+    <h2 class="text-md font-semibold text-dark dark:text-gray-200">Rates</h2>
+    <button id="show-rate-add" class="text-primary dark:text-blue-400 text-xs font-medium bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800">+ Add Rate</button>
+</div>
+<form id="rate-add-form" class="rate-edit-form hidden">
+    <div class="flex flex-col gap-3">
         <input type="text" 
                id="new-rate-name" 
                placeholder="Rate Name" 
@@ -550,8 +551,7 @@ input[type="time"]:focus {
         </div>
     </div>
 </form>
-                    <div id="rates-list" class="space-y-2"></div>
-                </div>
+<div id="rates-list" class="space-y-2">
                 <!-- Daily Goal -->
                 <div class="flex-1">
                     <h2 class="text-md font-semibold text-dark dark:text-gray-200 mb-1">Daily Goal</h2>
