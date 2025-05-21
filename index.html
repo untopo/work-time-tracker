@@ -644,7 +644,12 @@ input[type="time"]:focus {
                         <input type="datetime-local" id="call-date" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                     </div>
                     <div class="mb-4">
-                        <label for="call-duration" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (minutes)</label>
+                        <label for="call-duration" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (HH:MM:SS)</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="call-duration-hours" required min="0" placeholder="HH" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <input type="number" id="call-duration-minutes" required min="0" max="59" placeholder="MM" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <input type="number" id="call-duration-seconds" required min="0" max="59" placeholder="SS" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
                         <input type="number" id="call-duration" required min="1" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                     </div>
                     <div class="mb-6">
@@ -667,10 +672,10 @@ input[type="time"]:focus {
             <script>
         // Utility functions
         const formatMoney = (amount) => `$${Number(amount).toFixed(2)}`;
-        const formatDuration = (minutes) => {
-            const hours = Math.floor(minutes / 60);
-            const mins = minutes % 60;
-            const secs = Math.floor((minutes % 1) * 60);
+        const formatDuration = (totalSeconds) => {
+            const hours = Math.floor(totalSeconds / 3600);
+            const mins = Math.floor((totalSeconds % 3600) / 60);
+            const secs = Math.floor(totalSeconds % 60);
             return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         };
 
@@ -780,7 +785,7 @@ input[type="time"]:focus {
             callLog.innerHTML = calls.map((call, index) => {
                 const rate = rates[call.rateIndex];
                 const duration = call.duration;
-                const earned = (rate.amount / 60) * duration;
+                const earned = (rate.amount / 3600) * duration;
                 
                 return `
                     <tr>
@@ -839,9 +844,9 @@ input[type="time"]:focus {
         function updateCallTimer() {
             if (!currentCall) return;
             
-            const duration = (Date.now() - currentCall.startTime) / 60000;
+            const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
             const rate = rates[currentCall.rateIndex];
-            const earned = (rate.amount / 60) * duration;
+            const earned = (rate.amount / 3600) * duration;
             
             liveCallTimer.textContent = formatDuration(duration);
             liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
@@ -868,7 +873,7 @@ input[type="time"]:focus {
         endCallBtn.addEventListener('click', () => {
             if (!currentCall) return;
 
-            const duration = (Date.now() - currentCall.startTime) / 60000;
+            const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
             calls.push({
                 date: new Date(currentCall.startTime).toISOString(),
                 duration: duration,
@@ -905,11 +910,16 @@ input[type="time"]:focus {
             callForm.reset();
         });
 
-        callForm.addEventListener('submit', (e) => {
+                callForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            const hours = parseInt(document.getElementById('call-duration-hours').value) || 0;
+            const minutes = parseInt(document.getElementById('call-duration-minutes').value) || 0;
+            const seconds = parseInt(document.getElementById('call-duration-seconds').value) || 0;
+            const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+            
             calls.push({
                 date: new Date(callDate.value).toISOString(),
-                duration: parseFloat(callDuration.value),
+                duration: totalSeconds,
                 rateIndex: parseInt(callRate.value)
             });
             displayCalls();
