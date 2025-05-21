@@ -566,6 +566,34 @@ input[type="time"]:focus {
                 </div>
             </div>
         </div>
+    
+    <!-- Daily Stats Section -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full md:w-96">
+    <div class="flex flex-col items-center mb-4">
+        <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+            <i class="fas fa-chart-pie text-3xl text-purple-600 dark:text-purple-300"></i>
+        </div>
+        <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Daily Analytics</h2>
+    </div>
+    <div class="w-full space-y-4">
+        <div class="flex flex-col">
+            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Average Call Duration</span>
+            <span id="avg-call-duration" class="text-2xl font-bold text-purple-600 dark:text-purple-400">0 min</span>
+        </div>
+        <div class="flex flex-col">
+            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Estimated Time to Goal</span>
+            <span id="time-to-goal" class="text-2xl font-bold text-blue-600 dark:text-blue-400">0 min</span>
+        </div>
+        <div class="flex flex-col">
+            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Calls Today</span>
+            <span id="total-calls" class="text-2xl font-bold text-green-600 dark:text-green-400">0</span>
+        </div>
+        <div class="flex flex-col">
+            <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Hourly Rate (Average)</span>
+            <span id="hourly-rate" class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">$0.00/hr</span>
+        </div>
+    </div>
+</div>
 
         <!-- Notification Area -->
         <div id="notification-area" class="fixed top-6 right-6 z-50"></div>
