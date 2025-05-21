@@ -791,8 +791,8 @@ currentDateBtn.addEventListener('click', () => {
         const totalEarnings = document.getElementById('total-earnings');
         const statsDatePicker = document.getElementById('stats-date-picker');
         const currentDateBtn = document.getElementById('current-date-btn');
-        const avgDuration = document.getElementById('avg-duration');
         const dailyTotalEarnings = document.getElementById('daily-total-earnings');
+        const avgDuration = document.getElementById('avg-duration');
 
                 // Initialize month picker with current month
 setMonthPickerValue(selectedYear, selectedMonth);
@@ -1295,8 +1295,52 @@ cancelCall.addEventListener('click', () => {
             localStorage.setItem('goal', goal);
             updateTotals();
         });
+                
+// Date picker handlers
+statsDatePicker.addEventListener('change', (e) => {
+    selectedDate = e.target.value;
+    updateStatistics();
+    displayCalls();
+});
 
-                // Initialize
+currentDateBtn.addEventListener('click', () => {
+    const today = new Date().toISOString().split('T')[0];
+    statsDatePicker.value = today;
+    selectedDate = today;
+    updateStatistics();
+    displayCalls();
+});
+
+function updateStatistics() {
+    if (!selectedDate) return;
+    
+    const dayStart = new Date(selectedDate);
+    const dayEnd = new Date(selectedDate);
+    dayEnd.setHours(23, 59, 59, 999);
+    
+    const daysCalls = calls.filter(call => {
+        const callDate = new Date(call.date);
+        return callDate >= dayStart && callDate <= dayEnd;
+    });
+    
+    // Calculate statistics
+    if (daysCalls.length > 0) {
+        const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
+        const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
+        avgDuration.textContent = formatDuration(avgDurationValue);
+        
+        const totalEarned = daysCalls.reduce((sum, call) => {
+            const rate = rates[call.rateIndex];
+            return sum + (rate.amount / 60) * call.duration;
+        }, 0);
+        
+        dailyTotalEarnings.textContent = formatMoney(totalEarned);
+    } else {
+        avgDuration.textContent = '00:00:00';
+        dailyTotalEarnings.textContent = '$0.00';
+    }
+}
+         // Initialize
         if (goal) {
             goalAmount.value = goal;
             updateTotals();
@@ -1304,7 +1348,6 @@ cancelCall.addEventListener('click', () => {
         
         // Set initial date
         setDatePickerValue(selectedDate);
-        
         displayRates();
         displayCalls();
         updateStatistics();
