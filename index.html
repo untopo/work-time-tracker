@@ -18,92 +18,91 @@
         }
 
         @keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-.animate-gradient {
-    background-size: 200% auto;
-    animation: gradient 4s linear infinite;
-}
+        .animate-gradient {
+            background-size: 200% auto;
+            animation: gradient 4s linear infinite;
+        }
 
         /* Dark Mode Toggle & Date Picker Styles */
-#dark-toggle {
-    transform: scale(1);
-    transition: all 0.3s ease;
-}
+        #dark-toggle {
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
 
-#dark-toggle:hover {
-    transform: scale(1.1);
-}
+        #dark-toggle:hover {
+            transform: scale(1.1);
+        }
 
-#dark-toggle i {
-    transform: rotate(0deg);
-    transition: transform 0.3s ease;
-}
+        #dark-toggle i {
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+        }
 
-#dark-toggle:active i {
-    transform: rotate(360deg);
-}
+        #dark-toggle:active i {
+            transform: rotate(360deg);
+        }
+                /* Date picker styles */
+        input[type="date"],
+        input[type="time"],
+        input[type="datetime-local"] {
+            background-color: white !important;
+            border: 1px solid #e2e8f0;
+            color: #1a202c;
+            border-radius: 0.375rem;
+        }
 
-     /* Date picker styles */
-input[type="date"],
-input[type="time"],
-input[type="datetime-local"] {
-    background-color: white !important;
-    border: 1px solid #e2e8f0;
-    color: #1a202c;
-    border-radius: 0.375rem;
-}
+        html.dark input[type="date"],
+        html.dark input[type="time"],
+        html.dark input[type="datetime-local"] {
+            background-color: #1e293b !important;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
 
-html.dark input[type="date"],
-html.dark input[type="time"],
-html.dark input[type="datetime-local"] {
-    background-color: #1e293b !important;
-    border-color: #475569;
-    color: #f1f5f9;
-}
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator,
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            background-color: transparent;
+            cursor: pointer;
+        }
 
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    background-color: transparent;
-    cursor: pointer;
-}
+        html.dark input[type="date"]::-webkit-calendar-picker-indicator,
+        html.dark input[type="time"]::-webkit-calendar-picker-indicator,
+        html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
 
-html.dark input[type="date"]::-webkit-calendar-picker-indicator,
-html.dark input[type="time"]::-webkit-calendar-picker-indicator,
-html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
-}
+        /* Focus states */
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="datetime-local"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            ring: 2px solid rgba(59, 130, 246, 0.5);
+        }
 
-/* Focus states */
-input[type="date"]:focus,
-input[type="time"]:focus,
-input[type="datetime-local"]:focus {
-    outline: none;
-    border-color: #3b82f6;
-    ring: 2px solid rgba(59, 130, 246, 0.5);
-}
+        html.dark input[type="date"]:focus,
+        html.dark input[type="time"]:focus,
+        html.dark input[type="datetime-local"]:focus {
+            border-color: #60a5fa;
+        }
+                input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8) brightness(1.2) saturate(0.8);
+        }
 
-html.dark input[type="date"]:focus,
-html.dark input[type="time"]:focus,
-html.dark input[type="datetime-local"]:focus {
-    border-color: #60a5fa;
-}
-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.8) brightness(1.2) saturate(0.8);
-}
+        html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(0.8) saturate(0.8);
+        }
 
-html.dark input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) brightness(0.8) saturate(0.8);
-}
-
-html.dark input[type="date"]:focus {
-    outline: none;
-    ring: 2px solid rgba(59, 130, 246, 0.5);
-}
+        html.dark input[type="date"]:focus {
+            outline: none;
+            ring: 2px solid rgba(59, 130, 246, 0.5);
+        }
 
         /* Enhanced Dark Mode Styles */
         html.dark {
@@ -160,8 +159,7 @@ html.dark input[type="date"]:focus {
             transition: background-color 0.2s;
             margin: 0 0.25rem;
         }
-
-        .edit-rate-btn:hover,
+                .edit-rate-btn:hover,
         .edit-call-btn:hover {
             background-color: #2563eb;
         }
@@ -186,36 +184,36 @@ html.dark input[type="date"]:focus {
         html.dark .border-gray-200 {
             border-color: #334155 !important;
         }
-                /* Rates card improvements */
+
+        /* Rates card improvements */
         .rate-edit-form {
-    background-color: white;
-    padding: 0.5rem;
-    border-radius: 0.75rem;
-    margin-bottom: 1rem;
-    width: 100%;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
+            background-color: white;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
 
-html.dark .rate-edit-form {
-    background-color: #1e293b;
-}
-
-.rate-edit-form input {
-    width: 100%;
-    transition: all 0.2s ease;
-}
-
-.rate-edit-form button {
-    transition: all 0.2s ease;
-}
-
-@media (max-width: 640px) {
-    .rate-edit-form button {
-        width: 100%;
-    }
-}
+        html.dark .rate-edit-form {
+            background-color: #1e293b;
+        }
 
         .rate-edit-form input {
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .rate-edit-form button {
+            transition: all 0.2s ease;
+        }
+
+        @media (max-width: 640px) {
+            .rate-edit-form button {
+                width: 100%;
+            }
+        }
+                .rate-edit-form input {
             width: 100%;
             padding: 0.5rem;
             margin-bottom: 0.5rem;
@@ -269,8 +267,7 @@ html.dark .rate-edit-form {
             font-weight: 600;
             background-color: #f8fafc;
         }
-
-        html.dark .call-log-table th {
+                html.dark .call-log-table th {
             background-color: #1e293b;
             color: #f1f5f9;
         }
@@ -320,8 +317,7 @@ html.dark .rate-edit-form {
             border-radius: 4px;
             border: 1px solid #e2e8f0;
         }
-
-        html.dark #call-modal input,
+                html.dark #call-modal input,
         html.dark #call-modal select {
             background-color: #334155;
             border-color: #475569;
@@ -367,8 +363,7 @@ html.dark .rate-edit-form {
         #goal-form button[type="submit"]:hover {
             background-color: #16a34a;
         }
-
-        /* Style for Add Rate button */
+                /* Style for Add Rate button */
         #show-rate-add {
             background-color: #dbeafe !important;
             color: #2563eb !important;
@@ -449,9 +444,8 @@ input[type="time"]:focus {
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
-   <div class="container mx-auto px-4 py-8 max-w-7xl">
-       
-               <!-- Dark mode toggle -->
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Dark mode toggle -->
         <div class="flex justify-end mb-4">
             <button id="dark-toggle" aria-label="Toggle dark mode"
                 class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
@@ -459,964 +453,487 @@ input[type="time"]:focus {
                 <i class="fas fa-sun hidden dark:block text-yellow-300 transition-transform duration-300"></i>
             </button>
         </div>
-        </div>
-                <header class="mb-8 text-center">
-    <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 animate-gradient">
-        Work Time Tracker
-    </h1>
-    <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 font-light tracking-wide">
-        <span class="inline-block">
-            <i class="fas fa-clock text-blue-500 dark:text-blue-400 mr-2"></i>
-            Track Your Time
-        </span>
-        <span class="mx-2">•</span>
-        <span class="inline-block">
-            <i class="fas fa-chart-line text-purple-500 dark:text-purple-400 mr-2"></i>
-            Monitor Earnings
-        </span>
-    </p>
-</header>
 
-                <!-- Controls and Settings Section -->
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 animate-gradient">
+                Work Time Tracker
+            </h1>
+            <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 font-light tracking-wide">
+                <span class="inline-block">
+                    <i class="fas fa-clock text-blue-500 dark:text-blue-400 mr-2"></i>
+                    Track Your Time
+                </span>
+                <span class="mx-2">•</span>
+                <span class="inline-block">
+                    <i class="fas fa-chart-line text-purple-500 dark:text-purple-400 mr-2"></i>
+                    Monitor Earnings
+                </span>
+            </p>
+        </header>
+
+        <!-- Controls and Settings Section -->
         <div class="flex flex-col md:flex-row items-start justify-center gap-12 mb-8">
-               <!-- Call Box -->
-    <div class="w-[300px]">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
-            <div class="flex flex-col items-center mb-2">
-                <div class="bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                    <i class="fas fa-phone-volume text-3xl text-primary dark:text-blue-300"></i>
-                </div>
-                <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
-            </div>
-            <div class="flex flex-col gap-2 w-full">
-                <button id="add-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600 transition w-full flex items-center justify-center gap-2">
-                    <i class="fas fa-plus"></i> Add Call
-                </button>
-                <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:hover:bg-green-800 transition w-full flex items-center justify-center gap-2">
-                    <i class="fas fa-play"></i> Start Call
-                </button>
-                <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:hover:bg-red-800 transition w-full flex items-center justify-center gap-2">
-                    <i class="fas fa-stop"></i> End Call
-                </button>
-            </div>
-            <div id="live-call-info" class="mt-4 w-full" style="display:none;">
-                <div class="flex flex-col items-center bg-green-50 dark:bg-green-900 rounded-lg p-3 shadow-inner">
-                    <span class="text-green-700 dark:text-green-300 font-semibold text-sm mb-1">Ongoing Call</span>
-                    <span id="live-call-timer" class="font-mono text-xl text-green-900 dark:text-green-200 mb-1">00:00:00</span>
-                    <span id="live-call-earnings" class="font-mono text-lg text-green-800 dark:text-green-100">$0.00 earned</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Rates & Goal Section -->
-    <div class="w-[300px]">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col w-full">
-            <div>
-                <label for="current-rate" class="block text-gray-700 dark:text-gray-200 font-semibold mb-2">Current Rate</label>
-                <select id="current-rate" class="border border-primary dark:border-blue-600 px-2 py-1 rounded-full w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 mb-3 focus:ring-2 focus:ring-primary">
-                </select>
-            </div>
-            <div class="flex flex-col gap-4">
-                <!-- Rates List -->
-               <div class="flex-1">
-    <div class="flex items-center justify-between mb-1">
-        <h2 class="text-md font-semibold text-dark dark:text-gray-200">Rates</h2>
-        <button id="show-rate-add" class="text-primary dark:text-blue-400 text-xs font-medium bg-blue-50 dark:bg-blue-900 px-2 py-1 rounded-full hover:bg-blue-100 dark:hover:bg-blue-800">+ Add Rate</button>
-    </div>
-    <form id="rate-add-form" class="rate-edit-form hidden">
-        <div class="flex flex-col gap-3">
-            <input type="text" 
-                   id="new-rate-name" 
-                   placeholder="Rate Name" 
-                   required 
-                   class="border rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"/>
-            <div class="flex items-center gap-3">
-                <input type="number" 
-                       id="new-rate-value" 
-                       placeholder="Rate/min" 
-                       step="0.01" 
-                       min="0.01" 
-                       required 
-                       class="w-48 border rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"/>
-                <button type="submit" 
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium">
-                    Add
-                </button>
-                <button type="button" 
-                        id="cancel-rate-add" 
-                        class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg font-medium">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </form>
-    <div id="rates-list" class="space-y-2 mt-4"></div>
-</div>
-<!-- Daily Goal -->
-<div class="flex-1">
-    <h2 class="text-md font-semibold text-dark dark:text-gray-200 mb-1">Daily Goal</h2>
-    <form id="goal-form" class="flex items-center gap-2">
-        <input type="number" id="daily-goal" min="0.01" step="0.01"
-            class="border border-secondary dark:border-green-600 rounded-full px-3 py-1 w-28 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"/>
-        <button type="submit" class="bg-secondary text-white px-3 py-1 rounded shadow hover:bg-green-600">Save</button>
-    </form>
-    <span class="block mt-1 text-xs text-gray-500 dark:text-gray-400">(Used for progress stats)</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Daily Stats Section -->
-    <div class="w-[300px]">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
-            <div class="flex flex-col items-center mb-4">
-                <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                    <i class="fas fa-chart-pie text-3xl text-purple-600 dark:text-purple-300"></i>
-                </div>
-                <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Daily Analytics</h2>
-            </div>
-            <div class="w-full space-y-4">
-                <div class="flex flex-col">
-                    <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Average Call Duration</span>
-                    <span id="avg-call-duration" class="text-2xl font-bold text-purple-600 dark:text-purple-400">0 min</span>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Estimated Time to Goal</span>
-                    <span id="time-to-goal" class="text-2xl font-bold text-blue-600 dark:text-blue-400">0 min</span>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Calls Today</span>
-                    <span id="total-calls" class="text-2xl font-bold text-green-600 dark:text-green-400">0</span>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-sm text-gray-600 dark:text-gray-400 mb-1">Hourly Rate (Average)</span>
-                    <span id="hourly-rate" class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">$0.00/hr</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>     
-
-        <!-- Notification Area -->
-        <div id="notification-area" class="fixed top-6 right-6 z-50"></div>
-
-        <!-- Call Log Section -->
-        <div class="mb-8 max-w-6xl mx-auto">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-full px-5 py-2 shadow">
-                    <i class="fas fa-list-alt text-primary dark:text-blue-200 text-2xl"></i>
-                    <span class="text-xl font-bold text-dark dark:text-gray-100 tracking-tight">Call Log</span>
-                </div>
-                <label class="flex items-center gap-2 ml-3 bg-gray-100 dark:bg-gray-800 rounded-lg px-3 py-1 shadow-inner border dark:border-gray-700">
-    <i class="fas fa-calendar-alt text-primary dark:text-blue-200 text-lg"></i>
-    <input type="date" 
-           id="date-picker"
-           class="w-36 border-none bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"/>
-</label>
-            </div>
-            <div class="scrollable-table rounded-xl bg-white dark:bg-gray-800 shadow overflow-hidden">
-                <table class="call-log-table min-w-full">
-                    <thead>
-                        <tr>
-                            <th class="p-4 text-left text-sm font-semibold">#</th>
-                            <th class="p-4 text-left text-sm font-semibold">Start Time</th>
-                            <th class="p-4 text-left text-sm font-semibold">End Time</th>
-                            <th class="p-4 text-left text-sm font-semibold">Duration</th>
-                            <th class="p-4 text-left text-sm font-semibold">Rate</th>
-                            <th class="p-4 text-left text-sm font-semibold">Earnings</th>
-                            <th class="p-4 text-left text-sm font-semibold">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="call-list"></tbody>
-                    <tfoot>
-                        <tr class="bg-gray-50 dark:bg-gray-700">
-                            <td colspan="3" class="p-4 text-right font-semibold">Total</td>
-                            <td id="total-minutes" class="p-4 font-semibold"></td>
-                            <td></td>
-                            <td id="total-earnings" class="p-4 font-semibold"></td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Call Modal -->
-<div id="call-modal" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 z-50" style="display:none;">
-    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Add/Edit Call</h3>
-    <form id="call-form" class="space-y-4">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
-            <input type="date" id="call-date" required class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none"/>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
-            <input type="time" id="call-start" class="w-full border rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-none"/>
-        </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
-                    <input type="time" id="call-end" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"/>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">OR Minutes</label>
-                    <input type="number" id="call-minutes" min="1" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"/>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
-                    <select id="call-rate" class="w-full border rounded px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"></select>
-                </div>
-                <div class="flex justify-end gap-2 mt-6">
-                    <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition">Save</button>
-                    <button type="button" id="cancel-call-btn" class="bg-gray-300 dark:bg-gray-600 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition">Cancel</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Dashboard and Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-6xl mx-auto">
-            <!-- Today's Summary Card -->
-            <div class="col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col items-center">
-                <h2 class="text-2xl font-semibold mb-4 text-dark dark:text-gray-100">Today's Summary</h2>
-                <div class="flex gap-10 items-center mb-4 flex-wrap justify-center">
-                    <div class="text-center">
-                        <div class="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2" id="summary-earnings">$0.00</div>
-                        <div class="text-gray-500 dark:text-gray-400">Earnings</div>
+            <!-- Call Box -->
+            <div class="w-[300px]">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
+                    <div class="flex flex-col items-center mb-2">
+                        <div class="bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                            <i class="fas fa-phone-volume text-3xl text-primary dark:text-blue-300"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
                     </div>
-                    <div class="text-center">
-                        <div class="text-4xl font-bold text-green-600 dark:text-green-400 mb-2" id="summary-worked-time">0:00</div>
-                        <div class="text-gray-500 dark:text-gray-400">Worked Time</div>
+                    <div class="flex flex-col gap-2 w-full">
+                        <button id="add-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600 transition w-full flex items-center justify-center gap-2">
+                            <i class="fas fa-plus"></i> Add Call
+                        </button>
+                        <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:hover:bg-green-800 transition w-full flex items-center justify-center gap-2">
+                            <i class="fas fa-play"></i> Start Call
+                        </button>
+                        <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:hover:bg-red-800 transition w-full flex items-center justify-center gap-2">
+                            <i class="fas fa-stop"></i> End Call
+                        </button>
                     </div>
-                    <div class="text-center">
-                        <div class="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2" id="summary-goal-progress">0%</div>
-                        <div class="text-gray-500 dark:text-gray-400">Goal Progress</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-4xl font-bold text-yellow-600 dark:text-yellow-400 mb-2" id="summary-remaining">$1.00</div>
-                        <div class="text-gray-500 dark:text-gray-400">Remaining</div>
+                    <div id="live-call-info" class="mt-4 w-full" style="display:none;">
+                        <div class="flex flex-col items-center bg-green-50 dark:bg-green-900 rounded-lg p-3 shadow-inner">
+                            <span class="text-green-700 dark:text-green-300 font-semibold text-sm mb-1">Ongoing Call</span>
+                            <span id="live-call-timer" class="font-mono text-xl text-green-900 dark:text-green-200 mb-1">00:00:00</span>
+                            <span id="live-call-earnings" class="font-mono text-lg text-green-800 dark:text-green-100">$0.00 earned</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Period Summaries -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-6xl mx-auto">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col items-center">
-                <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-100">1st Half</h2>
-                <div class="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2" id="firsthalf-earnings">$0.00</div>
-                <div class="text-md text-gray-500 dark:text-gray-400">Worked: <span id="firsthalf-worked">0:00</span></div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col items-center">
-                <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-100">2nd Half</h2>
-                <div class="text-4xl font-bold text-green-600 dark:text-green-400 mb-2" id="secondhalf-earnings">$0.00</div>
-                <div class="text-md text-gray-500 dark:text-gray-400">Worked: <span id="secondhalf-worked">0:00</span></div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col items-center">
-                <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-100">Total (Month)</h2>
-                <div class="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2" id="month-total-earnings">$0.00</div>
-                <div class="text-md text-gray-500 dark:text-gray-400">Worked: <span id="month-total-worked">0:00</span></div>
-            </div>
-        </div>
-
-        <!-- Annual Overview -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-8 max-w-6xl mx-auto">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap gap-4 items-center">
-                <h2 class="text-xl font-semibold text-dark dark:text-gray-100">Annual Overview</h2>
-                <label class="ml-4 flex items-center gap-2">
-                    <span class="text-gray-600 dark:text-gray-400">Year:</span>
-                    <select id="annual-year-select" class="border rounded px-2 py-1 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100"></select>
-                </label>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-gray-900">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Period</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Feb</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Mar</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Apr</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">May</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jun</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jul</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aug</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sep</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Oct</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nov</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Dec</th>
-                        </tr>
-                    </thead>
-                    <tbody id="annual-overview-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        <!-- Filled by JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-<footer class="mt-12 py-6 border-t border-gray-200 dark:border-gray-700">
-    <div class="flex flex-col items-center justify-center gap-2">
-        <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-            <span>Made with</span>
-            <i class="fas fa-heart text-red-500 animate-pulse"></i>
-            <span>by</span>
-            <a href="https://www.instagram.com/otpo/" 
-               target="_blank" 
-               rel="noopener noreferrer" 
-               class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors flex items-center gap-1">
-                <span>Otpo</span>
-                <i class="fab fa-instagram"></i>
-            </a>
-        </p>
-        <p class="text-xs text-gray-500 dark:text-gray-500">
-            © <span id="current-year"></span> Work Time Tracker
-        </p>
-    </div>
-</footer>
-    </div>
-
-    <script>
-    // --- Dark Mode Toggle ---
-    function setDarkMode(enabled) {
-        if (enabled) {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('darkMode', '1');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('darkMode', '0');
-        }
-    }
-
-    // On load, check dark mode
-    if (localStorage.getItem('darkMode') === '1' ||
-        (localStorage.getItem('darkMode') === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        setDarkMode(true);
-    } else {
-        setDarkMode(false);
-    }
-
-    document.getElementById('dark-toggle').onclick = function() {
-        const isDark = document.documentElement.classList.contains('dark');
-        setDarkMode(!isDark);
-    };
-
-        // --- Data Model and Helper Functions ---
-    function getData() {
-        const data = localStorage.getItem('workTimeTracker');
-        if (data) return JSON.parse(data);
-        const initial = {
-            rates: [
-                { id: 'fl', name: 'FL', rate: 0.21 },
-                { id: 'ds', name: 'DS', rate: 0.10 },
-            ],
-            calls: {},
-            goal: 20,
-            currentRate: 'fl',
-        };
-        localStorage.setItem('workTimeTracker', JSON.stringify(initial));
-        return initial;
-    }
-
-    function saveData(data) {
-        localStorage.setItem('workTimeTracker', JSON.stringify(data));
-    }
-
-    function getTodayKey() {
-        const now = new Date();
-        return now.toISOString().slice(0,10);
-    }
-
-    function makeCallId() {
-        return 'call-' + Math.random().toString(36).substr(2,9);
-    }
-
-    function getCallsForDate(dateKey) {
-        const data = getData();
-        return data.calls[dateKey] || [];
-    }
-
-    function setCallsForDate(dateKey, callList) {
-        const data = getData();
-        data.calls[dateKey] = callList;
-        saveData(data);
-    }
-
-    function getRates() {
-        return getData().rates;
-    }
-
-    function setRates(rates) {
-        const data = getData();
-        data.rates = rates;
-        if (!rates.find(r=>r.id === data.currentRate)) {
-            data.currentRate = rates.length ? rates[0].id : null;
-        }
-        saveData(data);
-    }
-
-    function getGoal() {
-        return getData().goal || 1;
-    }
-
-    function setGoal(goal) {
-        const data = getData();
-        data.goal = goal;
-        saveData(data);
-    }
-
-    function getCurrentRateId() {
-        return getData().currentRate || (getRates()[0]?.id ?? '');
-    }
-
-    function setCurrentRateId(rateId) {
-        const data = getData();
-        data.currentRate = rateId;
-        saveData(data);
-    }
-
-    function timeStrToMinutes(t) {
-        if (!t) return null;
-        const [h, m] = t.split(':').map(Number);
-        return h * 60 + m;
-    }
-
-    function minutesToTimeStr(mins) {
-        if (typeof mins !== 'number' || isNaN(mins)) return '';
-        const h = Math.floor(mins / 60);
-        const m = mins % 60;
-        return `${h}:${m.toString().padStart(2, '0')}`;
-    }
-
-    function durationBetween(start, end) {
-        if (!start || !end) return null;
-        let startM = timeStrToMinutes(start);
-        let endM = timeStrToMinutes(end);
-        let diff = endM - startM;
-        if (diff < 0) diff += 24 * 60;
-        return diff;
-    }
-
-    // --- Notification ---
-    function showNotification(msg) {
-        const area = document.getElementById('notification-area');
-        const note = document.createElement('div');
-        note.className = "bg-green-600 text-white px-4 py-2 rounded shadow mb-2 fade-in-out flex items-center gap-2";
-        note.innerHTML = `
-            <i class="fas fa-check-circle"></i>
-            <span>${msg}</span>
-            <button class="ml-2 px-2 py-1 text-white rounded hover:bg-green-800 focus:outline-none"
-                    style="background:none;border:none;"
-                    onclick="this.parentElement.remove()">×</button>`;
-        area.appendChild(note);
-        setTimeout(() => { note.remove(); },2400);
-    }
-
-    // --- Live Ongoing Call Timer ---
-    let liveTimerInterval = null;
-    let liveCallStartTime = null;
-    function showLiveCall(call, rate) {
-        const liveInfo = document.getElementById('live-call-info');
-        const timerSpan = document.getElementById('live-call-timer');
-        const earnSpan = document.getElementById('live-call-earnings');
-        if (!call || !call.start || call.end) {
-            liveInfo.style.display = 'none';
-            if (liveTimerInterval) clearInterval(liveTimerInterval);
-            liveCallStartTime = null;
-            return;
-        }
-        if (!liveCallStartTime) { liveCallStartTime = new Date(); }
-        liveInfo.style.display = '';
-        function updateLiveTimer() {
-            if (!liveCallStartTime) return;
-            const now = new Date();
-            let totalSecs = Math.floor((now - liveCallStartTime) / 1000);
-            if (totalSecs < 0) totalSecs = 0;
-            let h = Math.floor(totalSecs / 3600);
-            let m = Math.floor((totalSecs % 3600) / 60);
-            let s = totalSecs % 60;
-            timerSpan.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            let mins = totalSecs / 60;
-            let earnings = mins * (rate?.rate || 0);
-            earnSpan.textContent = `$${earnings.toFixed(2)} earned`;
-        }
-        updateLiveTimer();
-        if (liveTimerInterval) clearInterval(liveTimerInterval);
-        liveTimerInterval = setInterval(updateLiveTimer, 1000);
-    }
-
-    // --- Call Log Table ---
-    function renderCallList(dateKey) {
-        const callList = getCallsForDate(dateKey);
-        const rates = getRates();
-        const tbody = document.getElementById('call-list');
-        tbody.innerHTML = '';
-        let totalMinutes = 0;
-        let totalEarnings = 0;
-        let ongoingCall = null, ongoingRate = null;
-
-        callList.forEach((call, idx) => {
-            const rate = rates.find(r => r.id === call.rateId) || {name: "?", rate: 0};
-            let minutes = null, earning = 0;
-            if (call.minutes !== undefined && call.minutes !== null) {
-                minutes = call.minutes;
-            } else if (call.start && call.end) {
-                minutes = durationBetween(call.start, call.end);
-            }
-            if (minutes !== null) {
-                earning = minutes * rate.rate;
-                totalMinutes += minutes || 0;
-                totalEarnings += earning || 0;
-            }
-            if (call.start && !call.end) {
-                ongoingCall = call;
-                ongoingRate = rate;
-            }
-            let startFmt = call.start ? `<span class="tag">${call.start}</span>` : '';
-            let endFmt = call.end ? `<span class="tag">${call.end}</span>` : '';
-            let durationFmt = minutes !== null ? `<span class="tag">${minutes} min</span>` : (call.start && !call.end ? '<span class="tag bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-100">live</span>' : '');
-            let earningFmt = earning ? `<span class="tag bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-100">$${earning.toFixed(2)}</span>` : '';
-            let rateFmt = rate.name ? `<span class="tag">${rate.name} ($${rate.rate.toFixed(2)})</span>` : '';
-            
-            const row = document.createElement('tr');
-            row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors';
-            row.innerHTML = `
-                <td class="p-4">${idx + 1}</td>
-                <td class="p-4">${startFmt}</td>
-                <td class="p-4">${endFmt}</td>
-                <td class="p-4">${durationFmt}</td>
-                <td class="p-4">${rateFmt}</td>
-                <td class="p-4">${earningFmt}</td>
-                <td class="p-4">
-                    <button onclick="editCall('${dateKey}','${call.id}')" class="edit-call-btn">
-                        <i class="fas fa-edit"></i> Edit
+                        <!-- Rates & Goal Section -->
+            <div class="w-[300px]">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 w-full mb-6">
+                    <div class="flex flex-col items-center mb-4">
+                        <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                            <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold text-dark dark:text-gray-200">Rates</h2>
+                    </div>
+                    <div id="rates-list" class="mb-4">
+                        <!-- Rates will be added here dynamically -->
+                    </div>
+                    <button id="show-rate-add" class="w-full flex items-center justify-center gap-2 py-1">
+                        <i class="fas fa-plus"></i> Add Rate
                     </button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
+                    <form id="rate-form" class="rate-edit-form" style="display: none;">
+                        <input type="text" id="rate-name" placeholder="Rate Name" required
+                            class="w-full mb-2 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        <div class="flex items-center mb-2">
+                            <span class="text-gray-600 dark:text-gray-300 mr-2">$</span>
+                            <input type="number" id="rate-amount" placeholder="Amount" required step="0.01" min="0"
+                                class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <span class="text-gray-600 dark:text-gray-300 ml-2">/hr</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit"
+                                class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                                Save
+                            </button>
+                            <button type="button" id="cancel-rate-add"
+                                class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
 
-        document.getElementById('total-minutes').textContent = totalMinutes + " min";
-        document.getElementById('total-earnings').textContent = "$" + totalEarnings.toFixed(2);
-
-        showLiveCall(ongoingCall, ongoingRate);
-        updateAllSummaries();
-        renderAnnualOverview();
-    }
-
-    // --- Modal Logic ---
-    function fillRateOptions(forCallModal=false) {
-        const rateSel = forCallModal ? document.getElementById('call-rate') : document.getElementById('current-rate');
-        if (!rateSel) return;
-        rateSel.innerHTML = '';
-        getRates().forEach(r => {
-            const opt = document.createElement('option');
-            opt.value = r.id;
-            opt.textContent = `${r.name} ($${r.rate.toFixed(2)}/min)`;
-            rateSel.appendChild(opt);
-        });
-        if (!forCallModal) {
-            const currentRateId = getCurrentRateId();
-            rateSel.value = currentRateId;
-        }
-    }
-
-    function openCallModal(dateKey, call) {
-        fillRateOptions(true);
-        document.getElementById('call-modal').style.display = '';
-        document.getElementById('call-date').value = dateKey || getTodayKey();
-        document.getElementById('call-start').value = call?.start || '';
-        document.getElementById('call-end').value = call?.end || '';
-        document.getElementById('call-minutes').value = call?.minutes || '';
-        document.getElementById('call-rate').value = call?.rateId || getCurrentRateId();
-        document.getElementById('call-form').dataset.editing = call ? call.id : '';
-    }
-
-    function closeCallModal() {
-        document.getElementById('call-modal').style.display = 'none';
-    }
-
-    document.getElementById('call-form').onsubmit = function(e) {
-        e.preventDefault();
-        const dateKey = document.getElementById('call-date').value;
-        let start = document.getElementById('call-start').value;
-        let end = document.getElementById('call-end').value;
-        let minutes = parseInt(document.getElementById('call-minutes').value, 10);
-        if (!minutes && start && end) {
-            minutes = durationBetween(start, end);
-        }
-        const rateId = document.getElementById('call-rate').value;
-        if (!minutes || minutes < 1) {
-            alert("Enter valid times or minutes!");
-            return;
-        }
-        const calls = getCallsForDate(dateKey);
-        const editingId = this.dataset.editing;
-        if (editingId) {
-            const idx = calls.findIndex(c => c.id === editingId);
-            if (idx !== -1) {
-                calls[idx] = { id: editingId, start, end, minutes, rateId };
-            }
-        } else {
-            calls.push({
-                id: makeCallId(),
-                start,
-                end,
-                minutes,
-                rateId
-            });
-        }
-        setCallsForDate(dateKey, calls);
-        closeCallModal();
-        renderCallList(document.getElementById('date-picker').value);
-    };
-
-    document.getElementById('cancel-call-btn').onclick = closeCallModal;
-    document.getElementById('add-call-btn').onclick = function() {
-        openCallModal(document.getElementById('date-picker').value || getTodayKey());
-    };
-
-    window.editCall = function(dateKey, callId) {
-        const calls = getCallsForDate(dateKey);
-        const call = calls.find(c => c.id === callId);
-        if (call) openCallModal(dateKey, call);
-    };
-
-    // --- Date Picker + Start/End Call ---
-    const datePicker = document.getElementById('date-picker');
-    datePicker.value = getTodayKey();
-    datePicker.onchange = function() {
-        liveCallStartTime = null;
-        renderCallList(this.value);
-    };
-
-    document.getElementById('start-call-btn').onclick = function() {
-        const dateKey = document.getElementById('date-picker').value || getTodayKey();
-        const rates = getRates();
-        const defaultRate = getCurrentRateId();
-        if (!defaultRate) {
-            alert("Please set up at least one rate first!");
-            return;
-        }
-        const calls = getCallsForDate(dateKey);
-        if (calls.some(c => c.start && !c.end)) {
-            alert("You already have an ongoing call for this day!");
-            return;
-        }
-        liveCallStartTime = new Date();
-        const now = new Date();
-        const timeStr = now.toTimeString().slice(0,5);
-        calls.push({
-            id: makeCallId(),
-            start: timeStr,
-            end: '',
-            minutes: null,
-            rateId: defaultRate
-        });
-        setCallsForDate(dateKey, calls);
-        renderCallList(dateKey);
-    };
-
-    document.getElementById('end-call-btn').onclick = function() {
-        const dateKey = document.getElementById('date-picker').value || getTodayKey();
-        const now = new Date();
-        const timeStr = now.toTimeString().slice(0,5);
-        const calls = getCallsForDate(dateKey);
-        for (let i = calls.length - 1; i >= 0; i--) {
-            if (calls[i].start && !calls[i].end) {
-                calls[i].end = timeStr;
-                const mins = durationBetween(calls[i].start, calls[i].end);
-                calls[i].minutes = mins;
-                setCallsForDate(dateKey, calls);
-                liveCallStartTime = null;
-                renderCallList(dateKey);
-                return;
-            }
-        }
-        alert("No call found to end! Start a call first.");
-    };
-
-    // --- Rates List Management ---
-    function renderRatesList() {
-        const list = document.getElementById('rates-list');
-        const rates = getRates();
-        list.innerHTML = '';
-        rates.forEach(r => {
-            const row = document.createElement('div');
-            row.className = 'flex items-center mb-2 gap-2';
-            row.innerHTML = `
-                <span class="flex-1">${r.name} <span class="text-gray-500 dark:text-gray-400 text-xs">($${r.rate.toFixed(2)}/min)</span></span>
-                <button class="inline-flex items-center px-2 py-0.5 rounded bg-primary text-white text-xs font-semibold hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-800 transition gap-1 edit-rate-btn" data-id="${r.id}"><i class="fas fa-edit"></i> Edit</button>
-            `;
-            list.appendChild(row);
-        });
-        // Wire up edit buttons
-        list.querySelectorAll('.edit-rate-btn').forEach(btn => {
-            btn.onclick = function() {
-                showEditRateForm(this.dataset.id);
-            };
-        });
-    }
-
-    function showEditRateForm(rateId) {
-        const rates = getRates();
-        const idx = rates.findIndex(r => r.id === rateId);
-        if (idx === -1) return;
-        const r = rates[idx];
-        const list = document.getElementById('rates-list');
-        const editDiv = document.createElement('form');
-        editDiv.className = 'flex items-center gap-2 mb-2 bg-gray-50 dark:bg-gray-900 rounded p-2';
-        editDiv.innerHTML = `
-            <input type="text" value="${r.name}" class="border rounded px-2 py-1 w-1/3 dark:bg-gray-700 dark:border-gray-600" id="edit-rate-name"/>
-            <input type="number" step="0.01" min="0.01" value="${r.rate}" class="border rounded px-2 py-1 w-1/3 dark:bg-gray-700 dark:border-gray-600" id="edit-rate-value"/>
-            <button type="submit" class="bg-primary text-white px-3 py-1 rounded save-edit-rate">Save</button>
-            <button type="button" class="bg-red-500 text-white px-3 py-1 rounded delete-rate ml-2">Delete</button>
-            <button type="button" class="text-gray-500 px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cancel-edit-rate ml-1">Cancel</button>
-        `;
-        const oldRow = list.querySelectorAll('.flex.items-center')[idx];
-        oldRow.style.display = 'none';
-        oldRow.parentElement.insertBefore(editDiv, oldRow);
-
-        // Save on enter or Save button
-        editDiv.onsubmit = function(e) {
-            e.preventDefault();
-            const newName = editDiv.querySelector('#edit-rate-name').value.trim();
-            const newRate = parseFloat(editDiv.querySelector('#edit-rate-value').value);
-            if (!newName || isNaN(newRate) || newRate <= 0) {
-                alert("Enter a valid name and rate");
-                return;
-            }
-            rates[idx].name = newName;
-            rates[idx].rate = newRate;
-            setRates(rates);
-            renderRatesList();
-            fillRateOptions();
-            updateAllSummaries();
-            showNotification('Rate updated!');
-        };
-
-        editDiv.querySelector('.delete-rate').onclick = function() {
-            if (!confirm("Delete this rate?")) return;
-            rates.splice(idx,1);
-            setRates(rates);
-            renderRatesList();
-            fillRateOptions();
-            updateAllSummaries();
-            showNotification('Rate deleted!');
-        };
-
-        editDiv.querySelector('.cancel-edit-rate').onclick = function() {
-            renderRatesList();
-        };
-    }
-
-    document.getElementById('show-rate-add').onclick = function() {
-        document.getElementById('rate-add-form').classList.remove('hidden');
-        document.getElementById('show-rate-add').classList.add('hidden');
-        document.getElementById('new-rate-name').focus();
-    };
-
-    document.getElementById('cancel-rate-add').onclick = function() {
-        document.getElementById('rate-add-form').classList.add('hidden');
-        document.getElementById('show-rate-add').classList.remove('hidden');
-    };
-
-    document.getElementById('rate-add-form').onsubmit = function(e) {
-        e.preventDefault();
-        const name = document.getElementById('new-rate-name').value.trim();
-        const rate = parseFloat(document.getElementById('new-rate-value').value);
-        if (!name || isNaN(rate) || rate <= 0) return;
-        const rates = getRates();
-        rates.push({id: `rate-${Math.random().toString(36).substr(2,9)}`, name, rate});
-        setRates(rates);
-        renderRatesList();
-        fillRateOptions();
-        updateAllSummaries();
-        showNotification('New rate added!');
-        this.reset();
-        this.classList.add('hidden');
-        document.getElementById('show-rate-add').classList.remove('hidden');
-    };
-
-    // --- Goal Form ---
-    document.getElementById('goal-form').onsubmit = function(e) {
-        e.preventDefault();
-        const val = parseFloat(document.getElementById('daily-goal').value);
-        if (isNaN(val) || val <= 0) {
-            alert("Enter a valid goal amount.");
-            return;
-        }
-        setGoal(val);
-        updateAllSummaries();
-        showNotification('Goal updated!');
-    };
-
-    // --- Current Rate Selector ---
-    document.getElementById('current-rate').onchange = function() {
-        setCurrentRateId(this.value);
-        fillRateOptions(true); // Also update call modal rates
-        showNotification('Current rate set!');
-    };
-
-    // --- Summaries and Stats ---
-    function updateAllSummaries() {
-        // Determine date for which to show stats (selected in picker)
-        const dateKey = document.getElementById('date-picker').value || getTodayKey();
-        const d = new Date(dateKey);
-        const year = d.getFullYear();
-        const month = d.getMonth();
-        const todayKey = getTodayKey();
-        // Get rates and goal
-        const rates = getRates();
-        const goal = getGoal();
-
-        // Today's summary (if dateKey matches today)
-        let isToday = (dateKey === todayKey);
-
-        // Calls for selected day
-        const calls = getCallsForDate(dateKey);
-        let mins = 0, earn = 0;
-        calls.forEach(call => {
-            let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
-            let m = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
-            mins += m || 0;
-            earn += (m || 0) * rate.rate;
-        });
-        document.getElementById('summary-worked-time').textContent = minutesToTimeStr(mins);
-        document.getElementById('summary-earnings').textContent = `$${earn.toFixed(2)}`;
-        document.getElementById('summary-goal-progress').textContent = `${Math.round((earn/goal)*100)}%`;
-        document.getElementById('summary-remaining').textContent = `$${Math.max(0, goal-earn).toFixed(2)}`;
-        updateDailyStats();
-
-        // 1st/2nd half/monthly stats (for selected month)
-        let fh_mins=0, fh_earn=0, sh_mins=0, sh_earn=0, month_total_mins=0, month_total_earn=0;
-        for(let day=1; day<=31; ++day) {
-            let dateStr = `${year}-${(month+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
-            let cs = getCallsForDate(dateStr);
-            if (!cs.length) continue;
-            let dayMins = 0, dayEarn = 0;
-            cs.forEach(call => {
-                let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
-                let m = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
-                dayMins += m || 0;
-                dayEarn += (m || 0) * rate.rate;
-            });
-            month_total_mins += dayMins;
-            month_total_earn += dayEarn;
-            if (day <= 15) {
-                fh_mins += dayMins; fh_earn += dayEarn;
-            } else {
-                sh_mins += dayMins; sh_earn += dayEarn;
-            }
-        }
-        document.getElementById('firsthalf-worked').textContent = minutesToTimeStr(fh_mins);
-        document.getElementById('firsthalf-earnings').textContent = `$${fh_earn.toFixed(2)}`;
-        document.getElementById('secondhalf-worked').textContent = minutesToTimeStr(sh_mins);
-        document.getElementById('secondhalf-earnings').textContent = `$${sh_earn.toFixed(2)}`;
-        document.getElementById('month-total-worked').textContent = minutesToTimeStr(month_total_mins);
-        document.getElementById('month-total-earnings').textContent = `$${month_total_earn.toFixed(2)}`;
-    }
-
-    // --- Annual Overview ---
-    function renderAnnualOverview() {
-        // fill year select
-        const sel = document.getElementById('annual-year-select');
-        const thisYear = new Date().getFullYear();
-        if (!sel.dataset.filled) {
-            for (let y = thisYear - 3; y <= thisYear + 1; ++y) {
-                let opt = document.createElement('option');
-                opt.value = y;
-                opt.textContent = y;
-                sel.appendChild(opt);
-            }
-            sel.value = thisYear;
-            sel.dataset.filled = "1";
-        }
-        const year = parseInt(sel.value,10);
-        const rates = getRates();
-
-        // Fill two rows: 1-15 and 16-31, and total
-        let half1 = [], half2 = [], total = [];
-        for (let m=0; m<12; ++m) {
-            let h1_earn=0, h2_earn=0;
-            for (let day=1; day<=31; ++day) {
-                let dateStr = `${year}-${(m+1).toString().padStart(2,'0')}-${day.toString().padStart(2,'0')}`;
-                let cs = getCallsForDate(dateStr);
-                if (!cs.length) continue;
-                let dayEarn = 0;
-                cs.forEach(call => {
-                    let rate = rates.find(r => r.id === call.rateId) || {rate: 0};
-                    let mm = call.minutes !== undefined && call.minutes !== null ? call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
-                    dayEarn += (mm || 0) * rate.rate;
-                });
-                if (day <= 15) h1_earn += dayEarn;
-                else h2_earn += dayEarn;
-            }
-            half1.push(h1_earn);
-            half2.push(h2_earn);
-            total.push(h1_earn + h2_earn);
-        }
-        function rowHTML(label, arr) {
-            return `<tr><td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${label}</td>` +
-                arr.map(v=>`<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">$${v.toFixed(2)}</td>`).join('') + `</tr>`;
-        }
-        document.getElementById('annual-overview-body').innerHTML =
-            rowHTML('1-15', half1) + rowHTML('16-31', half2) + rowHTML('Total', total);
-    }
-
-    document.getElementById('annual-year-select').onchange = function() {
-        renderAnnualOverview();
-    };
-
-    // --- Initialize ---
-    function initialize() {
-        renderRatesList();
-        fillRateOptions();
-        document.getElementById('daily-goal').value = getGoal();
-        document.getElementById('current-rate').value = getCurrentRateId();
-        renderCallList(getTodayKey());
-        updateAllSummaries();
-        renderAnnualOverview();
-    }
-        function updateDailyStats() {
-    const dateKey = document.getElementById('date-picker').value || getTodayKey();
-    const calls = getCallsForDate(dateKey);
-    const rates = getRates();
-    const goal = getGoal();
-    
-    // Calculate total minutes and earnings
-    let totalMinutes = 0;
-    let totalEarnings = 0;
-    let completedCalls = 0;
-    
-    calls.forEach(call => {
-        const rate = rates.find(r => r.id === call.rateId) || {rate: 0};
-        let minutes = call.minutes !== undefined && call.minutes !== null ? 
-            call.minutes : (call.start && call.end ? durationBetween(call.start, call.end) : 0);
-        if (minutes) {
-            totalMinutes += minutes;
-            totalEarnings += minutes * rate.rate;
-            completedCalls++;
-        }
-    });
-
-    // Average call duration
-    const avgDuration = completedCalls > 0 ? Math.round(totalMinutes / completedCalls) : 0;
-    document.getElementById('avg-call-duration').textContent = `${avgDuration} min`;
-
-    // Estimate time needed to reach goal
-    const remainingEarnings = Math.max(0, goal - totalEarnings);
-    const averageRate = totalMinutes > 0 ? totalEarnings / totalMinutes : 0;
-    const estimatedMinutesNeeded = averageRate > 0 ? Math.ceil(remainingEarnings / averageRate) : 0;
-    document.getElementById('time-to-goal').textContent = `${estimatedMinutesNeeded} min`;
-
-    // Total calls
-    document.getElementById('total-calls').textContent = calls.length;
-
-    // Hourly rate
-    const hourlyRate = totalMinutes > 0 ? (totalEarnings / totalMinutes) * 60 : 0;
-    document.getElementById('hourly-rate').textContent = `$${hourlyRate.toFixed(2)}/hr`;
-}
-    initialize();
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-    </script>
+                <!-- Daily Goal Section -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 w-full">
+                    <div class="flex flex-col items-center mb-4">
+                        <div class="bg-green-100 dark:bg-green-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                            <i class="fas fa-bullseye text-3xl text-green-500 dark:text-green-300"></i>
+                        </div>
+                        <h2 class="text-lg font-semibold text-dark dark:text-gray-200">Daily Goal</h2>
+                    </div>
+                    <form id="goal-form" class="flex items-center gap-2">
+                        <div class="flex-1">
+                            <div class="flex items-center">
+                                <span class="text-gray-600 dark:text-gray-300 mr-2">$</span>
+                                <input type="number" id="goal-amount" placeholder="Amount" required step="0.01" min="0"
+                                    class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            </div>
+                        </div>
+                        <button type="submit" class="px-4 py-2 rounded transition-colors duration-200">
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </form>
+                    <div class="mt-4">
+                        <div class="relative pt-1">
+                            <div class="flex mb-2 items-center justify-between">
+                                <div>
+                                    <span id="goal-progress-text"
+                                        class="text-xs font-semibold inline-block text-green-600 dark:text-green-400">
+                                        0%
+                                    </span>
+                                </div>
+                                <div class="text-right">
+                                    <span id="goal-amount-display"
+                                        class="text-xs font-semibold inline-block text-green-600 dark:text-green-400">
+                                        $0 / $0
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex h-2 mb-4 overflow-hidden bg-green-200 rounded dark:bg-green-900">
+                                <div id="goal-progress-bar"
+                                    class="flex flex-col justify-center overflow-hidden bg-green-500"
+                                    role="progressbar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
+                <!-- Call Log Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+            <div class="p-6">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                        <i class="fas fa-history text-blue-500 mr-2"></i>Call Log
+                    </h2>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-600 dark:text-gray-400">Total Time:</span>
+                            <span id="total-minutes" class="font-mono text-lg">00:00:00</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-600 dark:text-gray-400">Total Earnings:</span>
+                            <span id="total-earnings" class="font-mono text-lg">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="call-log-table w-full">
+                        <thead>
+                            <tr class="text-left">
+                                <th class="font-semibold">Date</th>
+                                <th class="font-semibold">Duration</th>
+                                <th class="font-semibold">Rate</th>
+                                <th class="font-semibold">Earned</th>
+                                <th class="font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="call-log">
+                            <!-- Call log entries will be added here dynamically -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-gray-50 dark:bg-gray-800">
+                                <td colspan="5" class="py-4 text-center text-gray-500 dark:text-gray-400">
+                                    End of call log
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call Modal -->
+        <div id="call-modal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Add Call</h3>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="call-form">
+                    <div class="mb-4">
+                        <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
+                        <input type="datetime-local" id="call-date" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-4">
+                        <label for="call-duration" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (minutes)</label>
+                        <input type="number" id="call-duration" required min="1" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    </div>
+                    <div class="mb-6">
+                        <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
+                        <select id="call-rate" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <!-- Rate options will be added here dynamically -->
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-3">
+                        <button type="button" id="cancel-call" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+            <script>
+        // Utility functions
+        const formatMoney = (amount) => `$${Number(amount).toFixed(2)}`;
+        const formatDuration = (minutes) => {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            const secs = Math.floor((minutes % 1) * 60);
+            return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        };
+
+        // Dark mode toggle
+        const darkToggle = document.getElementById('dark-toggle');
+        darkToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        });
+
+        // Initialize dark mode from localStorage
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+
+        // State management
+        let rates = JSON.parse(localStorage.getItem('rates')) || [];
+        let calls = JSON.parse(localStorage.getItem('calls')) || [];
+        let currentCall = null;
+        let callTimer = null;
+        let goal = parseFloat(localStorage.getItem('goal')) || 0;
+
+        // DOM elements
+        const ratesList = document.getElementById('rates-list');
+        const rateForm = document.getElementById('rate-form');
+        const rateName = document.getElementById('rate-name');
+        const rateAmount = document.getElementById('rate-amount');
+        const showRateAdd = document.getElementById('show-rate-add');
+        const cancelRateAdd = document.getElementById('cancel-rate-add');
+        const callLog = document.getElementById('call-log');
+        const startCallBtn = document.getElementById('start-call-btn');
+        const endCallBtn = document.getElementById('end-call-btn');
+        const addCallBtn = document.getElementById('add-call-btn');
+        const callModal = document.getElementById('call-modal');
+        const callForm = document.getElementById('call-form');
+        const closeModal = document.getElementById('close-modal');
+        const cancelCall = document.getElementById('cancel-call');
+        const callDate = document.getElementById('call-date');
+        const callDuration = document.getElementById('call-duration');
+        const callRate = document.getElementById('call-rate');
+        const liveCallInfo = document.getElementById('live-call-info');
+        const liveCallTimer = document.getElementById('live-call-timer');
+        const liveCallEarnings = document.getElementById('live-call-earnings');
+        const goalForm = document.getElementById('goal-form');
+        const goalAmount = document.getElementById('goal-amount');
+        const goalProgressBar = document.getElementById('goal-progress-bar');
+        const goalProgressText = document.getElementById('goal-progress-text');
+        const goalAmountDisplay = document.getElementById('goal-amount-display');
+        const totalMinutes = document.getElementById('total-minutes');
+        const totalEarnings = document.getElementById('total-earnings');
+
+        // Rate management
+        function displayRates() {
+            ratesList.innerHTML = rates.map((rate, index) => `
+                <div class="rates-list-item">
+                    <div class="flex-1">
+                        <span class="font-medium">${rate.name}</span>
+                        <span class="text-gray-600 dark:text-gray-400"> - ${formatMoney(rate.amount)}/hr</span>
+                    </div>
+                    <button onclick="deleteRate(${index})" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+            
+            // Update rate options in call modal
+            callRate.innerHTML = rates.map((rate, index) => 
+                `<option value="${index}">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
+            ).join('');
+
+            localStorage.setItem('rates', JSON.stringify(rates));
+        }
+
+        function deleteRate(index) {
+            rates.splice(index, 1);
+            displayRates();
+        }
+
+        // Rate form handlers
+        showRateAdd.addEventListener('click', () => {
+            rateForm.style.display = 'block';
+            showRateAdd.style.display = 'none';
+        });
+
+        cancelRateAdd.addEventListener('click', () => {
+            rateForm.style.display = 'none';
+            showRateAdd.style.display = 'flex';
+            rateForm.reset();
+        });
+
+        rateForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            rates.push({
+                name: rateName.value,
+                amount: parseFloat(rateAmount.value)
+            });
+            displayRates();
+            rateForm.style.display = 'none';
+            showRateAdd.style.display = 'flex';
+            rateForm.reset();
+        });
+
+        // Call management
+        function displayCalls() {
+            calls.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            callLog.innerHTML = calls.map((call, index) => {
+                const rate = rates[call.rateIndex];
+                const duration = call.duration;
+                const earned = (rate.amount / 60) * duration;
+                
+                return `
+                    <tr>
+                        <td>${new Date(call.date).toLocaleString()}</td>
+                        <td>${formatDuration(duration)}</td>
+                        <td>${rate.name} (${formatMoney(rate.amount)}/hr)</td>
+                        <td>${formatMoney(earned)}</td>
+                        <td>
+                            <button onclick="deleteCall(${index})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            updateTotals();
+            localStorage.setItem('calls', JSON.stringify(calls));
+        }
+
+        function deleteCall(index) {
+            calls.splice(index, 1);
+            displayCalls();
+        }
+
+        function updateTotals() {
+            let totalMins = 0;
+            let totalEarned = 0;
+
+            calls.forEach(call => {
+                const rate = rates[call.rateIndex];
+                totalMins += call.duration;
+                totalEarned += (rate.amount / 60) * call.duration;
+            });
+
+            if (currentCall) {
+                const currentDuration = (Date.now() - currentCall.startTime) / 60000;
+                const currentRate = rates[currentCall.rateIndex];
+                totalMins += currentDuration;
+                totalEarned += (currentRate.amount / 60) * currentDuration;
+            }
+
+            totalMinutes.textContent = formatDuration(totalMins);
+            totalEarnings.textContent = formatMoney(totalEarned);
+
+            // Update goal progress
+            if (goal > 0) {
+                const progress = Math.min((totalEarned / goal) * 100, 100);
+                goalProgressBar.style.width = `${progress}%`;
+                goalProgressText.textContent = `${Math.round(progress)}%`;
+                goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
+            }
+        }
+
+        // Call timer functionality
+        function updateCallTimer() {
+            if (!currentCall) return;
+            
+            const duration = (Date.now() - currentCall.startTime) / 60000;
+            const rate = rates[currentCall.rateIndex];
+            const earned = (rate.amount / 60) * duration;
+            
+            liveCallTimer.textContent = formatDuration(duration);
+            liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
+            updateTotals();
+        }
+
+        startCallBtn.addEventListener('click', () => {
+            if (rates.length === 0) {
+                alert('Please add at least one rate before starting a call.');
+                return;
+            }
+
+            currentCall = {
+                startTime: Date.now(),
+                rateIndex: 0
+            };
+
+            startCallBtn.disabled = true;
+            endCallBtn.disabled = false;
+            liveCallInfo.style.display = 'block';
+            callTimer = setInterval(updateCallTimer, 1000);
+        });
+
+        endCallBtn.addEventListener('click', () => {
+            if (!currentCall) return;
+
+            const duration = (Date.now() - currentCall.startTime) / 60000;
+            calls.push({
+                date: new Date(currentCall.startTime).toISOString(),
+                duration: duration,
+                rateIndex: currentCall.rateIndex
+            });
+
+            clearInterval(callTimer);
+            currentCall = null;
+            startCallBtn.disabled = false;
+            endCallBtn.disabled = true;
+            liveCallInfo.style.display = 'none';
+            displayCalls();
+        });
+
+        // Call modal functionality
+        addCallBtn.addEventListener('click', () => {
+            if (rates.length === 0) {
+                alert('Please add at least one rate before adding a call.');
+                return;
+            }
+            callModal.style.display = 'flex';
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            callDate.value = now.toISOString().slice(0, 16);
+        });
+
+        closeModal.addEventListener('click', () => {
+            callModal.style.display = 'none';
+            callForm.reset();
+        });
+
+        cancelCall.addEventListener('click', () => {
+            callModal.style.display = 'none';
+            callForm.reset();
+        });
+
+        callForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            calls.push({
+                date: new Date(callDate.value).toISOString(),
+                duration: parseFloat(callDuration.value),
+                rateIndex: parseInt(callRate.value)
+            });
+            displayCalls();
+            callModal.style.display = 'none';
+            callForm.reset();
+        });
+
+        // Goal management
+        goalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            goal = parseFloat(goalAmount.value);
+            localStorage.setItem('goal', goal);
+            updateTotals();
+        });
+
+        // Initialize
+        if (goal) {
+            goalAmount.value = goal;
+            updateTotals();
+        }
+        
+        displayRates();
+        displayCalls();
+        endCallBtn.disabled = true;
+    </script>
 </body>
 </html>
