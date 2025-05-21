@@ -756,8 +756,6 @@ currentDateBtn.addEventListener('click', () => {
         let callTimer = null;
         let editingCallIndex = null;
         let goal = parseFloat(localStorage.getItem('goal')) || 0;
-        let selectedMonth = new Date().getMonth();
-        let selectedYear = new Date().getFullYear();
         let selectedDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
 
         // DOM elements
@@ -793,22 +791,7 @@ currentDateBtn.addEventListener('click', () => {
         const currentDateBtn = document.getElementById('current-date-btn');
         const dailyTotalEarnings = document.getElementById('daily-total-earnings');
         const avgDuration = document.getElementById('avg-duration');
-
-                // Initialize month picker with current month
-setMonthPickerValue(selectedYear, selectedMonth);
-
-// Month picker event listener
-document.getElementById('stats-month-picker').addEventListener('change', (e) => {
-    const [year, month] = e.target.value.split('-');
-    updateStatsForDate(parseInt(year), parseInt(month) - 1);
-});
-
-// Current month button event listener
-document.getElementById('current-month-btn').addEventListener('click', () => {
-    const now = new Date();
-    setMonthPickerValue(now.getFullYear(), now.getMonth());
-    updateStatsForDate(now.getFullYear(), now.getMonth());
-});        
+  
 
         // Rate management
         function displayRates() {
@@ -975,38 +958,7 @@ function updateStatsForDate(date) {
 
             updateTotals();
             updateStatistics();
-            function setMonthPickerValue(year, month) {
-    const monthStr = String(month + 1).padStart(2, '0');
-    document.getElementById('stats-month-picker').value = `${year}-${monthStr}`;
-}
-
-function updateStatsForDate(year, month) {
-    selectedYear = year;
-    selectedMonth = month;
-    
-    const midMonth = new Date(year, month, 15, 23, 59, 59);
-    const startOfMonth = new Date(year, month, 1);
-    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59);
-    
-    let firstHalfEarnings = 0;
-    let secondHalfEarnings = 0;
-    let monthCalls = [];
-    
-    calls.forEach(call => {
-        const callDate = new Date(call.date);
-        if (callDate >= startOfMonth && callDate <= endOfMonth) {
-            const rate = rates[call.rateIndex];
-            const minutes = Math.floor(call.duration / 60);
-            const earned = rate.amount * minutes;
             
-            if (callDate <= midMonth) {
-                firstHalfEarnings += earned;
-            } else {
-                secondHalfEarnings += earned;
-            }
-            monthCalls.push(call);
-        }
-    });
     
     // Update statistics
     if (monthCalls.length > 0) {
