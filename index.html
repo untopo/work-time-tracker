@@ -782,10 +782,11 @@ input[type="time"]:focus {
         function displayCalls() {
     calls.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    callLog.innerHTML = calls.map((call, index) => {
+     callLog.innerHTML = calls.map((call, index) => {
         const rate = rates[call.rateIndex];
         const duration = call.duration;
-        const earned = rate.amount * (duration / 3600);
+        const minutes = Math.floor(duration / 60); // Convert seconds to minutes
+        const earned = rate.amount * minutes;
                 
                 return `
                     <tr>
@@ -842,11 +843,12 @@ input[type="time"]:focus {
 
         // Call timer functionality
         function updateCallTimer() {
-            if (!currentCall) return;
-            
-            const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-            const rate = rates[currentCall.rateIndex];
-            const earned = (rate.amount / 3600) * duration;
+           if (!currentCall) return;
+    
+           const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+           const minutes = Math.floor(duration / 60);
+           const rate = rates[currentCall.rateIndex];
+           const earned = rate.amount * minutes;;
             
             liveCallTimer.textContent = formatDuration(duration);
             liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
