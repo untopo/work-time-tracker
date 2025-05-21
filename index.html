@@ -585,6 +585,63 @@ input[type="time"]:focus {
                 </div>
             </div>
         </div>
+        <!-- Statistics Dashboard Section -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+    <div class="p-6">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <i class="fas fa-chart-bar text-purple-500 mr-2"></i>Call Statistics
+        </h2>
+        <div class="flex justify-between items-center mb-6">
+    <div class="flex items-center gap-4">
+        <input type="month" id="stats-month-picker" 
+            class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+        />
+        <button id="current-month-btn" 
+            class="px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+            Current Month
+        </button>
+    </div>
+</div>
+        <div class="flex justify-between items-center mb-6">
+    <div class="flex items-center gap-4">
+        <input type="month" id="stats-month-picker" 
+            class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"
+        />
+        <button id="current-month-btn" 
+            class="px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+            Current Month
+        </button>
+    </div>
+</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Average Duration Card -->
+            <div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
+                <h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2">
+                    <i class="fas fa-clock mr-2"></i>Average Call Duration
+                </h3>
+                <p id="avg-duration" class="text-2xl font-bold text-blue-800 dark:text-blue-200">00:00:00</p>
+            </div>
+            <!-- Goal Progress Card -->
+            <div class="bg-green-50 dark:bg-green-900/40 p-4 rounded-lg">
+                <h3 class="text-green-700 dark:text-green-300 font-medium mb-2">
+                    <i class="fas fa-bullseye mr-2"></i>Goal Progress
+                </h3>
+                <p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
+            </div>
+            <!-- Monthly Earnings Card -->
+            <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+                <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+                    <i class="fas fa-money-bill-wave mr-2"></i>Monthly Earnings
+                </h3>
+                <div class="space-y-2">
+                    <p class="text-sm text-purple-600 dark:text-purple-300">First Half: <span id="first-half-earnings" class="font-bold">$0.00</span></p>
+                    <p class="text-sm text-purple-600 dark:text-purple-300">Second Half: <span id="second-half-earnings" class="font-bold">$0.00</span></p>
+                    <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">Total: <span id="monthly-total-earnings">$0.00</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
                 <!-- Call Log Section -->
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
             <div class="p-6">
@@ -698,6 +755,8 @@ input[type="time"]:focus {
         let callTimer = null;
         let editingCallIndex = null;
         let goal = parseFloat(localStorage.getItem('goal')) || 0;
+        let selectedMonth = new Date().getMonth();
+        let selectedYear = new Date().getFullYear();
 
         // DOM elements
         const modalTitle = document.getElementById('modal-title');
@@ -728,7 +787,22 @@ input[type="time"]:focus {
         const goalAmountDisplay = document.getElementById('goal-amount-display');
         const totalMinutes = document.getElementById('total-minutes');
         const totalEarnings = document.getElementById('total-earnings');
-        
+
+                // Initialize month picker with current month
+setMonthPickerValue(selectedYear, selectedMonth);
+
+// Month picker event listener
+document.getElementById('stats-month-picker').addEventListener('change', (e) => {
+    const [year, month] = e.target.value.split('-');
+    updateStatsForDate(parseInt(year), parseInt(month) - 1);
+});
+
+// Current month button event listener
+document.getElementById('current-month-btn').addEventListener('click', () => {
+    const now = new Date();
+    setMonthPickerValue(now.getFullYear(), now.getMonth());
+    updateStatsForDate(now.getFullYear(), now.getMonth());
+});        
 
         // Rate management
         function displayRates() {
@@ -783,9 +857,17 @@ input[type="time"]:focus {
 
         // Call management
         function displayCalls() {
-    calls.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const startOfMonth = new Date(selectedYear, selectedMonth, 1);
+    const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59);
     
-     callLog.innerHTML = calls.map((call, index) => {
+    const filteredCalls = calls.filter(call => {
+        const callDate = new Date(call.date);
+        return callDate >= startOfMonth && callDate <= endOfMonth;
+    });
+    
+    filteredCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    callLog.innerHTML = filteredCalls.map((call, index) => {
         const rate = rates[call.rateIndex];
         const duration = call.duration;
         const minutes = Math.floor(duration / 60); // Convert seconds to minutes
@@ -813,12 +895,87 @@ input[type="time"]:focus {
             }).join('');
 
             updateTotals();
+            updateStatistics();
+            function setMonthPickerValue(year, month) {
+    const monthStr = String(month + 1).padStart(2, '0');
+    document.getElementById('stats-month-picker').value = `${year}-${monthStr}`;
+}
+
+function updateStatsForDate(year, month) {
+    selectedYear = year;
+    selectedMonth = month;
+    
+    const midMonth = new Date(year, month, 15, 23, 59, 59);
+    const startOfMonth = new Date(year, month, 1);
+    const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59);
+    
+    let firstHalfEarnings = 0;
+    let secondHalfEarnings = 0;
+    let monthCalls = [];
+    
+    calls.forEach(call => {
+        const callDate = new Date(call.date);
+        if (callDate >= startOfMonth && callDate <= endOfMonth) {
+            const rate = rates[call.rateIndex];
+            const minutes = Math.floor(call.duration / 60);
+            const earned = rate.amount * minutes;
+            
+            if (callDate <= midMonth) {
+                firstHalfEarnings += earned;
+            } else {
+                secondHalfEarnings += earned;
+            }
+            monthCalls.push(call);
+        }
+    });
+    
+    // Update statistics
+    if (monthCalls.length > 0) {
+        const totalDuration = monthCalls.reduce((sum, call) => sum + call.duration, 0);
+        const avgDuration = Math.floor(totalDuration / monthCalls.length);
+        document.getElementById('avg-duration').textContent = formatDuration(avgDuration);
+    } else {
+        document.getElementById('avg-duration').textContent = '00:00:00';
+    }
+    
+    document.getElementById('first-half-earnings').textContent = formatMoney(firstHalfEarnings);
+    document.getElementById('second-half-earnings').textContent = formatMoney(secondHalfEarnings);
+    document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
+    
+    // Only show goal progress for current month
+    const now = new Date();
+    if (selectedMonth === now.getMonth() && selectedYear === now.getFullYear()) {
+        document.getElementById('goal-estimate').parentElement.style.display = 'block';
+        updateGoalProgress(firstHalfEarnings + secondHalfEarnings);
+    } else {
+        document.getElementById('goal-estimate').parentElement.style.display = 'none';
+    }
+}
+
+function updateGoalProgress(totalEarned) {
+    if (goal > 0) {
+        const remainingAmount = Math.max(0, goal - totalEarned);
+        if (totalEarned > 0) {
+            // Calculate average earning per day so far this month
+            const today = new Date();
+            const dayOfMonth = today.getDate();
+            const avgDailyEarning = totalEarned / dayOfMonth;
+            
+            if (avgDailyEarning > 0) {
+                const daysToGoal = Math.ceil(remainingAmount / avgDailyEarning);
+                document.getElementById('goal-estimate').textContent = 
+                    remainingAmount > 0 ? `~${daysToGoal} days to goal` : 'Goal Reached!';
+            }
+        }
+    }
+}
             localStorage.setItem('calls', JSON.stringify(calls));
         }
 
         function deleteCall(index) {
             calls.splice(index, 1);
             displayCalls();
+            updateStatistics();
         }
                 
         function deleteCall(index) {
@@ -875,7 +1032,39 @@ function editCall(index) {
                 goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
             }
         }
-
+function updateStatistics() {
+    updateStatsForDate(selectedYear, selectedMonth);
+}
+        
+        // Calculate monthly earnings
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const midMonth = new Date(currentYear, currentMonth, 15, 23, 59, 59);
+        
+        let firstHalfEarnings = 0;
+        let secondHalfEarnings = 0;
+        
+        calls.forEach(call => {
+            const callDate = new Date(call.date);
+            if (callDate.getMonth() === currentMonth && callDate.getFullYear() === currentYear) {
+                const rate = rates[call.rateIndex];
+                const minutes = Math.floor(call.duration / 60);
+                const earned = rate.amount * minutes;
+                
+                if (callDate <= midMonth) {
+                    firstHalfEarnings += earned;
+                } else {
+                    secondHalfEarnings += earned;
+                }
+            }
+        });
+        
+        document.getElementById('first-half-earnings').textContent = formatMoney(firstHalfEarnings);
+        document.getElementById('second-half-earnings').textContent = formatMoney(secondHalfEarnings);
+        document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
+    }
+}
         // Call timer functionality
         function updateCallTimer() {
            if (!currentCall) return;
@@ -975,6 +1164,7 @@ cancelCall.addEventListener('click', () => {
     }
 
     displayCalls();
+    updateStatistics();
     callModal.style.display = 'none';
     callForm.reset();
     modalTitle.textContent = 'Add Call';
@@ -996,6 +1186,7 @@ cancelCall.addEventListener('click', () => {
         
         displayRates();
         displayCalls();
+        updateStatistics();
         endCallBtn.disabled = true;
     </script>
 </body>
