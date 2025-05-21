@@ -786,6 +786,20 @@ input[type="time"]:focus {
             document.documentElement.classList.toggle('dark');
             localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
         });
+                // Initialize date picker with current date
+setDatePickerValue(selectedDate);
+
+// Date picker event listener
+statsDatePicker.addEventListener('change', (e) => {
+    updateStatsForDate(e.target.value);
+});
+
+// Current date button event listener
+currentDateBtn.addEventListener('click', () => {
+    const today = new Date().toISOString().split('T')[0];
+    setDatePickerValue(today);
+    updateStatsForDate(today);
+});
 
         // Initialize dark mode from localStorage
         if (localStorage.getItem('darkMode') === 'true') {
@@ -801,6 +815,7 @@ input[type="time"]:focus {
         let goal = parseFloat(localStorage.getItem('goal')) || 0;
         let selectedMonth = new Date().getMonth();
         let selectedYear = new Date().getFullYear();
+        let selectedDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
 
         // DOM elements
         const modalTitle = document.getElementById('modal-title');
@@ -904,6 +919,43 @@ document.getElementById('current-month-btn').addEventListener('click', () => {
         });
 
         // Call management
+                function setDatePickerValue(date) {
+    statsDatePicker.value = date;
+}
+
+function updateStatsForDate(date) {
+    selectedDate = date;
+    
+    // Filter calls for selected date
+    const dayStart = new Date(date);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23, 59, 59, 999);
+    
+    const daysCalls = calls.filter(call => {
+        const callDate = new Date(call.date);
+        return callDate >= dayStart && callDate <= dayEnd;
+    });
+    
+    // Calculate statistics
+    if (daysCalls.length > 0) {
+        // Average duration
+        const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
+        const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
+        avgDuration.textContent = formatDuration(avgDurationValue);
+        
+        // Daily earnings
+        const totalEarned = daysCalls.reduce((sum, call) => {
+            const rate = rates[call.rateIndex];
+            const minutes = Math.floor(call.duration / 60);
+            return sum + (rate.amount * minutes);
+        }, 0);
+        
+        dailyTotalEarnings.textContent = formatMoney(totalEarned);
+    } else {
+        avgDuration.textContent = '00:00:00';
+        dailyTotalEarnings.textContent = '$0.00';
+    }
+}
         function displayCalls() {
     const startOfMonth = new Date(selectedYear, selectedMonth, 1);
     const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59);
