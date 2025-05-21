@@ -782,6 +782,22 @@ input[type="time"]:focus {
         const currentDateBtn = document.getElementById('current-date-btn');
         const dailyTotalEarnings = document.getElementById('daily-total-earnings');
         const avgDuration = document.getElementById('avg-duration');
+
+                // Initialize date picker
+statsDatePicker.value = selectedDate;
+statsDatePicker.addEventListener('change', (e) => {
+    selectedDate = e.target.value;
+    displayCalls();
+    updateStatistics();
+});
+
+currentDateBtn.addEventListener('click', () => {
+    const today = new Date().toISOString().split('T')[0];
+    statsDatePicker.value = today;
+    selectedDate = today;
+    displayCalls();
+    updateStatistics();
+});
   
 
         // Rate management
@@ -919,80 +935,6 @@ function updateStatsForDate(date) {
     updateTotals();
     localStorage.setItem('calls', JSON.stringify(calls));
 }
-    
-    callLog.innerHTML = filteredCalls.map((call, index) => {
-        const rate = rates[call.rateIndex];
-        const duration = call.duration;
-        const minutes = Math.floor(duration / 60); // Convert seconds to minutes
-        const earned = rate.amount * minutes;
-                
-                return `
-                    <tr>
-                        <td>${new Date(call.date).toLocaleString()}</td>
-                        <td>${formatDuration(duration)}</td>
-                        <td>${rate.name} (${formatMoney(rate.amount)}/hr)</td>
-                        <td>${formatMoney(earned)}</td>
-                        <td>
-                            <td class="pl-4">
-    <div class="flex gap-2">
-        <button onclick="editCall(${index})" class="text-blue-500 hover:text-blue-700">
-            <i class="fas fa-edit"></i>
-        </button>
-        <button onclick="deleteCall(${index})" class="text-red-500 hover:text-red-700">
-            <i class="fas fa-trash"></i>
-        </button>
-    </div>
-</td>
-                    </tr>
-                `;
-            }).join('');
-
-            updateTotals();
-            updateStatistics();
-            
-    
-    // Update statistics
-    if (monthCalls.length > 0) {
-        const totalDuration = monthCalls.reduce((sum, call) => sum + call.duration, 0);
-        const avgDuration = Math.floor(totalDuration / monthCalls.length);
-        document.getElementById('avg-duration').textContent = formatDuration(avgDuration);
-    } else {
-        document.getElementById('avg-duration').textContent = '00:00:00';
-    }
-    
-    document.getElementById('first-half-earnings').textContent = formatMoney(firstHalfEarnings);
-    document.getElementById('second-half-earnings').textContent = formatMoney(secondHalfEarnings);
-    document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
-    
-    // Only show goal progress for current month
-    const now = new Date();
-    if (selectedMonth === now.getMonth() && selectedYear === now.getFullYear()) {
-        document.getElementById('goal-estimate').parentElement.style.display = 'block';
-        updateGoalProgress(firstHalfEarnings + secondHalfEarnings);
-    } else {
-        document.getElementById('goal-estimate').parentElement.style.display = 'none';
-    }
-}
-
-function updateGoalProgress(totalEarned) {
-    if (goal > 0) {
-        const remainingAmount = Math.max(0, goal - totalEarned);
-        if (totalEarned > 0) {
-            // Calculate average earning per day so far this month
-            const today = new Date();
-            const dayOfMonth = today.getDate();
-            const avgDailyEarning = totalEarned / dayOfMonth;
-            
-            if (avgDailyEarning > 0) {
-                const daysToGoal = Math.ceil(remainingAmount / avgDailyEarning);
-                document.getElementById('goal-estimate').textContent = 
-                    remainingAmount > 0 ? `~${daysToGoal} days to goal` : 'Goal Reached!';
-            }
-        }
-    }
-}
-            localStorage.setItem('calls', JSON.stringify(calls));
-        }
 
         function deleteCall(index) {
             calls.splice(index, 1);
@@ -1051,58 +993,6 @@ function editCall(index) {
             }
         }
         
-        // Calculate monthly earnings
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        const midMonth = new Date(currentYear, currentMonth, 15, 23, 59, 59);
-        
-        let firstHalfEarnings = 0;
-        let secondHalfEarnings = 0;
-        
-        calls.forEach(call => {
-            const callDate = new Date(call.date);
-            if (callDate.getMonth() === currentMonth && callDate.getFullYear() === currentYear) {
-                const rate = rates[call.rateIndex];
-                const minutes = Math.floor(call.duration / 60);
-                const earned = rate.amount * minutes;
-                
-                if (callDate <= midMonth) {
-                    firstHalfEarnings += earned;
-                } else {
-                    secondHalfEarnings += earned;
-                }
-            }
-        });
-        
-        document.getElementById('first-half-earnings').textContent = formatMoney(firstHalfEarnings);
-        document.getElementById('second-half-earnings').textContent = formatMoney(secondHalfEarnings);
-        document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
-    }
-}
-    
-    let totalDuration = 0;
-    let totalEarnings = 0;
-    
-    daysCalls.forEach(call => {
-        const rate = rates[call.rateIndex];
-        totalDuration += call.duration;
-        totalEarnings += (rate.amount / 60) * call.duration;
-    });
-    
-    // Update the statistics display
-    document.getElementById('avg-duration').textContent = 
-        daysCalls.length > 0 ? formatDuration(Math.floor(totalDuration / daysCalls.length)) : '00:00:00';
-    
-    document.getElementById('daily-total-earnings').textContent = formatMoney(totalEarnings);
-    
-    // Update goal estimate
-    if (goal > 0) {
-        const remainingAmount = Math.max(0, goal - totalEarnings);
-        document.getElementById('goal-estimate').textContent = 
-            remainingAmount > 0 ? `$${remainingAmount.toFixed(2)} to goal` : 'Goal Reached!';
-    }
-}
         // Call timer functionality
         function updateCallTimer() {
            if (!currentCall) return;
@@ -1264,9 +1154,6 @@ if (goal) {
     goalAmount.value = goal;
     updateTotals();
 }
-
-// Set initial date
-statsDatePicker.value = selectedDate;
 
 // Ensure buttons are in correct state
 startCallBtn.disabled = false;
