@@ -785,7 +785,7 @@ input[type="time"]:focus {
             callLog.innerHTML = calls.map((call, index) => {
                 const rate = rates[call.rateIndex];
                 const duration = call.duration;
-                const earned = (rate.amount / 3600) * duration;
+                const earned = (rate.amount * (duration / 3600));
                 
                 return `
                     <tr>
