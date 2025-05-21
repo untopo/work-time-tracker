@@ -1149,7 +1149,7 @@ function updateStatistics() {
         document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
     }
 }
-                function updateStatistics() {
+    function updateStatistics() {
     if (!selectedDate) return;
     
     const dayStart = new Date(selectedDate);
@@ -1282,7 +1282,6 @@ cancelCall.addEventListener('click', () => {
     }
 
     displayCalls();
-    updateStatistics();
     callModal.style.display = 'none';
     callForm.reset();
     modalTitle.textContent = 'Add Call';
@@ -1299,7 +1298,6 @@ cancelCall.addEventListener('click', () => {
 // Date picker handlers
 statsDatePicker.addEventListener('change', (e) => {
     selectedDate = e.target.value;
-    updateStatistics();
     displayCalls();
 });
 
@@ -1307,7 +1305,6 @@ currentDateBtn.addEventListener('click', () => {
     const today = new Date().toISOString().split('T')[0];
     statsDatePicker.value = today;
     selectedDate = today;
-    updateStatistics();
     displayCalls();
 });
 
