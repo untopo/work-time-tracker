@@ -930,6 +930,63 @@ goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goa
 }
 }
 
+function updateStatistics() {
+    const filteredCalls = filterCallsByDate(calls, selectedDate);
+    
+    // Update total calls today
+    if (document.getElementById('total-calls-today')) {
+        document.getElementById('total-calls-today').textContent = filteredCalls.length;
+    }
+
+    // Update daily earnings
+    if (document.getElementById('daily-total-earnings')) {
+        let dailyEarnings = 0;
+        filteredCalls.forEach(call => {
+            const rate = rates[call.rateIndex];
+            if (rate) {
+                dailyEarnings += (rate.amount / 60) * call.duration;
+            }
+        });
+        document.getElementById('daily-total-earnings').textContent = formatMoney(dailyEarnings);
+    }
+
+    // Update average duration
+    if (document.getElementById('avg-duration')) {
+        if (filteredCalls.length > 0) {
+            const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
+            const avgDurationSeconds = Math.floor(totalDuration / filteredCalls.length);
+            document.getElementById('avg-duration').textContent = formatDuration(avgDurationSeconds);
+        } else {
+            document.getElementById('avg-duration').textContent = '00:00:00';
+        }
+    }
+
+    // Update goal estimate
+    if (document.getElementById('goal-estimate') && goal > 0) {
+        let currentEarnings = 0;
+        filteredCalls.forEach(call => {
+            const rate = rates[call.rateIndex];
+            if (rate) {
+                currentEarnings += (rate.amount / 60) * call.duration;
+            }
+        });
+        
+        if (currentEarnings >= goal) {
+            document.getElementById('goal-estimate').textContent = 'Goal reached!';
+        } else {
+            const remaining = goal - currentEarnings;
+            // Estimate using current/latest rate
+            const latestRate = rates[rates.length - 1];
+            if (latestRate) {
+                const minsToGoal = Math.ceil(remaining / (latestRate.amount / 60));
+                document.getElementById('goal-estimate').textContent = `${minsToGoal} mins to goal`;
+            }
+        }
+    }
+
+    updateTotals();
+}
+    
 // Initialize date picker with today's local date
 const now = new Date();
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -976,6 +1033,19 @@ const currentDateBtn = document.getElementById('current-date-btn');
 const dailyTotalEarnings = document.getElementById('daily-total-earnings');
 const avgDuration = document.getElementById('avg-duration');
 
+// Initialize goal form handler
+if (goalForm) {
+    goalForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newGoal = parseFloat(goalAmount.value);
+        if (!isNaN(newGoal) && newGoal >= 0) {
+            goal = newGoal;
+            localStorage.setItem('goal', goal);
+            updateStatistics();
+        }
+    });
+}
+    
 // Initialize goal amount display
 if (goalAmount) {
 goalAmount.value = goal || '';
@@ -1176,15 +1246,14 @@ function addCallToLog(date, duration, rateIndex) {
     // Create a new Date object in local time
     const callDate = new Date(date);
     
-    // Store the date in ISO format but preserve local time
-    const localDate = new Date(
-        callDate.getFullYear(),
-        callDate.getMonth(),
-        callDate.getDate(),
-        callDate.getHours(),
-        callDate.getMinutes(),
-        callDate.getSeconds()
-    ).toISOString();
+    // Format date in a way that preserves local timezone
+    const year = callDate.getFullYear();
+    const month = String(callDate.getMonth() + 1).padStart(2, '0');
+    const day = String(callDate.getDate()).padStart(2, '0');
+    const hours = String(callDate.getHours()).padStart(2, '0');
+    const minutes = String(callDate.getMinutes()).padStart(2, '0');
+    const seconds = String(callDate.getSeconds()).padStart(2, '0');
+    const localDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
     calls.push({
         date: localDate,
@@ -1304,6 +1373,10 @@ if (endCallBtn) {
         if (startCallBtn) startCallBtn.disabled = false;
         endCallBtn.disabled = true;
         if (liveCallInfo) liveCallInfo.style.display = 'none';
+        
+        // Update displays
+        displayCalls();
+        updateStatistics();
     });
 }
 
