@@ -1165,8 +1165,64 @@ displayedCalls = filterCallsByDate(displayedCalls, selectedDate);
         }
 
         function updateTotals() {
-            let totalDuration = 0;
-            let totalEarned = 0;
+    let totalDuration = 0;
+    let totalEarned = 0;
+
+    // Filter calls for selected date
+    const filteredCalls = filterCallsByDate(calls, selectedDate);
+
+    // Calculate totals from completed calls
+    filteredCalls.forEach(call => {
+        const rate = rates[call.rateIndex];
+        if (rate) {
+            totalDuration += call.duration;
+            totalEarned += rate.amount * (call.duration / 60); // Convert seconds to minutes
+        }
+    });
+
+    // Add current call if it exists and is from today
+    if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
+        const currentDuration = (Date.now() - currentCall.startTime) / 1000;
+        const currentRate = rates[currentCall.rateIndex];
+        if (currentRate) {
+            totalDuration += currentDuration;
+            totalEarned += currentRate.amount * (currentDuration / 60);
+        }
+    }
+
+    // Update total displays
+    if (totalMinutes) totalMinutes.textContent = formatDuration(Math.floor(totalDuration));
+    if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
+
+    // Update goal progress
+    if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
+        const progress = Math.min((totalEarned / goal) * 100, 100);
+        
+        // Smooth progress bar update
+        const currentWidth = parseFloat(goalProgressBar.style.width) || 0;
+        const targetWidth = progress;
+        
+        // Animate progress bar if difference is significant
+        if (Math.abs(targetWidth - currentWidth) > 0.1) {
+            goalProgressBar.style.transition = 'width 0.5s ease-out';
+            goalProgressBar.style.width = `${targetWidth}%`;
+        }
+        
+        goalProgressText.textContent = `${Math.round(progress)}%`;
+        goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
+        
+        // Add visual feedback for goal completion
+        if (progress >= 100) {
+            goalProgressBar.classList.add('bg-green-500');
+            goalProgressBar.classList.remove('bg-blue-500');
+            goalProgressText.classList.add('text-green-600');
+        } else {
+            goalProgressBar.classList.add('bg-blue-500');
+            goalProgressBar.classList.remove('bg-green-500');
+            goalProgressText.classList.remove('text-green-600');
+        }
+    }
+}
 
             // Filter calls for selected date
 const filteredCalls = filterCallsByDate(calls, selectedDate);
@@ -1430,7 +1486,102 @@ if (isDateInFuture(selectedDate)) {
         }
                             
         function updateStatistics() {
-            if (!selectedDate) return;
+    if (!selectedDate) return;
+    
+    // For daily stats
+    const daysCalls = filterCallsByDate(calls, selectedDate);
+    
+    // Calculate earnings including live call
+    let currentDayEarnings = daysCalls.reduce((sum, call) => {
+        const rate = rates[call.rateIndex];
+        return rate ? sum + rate.amount * (call.duration / 60) : sum;
+    }, 0);
+    
+    // Add live call earnings if there is one today
+    if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
+        const currentDuration = (Date.now() - currentCall.startTime) / 1000;
+        const currentRate = rates[currentCall.rateIndex];
+        if (currentRate) {
+            currentDayEarnings += currentRate.amount * (currentDuration / 60);
+        }
+    }
+    
+    // Calculate total calls for today
+    const totalCallsElement = document.getElementById('total-calls-today');
+    if (totalCallsElement) {
+        totalCallsElement.textContent = daysCalls.length.toString();
+    }
+    
+    // Calculate recent earning rate (last 5 calls)
+    const recentCalls = [...daysCalls].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+    let recentEarningRate = 0;
+    if (recentCalls.length > 0) {
+        const recentEarnings = recentCalls.reduce((sum, call) => {
+            const rate = rates[call.rateIndex];
+            return rate ? sum + rate.amount * (call.duration / 60) : sum;
+        }, 0);
+        const recentDuration = recentCalls.reduce((sum, call) => sum + call.duration, 0);
+        recentEarningRate = recentDuration > 0 ? (recentEarnings / (recentDuration / 60)) : 0;
+    }
+    
+    // Update goal estimate
+    const goalEstimateElement = document.getElementById('goal-estimate');
+    if (goalEstimateElement && goal > 0) {
+        const remainingAmount = Math.max(0, goal - currentDayEarnings);
+        if (remainingAmount > 0 && recentEarningRate > 0) {
+            const estimatedMinutes = Math.ceil(remainingAmount / recentEarningRate);
+            goalEstimateElement.textContent = `~${estimatedMinutes} mins to goal`;
+        } else if (remainingAmount <= 0) {
+            goalEstimateElement.textContent = 'Goal Reached!';
+        } else {
+            goalEstimateElement.textContent = 'Set goal & log calls';
+        }
+    }
+    
+    // Update monthly statistics
+    const now = new Date(selectedDate);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const midMonth = new Date(now.getFullYear(), now.getMonth(), 15, 23, 59, 59);
+    
+    let firstHalfEarnings = 0;
+    let secondHalfEarnings = 0;
+    
+    calls.forEach(call => {
+        const callDate = new Date(call.date);
+        if (callDate >= monthStart && callDate <= monthEnd) {
+            const rate = rates[call.rateIndex];
+            if (rate) {
+                const earned = rate.amount * (call.duration / 60);
+                if (callDate <= midMonth) {
+                    firstHalfEarnings += earned;
+                } else {
+                    secondHalfEarnings += earned;
+                }
+            }
+        }
+    });
+    
+    // Update earnings displays
+    const firstHalfElement = document.getElementById('first-half-earnings');
+    const secondHalfElement = document.getElementById('second-half-earnings');
+    const monthlyTotalElement = document.getElementById('monthly-total-earnings');
+    const dailyTotalElement = document.getElementById('daily-total-earnings');
+    
+    if (firstHalfElement) firstHalfElement.textContent = formatMoney(firstHalfEarnings);
+    if (secondHalfElement) secondHalfElement.textContent = formatMoney(secondHalfEarnings);
+    if (monthlyTotalElement) monthlyTotalElement.textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
+    if (dailyTotalElement) dailyTotalElement.textContent = formatMoney(currentDayEarnings);
+    
+    // Update average duration
+    if (daysCalls.length > 0) {
+        const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
+        const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
+        if (avgDuration) avgDuration.textContent = formatDuration(avgDurationValue);
+    } else {
+        if (avgDuration) avgDuration.textContent = '00:00:00';
+    }
+}
             
             // For daily stats
 const daysCalls = filterCallsByDate(calls, selectedDate);
