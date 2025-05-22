@@ -788,6 +788,20 @@ input[type="time"]:focus {
     return div.innerHTML;
 };
 
+// Date utility functions
+const isSameDay = (date1, date2) => {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    return d1.getUTCFullYear() === d2.getUTCFullYear() &&
+           d1.getUTCMonth() === d2.getUTCMonth() &&
+           d1.getUTCDate() === d2.getUTCDate();
+};
+
+const filterCallsByDate = (calls, targetDate) => {
+    if (!targetDate) return calls;
+    return calls.filter(call => isSameDay(call.date, targetDate));
+};
+        
         // Dark mode toggle
         const darkToggle = document.getElementById('dark-toggle');
         if (darkToggle) {
@@ -992,16 +1006,10 @@ const focusableElements = 'button, [href], input, select, textarea, [tabindex]:n
             let displayedCalls = calls;
             
             // Sort filtered calls by date
-            displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            // Filter by selected date
-            if (selectedDate) {
-                displayedCalls = displayedCalls.filter(call => {
-                    const callDate = new Date(call.date);
-                    const callDateStr = callDate.toISOString().split('T')[0];
-                    return callDateStr === selectedDate;
-                });
-            }
+displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+// Filter by selected date
+displayedCalls = filterCallsByDate(displayedCalls, selectedDate);
             
             callLog.innerHTML = displayedCalls.map((call, originalIndex) => {
                 const rate = rates[call.rateIndex];
@@ -1071,11 +1079,7 @@ const focusableElements = 'button, [href], input, select, textarea, [tabindex]:n
             let totalEarned = 0;
 
             // Filter calls for selected date
-            const filteredCalls = calls.filter(call => {
-                const callDate = new Date(call.date);
-                const callDateStr = callDate.toISOString().split('T')[0];
-                return callDateStr === selectedDate;
-            });
+const filteredCalls = filterCallsByDate(calls, selectedDate);
 
             filteredCalls.forEach(call => {
                 const rate = rates[call.rateIndex];
@@ -1341,11 +1345,7 @@ if (cancelCall) {
             if (!selectedDate) return;
             
             // For daily stats
-            const daysCalls = calls.filter(call => {
-                const callDate = new Date(call.date);
-                const callDateStr = callDate.toISOString().split('T')[0];
-                return callDateStr === selectedDate;
-            });
+const daysCalls = filterCallsByDate(calls, selectedDate);
 
             // Calculate total calls for today
             const totalCallsElement = document.getElementById('total-calls-today');
