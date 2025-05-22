@@ -859,7 +859,7 @@ input[type="time"]:focus {
                 <div class="rates-list-item">
                     <div class="flex-1">
                         <span class="font-medium">${rate.name}</span>
-                        <span class="text-gray-600 dark:text-gray-400"> - ${formatMoney(rate.amount)}/hr</span>
+                        <span class="text-gray-600 dark:text-gray-400"> - ${formatMoney(rate.amount)}/min</span>
                     </div>
                     <button onclick="deleteRate(${index})" class="text-red-500 hover:text-red-700">
                         <i class="fas fa-trash"></i>
@@ -870,7 +870,7 @@ input[type="time"]:focus {
             // Update rate options in call modal
             if (callRate) {
                 callRate.innerHTML = rates.map((rate, index) => 
-                    `<option value="${index}">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
+                    `<option value="${index}">${rate.name} (${formatMoney(rate.amount)}/min)</option>`
                 ).join('');
             }
                        // Update live call rate selector
@@ -878,7 +878,7 @@ input[type="time"]:focus {
             if (liveCallRate) {
                 const currentValue = liveCallRate.value;
                 liveCallRate.innerHTML = rates.map((rate, index) => 
-                    `<option value="${index}" class="bg-white dark:bg-gray-800">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
+                    `<option value="${index}" class="bg-white dark:bg-gray-800">${rate.name} (${formatMoney(rate.amount)}/min)</option>`
                 ).join('');
                 // Preserve selected value if it still exists in rates
                 if (rates.some((_, index) => index.toString() === currentValue)) {
@@ -962,7 +962,7 @@ input[type="time"]:focus {
                     <tr>
                         <td>${new Date(call.date).toLocaleString()}</td>
                         <td>${formatDuration(duration)}</td>
-                        <td>${rate.name} (${formatMoney(rate.amount)}/hr)</td>
+                        <td>${rate.name} (${formatMoney(rate.amount)}/min)</td>
                         <td>${formatMoney(earned)}</td>
                         <td class="pl-4">
                             <div class="flex gap-2">
@@ -1028,7 +1028,7 @@ input[type="time"]:focus {
                 const rate = rates[call.rateIndex];
                 if (rate) {
                                                            totalDuration += call.duration;
-                    totalEarned += rate.amount * (call.duration / 60); // Convert seconds to hours and multiply by hourly rate
+                    totalEarned += rate.amount * (call.duration / 60); // Multiply per-minute rate by minutes
                 }
             });
 
@@ -1037,7 +1037,7 @@ input[type="time"]:focus {
                 const currentRate = rates[currentCall.rateIndex];
                                 if (currentRate) {
                                         totalDuration += currentDuration;
-                    totalEarned += currentRate.amount * (currentDuration / 3600); // Convert seconds to hours and multiply by hourly rate
+                    totalEarned += currentRate.amount * (currentDuration / 60); // Multiply per-minute rate by minutes // Convert seconds to hours and multiply by hourly rate
                 }
             }
 
@@ -1230,7 +1230,7 @@ input[type="time"]:focus {
                 const rate = rates[call.rateIndex];
                 if (rate) {
                     totalSecondsWorked += call.duration;
-                                        totalEarnings += rate.amount * (call.duration / 60); // Convert seconds to hours and multiply by hourly rate
+                                        totalEarnings += rate.amount * (call.duration / 60); // Multiply per-minute rate by minutes
                 }
             });
             
