@@ -954,9 +954,9 @@ input[type="time"]:focus {
                 const rate = rates[call.rateIndex];
                 if (!rate) return '';
                 
-                                const duration = call.duration;
-                const minutes = duration / 60; // Convert seconds to minutes
-                const earned = (rate.amount / 60) * minutes; // hourly rate / 60 = per-minute rate
+                                                const duration = call.duration;
+                const hours = duration / 3600; // Convert seconds to hours
+                const earned = rate.amount * hours; // Simply multiply hourly rate by hours
                         
                 return `
                     <tr>
@@ -1027,8 +1027,8 @@ input[type="time"]:focus {
             filteredCalls.forEach(call => {
                 const rate = rates[call.rateIndex];
                 if (rate) {
-                                       totalDuration += call.duration;
-                    totalEarned += (rate.amount / 60) * (call.duration / 60);
+                                                           totalDuration += call.duration;
+                    totalEarned += rate.amount * (call.duration / 3600); // Convert seconds to hours and multiply by hourly rate
                 }
             });
 
@@ -1036,8 +1036,8 @@ input[type="time"]:focus {
                 const currentDuration = (Date.now() - currentCall.startTime) / 1000;
                 const currentRate = rates[currentCall.rateIndex];
                                 if (currentRate) {
-                    totalDuration += currentDuration;
-                    totalEarned += (currentRate.amount / 60) * (currentDuration / 60);
+                                        totalDuration += currentDuration;
+                    totalEarned += currentRate.amount * (currentDuration / 3600); // Convert seconds to hours and multiply by hourly rate
                 }
             }
 
@@ -1057,11 +1057,12 @@ input[type="time"]:focus {
         function updateCallTimer() {
             if (!currentCall) return;
     
-            const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+                        const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
             const rate = rates[currentCall.rateIndex];
             if (!rate) return;
             
-            const earned = (rate.amount / 60) * (duration / 60);
+            const hours = duration / 3600; // Convert seconds to hours
+            const earned = rate.amount * hours; // Simply multiply hourly rate by hours
             
             if (liveCallTimer) liveCallTimer.textContent = formatDuration(duration);
             if (liveCallEarnings) liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
@@ -1229,7 +1230,7 @@ input[type="time"]:focus {
                 const rate = rates[call.rateIndex];
                 if (rate) {
                     totalSecondsWorked += call.duration;
-                    totalEarnings += (rate.amount / 60) * (call.duration / 60);
+                                        totalEarnings += rate.amount * (call.duration / 3600); // Convert seconds to hours and multiply by hourly rate
                 }
             });
             
