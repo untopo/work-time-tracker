@@ -896,42 +896,6 @@ currentDateBtn.addEventListener('click', () => {
             rateForm.reset();
         });
 
-// Add this new function to filter calls
-function filterCallsForDate() {
-    const filteredCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
-        const callDateStr = callDate.toISOString().split('T')[0];
-        return callDateStr === selectedDate;
-    });
-    
-    // Update display with filtered calls
-    callLog.innerHTML = filteredCalls.map((call, index) => {
-        const rate = rates[call.rateIndex];
-        const duration = call.duration;
-        const minutes = Math.floor(duration / 60);
-        const earned = rate.amount * minutes;
-        
-        return `
-            <tr>
-                <td>${new Date(call.date).toLocaleString()}</td>
-                <td>${formatDuration(duration)}</td>
-                <td>${rate.name} (${formatMoney(rate.amount)}/hr)</td>
-                <td>${formatMoney(earned)}</td>
-                <td class="pl-4">
-                    <div class="flex gap-2">
-                        <button onclick="editCall(${index})" class="text-blue-500 hover:text-blue-700">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="deleteCall(${index})" class="text-red-500 hover:text-red-700">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
-}
-
         // Call management
                 function setDatePickerValue(date) {
     statsDatePicker.value = date;
@@ -941,9 +905,32 @@ function updateStatsForDate(date) {
     selectedDate = date;
     
     // Filter calls for selected date
-    const dayStart = new Date(date);
-    const dayEnd = new Date(date);
-    dayEnd.setHours(23, 59, 59, 999);
+    const daysCalls = calls.filter(call => {
+        const callDate = new Date(call.date);
+        const callDateStr = callDate.toISOString().split('T')[0];
+        return callDateStr === selectedDate;
+    });
+    
+    // Calculate statistics
+    if (daysCalls.length > 0) {
+        // Average duration
+        const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
+        const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
+        avgDuration.textContent = formatDuration(avgDurationValue);
+        
+        // Daily earnings
+        const totalEarned = daysCalls.reduce((sum, call) => {
+            const rate = rates[call.rateIndex];
+            const minutes = Math.floor(call.duration / 60);
+            return sum + (rate.amount * minutes);
+        }, 0);
+        
+        dailyTotalEarnings.textContent = formatMoney(totalEarned);
+    } else {
+        avgDuration.textContent = '00:00:00';
+        dailyTotalEarnings.textContent = '$0.00';
+    }
+}
     
     const daysCalls = calls.filter(call => {
         const callDate = new Date(call.date);
