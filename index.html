@@ -860,8 +860,15 @@
 
         // Timezone utility functions
         function getLocalISOString(date) {
-    date = new Date(date);
-    return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    const d = new Date(date);
+            
+    // Keep the date in local timezone
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
         function isDateInFuture(dateToCheck) {
@@ -1165,12 +1172,20 @@ if (goalAmount) {
         }
 
         function addCallToLog(date, duration, rateIndex) {
-    // Create a new Date object from the input
-    let callDate = new Date(date);
+    // Create date object and keep local timezone
+    const callDate = new Date(date);
     
-    // Store the call with local timezone date
+    // Format date in a way that preserves timezone
+    const formattedDate = new Date(
+        callDate.getFullYear(),
+        callDate.getMonth(),
+        callDate.getDate(),
+        callDate.getHours(),
+        callDate.getMinutes()
+    ).toISOString();
+
     calls.push({
-        date: callDate.toISOString(),
+        date: formattedDate,
         duration: duration,
         rateIndex: rateIndex
     });
@@ -1267,10 +1282,10 @@ if (goalAmount) {
 
         const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
         
-        // Add call using the new function
-        addCallToLog(currentCall.startTime, duration, currentCall.rateIndex);
+        // Add call with current time
+        addCallToLog(new Date(), duration, currentCall.rateIndex);
 
-        // Clear all active timers
+        // Clear timers and reset state
         activeTimers.forEach(timerId => clearInterval(timerId));
         activeTimers.clear();
         callTimer = null;
@@ -1278,6 +1293,8 @@ if (goalAmount) {
         if (startCallBtn) startCallBtn.disabled = false;
         endCallBtn.disabled = true;
         if (liveCallInfo) liveCallInfo.style.display = 'none';
+        displayCalls();
+        updateStatistics();
     });
 }
 
@@ -1410,7 +1427,7 @@ if (callForm) {
             return;
         }
         
-        // Get the date from the input
+        // Get date from input and preserve timezone
         const inputDate = new Date(callDate.value);
         
         if (editingCallIndex !== null) {
@@ -1420,6 +1437,13 @@ if (callForm) {
                 rateIndex: parseInt(callRate.value)
             };
         } else {
+            // Add new call
+            addCallToLog(inputDate, totalSeconds, parseInt(callRate.value));
+        }
+        
+        closeModal();
+    });
+}
             // Add new call
             addCallToLog(inputDate, totalSeconds, parseInt(callRate.value));
         }
