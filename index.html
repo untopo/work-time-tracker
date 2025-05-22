@@ -1239,9 +1239,9 @@ input[type="time"]:focus {
             // Calculate time to goal
             const goalEstimateElement = document.getElementById('goal-estimate');
             if (goalEstimateElement && goal > 0 && avgEarningPerMinute > 0) {
-                const currentDayEarnings = daysCalls.reduce((sum, call) => {
+                                const currentDayEarnings = daysCalls.reduce((sum, call) => {
                     const rate = rates[call.rateIndex];
-                    return rate ? sum + (rate.amount / 60) * (call.duration / 60) : sum;
+                    return rate ? sum + rate.amount * (call.duration / 60) : sum;
                 }, 0);
                 
                 const remainingAmount = Math.max(0, goal - currentDayEarnings);
@@ -1258,7 +1258,7 @@ input[type="time"]:focus {
                 if (callDate >= monthStart && callDate <= monthEnd) {
                     const rate = rates[call.rateIndex];
                     if (rate) {
-                        const earned = (rate.amount / 60) * (call.duration / 60);
+                                                const earned = rate.amount * (call.duration / 60);
                         
                         if (callDate <= midMonth) {
                             firstHalfEarnings += earned;
