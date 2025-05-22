@@ -1284,9 +1284,9 @@ input[type="time"]:focus {
                 const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
                 if (avgDuration) avgDuration.textContent = formatDuration(avgDurationValue);
                 
-                const dailyEarned = daysCalls.reduce((sum, call) => {
+                                const dailyEarned = daysCalls.reduce((sum, call) => {
                     const rate = rates[call.rateIndex];
-                    return rate ? sum + (rate.amount / 60) * (call.duration / 60) : sum;
+                    return rate ? sum + rate.amount * (call.duration / 60) : sum;
                 }, 0);
                 
                 if (dailyTotalEarnings) dailyTotalEarnings.textContent = formatMoney(dailyEarned);
