@@ -676,7 +676,7 @@ input[type="time"]:focus {
                         <div class="flex items-center gap-2">
                             <span class="text-gray-600 dark:text-gray-400">Total Time:</span>
                             <span id="total-minutes" class="font-mono text-lg">00:00:00</span>
-                        </div>
+                            </div>
                         <div class="flex items-center gap-2">
                             <span class="text-gray-600 dark:text-gray-400">Total Earnings:</span>
                             <span id="total-earnings" class="font-mono text-lg">$0.00</span>
@@ -710,7 +710,7 @@ input[type="time"]:focus {
         </div>
 
         <!-- Call Modal -->
-        <div id="call-modal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div id="call-modal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">Add Call</h3>
@@ -721,20 +721,19 @@ input[type="time"]:focus {
                 <form id="call-form">
                     <div class="mb-4">
                         <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
-                        <input type="datetime-local" id="call-date" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        <input type="datetime-local" id="call-date" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                     </div>
                     <div class="mb-4">
                         <label for="call-duration" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (HH:MM:SS)</label>
                         <div class="flex gap-2">
-                            <input type="number" id="call-duration-hours" required min="0" placeholder="HH" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                            <input type="number" id="call-duration-minutes" required min="0" max="59" placeholder="MM" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                            <input type="number" id="call-duration-seconds" required min="0" max="59" placeholder="SS" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <input type="number" id="call-duration-hours" required min="0" placeholder="HH" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                            <input type="number" id="call-duration-minutes" required min="0" max="59" placeholder="MM" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                            <input type="number" id="call-duration-seconds" required min="0" max="59" placeholder="SS" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                         </div>
-                        
                     </div>
                     <div class="mb-6">
                         <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
-                        <select id="call-rate" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        <select id="call-rate" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                             <!-- Rate options will be added here dynamically -->
                         </select>
                     </div>
@@ -749,7 +748,9 @@ input[type="time"]:focus {
                 </form>
             </div>
         </div>
-            <script>
+    </div>
+
+    <script>
         // Utility functions
         const formatMoney = (amount) => `$${Number(amount).toFixed(2)}`;
         const formatDuration = (totalSeconds) => {
@@ -761,38 +762,31 @@ input[type="time"]:focus {
 
         // Dark mode toggle
         const darkToggle = document.getElementById('dark-toggle');
-        darkToggle.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
-        });
+        if (darkToggle) {
+            darkToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+            });
 
-        // Initialize dark mode from localStorage
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.documentElement.classList.add('dark');
+            // Initialize dark mode from localStorage
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.documentElement.classList.add('dark');
+            }
         }
 
-       // State management
-console.log("Loading stored data:", {
-    rates: localStorage.getItem('rates'),
-    calls: localStorage.getItem('calls'),
-    goal: localStorage.getItem('goal')
-});
-let rates = JSON.parse(localStorage.getItem('rates')) || [];
-let calls = JSON.parse(localStorage.getItem('calls')) || [];
-let currentCall = null;
-let callTimer = null;
-let editingCallIndex = null;
-let goal = parseFloat(localStorage.getItem('goal')) || 0;
+        // State management
+        let rates = JSON.parse(localStorage.getItem('rates')) || [];
+        let calls = JSON.parse(localStorage.getItem('calls')) || [];
+        let currentCall = null;
+        let callTimer = null;
+        let editingCallIndex = null;
+        let goal = parseFloat(localStorage.getItem('goal')) || 0;
 
-// Initialize date picker with today's local date
-const now = new Date();
-now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-let selectedDate = now.toISOString().split('T')[0];
+        // Initialize date picker with today's local date
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        let selectedDate = now.toISOString().split('T')[0];
 
-// Set up date picker
-const statsDatePicker = document.getElementById('stats-date-picker');
-statsDatePicker.value = selectedDate;
-                
         // DOM elements
         const modalTitle = document.getElementById('modal-title');
         const ratesList = document.getElementById('rates-list');
@@ -810,7 +804,6 @@ statsDatePicker.value = selectedDate;
         const closeModal = document.getElementById('close-modal');
         const cancelCall = document.getElementById('cancel-call');
         const callDate = document.getElementById('call-date');
-        const callDuration = document.getElementById('call-duration');
         const callRate = document.getElementById('call-rate');
         const liveCallInfo = document.getElementById('live-call-info');
         const liveCallTimer = document.getElementById('live-call-timer');
@@ -827,26 +820,34 @@ statsDatePicker.value = selectedDate;
         const dailyTotalEarnings = document.getElementById('daily-total-earnings');
         const avgDuration = document.getElementById('avg-duration');
 
-                // Initialize date picker
-statsDatePicker.value = selectedDate;
-statsDatePicker.addEventListener('change', (e) => {
-    selectedDate = e.target.value;
-    displayCalls();
-    updateStatistics();
-});
+        // Initialize date picker
+        if (statsDatePicker) {
+            statsDatePicker.value = selectedDate;
+            statsDatePicker.addEventListener('change', (e) => {
+                selectedDate = e.target.value;
+                displayCalls();
+                updateStatistics();
+            });
+        }
 
-currentDateBtn.addEventListener('click', () => {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Adjust for timezone
-    const today = now.toISOString().split('T')[0];
-    statsDatePicker.value = today;
-    selectedDate = today;
-    displayCalls();
-    updateStatistics();
-});  
+        if (currentDateBtn) {
+            currentDateBtn.addEventListener('click', () => {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                const today = now.toISOString().split('T')[0];
+                if (statsDatePicker) {
+                    statsDatePicker.value = today;
+                }
+                selectedDate = today;
+                displayCalls();
+                updateStatistics();
+            });
+        }
 
         // Rate management
         function displayRates() {
+            if (!ratesList) return;
+            
             ratesList.innerHTML = rates.map((rate, index) => `
                 <div class="rates-list-item">
                     <div class="flex-1">
@@ -860,9 +861,11 @@ currentDateBtn.addEventListener('click', () => {
             `).join('');
             
             // Update rate options in call modal
-            callRate.innerHTML = rates.map((rate, index) => 
-                `<option value="${index}">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
-            ).join('');
+            if (callRate) {
+                callRate.innerHTML = rates.map((rate, index) => 
+                    `<option value="${index}">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
+                ).join('');
+            }
 
             localStorage.setItem('rates', JSON.stringify(rates));
         }
@@ -873,412 +876,421 @@ currentDateBtn.addEventListener('click', () => {
         }
 
         // Rate form handlers
-        showRateAdd.addEventListener('click', () => {
-            rateForm.style.display = 'block';
-            showRateAdd.style.display = 'none';
-        });
-
-        cancelRateAdd.addEventListener('click', () => {
-            rateForm.style.display = 'none';
-            showRateAdd.style.display = 'flex';
-            rateForm.reset();
-        });
-
-        rateForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            rates.push({
-                name: rateName.value,
-                amount: parseFloat(rateAmount.value)
+        if (showRateAdd) {
+            showRateAdd.addEventListener('click', () => {
+                if (rateForm) {
+                    rateForm.style.display = 'block';
+                    showRateAdd.style.display = 'none';
+                }
             });
-            displayRates();
-            rateForm.style.display = 'none';
-            showRateAdd.style.display = 'flex';
-            rateForm.reset();
-        });
+        }
+
+        if (cancelRateAdd) {
+            cancelRateAdd.addEventListener('click', () => {
+                if (rateForm && showRateAdd) {
+                    rateForm.style.display = 'none';
+                    showRateAdd.style.display = 'flex';
+                    rateForm.reset();
+                }
+            });
+        }
+
+        if (rateForm) {
+            rateForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (rateName && rateAmount) {
+                    rates.push({
+                        name: rateName.value,
+                        amount: parseFloat(rateAmount.value)
+                    });
+                    displayRates();
+                    rateForm.style.display = 'none';
+                    if (showRateAdd) {
+                        showRateAdd.style.display = 'flex';
+                    }
+                    rateForm.reset();
+                }
+            });
+        }
 
         // Call management
-                function setDatePickerValue(date) {
-    statsDatePicker.value = date;
-}
-
-function updateStatsForDate(date) {
-    selectedDate = date;
-    
-    const daysCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
-        const callDateStr = callDate.toISOString().split('T')[0];
-        return callDateStr === selectedDate;
-    });
-    
-    // Calculate statistics
-    if (daysCalls.length > 0) {
-        // Average duration
-        const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
-        const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
-        avgDuration.textContent = formatDuration(avgDurationValue);
-        
-        // Daily earnings
-        const dailyEarned = daysCalls.reduce((sum, call) => {
-            const rate = rates[call.rateIndex];
-            return sum + (rate.amount / 60) * call.duration;
-        }, 0);
-        
-        dailyTotalEarnings.textContent = formatMoney(dailyEarned);
-    } else {
-        avgDuration.textContent = '00:00:00';
-        dailyTotalEarnings.textContent = '$0.00';
-    }
-}
-    
-    // Calculate statistics
-    if (daysCalls.length > 0) {
-        // Average duration
-        const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
-        const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
-        avgDuration.textContent = formatDuration(avgDurationValue);
-        
-        // Daily earnings
-        const totalEarned = daysCalls.reduce((sum, call) => {
-            const rate = rates[call.rateIndex];
-            const minutes = Math.floor(call.duration / 60);
-            return sum + (rate.amount * minutes);
-        }, 0);
-        
-        dailyTotalEarnings.textContent = formatMoney(totalEarned);
-    } else {
-        avgDuration.textContent = '00:00:00';
-        dailyTotalEarnings.textContent = '$0.00';
-    }
-}
-    function displayCalls() {
-    // Filter calls for selected date if we have one
-    let displayedCalls = calls;
-    
-    // Sort filtered calls by date
-    displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    // Filter by selected date
-    if (selectedDate) {
-        displayedCalls = displayedCalls.filter(call => {
-            const callDate = new Date(call.date);
-            const callDateStr = callDate.toISOString().split('T')[0];
-            return callDateStr === selectedDate;
-        });
-    }
-    
-    callLog.innerHTML = displayedCalls.map((call, index) => {
-        const rate = rates[call.rateIndex];
-        const duration = call.duration;
-        const minutes = Math.floor(duration / 60);
-        const earned = rate.amount * minutes;
+        function displayCalls() {
+            if (!callLog) return;
+            
+            // Filter calls for selected date if we have one
+            let displayedCalls = calls;
+            
+            // Sort filtered calls by date
+            displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Filter by selected date
+            if (selectedDate) {
+                displayedCalls = displayedCalls.filter(call => {
+                    const callDate = new Date(call.date);
+                    const callDateStr = callDate.toISOString().split('T')[0];
+                    return callDateStr === selectedDate;
+                });
+            }
+            
+            callLog.innerHTML = displayedCalls.map((call, originalIndex) => {
+                const rate = rates[call.rateIndex];
+                if (!rate) return '';
                 
-        return `
-            <tr>
-                <td>${new Date(call.date).toLocaleString()}</td>
-                <td>${formatDuration(duration)}</td>
-                <td>${rate.name} (${formatMoney(rate.amount)}/hr)</td>
-                <td>${formatMoney(earned)}</td>
-                <td class="pl-4">
-                    <div class="flex gap-2">
-                        <button onclick="editCall(${index})" class="text-blue-500 hover:text-blue-700">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="deleteCall(${index})" class="text-red-500 hover:text-red-700">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
+                const duration = call.duration;
+                const earned = (rate.amount / 3600) * duration; // Calculate based on seconds
+                        
+                return `
+                    <tr>
+                        <td>${new Date(call.date).toLocaleString()}</td>
+                        <td>${formatDuration(duration)}</td>
+                        <td>${rate.name} (${formatMoney(rate.amount)}/hr)</td>
+                        <td>${formatMoney(earned)}</td>
+                        <td class="pl-4">
+                            <div class="flex gap-2">
+                                <button onclick="editCall(${calls.indexOf(call)})" class="text-blue-500 hover:text-blue-700">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteCall(${calls.indexOf(call)})" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
 
-    updateTotals();
-    localStorage.setItem('calls', JSON.stringify(calls));
-}
+            updateTotals();
+            localStorage.setItem('calls', JSON.stringify(calls));
+        }
 
         function deleteCall(index) {
-    calls.splice(index, 1);
-    displayCalls();
-    updateStatistics();
+            calls.splice(index, 1);
+            displayCalls();
+            updateStatistics();
         }
-                
 
-function editCall(index) {
-    editingCallIndex = index;
-    const call = calls[index];
-    const date = new Date(call.date);
-    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-    
-    modalTitle.textContent = 'Edit Call';
-    callDate.value = date.toISOString().slice(0, 16);
-    
-    const hours = Math.floor(call.duration / 3600);
-    const minutes = Math.floor((call.duration % 3600) / 60);
-    const seconds = call.duration % 60;
-    
-    document.getElementById('call-duration-hours').value = hours;
-    document.getElementById('call-duration-minutes').value = minutes;
-    document.getElementById('call-duration-seconds').value = seconds;
-    callRate.value = call.rateIndex;
-    
-    callModal.style.display = 'flex';
-}
+        function editCall(index) {
+            editingCallIndex = index;
+            const call = calls[index];
+            const date = new Date(call.date);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            
+            if (modalTitle) modalTitle.textContent = 'Edit Call';
+            if (callDate) callDate.value = date.toISOString().slice(0, 16);
+            
+            const hours = Math.floor(call.duration / 3600);
+            const minutes = Math.floor((call.duration % 3600) / 60);
+            const seconds = call.duration % 60;
+            
+            const hoursInput = document.getElementById('call-duration-hours');
+            const minutesInput = document.getElementById('call-duration-minutes');
+            const secondsInput = document.getElementById('call-duration-seconds');
+            
+            if (hoursInput) hoursInput.value = hours;
+            if (minutesInput) minutesInput.value = minutes;
+            if (secondsInput) secondsInput.value = seconds;
+            if (callRate) callRate.value = call.rateIndex;
+            
+            if (callModal) callModal.style.display = 'flex';
+        }
 
         function updateTotals() {
-    let totalMins = 0;
-    let totalEarned = 0;
+            let totalDuration = 0;
+            let totalEarned = 0;
 
-    // Filter calls for selected date
-const filteredCalls = calls.filter(call => {
-    const callDate = new Date(call.date);
-    const callDateStr = callDate.toISOString().split('T')[0];
-    return callDateStr === selectedDate;
-});
+            // Filter calls for selected date
+            const filteredCalls = calls.filter(call => {
+                const callDate = new Date(call.date);
+                const callDateStr = callDate.toISOString().split('T')[0];
+                return callDateStr === selectedDate;
+            });
 
-    filteredCalls.forEach(call => {
-        const rate = rates[call.rateIndex];
-        totalMins += call.duration;
-        totalEarned += (rate.amount / 60) * call.duration;
-    });
+            filteredCalls.forEach(call => {
+                const rate = rates[call.rateIndex];
+                if (rate) {
+                    totalDuration += call.duration;
+                    totalEarned += (rate.amount / 3600) * call.duration; // Calculate based on seconds
+                }
+            });
 
-    if (currentCall) {
-        const currentDuration = (Date.now() - currentCall.startTime) / 60000;
-        const currentRate = rates[currentCall.rateIndex];
-        totalMins += currentDuration;
-        totalEarned += (currentRate.amount / 60) * currentDuration;
-    }
+            if (currentCall) {
+                const currentDuration = (Date.now() - currentCall.startTime) / 1000;
+                const currentRate = rates[currentCall.rateIndex];
+                if (currentRate) {
+                    totalDuration += currentDuration;
+                    totalEarned += (currentRate.amount / 3600) * currentDuration;
+                }
+            }
 
-    totalMinutes.textContent = formatDuration(totalMins);
-    totalEarnings.textContent = formatMoney(totalEarned);
+            if (totalMinutes) totalMinutes.textContent = formatDuration(totalDuration);
+            if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
 
-    // Update goal progress
-    if (goal > 0) {
-        const progress = Math.min((totalEarned / goal) * 100, 100);
-        goalProgressBar.style.width = `${progress}%`;
-        goalProgressText.textContent = `${Math.round(progress)}%`;
-        goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
-    }
-}
+            // Update goal progress
+            if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
+                const progress = Math.min((totalEarned / goal) * 100, 100);
+                goalProgressBar.style.width = `${progress}%`;
+                goalProgressText.textContent = `${Math.round(progress)}%`;
+                goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
+            }
+        }
         
         // Call timer functionality
         function updateCallTimer() {
-           if (!currentCall) return;
+            if (!currentCall) return;
     
-           const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-           const minutes = Math.floor(duration / 60);
-           const rate = rates[currentCall.rateIndex];
-           const earned = rate.amount * minutes;;
+            const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+            const rate = rates[currentCall.rateIndex];
+            if (!rate) return;
             
-            liveCallTimer.textContent = formatDuration(duration);
-            liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
+            const earned = (rate.amount / 3600) * duration; // Calculate based on seconds
+            
+            if (liveCallTimer) liveCallTimer.textContent = formatDuration(duration);
+            if (liveCallEarnings) liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
             updateTotals();
         }
 
-        startCallBtn.addEventListener('click', () => {
-            if (rates.length === 0) {
-                alert('Please add at least one rate before starting a call.');
-                return;
-            }
+        if (startCallBtn) {
+            startCallBtn.addEventListener('click', () => {
+                if (rates.length === 0) {
+                    alert('Please add at least one rate before starting a call.');
+                    return;
+                }
 
-            currentCall = {
-                startTime: Date.now(),
-                rateIndex: 0
-            };
+                currentCall = {
+                    startTime: Date.now(),
+                    rateIndex: 0
+                };
 
-            startCallBtn.disabled = true;
-            endCallBtn.disabled = false;
-            liveCallInfo.style.display = 'block';
-            callTimer = setInterval(updateCallTimer, 1000);
-        });
+                startCallBtn.disabled = true;
+                if (endCallBtn) endCallBtn.disabled = false;
+                if (liveCallInfo) liveCallInfo.style.display = 'block';
+                callTimer = setInterval(updateCallTimer, 1000);
+            });
+        }
 
-        endCallBtn.addEventListener('click', () => {
-    if (!currentCall) return;
+        if (endCallBtn) {
+            endCallBtn.addEventListener('click', () => {
+                if (!currentCall) return;
 
-    const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-    const date = new Date(currentCall.startTime);
-    date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); // Adjust for timezone
-    calls.push({
-        date: date.toISOString(),
-        duration: duration,
-        rateIndex: currentCall.rateIndex
-    });
+                const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+                const date = new Date(currentCall.startTime);
+                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                calls.push({
+                    date: date.toISOString(),
+                    duration: duration,
+                    rateIndex: currentCall.rateIndex
+                });
 
-            clearInterval(callTimer);
-            currentCall = null;
-            startCallBtn.disabled = false;
-            endCallBtn.disabled = true;
-            liveCallInfo.style.display = 'none';
-            displayCalls();
-            updateStatistics();
-        });
+                clearInterval(callTimer);
+                currentCall = null;
+                if (startCallBtn) startCallBtn.disabled = false;
+                endCallBtn.disabled = true;
+                if (liveCallInfo) liveCallInfo.style.display = 'none';
+                displayCalls();
+                updateStatistics();
+            });
+        }
 
         // Call modal functionality
-        addCallBtn.addEventListener('click', () => {
-    if (rates.length === 0) {
-        alert('Please add at least one rate before adding a call.');
-        return;
-    }
-    editingCallIndex = null;
-    modalTitle.textContent = 'Add Call';
-    callForm.reset();
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    callDate.value = now.toISOString().slice(0, 16);
-    callModal.style.display = 'flex';
-});
+        if (addCallBtn) {
+            addCallBtn.addEventListener('click', () => {
+                if (rates.length === 0) {
+                    alert('Please add at least one rate before adding a call.');
+                    return;
+                }
+                editingCallIndex = null;
+                if (modalTitle) modalTitle.textContent = 'Add Call';
+                if (callForm) callForm.reset();
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                if (callDate) callDate.value = now.toISOString().slice(0, 16);
+                if (callModal) callModal.style.display = 'flex';
+            });
+        }
 
-        closeModal.addEventListener('click', () => {
-    callModal.style.display = 'none';
-    callForm.reset();
-    editingCallIndex = null;
-    modalTitle.textContent = 'Add Call';
-});
+        if (closeModal) {
+            closeModal.addEventListener('click', () => {
+                if (callModal) callModal.style.display = 'none';
+                if (callForm) callForm.reset();
+                editingCallIndex = null;
+                if (modalTitle) modalTitle.textContent = 'Add Call';
+            });
+        }
 
-cancelCall.addEventListener('click', () => {
-    callModal.style.display = 'none';
-    callForm.reset();
-    editingCallIndex = null;
-    modalTitle.textContent = 'Add Call';
-});
+        if (cancelCall) {
+            cancelCall.addEventListener('click', () => {
+                if (callModal) callModal.style.display = 'none';
+                if (callForm) callForm.reset();
+                editingCallIndex = null;
+                if (modalTitle) modalTitle.textContent = 'Add Call';
+            });
+        }
 
-                callForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const hours = parseInt(document.getElementById('call-duration-hours').value) || 0;
-    const minutes = parseInt(document.getElementById('call-duration-minutes').value) || 0;
-    const seconds = parseInt(document.getElementById('call-duration-seconds').value) || 0;
-    const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
-    
-    const date = new Date(callDate.value);
-    date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); // Adjust for timezone
-    
-    const callData = {
-        date: date.toISOString(),
-        duration: totalSeconds,
-        rateIndex: parseInt(callRate.value)
-    };
+        if (callForm) {
+            callForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const hoursInput = document.getElementById('call-duration-hours');
+                const minutesInput = document.getElementById('call-duration-minutes');
+                const secondsInput = document.getElementById('call-duration-seconds');
+                
+                const hours = parseInt(hoursInput?.value) || 0;
+                const minutes = parseInt(minutesInput?.value) || 0;
+                const seconds = parseInt(secondsInput?.value) || 0;
+                const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+                
+                if (!callDate || !callRate) return;
+                
+                const date = new Date(callDate.value);
+                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                
+                const callData = {
+                    date: date.toISOString(),
+                    duration: totalSeconds,
+                    rateIndex: parseInt(callRate.value)
+                };
 
-    if (editingCallIndex !== null) {
-        calls[editingCallIndex] = callData;
-        editingCallIndex = null;
-    } else {
-        calls.push(callData);
-    }
+                if (editingCallIndex !== null) {
+                    calls[editingCallIndex] = callData;
+                    editingCallIndex = null;
+                } else {
+                    calls.push(callData);
+                }
 
-    displayCalls();
-    callModal.style.display = 'none';
-    callForm.reset();
-    modalTitle.textContent = 'Add Call';
-    updateStatistics();
-});
+                displayCalls();
+                if (callModal) callModal.style.display = 'none';
+                callForm.reset();
+                if (modalTitle) modalTitle.textContent = 'Add Call';
+                updateStatistics();
+            });
+        }
 
         // Goal management
-        goalForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            goal = parseFloat(goalAmount.value);
-            localStorage.setItem('goal', goal);
-            updateTotals();
-        });
+        if (goalForm) {
+            goalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (goalAmount) {
+                    goal = parseFloat(goalAmount.value);
+                    localStorage.setItem('goal', goal);
+                    updateTotals();
+                }
+            });
+        }
                             
-function updateStatistics() {
-    if (!selectedDate) return;
-    
-    // For daily stats
-    const daysCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
-        const callDateStr = callDate.toISOString().split('T')[0];
-        return callDateStr === selectedDate;
-    });
-
-    // Calculate total calls for today
-    document.getElementById('total-calls-today').textContent = daysCalls.length.toString();
-    
-    // For monthly stats
-    const now = new Date(selectedDate);
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-    const midMonth = new Date(now.getFullYear(), now.getMonth(), 15, 23, 59, 59);
-    
-    let firstHalfEarnings = 0;
-    let secondHalfEarnings = 0;
-    
-    // Calculate average earning rate per minute
-    let totalMinutesWorked = 0;
-    let totalEarnings = 0;
-    
-    calls.forEach(call => {
-        const rate = rates[call.rateIndex];
-        const minutes = Math.floor(call.duration / 60);
-        totalMinutesWorked += minutes;
-        totalEarnings += rate.amount * minutes;
-    });
-    
-    const avgEarningPerMinute = totalMinutesWorked > 0 ? totalEarnings / totalMinutesWorked : 0;
-    
-    // Calculate minutes to goal
-    if (goal > 0 && avgEarningPerMinute > 0) {
-        const remainingAmount = Math.max(0, goal - totalEarnings);
-        const estimatedMinutes = Math.ceil(remainingAmount / avgEarningPerMinute);
-        document.getElementById('goal-estimate').textContent = 
-            remainingAmount > 0 ? `~${estimatedMinutes} mins to goal` : 'Goal Reached!';
-    } else {
-        document.getElementById('goal-estimate').textContent = 'Set goal & log calls';
-    }
-    
-    calls.forEach(call => {
-        const callDate = new Date(call.date);
-        if (callDate >= monthStart && callDate <= monthEnd) {
-            const rate = rates[call.rateIndex];
-            const minutes = Math.floor(call.duration / 60);
-            const earned = rate.amount * minutes;
+        function updateStatistics() {
+            if (!selectedDate) return;
             
-            if (callDate <= midMonth) {
-                firstHalfEarnings += earned;
+            // For daily stats
+            const daysCalls = calls.filter(call => {
+                const callDate = new Date(call.date);
+                const callDateStr = callDate.toISOString().split('T')[0];
+                return callDateStr === selectedDate;
+            });
+
+            // Calculate total calls for today
+            const totalCallsElement = document.getElementById('total-calls-today');
+            if (totalCallsElement) {
+                totalCallsElement.textContent = daysCalls.length.toString();
+            }
+            
+            // For monthly stats
+            const now = new Date(selectedDate);
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+            const midMonth = new Date(now.getFullYear(), now.getMonth(), 15, 23, 59, 59);
+            
+            let firstHalfEarnings = 0;
+            let secondHalfEarnings = 0;
+            
+            // Calculate average earning rate per second
+            let totalSecondsWorked = 0;
+            let totalEarnings = 0;
+            
+            calls.forEach(call => {
+                const rate = rates[call.rateIndex];
+                if (rate) {
+                    totalSecondsWorked += call.duration;
+                    totalEarnings += (rate.amount / 3600) * call.duration;
+                }
+            });
+            
+            const avgEarningPerSecond = totalSecondsWorked > 0 ? totalEarnings / totalSecondsWorked : 0;
+            
+            // Calculate time to goal
+            const goalEstimateElement = document.getElementById('goal-estimate');
+            if (goalEstimateElement && goal > 0 && avgEarningPerSecond > 0) {
+                const currentDayEarnings = daysCalls.reduce((sum, call) => {
+                    const rate = rates[call.rateIndex];
+                    return rate ? sum + (rate.amount / 3600) * call.duration : sum;
+                }, 0);
+                
+                const remainingAmount = Math.max(0, goal - currentDayEarnings);
+                const estimatedSeconds = Math.ceil(remainingAmount / avgEarningPerSecond);
+                const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
+                
+                goalEstimateElement.textContent = 
+                    remainingAmount > 0 ? `~${estimatedMinutes} mins to goal` : 'Goal Reached!';
+            } else if (goalEstimateElement) {
+                goalEstimateElement.textContent = 'Set goal & log calls';
+            }
+            
+            calls.forEach(call => {
+                const callDate = new Date(call.date);
+                if (callDate >= monthStart && callDate <= monthEnd) {
+                    const rate = rates[call.rateIndex];
+                    if (rate) {
+                        const earned = (rate.amount / 3600) * call.duration;
+                        
+                        if (callDate <= midMonth) {
+                            firstHalfEarnings += earned;
+                        } else {
+                            secondHalfEarnings += earned;
+                        }
+                    }
+                }
+            });
+            
+            // Update monthly earnings displays
+            const firstHalfElement = document.getElementById('first-half-earnings');
+            const secondHalfElement = document.getElementById('second-half-earnings');
+            const monthlyTotalElement = document.getElementById('monthly-total-earnings');
+            
+            if (firstHalfElement) firstHalfElement.textContent = formatMoney(firstHalfEarnings);
+            if (secondHalfElement) secondHalfElement.textContent = formatMoney(secondHalfEarnings);
+            if (monthlyTotalElement) monthlyTotalElement.textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
+            
+            // Update daily statistics
+            if (daysCalls.length > 0) {
+                const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
+                const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
+                if (avgDuration) avgDuration.textContent = formatDuration(avgDurationValue);
+                
+                const dailyEarned = daysCalls.reduce((sum, call) => {
+                    const rate = rates[call.rateIndex];
+                    return rate ? sum + (rate.amount / 3600) * call.duration : sum;
+                }, 0);
+                
+                if (dailyTotalEarnings) dailyTotalEarnings.textContent = formatMoney(dailyEarned);
             } else {
-                secondHalfEarnings += earned;
+                if (avgDuration) avgDuration.textContent = '00:00:00';
+                if (dailyTotalEarnings) dailyTotalEarnings.textContent = '$0.00';
             }
         }
-    });
     
-    // Update monthly earnings displays
-    document.getElementById('first-half-earnings').textContent = formatMoney(firstHalfEarnings);
-    document.getElementById('second-half-earnings').textContent = formatMoney(secondHalfEarnings);
-    document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
-    
-    // Update daily statistics
-    if (daysCalls.length > 0) {
-        const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
-        const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
-        avgDuration.textContent = formatDuration(avgDurationValue);
-        
-        const dailyEarned = daysCalls.reduce((sum, call) => {
-            const rate = rates[call.rateIndex];
-            return sum + (rate.amount / 60) * call.duration;
-        }, 0);
-        
-        dailyTotalEarnings.textContent = formatMoney(dailyEarned);
-    } else {
-        avgDuration.textContent = '00:00:00';
-        dailyTotalEarnings.textContent = '$0.00';
-    }
-}
-    
-         // Initialize
-console.log("Initializing with:", {rates, calls, goal});
+        // Initialize
+        if (goal && goalAmount) {
+            goalAmount.value = goal;
+            updateTotals();
+        }
 
-if (goal) {
-    goalAmount.value = goal;
-    updateTotals();
-}
+        // Ensure buttons are in correct state
+        if (startCallBtn) startCallBtn.disabled = false;
+        if (endCallBtn) endCallBtn.disabled = true;
+        if (liveCallInfo) liveCallInfo.style.display = 'none';
 
-// Ensure buttons are in correct state
-startCallBtn.disabled = false;
-endCallBtn.disabled = true;
-liveCallInfo.style.display = 'none';
-
-// Initialize displays
-displayRates();
-displayCalls();
-updateStatistics();
+        // Initialize displays
+        displayRates();
+        displayCalls();
+        updateStatistics();
     </script>
 </body>
 </html>
