@@ -1517,6 +1517,31 @@ const daysCalls = filterCallsByDate(calls, selectedDate);
         if (endCallBtn) endCallBtn.disabled = true;
         if (liveCallInfo) liveCallInfo.style.display = 'none';
 
+// Export/Import button handlers
+if (exportDataBtn) {
+    exportDataBtn.addEventListener('click', exportData);
+}
+
+if (importDataBtn) {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
+
+    importDataBtn.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            importData(e.target.files[0]);
+            fileInput.value = ''; // Reset file input
+        }
+    });
+}
+
+        
         // Settings modal functionality
 if (settingsToggle) {
     settingsToggle.addEventListener('click', () => {
@@ -1527,6 +1552,27 @@ if (settingsToggle) {
     });
 }
 
+// Data cleanup functionality
+if (cleanupDataBtn) {
+    cleanupDataBtn.addEventListener('click', () => {
+        const monthsToKeep = 3; // Adjust this value to keep more/less months
+        const cutoffDate = new Date();
+        cutoffDate.setMonth(cutoffDate.getMonth() - monthsToKeep);
+        
+        const oldCallsCount = calls.length;
+        calls = calls.filter(call => new Date(call.date) > cutoffDate);
+        const removedCalls = oldCallsCount - calls.length;
+        
+        localStorage.setItem('calls', JSON.stringify(calls));
+        displayCalls();
+        updateStatistics();
+        updateStorageInfo();
+        
+        alert(`Cleaned up ${removedCalls} calls older than ${monthsToKeep} months.`);
+    });
+}
+
+        
 if (closeSettingsModal) {
     closeSettingsModal.addEventListener('click', () => {
         if (settingsModal) {
@@ -1535,6 +1581,68 @@ if (closeSettingsModal) {
     });
 }
 
+// Export/Import functionality
+function exportData() {
+    const dataToExport = {
+        rates,
+        calls,
+        goal,
+        version: '1.0',
+        exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `work-time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function importData(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            
+            // Validate imported data
+            if (!importedData.rates || !Array.isArray(importedData.rates) ||
+                !importedData.calls || !Array.isArray(importedData.calls)) {
+                throw new Error('Invalid data format');
+            }
+            
+            // Import the data
+            rates = importedData.rates;
+            calls = importedData.calls;
+            if (typeof importedData.goal === 'number') {
+                goal = importedData.goal;
+                if (goalAmount) goalAmount.value = goal;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('rates', JSON.stringify(rates));
+            localStorage.setItem('calls', JSON.stringify(calls));
+            localStorage.setItem('goal', goal);
+            
+            // Update displays
+            displayRates();
+            displayCalls();
+            updateStatistics();
+            updateStorageInfo();
+            
+            alert('Data imported successfully!');
+        } catch (err) {
+            alert('Error importing data. Please make sure the file is a valid backup.');
+            console.error('Import error:', err);
+        }
+    };
+    reader.readAsText(file);
+}
+
+        
 // Storage info update
 function updateStorageInfo() {
     if (!storageUsed || !storageBar) return;
