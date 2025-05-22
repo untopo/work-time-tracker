@@ -783,7 +783,12 @@ input[type="time"]:focus {
         let callTimer = null;
         let editingCallIndex = null;
         let goal = parseFloat(localStorage.getItem('goal')) || 0;
-        let selectedDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format statsDatePicker.value = selectedDate;
+        // Get current date in local timezone
+const today = new Date();
+const offset = today.getTimezoneOffset();
+const localDate = new Date(today - offset * 60 * 1000);
+let selectedDate = localDate.toISOString().split('T')[0];
+statsDatePicker.value = selectedDate;
 
         // DOM elements
         const modalTitle = document.getElementById('modal-title');
@@ -828,7 +833,10 @@ statsDatePicker.addEventListener('change', (e) => {
 });
 
 currentDateBtn.addEventListener('click', () => {
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    const localDate = new Date(now - offset * 60 * 1000);
+    const today = localDate.toISOString().split('T')[0];
     statsDatePicker.value = today;
     selectedDate = today;
     displayCalls();
