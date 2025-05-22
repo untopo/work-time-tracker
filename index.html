@@ -1125,15 +1125,6 @@ input[type="time"]:focus {
     displayCalls();
     updateStatistics();
 });
-
-                clearInterval(callTimer);
-                currentCall = null;
-                if (startCallBtn) startCallBtn.disabled = false;
-                endCallBtn.disabled = true;
-                if (liveCallInfo) liveCallInfo.style.display = 'none';
-                displayCalls();
-                updateStatistics();
-            });
         }
 
         // Call modal functionality
