@@ -772,23 +772,20 @@ input[type="time"]:focus {
         }
 
         // State management
-        console.log("Loading stored data:", {
-            rates: localStorage.getItem('rates'),
-            calls: localStorage.getItem('calls'),
-            goal: localStorage.getItem('goal')
-        });
-        let rates = JSON.parse(localStorage.getItem('rates')) || [];
-        let calls = JSON.parse(localStorage.getItem('calls')) || [];
-        let currentCall = null;
-        let callTimer = null;
-        let editingCallIndex = null;
-        let goal = parseFloat(localStorage.getItem('goal')) || 0;
-                
-        // Get current date in local timezone
-const today = new Date();
-const offset = today.getTimezoneOffset();
-const localDate = new Date(today - offset * 60 * 1000);
-let selectedDate = localDate.toISOString().split('T')[0];
+console.log("Loading stored data:", {
+    rates: localStorage.getItem('rates'),
+    calls: localStorage.getItem('calls'),
+    goal: localStorage.getItem('goal')
+});
+let rates = JSON.parse(localStorage.getItem('rates')) || [];
+let calls = JSON.parse(localStorage.getItem('calls')) || [];
+let currentCall = null;
+let callTimer = null;
+let editingCallIndex = null;
+let goal = parseFloat(localStorage.getItem('goal')) || 0;
+
+// Set current date in local timezone
+let selectedDate = new Date().toLocaleDateString('en-CA'); // This will give YYYY-MM-DD in local timezone
 statsDatePicker.value = selectedDate;
 
         // DOM elements
@@ -834,10 +831,7 @@ statsDatePicker.addEventListener('change', (e) => {
 });
 
 currentDateBtn.addEventListener('click', () => {
-    const now = new Date();
-    const offset = now.getTimezoneOffset();
-    const localDate = new Date(now - offset * 60 * 1000);
-    const today = localDate.toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local timezone
     statsDatePicker.value = today;
     selectedDate = today;
     displayCalls();
