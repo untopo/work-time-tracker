@@ -717,44 +717,60 @@ input[type="time"]:focus {
         </div>
 
         <!-- Call Modal -->
-        <div id="call-modal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">Add Call</h3>
-                    <button id="close-modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <form id="call-form">
-                    <div class="mb-4">
-                        <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
-                        <input type="datetime-local" id="call-date" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                    </div>
-                    <div class="mb-4">
-                        <label for="call-duration" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (HH:MM:SS)</label>
-                        <div class="flex gap-2">
-                            <input type="number" id="call-duration-hours" required min="0" placeholder="HH" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                            <input type="number" id="call-duration-minutes" required min="0" max="59" placeholder="MM" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                            <input type="number" id="call-duration-seconds" required min="0" max="59" placeholder="SS" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                        </div>
-                    </div>
-                    <div class="mb-6">
-                        <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
-                        <select id="call-rate" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                            <!-- Rate options will be added here dynamically -->
-                        </select>
-                    </div>
-                    <div class="flex justify-end gap-3">
-                        <button type="button" id="cancel-call" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                            Cancel
-                        </button>
-                        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                            Save
-                        </button>
-                    </div>
-                </form>
-            </div>
+<div id="call-modal" 
+    style="display: none;" 
+    role="dialog"
+    aria-labelledby="modal-title"
+    aria-modal="true"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">Add Call</h3>
+            <button id="close-modal" 
+                aria-label="Close modal"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
+        <form id="call-form">
+            <div class="mb-4">
+                <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
+                <input type="datetime-local" id="call-date" required 
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+            </div>
+            <div class="mb-4">
+                <label for="call-duration-hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (HH:MM:SS)</label>
+                <div class="flex gap-2">
+                    <input type="number" id="call-duration-hours" required min="0" placeholder="HH" 
+                        aria-label="Hours"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    <input type="number" id="call-duration-minutes" required min="0" max="59" placeholder="MM" 
+                        aria-label="Minutes"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    <input type="number" id="call-duration-seconds" required min="0" max="59" placeholder="SS" 
+                        aria-label="Seconds"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                </div>
+            </div>
+            <div class="mb-6">
+                <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
+                <select id="call-rate" required 
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                </select>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" id="cancel-call" 
+                    class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button type="submit" 
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
     </div>
 
     <script>
@@ -794,6 +810,10 @@ input[type="time"]:focus {
         let callTimer = null;
         let editingCallIndex = null;
         let goal = parseFloat(localStorage.getItem('goal')) || 0;
+
+        // Modal focus management
+let lastActiveElement = null;
+const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
         // Initialize date picker with today's local date
         const now = new Date();
@@ -1154,40 +1174,87 @@ input[type="time"]:focus {
 });
         }
 
+        // Modal keyboard handler
+function handleModalKeyboard(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+    
+    if (event.key === 'Tab') {
+        // Only handle tab if modal is visible
+        if (callModal && callModal.style.display === 'flex') {
+            const focusable = callModal.querySelectorAll(focusableElements);
+            const firstFocusable = focusable[0];
+            const lastFocusable = focusable[focusable.length - 1];
+
+            // If shift+tab and first element is focused, move to last
+            if (event.shiftKey && document.activeElement === firstFocusable) {
+                event.preventDefault();
+                lastFocusable.focus();
+            }
+            // If tab and last element is focused, move to first
+            else if (!event.shiftKey && document.activeElement === lastFocusable) {
+                event.preventDefault();
+                firstFocusable.focus();
+            }
+        }
+    }
+}
+
+// Modal close function
+function closeModal() {
+    if (callModal) {
+        callModal.style.display = 'none';
+    }
+    if (callForm) {
+        callForm.reset();
+    }
+    editingCallIndex = null;
+    if (modalTitle) {
+        modalTitle.textContent = 'Add Call';
+    }
+    // Return focus to last active element
+    if (lastActiveElement) {
+        lastActiveElement.focus();
+    }
+}
+
         // Call modal functionality
         if (addCallBtn) {
-            addCallBtn.addEventListener('click', () => {
-                if (rates.length === 0) {
-                    alert('Please add at least one rate before adding a call.');
-                    return;
-                }
-                editingCallIndex = null;
-                if (modalTitle) modalTitle.textContent = 'Add Call';
-                if (callForm) callForm.reset();
-                const now = new Date();
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                if (callDate) callDate.value = now.toISOString().slice(0, 16);
-                if (callModal) callModal.style.display = 'flex';
-            });
+    addCallBtn.addEventListener('click', () => {
+        if (rates.length === 0) {
+            alert('Please add at least one rate before adding a call.');
+            return;
         }
+        editingCallIndex = null;
+        if (modalTitle) modalTitle.textContent = 'Add Call';
+        if (callForm) callForm.reset();
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        if (callDate) callDate.value = now.toISOString().slice(0, 16);
+        
+        // Store last active element and show modal
+        lastActiveElement = document.activeElement;
+        if (callModal) {
+            callModal.style.display = 'flex';
+            // Focus first input after modal is shown
+            const firstInput = callModal.querySelector('input');
+            if (firstInput) firstInput.focus();
+        }
+    });
+}
 
         if (closeModal) {
-            closeModal.addEventListener('click', () => {
-                if (callModal) callModal.style.display = 'none';
-                if (callForm) callForm.reset();
-                editingCallIndex = null;
-                if (modalTitle) modalTitle.textContent = 'Add Call';
-            });
-        }
+    closeModal.addEventListener('click', () => {
+        closeModal();
+    });
+}
 
-        if (cancelCall) {
-            cancelCall.addEventListener('click', () => {
-                if (callModal) callModal.style.display = 'none';
-                if (callForm) callForm.reset();
-                editingCallIndex = null;
-                if (modalTitle) modalTitle.textContent = 'Add Call';
-            });
-        }
+if (cancelCall) {
+    cancelCall.addEventListener('click', () => {
+        closeModal();
+    });
+}
 
        if (callForm) {
     callForm.addEventListener('submit', (e) => {
@@ -1389,6 +1456,9 @@ input[type="time"]:focus {
 window.addEventListener('beforeunload', () => {
     activeTimers.forEach(timerId => clearInterval(timerId));
     activeTimers.clear();
+
+    // Add keyboard event listener for modal
+document.addEventListener('keydown', handleModalKeyboard);
 });
     </script>
 </body>
