@@ -1452,14 +1452,14 @@ if (cancelCall) {
         displayCalls();
         updateStatistics();
 
-        // Cleanup on page unload
+       // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
     activeTimers.forEach(timerId => clearInterval(timerId));
     activeTimers.clear();
-
-    // Add keyboard event listener for modal
-document.addEventListener('keydown', handleModalKeyboard);
 });
+
+// Add keyboard event listener for modal
+document.addEventListener('keydown', handleModalKeyboard);
     </script>
 </body>
 </html>
