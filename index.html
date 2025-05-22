@@ -806,17 +806,19 @@ d1.getDate() === d2.getDate();
 };
 
 function filterCallsByDate(calls, targetDate) {
-if (!targetDate) return calls;
-
-const target = new Date(targetDate);
-target.setHours(0, 0, 0, 0);
-
-return calls.filter(call => {
-const callDate = new Date(call.date);
-return callDate.getFullYear() === target.getFullYear() &&
-callDate.getMonth() === target.getMonth() &&
-callDate.getDate() === target.getDate();
-});
+    if (!targetDate) return calls;
+    
+    // Parse target date
+    const [year, month, day] = targetDate.split('-').map(num => parseInt(num));
+    const target = new Date(year, month - 1, day); // month is 0-based
+    target.setHours(0, 0, 0, 0);
+    
+    return calls.filter(call => {
+        const callDate = new Date(call.date);
+        return callDate.getFullYear() === target.getFullYear() &&
+               callDate.getMonth() === target.getMonth() &&
+               callDate.getDate() === target.getDate();
+    });
 }
 
 const formatDuration = (totalSeconds) => {
@@ -1246,20 +1248,20 @@ function addCallToLog(date, duration, rateIndex) {
     // Create a new Date object in local time
     const callDate = new Date(date);
     
-    // Format date in a way that preserves local timezone
-    const year = callDate.getFullYear();
-    const month = String(callDate.getMonth() + 1).padStart(2, '0');
-    const day = String(callDate.getDate()).padStart(2, '0');
-    const hours = String(callDate.getHours()).padStart(2, '0');
-    const minutes = String(callDate.getMinutes()).padStart(2, '0');
-    const seconds = String(callDate.getSeconds()).padStart(2, '0');
-    const localDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    // Format date preserving local timezone without conversion
+    const localDate = `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, '0')}-${String(callDate.getDate()).padStart(2, '0')}T${String(callDate.getHours()).padStart(2, '0')}:${String(callDate.getMinutes()).padStart(2, '0')}:${String(callDate.getSeconds()).padStart(2, '0')}`;
 
     calls.push({
         date: localDate,
         duration: duration,
         rateIndex: rateIndex
     });
+    
+    // Update the selected date to match the call's date to ensure it shows up immediately
+    selectedDate = `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, '0')}-${String(callDate.getDate()).padStart(2, '0')}`;
+    if (statsDatePicker) {
+        statsDatePicker.value = selectedDate;
+    }
     
     localStorage.setItem('calls', JSON.stringify(calls));
     displayCalls();
@@ -1575,6 +1577,16 @@ settingsModal.style.display = 'none';
 if (settingsToggle) settingsToggle.focus();
 }
 });
+}
+
+    // Settings modal close button handler
+if (closeSettingsModal) {
+    closeSettingsModal.addEventListener('click', () => {
+        if (settingsModal) {
+            settingsModal.style.display = 'none';
+            if (settingsToggle) settingsToggle.focus();
+        }
+    });
 }
 
 // Add keyboard event listeners for both modals
