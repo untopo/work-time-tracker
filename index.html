@@ -1448,18 +1448,18 @@ if (cancelCall) {
         if (liveCallInfo) liveCallInfo.style.display = 'none';
 
         // Initialize displays
-        displayRates();
-        displayCalls();
-        updateStatistics();
-
-       // Cleanup on page unload
-window.addEventListener('beforeunload', () => {
-    activeTimers.forEach(timerId => clearInterval(timerId));
-    activeTimers.clear();
+displayRates();
+displayCalls();
+updateStatistics();
 
 // Add keyboard event listener for modal
 document.addEventListener('keydown', handleModalKeyboard);
-    });
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    activeTimers.forEach(timerId => clearInterval(timerId));
+    activeTimers.clear();
+});
     </script>
 </body>
 </html>
