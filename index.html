@@ -895,12 +895,6 @@ currentDateBtn.addEventListener('click', () => {
             showRateAdd.style.display = 'flex';
             rateForm.reset();
         });
-// Date picker event handlers
-statsDatePicker.addEventListener('change', (e) => {
-    selectedDate = e.target.value;
-    filterCallsForDate();
-    updateTotals();
-});
 
 // Add this new function to filter calls
 function filterCallsForDate() {
@@ -937,17 +931,7 @@ function filterCallsForDate() {
         `;
     }).join('');
 }
-                const currentDateBtn = document.getElementById('current-date-btn');
-currentDateBtn.addEventListener('click', () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    selectedDate = `${year}-${month}-${day}`;
-    statsDatePicker.value = selectedDate;
-    filterCallsForDate();
-    updateTotals();
-});
+
         // Call management
                 function setDatePickerValue(date) {
     statsDatePicker.value = date;
