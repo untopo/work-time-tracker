@@ -878,6 +878,7 @@ input[type="time"]:focus {
 
         // State management
         let rates = JSON.parse(localStorage.getItem('rates')) || [];
+        if (goalAmount) goalAmount.value = goal || ''; 
         let activeTimers = new Set(); // Track all active timers
         let calls = JSON.parse(localStorage.getItem('calls')) || [];
         let currentCall = null;
@@ -891,6 +892,11 @@ const focusableElements = 'button, [href], input, select, textarea, [tabindex]:n
 
         // Timezone utility functions
 function getLocalISOString(date) {
+    date = new Date(date);
+    const offset = date.getTimezoneOffset();
+    date.setMinutes(date.getMinutes() - offset);
+    return date.toISOString().slice(0, 16);
+}
     const offset = date.getTimezoneOffset();
     const offsetAbs = Math.abs(offset);
     const offsetSign = offset < 0 ? '+' : '-';
@@ -1140,6 +1146,40 @@ const storageBar = document.getElementById('storage-bar');
         }
 
         // Call management
+        function deleteCall(index) {
+    if (confirm('Are you sure you want to delete this call?')) {
+        calls.splice(index, 1);
+        localStorage.setItem('calls', JSON.stringify(calls));
+        displayCalls();
+        updateStatistics();
+    }
+}
+
+function editCall(index) {
+    const call = calls[index];
+    if (!call) return;
+
+    editingCallIndex = index;
+    const date = new Date(call.date);
+    
+    if (modalTitle) modalTitle.textContent = 'Edit Call';
+    if (callDate) callDate.value = getLocalISOString(date);
+    
+    const hours = Math.floor(call.duration / 3600);
+    const minutes = Math.floor((call.duration % 3600) / 60);
+    const seconds = call.duration % 60;
+    
+    const hoursInput = document.getElementById('call-duration-hours');
+    const minutesInput = document.getElementById('call-duration-minutes');
+    const secondsInput = document.getElementById('call-duration-seconds');
+    
+    if (hoursInput) hoursInput.value = hours;
+    if (minutesInput) minutesInput.value = minutes;
+    if (secondsInput) secondsInput.value = seconds;
+    if (callRate) callRate.value = call.rateIndex;
+    
+    if (callModal) callModal.style.display = 'flex';
+}
         function displayCalls() {
     if (!callLog) return;
     
@@ -1227,7 +1267,8 @@ const storageBar = document.getElementById('storage-bar');
 
     const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
     const date = new Date(currentCall.startTime);
-    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    const offset = date.getTimezoneOffset();
+    date.setMinutes(date.getMinutes() - offset);
     calls.push({
         date: date.toISOString(),
         duration: duration,
