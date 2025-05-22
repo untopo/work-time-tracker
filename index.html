@@ -921,12 +921,39 @@ input[type="time"]:focus {
 
         if (rateForm) {
             rateForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (rateName && rateAmount) {
-                    rates.push({
-                        name: rateName.value,
-                        amount: parseFloat(rateAmount.value)
-                    });
+    e.preventDefault();
+    if (rateName && rateAmount) {
+        const name = rateName.value.trim();
+        const amount = parseFloat(rateAmount.value);
+
+        // Validate rate name
+        if (!name) {
+            alert('Rate name cannot be empty');
+            return;
+        }
+        if (name.length > 50) {
+            alert('Rate name is too long (maximum 50 characters)');
+            return;
+        }
+
+        // Validate rate amount
+        if (isNaN(amount) || !isFinite(amount)) {
+            alert('Please enter a valid number for the rate amount');
+            return;
+        }
+        if (amount <= 0) {
+            alert('Rate amount must be greater than 0');
+            return;
+        }
+        if (amount > 999999) {
+            alert('Rate amount is too high (maximum 999,999)');
+            return;
+        }
+
+        rates.push({
+            name: name,
+            amount: amount
+        });
                     displayRates();
                     rateForm.style.display = 'none';
                     if (showRateAdd) {
@@ -1164,10 +1191,47 @@ input[type="time"]:focus {
 
         if (callForm) {
             callForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const hoursInput = document.getElementById('call-duration-hours');
-                const minutesInput = document.getElementById('call-duration-minutes');
-                const secondsInput = document.getElementById('call-duration-seconds');
+    e.preventDefault();
+    const hoursInput = document.getElementById('call-duration-hours');
+    const minutesInput = document.getElementById('call-duration-minutes');
+    const secondsInput = document.getElementById('call-duration-seconds');
+    
+    if (!callDate || !callRate) return;
+
+    // Validate date
+    const selectedDate = new Date(callDate.value);
+    if (isNaN(selectedDate.getTime())) {
+        alert('Please enter a valid date');
+        return;
+    }
+    if (selectedDate > new Date()) {
+        alert('Cannot add calls in the future');
+        return;
+    }
+
+    // Validate duration
+    const hours = parseInt(hoursInput?.value) || 0;
+    const minutes = parseInt(minutesInput?.value) || 0;
+    const seconds = parseInt(secondsInput?.value) || 0;
+
+    if (hours > 24) {
+        alert('Maximum call duration is 24 hours');
+        return;
+    }
+    if (minutes >= 60 || seconds >= 60) {
+        alert('Minutes and seconds must be less than 60');
+        return;
+    }
+    if (hours === 24 && (minutes > 0 || seconds > 0)) {
+        alert('Maximum call duration is 24 hours');
+        return;
+    }
+
+    const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+    if (totalSeconds === 0) {
+        alert('Call duration cannot be zero');
+        return;
+    }
                 
                 const hours = parseInt(hoursInput?.value) || 0;
                 const minutes = parseInt(minutesInput?.value) || 0;
