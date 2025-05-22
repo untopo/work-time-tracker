@@ -834,7 +834,7 @@ const focusableElements = 'button, [href], input, select, textarea, [tabindex]:n
         const addCallBtn = document.getElementById('add-call-btn');
         const callModal = document.getElementById('call-modal');
         const callForm = document.getElementById('call-form');
-        const closeModal = document.getElementById('close-modal');
+        const closeModalBtn = document.getElementById('close-modal');
         const cancelCall = document.getElementById('cancel-call');
         const callDate = document.getElementById('call-date');
         const callRate = document.getElementById('call-rate');
@@ -1244,8 +1244,8 @@ function closeModal() {
     });
 }
 
-        if (closeModal) {
-    closeModal.addEventListener('click', () => {
+        if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', () => {
         closeModal();
     });
 }
