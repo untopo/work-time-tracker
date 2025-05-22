@@ -1035,9 +1035,9 @@ input[type="time"]:focus {
             if (currentCall) {
                 const currentDuration = (Date.now() - currentCall.startTime) / 1000;
                 const currentRate = rates[currentCall.rateIndex];
-                if (currentRate) {
+                                if (currentRate) {
                     totalDuration += currentDuration;
-                    totalEarned += (currentRate.amount / 3600) * currentDuration;
+                    totalEarned += (currentRate.amount / 60) * (currentDuration / 60);
                 }
             }
 
@@ -1233,7 +1233,7 @@ input[type="time"]:focus {
                 }
             });
             
-            const avgEarningPerSecond = totalSecondsWorked > 0 ? totalEarnings / totalSecondsWorked : 0;
+            const avgEarningPerMinute = totalSecondsWorked > 0 ? (totalEarnings / (totalSecondsWorked / 60)) : 0;
             
             // Calculate time to goal
             const goalEstimateElement = document.getElementById('goal-estimate');
@@ -1244,7 +1244,7 @@ input[type="time"]:focus {
                 }, 0);
                 
                 const remainingAmount = Math.max(0, goal - currentDayEarnings);
-                const estimatedSeconds = Math.ceil(remainingAmount / avgEarningPerSecond);
+                                const estimatedMinutes = Math.ceil(remainingAmount / avgEarningPerMinute);
                 const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
                 
                 goalEstimateElement.textContent = 
