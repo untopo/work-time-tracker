@@ -445,14 +445,18 @@ input[type="time"]:focus {
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
     <div class="container mx-auto px-4 py-8 max-w-7xl">
-        <!-- Dark mode toggle -->
-        <div class="flex justify-end mb-4">
-            <button id="dark-toggle" aria-label="Toggle dark mode"
-                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
-                <i class="fas fa-moon text-gray-600 block dark:hidden transition-transform duration-300"></i>
-                <i class="fas fa-sun hidden dark:block text-yellow-300 transition-transform duration-300"></i>
-            </button>
-        </div>
+        <!-- Dark mode and settings toggles -->
+<div class="flex justify-end mb-4 gap-2">
+    <button id="settings-toggle" aria-label="Open settings"
+        class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
+        <i class="fas fa-cog text-gray-600 dark:text-gray-300 transition-transform duration-300"></i>
+    </button>
+    <button id="dark-toggle" aria-label="Toggle dark mode"
+        class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
+        <i class="fas fa-moon text-gray-600 block dark:hidden transition-transform duration-300"></i>
+        <i class="fas fa-sun hidden dark:block text-yellow-300 transition-transform duration-300"></i>
+    </button>
+</div>
 
         <header class="mb-8 text-center">
             <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 animate-gradient">
@@ -773,6 +777,63 @@ input[type="time"]:focus {
 </div>
     </div>
 
+            <!-- Settings Modal -->
+    <div id="settings-modal" 
+        style="display: none;" 
+        role="dialog"
+        aria-labelledby="settings-modal-title"
+        aria-modal="true"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="settings-modal-title">Settings</h3>
+                <button id="close-settings-modal" 
+                    aria-label="Close settings"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <!-- Data Management -->
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                    <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Management</h4>
+                    <div class="flex flex-col gap-2">
+                        <button id="export-data" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-download"></i>
+                            Export Data
+                        </button>
+                        <button id="import-data" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors">
+                            <i class="fas fa-upload"></i>
+                            Import Data
+                        </button>
+                    </div>
+                </div>
+                <!-- Storage Info -->
+                <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                    <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Storage</h4>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                            <span>Storage Used</span>
+                            <span id="storage-used">Calculating...</span>
+                        </div>
+                        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded">
+                            <div id="storage-bar" class="h-2 bg-blue-500 rounded" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Data Cleanup -->
+                <div>
+                    <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Cleanup</h4>
+                    <button id="cleanup-data" class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+                        <i class="fas fa-trash-alt"></i>
+                        Clean Old Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         // Utility functions
         const formatMoney = (amount) => `$${Number(amount).toFixed(2)}`;
@@ -836,6 +897,15 @@ const focusableElements = 'button, [href], input, select, textarea, [tabindex]:n
 
         // DOM elements
         const modalTitle = document.getElementById('modal-title');
+        // Settings DOM elements
+const settingsToggle = document.getElementById('settings-toggle');
+const settingsModal = document.getElementById('settings-modal');
+const closeSettingsModal = document.getElementById('close-settings-modal');
+const exportDataBtn = document.getElementById('export-data');
+const importDataBtn = document.getElementById('import-data');
+const cleanupDataBtn = document.getElementById('cleanup-data');
+const storageUsed = document.getElementById('storage-used');
+const storageBar = document.getElementById('storage-bar');
         const ratesList = document.getElementById('rates-list');
         const rateForm = document.getElementById('rate-form');
         const rateName = document.getElementById('rate-name');
@@ -1446,6 +1516,51 @@ const daysCalls = filterCallsByDate(calls, selectedDate);
         if (startCallBtn) startCallBtn.disabled = false;
         if (endCallBtn) endCallBtn.disabled = true;
         if (liveCallInfo) liveCallInfo.style.display = 'none';
+
+        // Settings modal functionality
+if (settingsToggle) {
+    settingsToggle.addEventListener('click', () => {
+        if (settingsModal) {
+            settingsModal.style.display = 'flex';
+            updateStorageInfo();
+        }
+    });
+}
+
+if (closeSettingsModal) {
+    closeSettingsModal.addEventListener('click', () => {
+        if (settingsModal) {
+            settingsModal.style.display = 'none';
+        }
+    });
+}
+
+// Storage info update
+function updateStorageInfo() {
+    if (!storageUsed || !storageBar) return;
+    
+    const totalSize = JSON.stringify({
+        rates,
+        calls,
+        goal,
+        darkMode: document.documentElement.classList.contains('dark')
+    }).length;
+    
+    const maxSize = 5 * 1024 * 1024; // Approximate 5MB limit
+    const usedPercentage = (totalSize / maxSize) * 100;
+    
+    storageUsed.textContent = `${(totalSize / 1024).toFixed(2)}KB / ${(maxSize / 1024 / 1024).toFixed(2)}MB`;
+    storageBar.style.width = `${Math.min(usedPercentage, 100)}%`;
+    
+    if (usedPercentage > 80) {
+        storageBar.classList.add('bg-red-500');
+        storageBar.classList.remove('bg-blue-500');
+    } else {
+        storageBar.classList.add('bg-blue-500');
+        storageBar.classList.remove('bg-red-500');
+    }
+}
+
 
         // Initialize displays
 displayRates();
