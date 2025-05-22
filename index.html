@@ -1184,7 +1184,7 @@ displayedCalls = filterCallsByDate(displayedCalls, selectedDate);
         }
     });
 
-    // Add current call if it exists
+    // Add current call if it exists and is from today
     if (currentCall) {
         const currentDuration = Math.floor((Date.now() - currentCall.startTime) / 1000);
         const currentRate = rates[currentCall.rateIndex];
@@ -1201,62 +1201,26 @@ displayedCalls = filterCallsByDate(displayedCalls, selectedDate);
     // Update goal progress
     if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
         const progress = Math.min((totalEarned / goal) * 100, 100);
-        goalProgressBar.style.width = `${progress}%`;
-        goalProgressText.textContent = `${Math.round(progress)}%`;
-        goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
-
-        // Update progress bar color based on progress
-        if (progress >= 100) {
-            goalProgressBar.classList.add('bg-green-500');
-            goalProgressBar.classList.remove('bg-blue-500');
-        } else {
-            goalProgressBar.classList.add('bg-blue-500');
-            goalProgressBar.classList.remove('bg-green-500');
-        }
-    }
-}
-
-    // Add current call if it exists and is from today
-    if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
-        const currentDuration = (Date.now() - currentCall.startTime) / 1000;
-        const currentRate = rates[currentCall.rateIndex];
-        if (currentRate) {
-            totalDuration += currentDuration;
-            totalEarned += currentRate.amount * (currentDuration / 60);
-        }
-    }
-
-    // Update total displays
-    if (totalMinutes) totalMinutes.textContent = formatDuration(Math.floor(totalDuration));
-    if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
-
-    // Update goal progress
-    if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
-        const progress = Math.min((totalEarned / goal) * 100, 100);
         
-        // Smooth progress bar update
-        const currentWidth = parseFloat(goalProgressBar.style.width) || 0;
-        const targetWidth = progress;
-        
-        // Animate progress bar if difference is significant
-        if (Math.abs(targetWidth - currentWidth) > 0.1) {
+        // Smooth progress bar transition
+        requestAnimationFrame(() => {
             goalProgressBar.style.transition = 'width 0.5s ease-out';
-            goalProgressBar.style.width = `${targetWidth}%`;
-        }
-        
-        goalProgressText.textContent = `${Math.round(progress)}%`;
-        goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
-        
-        // Add visual feedback for goal completion
-        if (progress >= 100) {
-            goalProgressBar.classList.add('bg-green-500');
-            goalProgressBar.classList.remove('bg-blue-500');
-            goalProgressText.classList.add('text-green-600');
-        } else {
-            goalProgressBar.classList.add('bg-blue-500');
-            goalProgressBar.classList.remove('bg-green-500');
-            goalProgressText.classList.remove('text-green-600');
-        }
+            goalProgressBar.style.width = `${progress}%`;
+            
+            // Visual feedback for goal completion
+            if (progress >= 100) {
+                goalProgressBar.classList.add('bg-green-500');
+                goalProgressBar.classList.remove('bg-blue-500');
+                goalProgressText.classList.add('text-green-600');
+            } else {
+                goalProgressBar.classList.add('bg-blue-500');
+                goalProgressBar.classList.remove('bg-green-500');
+                goalProgressText.classList.remove('text-green-600');
+            }
+            
+            goalProgressText.textContent = `${Math.round(progress)}%`;
+            goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
+        });
     }
 }
 
