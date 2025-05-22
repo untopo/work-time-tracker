@@ -1006,24 +1006,38 @@ function updateStatistics() {
         }
     }
 
-    // Update goal estimate
+        // Update goal estimate
     if (document.getElementById('goal-estimate') && goal > 0) {
         let currentEarnings = 0;
+        // Calculate earnings only for today's calls
         filteredCalls.forEach(call => {
             const rate = rates[call.rateIndex];
             if (rate) {
                 currentEarnings += (rate.amount / 60) * call.duration;
             }
         });
+
+        // Add current active call earnings if it exists and is from today
+        if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
+            const currentDuration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+            const currentRate = rates[currentCall.rateIndex];
+            if (currentRate) {
+                currentEarnings += (currentRate.amount / 60) * currentDuration;
+            }
+        }
         
         if (currentEarnings >= goal) {
             document.getElementById('goal-estimate').textContent = 'Goal reached!';
         } else {
             const remaining = goal - currentEarnings;
-            // Estimate using current/latest rate
-            const latestRate = rates[rates.length - 1];
-            if (latestRate) {
-                const minsToGoal = Math.ceil(remaining / (latestRate.amount / 60));
+            // Use the currently selected rate for estimation
+            const liveCallRate = document.getElementById('live-call-rate');
+            const selectedRateIndex = liveCallRate ? parseInt(liveCallRate.value) : 0;
+            const selectedRate = rates[selectedRateIndex];
+            
+            if (selectedRate) {
+                // Calculate minutes needed based on the rate per minute
+                const minsToGoal = Math.ceil(remaining / (selectedRate.amount / 60));
                 document.getElementById('goal-estimate').textContent = `${minsToGoal} mins to goal`;
             }
         }
