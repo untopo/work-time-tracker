@@ -837,6 +837,11 @@ input[type="time"]:focus {
     <script>
         // Utility functions
         const formatMoney = (amount) => `$${Number(amount).toFixed(2)}`;
+        const isSameDay = (date1, date2) => {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+};
         const formatDuration = (totalSeconds) => {
             const hours = Math.floor(totalSeconds / 3600);
             const mins = Math.floor((totalSeconds % 3600) / 60);
@@ -1167,18 +1172,55 @@ displayedCalls = filterCallsByDate(displayedCalls, selectedDate);
         function updateTotals() {
     let totalDuration = 0;
     let totalEarned = 0;
+    const today = new Date();
 
-    // Filter calls for selected date
-    const filteredCalls = filterCallsByDate(calls, selectedDate);
+    // Calculate totals from completed calls for today
+    calls.filter(call => isSameDay(new Date(call.date), today))
+        .forEach(call => {
+            const rate = rates[call.rateIndex];
+            if (rate) {
+                totalDuration += call.duration;
+                totalEarned += (rate.amount / 60) * call.duration;
+            }
+        });
 
-    // Calculate totals from completed calls
-    filteredCalls.forEach(call => {
-        const rate = rates[call.rateIndex];
-        if (rate) {
-            totalDuration += call.duration;
-            totalEarned += rate.amount * (call.duration / 60); // Convert seconds to minutes
+    // Add current call if it exists
+    if (currentCall) {
+        const currentDuration = (Date.now() - currentCall.startTime) / 1000;
+        const currentRate = rates[currentCall.rateIndex];
+        if (currentRate) {
+            totalDuration += currentDuration;
+            totalEarned += (currentRate.amount / 60) * currentDuration;
         }
-    });
+    }
+
+    // Update displays
+    totalMinutes.textContent = formatDuration(Math.floor(totalDuration));
+    totalEarnings.textContent = formatMoney(totalEarned);
+
+    // Calculate goal progress with smooth animation
+    if (goal > 0) {
+        const progress = Math.min((totalEarned / goal) * 100, 100);
+        
+        // Smooth progress bar transition
+        requestAnimationFrame(() => {
+            goalProgressBar.style.transition = 'width 0.5s ease-out';
+            goalProgressBar.style.width = `${progress}%`;
+            
+            // Update color based on progress
+            if (progress >= 100) {
+                goalProgressBar.classList.remove('bg-blue-500');
+                goalProgressBar.classList.add('bg-green-500');
+            } else {
+                goalProgressBar.classList.add('bg-blue-500');
+                goalProgressBar.classList.remove('bg-green-500');
+            }
+            
+            goalProgressText.textContent = `${Math.round(progress)}%`;
+            goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
+        });
+    }
+}
 
     // Add current call if it exists and is from today
     if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
