@@ -783,6 +783,14 @@ let currentCall = null;
 let callTimer = null;
 let editingCallIndex = null;
 let goal = parseFloat(localStorage.getItem('goal')) || 0;
+// Initialize date picker with today's date
+const statsDatePicker = document.getElementById('stats-date-picker');
+const today = new Date();
+const year = today.getFullYear();
+const month = String(today.getMonth() + 1).padStart(2, '0');
+const day = String(today.getDate()).padStart(2, '0');
+let selectedDate = `${year}-${month}-${day}`;
+statsDatePicker.value = selectedDate;
 
 // Set current date in local timezone
 const now = new Date();
@@ -893,7 +901,59 @@ currentDateBtn.addEventListener('click', () => {
             showRateAdd.style.display = 'flex';
             rateForm.reset();
         });
+// Date picker event handlers
+statsDatePicker.addEventListener('change', (e) => {
+    selectedDate = e.target.value;
+    filterCallsForDate();
+    updateTotals();
+});
 
+// Add this new function to filter calls
+function filterCallsForDate() {
+    const filteredCalls = calls.filter(call => {
+        const callDate = new Date(call.date);
+        const callDateStr = callDate.toISOString().split('T')[0];
+        return callDateStr === selectedDate;
+    });
+    
+    // Update display with filtered calls
+    callLog.innerHTML = filteredCalls.map((call, index) => {
+        const rate = rates[call.rateIndex];
+        const duration = call.duration;
+        const minutes = Math.floor(duration / 60);
+        const earned = rate.amount * minutes;
+        
+        return `
+            <tr>
+                <td>${new Date(call.date).toLocaleString()}</td>
+                <td>${formatDuration(duration)}</td>
+                <td>${rate.name} (${formatMoney(rate.amount)}/hr)</td>
+                <td>${formatMoney(earned)}</td>
+                <td class="pl-4">
+                    <div class="flex gap-2">
+                        <button onclick="editCall(${index})" class="text-blue-500 hover:text-blue-700">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteCall(${index})" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+                const currentDateBtn = document.getElementById('current-date-btn');
+currentDateBtn.addEventListener('click', () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    selectedDate = `${year}-${month}-${day}`;
+    statsDatePicker.value = selectedDate;
+    filterCallsForDate();
+    updateTotals();
+});
         // Call management
                 function setDatePickerValue(date) {
     statsDatePicker.value = date;
@@ -934,20 +994,19 @@ function updateStatsForDate(date) {
 }
     function displayCalls() {
     // Filter calls for selected date if we have one
-let displayedCalls = calls;
-if (selectedDate) {
-    const dayStart = new Date(selectedDate + 'T00:00:00');
-    const dayEnd = new Date(selectedDate + 'T23:59:59');
+    let displayedCalls = calls;
     
-    displayedCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
-        const callDateStr = callDate.toISOString().split('T')[0];
-        return callDateStr === selectedDate;
-    });
-}
-
     // Sort filtered calls by date
     displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Filter by selected date
+    if (selectedDate) {
+        displayedCalls = displayedCalls.filter(call => {
+            const callDate = new Date(call.date);
+            const callDateStr = callDate.toISOString().split('T')[0];
+            return callDateStr === selectedDate;
+        });
+    }
     
     callLog.innerHTML = displayedCalls.map((call, index) => {
         const rate = rates[call.rateIndex];
