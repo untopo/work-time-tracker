@@ -1245,8 +1245,7 @@ input[type="time"]:focus {
                 
                 const remainingAmount = Math.max(0, goal - currentDayEarnings);
                                 const estimatedMinutes = Math.ceil(remainingAmount / avgEarningPerMinute);
-                const estimatedMinutes = Math.ceil(estimatedSeconds / 60);
-                
+                                
                 goalEstimateElement.textContent = 
                     remainingAmount > 0 ? `~${estimatedMinutes} mins to goal` : 'Goal Reached!';
             } else if (goalEstimateElement) {
