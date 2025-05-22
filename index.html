@@ -966,9 +966,9 @@ function updateStatsForDate(date) {
 }
 
         function deleteCall(index) {
-            calls.splice(index, 1);
-            displayCalls();
-            updateStatistics();
+    calls.splice(index, 1);
+    displayCalls();
+    updateStatistics();
         }
                 
 
@@ -1133,21 +1133,7 @@ cancelCall.addEventListener('click', () => {
             localStorage.setItem('goal', goal);
             updateTotals();
         });
-                
-statsDatePicker.addEventListener('change', (e) => {
-    selectedDate = e.target.value;
-    displayCalls();
-    updateStatistics();
-});
-
-currentDateBtn.addEventListener('click', () => {
-    const today = new Date().toISOString().split('T')[0];
-    statsDatePicker.value = today;
-    selectedDate = today;
-    displayCalls();
-    updateStatistics();
-});
-                
+                            
 function updateStatistics() {
     if (!selectedDate) return;
     
@@ -1208,23 +1194,6 @@ function updateStatistics() {
     }
 }
     
-    // Calculate statistics
-    if (daysCalls.length > 0) {
-        const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
-        const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
-        avgDuration.textContent = formatDuration(avgDurationValue);
-        
-        const totalEarned = daysCalls.reduce((sum, call) => {
-            const rate = rates[call.rateIndex];
-            return sum + (rate.amount / 60) * call.duration;
-        }, 0);
-        
-        dailyTotalEarnings.textContent = formatMoney(totalEarned);
-    } else {
-        avgDuration.textContent = '00:00:00';
-        dailyTotalEarnings.textContent = '$0.00';
-    }
-}
          // Initialize
 console.log("Initializing with:", {rates, calls, goal});
 
