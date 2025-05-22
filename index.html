@@ -482,6 +482,12 @@ input[type="time"]:focus {
                         </div>
                         <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
                     </div>
+                    <div class="mb-4 w-full">
+                        <label for="live-call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate for Live Call</label>
+                        <select id="live-call-rate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                            <!-- Rate options will be added dynamically -->
+                        </select>
+                    </div>
                     <div class="flex flex-col gap-2 w-full">
                         <button id="add-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600 transition w-full flex items-center justify-center gap-2">
                             <i class="fas fa-plus"></i> Add Call
@@ -866,7 +872,17 @@ input[type="time"]:focus {
                     `<option value="${index}">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
                 ).join('');
             }
-
+            // Update live call rate selector
+            const liveCallRate = document.getElementById('live-call-rate');
+            if (liveCallRate) {
+                const currentValue = liveCallRate.value;
+                liveCallRate.innerHTML = rates.map((rate, index) => 
+                    `<option value="${index}">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
+                ).join('');
+                if (rates.some((_, index) => index.toString() === currentValue)) {
+                    liveCallRate.value = currentValue;
+                }
+            }
             localStorage.setItem('rates', JSON.stringify(rates));
         }
 
@@ -1056,9 +1072,10 @@ input[type="time"]:focus {
                     return;
                 }
 
+                                const liveCallRate = document.getElementById('live-call-rate');
                 currentCall = {
                     startTime: Date.now(),
-                    rateIndex: 0
+                    rateIndex: liveCallRate ? parseInt(liveCallRate.value) : 0
                 };
 
                 startCallBtn.disabled = true;
