@@ -1189,80 +1189,74 @@ input[type="time"]:focus {
             });
         }
 
-        if (callForm) {
-            callForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const hoursInput = document.getElementById('call-duration-hours');
-    const minutesInput = document.getElementById('call-duration-minutes');
-    const secondsInput = document.getElementById('call-duration-seconds');
-    
-    if (!callDate || !callRate) return;
+       if (callForm) {
+    callForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const hoursInput = document.getElementById('call-duration-hours');
+        const minutesInput = document.getElementById('call-duration-minutes');
+        const secondsInput = document.getElementById('call-duration-seconds');
+        
+        if (!callDate || !callRate) return;
 
-    // Validate date
-    const selectedDate = new Date(callDate.value);
-    if (isNaN(selectedDate.getTime())) {
-        alert('Please enter a valid date');
-        return;
-    }
-    if (selectedDate > new Date()) {
-        alert('Cannot add calls in the future');
-        return;
-    }
-
-    // Validate duration
-    const hours = parseInt(hoursInput?.value) || 0;
-    const minutes = parseInt(minutesInput?.value) || 0;
-    const seconds = parseInt(secondsInput?.value) || 0;
-
-    if (hours > 24) {
-        alert('Maximum call duration is 24 hours');
-        return;
-    }
-    if (minutes >= 60 || seconds >= 60) {
-        alert('Minutes and seconds must be less than 60');
-        return;
-    }
-    if (hours === 24 && (minutes > 0 || seconds > 0)) {
-        alert('Maximum call duration is 24 hours');
-        return;
-    }
-
-    const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
-    if (totalSeconds === 0) {
-        alert('Call duration cannot be zero');
-        return;
-    }
-                
-                const hours = parseInt(hoursInput?.value) || 0;
-                const minutes = parseInt(minutesInput?.value) || 0;
-                const seconds = parseInt(secondsInput?.value) || 0;
-                const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
-                
-                if (!callDate || !callRate) return;
-                
-                const date = new Date(callDate.value);
-                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-                
-                const callData = {
-                    date: date.toISOString(),
-                    duration: totalSeconds,
-                    rateIndex: parseInt(callRate.value)
-                };
-
-                if (editingCallIndex !== null) {
-                    calls[editingCallIndex] = callData;
-                    editingCallIndex = null;
-                } else {
-                    calls.push(callData);
-                }
-
-                displayCalls();
-                if (callModal) callModal.style.display = 'none';
-                callForm.reset();
-                if (modalTitle) modalTitle.textContent = 'Add Call';
-                updateStatistics();
-            });
+        // Validate date
+        const selectedDate = new Date(callDate.value);
+        if (isNaN(selectedDate.getTime())) {
+            alert('Please enter a valid date');
+            return;
         }
+        if (selectedDate > new Date()) {
+            alert('Cannot add calls in the future');
+            return;
+        }
+
+        // Validate duration
+        const hours = parseInt(hoursInput?.value) || 0;
+        const minutes = parseInt(minutesInput?.value) || 0;
+        const seconds = parseInt(secondsInput?.value) || 0;
+
+        if (hours > 24) {
+            alert('Maximum call duration is 24 hours');
+            return;
+        }
+        if (minutes >= 60 || seconds >= 60) {
+            alert('Minutes and seconds must be less than 60');
+            return;
+        }
+        if (hours === 24 && (minutes > 0 || seconds > 0)) {
+            alert('Maximum call duration is 24 hours');
+            return;
+        }
+
+        const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+        if (totalSeconds === 0) {
+            alert('Call duration cannot be zero');
+            return;
+        }
+
+        // Process the validated data
+        const date = new Date(callDate.value);
+        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+        
+        const callData = {
+            date: date.toISOString(),
+            duration: totalSeconds,
+            rateIndex: parseInt(callRate.value)
+        };
+
+        if (editingCallIndex !== null) {
+            calls[editingCallIndex] = callData;
+            editingCallIndex = null;
+        } else {
+            calls.push(callData);
+        }
+
+        displayCalls();
+        if (callModal) callModal.style.display = 'none';
+        callForm.reset();
+        if (modalTitle) modalTitle.textContent = 'Add Call';
+        updateStatistics();
+    });
+}
 
         // Goal management
         if (goalForm) {
