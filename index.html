@@ -785,7 +785,11 @@ let editingCallIndex = null;
 let goal = parseFloat(localStorage.getItem('goal')) || 0;
 
 // Set current date in local timezone
-let selectedDate = new Date().toLocaleDateString('en-CA'); // This will give YYYY-MM-DD in local timezone
+const now = new Date();
+const year = now.getFullYear();
+const month = String(now.getMonth() + 1).padStart(2, '0');
+const day = String(now.getDate()).padStart(2, '0');
+let selectedDate = `${year}-${month}-${day}`;
 statsDatePicker.value = selectedDate;
 
         // DOM elements
@@ -831,13 +835,16 @@ statsDatePicker.addEventListener('change', (e) => {
 });
 
 currentDateBtn.addEventListener('click', () => {
-    const today = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local timezone
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const today = `${year}-${month}-${day}`;
     statsDatePicker.value = today;
     selectedDate = today;
     displayCalls();
     updateStatistics();
-});
-  
+});  
 
         // Rate management
         function displayRates() {
