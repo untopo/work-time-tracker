@@ -1164,6 +1164,22 @@ if (goalAmount) {
             }
         }
 
+        function addCallToLog(date, duration, rateIndex) {
+    // Create a new Date object from the input
+    let callDate = new Date(date);
+    
+    // Store the call with local timezone date
+    calls.push({
+        date: callDate.toISOString(),
+        duration: duration,
+        rateIndex: rateIndex
+    });
+    
+    localStorage.setItem('calls', JSON.stringify(calls));
+    displayCalls();
+    updateStatistics();
+}
+
         function displayCalls() {
             if (!callLog) return;
             
@@ -1246,29 +1262,24 @@ if (goalAmount) {
         }
 
         if (endCallBtn) {
-            endCallBtn.addEventListener('click', () => {
-                if (!currentCall) return;
+    endCallBtn.addEventListener('click', () => {
+        if (!currentCall) return;
 
-const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-const date = new Date(currentCall.startTime);
-calls.push({
-    date: new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString(),
-    duration: duration,
-    rateIndex: currentCall.rateIndex
-});
+        const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+        
+        // Add call using the new function
+        addCallToLog(currentCall.startTime, duration, currentCall.rateIndex);
 
-// Clear all active timers
-activeTimers.forEach(timerId => clearInterval(timerId));
-activeTimers.clear();
-callTimer = null;
-currentCall = null;
-if (startCallBtn) startCallBtn.disabled = false;
-endCallBtn.disabled = true;
-if (liveCallInfo) liveCallInfo.style.display = 'none';
-displayCalls();
-updateStatistics();
-            });
-        }
+        // Clear all active timers
+        activeTimers.forEach(timerId => clearInterval(timerId));
+        activeTimers.clear();
+        callTimer = null;
+        currentCall = null;
+        if (startCallBtn) startCallBtn.disabled = false;
+        endCallBtn.disabled = true;
+        if (liveCallInfo) liveCallInfo.style.display = 'none';
+    });
+}
 
         // Modal keyboard handler
         function handleModalKeyboard(event) {
@@ -1378,6 +1389,47 @@ function handleSettingsKeyboard(e) {
                 closeModal();
             });
         }
+
+        // Call form submit handler
+if (callForm) {
+    callForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const hoursInput = document.getElementById('call-duration-hours');
+        const minutesInput = document.getElementById('call-duration-minutes');
+        const secondsInput = document.getElementById('call-duration-seconds');
+        
+        const hours = parseInt(hoursInput.value) || 0;
+        const minutes = parseInt(minutesInput.value) || 0;
+        const seconds = parseInt(secondsInput.value) || 0;
+        
+        const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+        
+        if (totalSeconds <= 0) {
+            alert('Please enter a valid duration');
+            return;
+        }
+        
+        // Get the date from the input
+        const inputDate = new Date(callDate.value);
+        
+        if (editingCallIndex !== null) {
+            calls[editingCallIndex] = {
+                date: inputDate.toISOString(),
+                duration: totalSeconds,
+                rateIndex: parseInt(callRate.value)
+            };
+        } else {
+            // Add new call
+            addCallToLog(inputDate, totalSeconds, parseInt(callRate.value));
+        }
+        
+        localStorage.setItem('calls', JSON.stringify(calls));
+        closeModal();
+        displayCalls();
+        updateStatistics();
+    });
+}
 
         // Click outside modal to close
         if (callModal) {
