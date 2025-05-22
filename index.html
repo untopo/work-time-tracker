@@ -1282,27 +1282,59 @@ if (goalAmount) {
 }
 
         // Modal keyboard handler
-        function handleModalKeyboard(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-            }
-            
-            if (event.key === 'Tab') {
-                // Only handle tab if modal is visible
-                if (callModal && callModal.style.display === 'flex') {
-                    const focusable = callModal.querySelectorAll(focusableElements);
-                    const firstFocusable = focusable[0];
-                    const lastFocusable = focusable[focusable.length - 1];
+function handleModalKeyboard(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+    
+    if (event.key === 'Tab') {
+        // Only handle tab if modal is visible
+        if (callModal && callModal.style.display === 'flex') {
+            const focusable = callModal.querySelectorAll(focusableElements);
+            const firstFocusable = focusable[0];
+            const lastFocusable = focusable[focusable.length - 1];
 
-                    // If shift+tab and first element is focused, move to last
-                    if (event.shiftKey && document.activeElement === firstFocusable) {
-                        event.preventDefault();
-                        lastFocusable.focus();
-                    }
-                    // If tab and last element is focused, move to first
-                    else if (!event.shiftKey && document.activeElement === lastFocusable) {
-                        event.preventDefault();
-                        firstFocusable.focus();
+            // If shift+tab and first element is focused, move to last
+            if (event.shiftKey && document.activeElement === firstFocusable) {
+                event.preventDefault();
+                lastFocusable.focus();
+            }
+            // If tab and last element is focused, move to first
+            else if (!event.shiftKey && document.activeElement === lastFocusable) {
+                event.preventDefault();
+                firstFocusable.focus();
+            }
+        }
+    }
+}
+
+// Settings keyboard handler
+function handleSettingsKeyboard(e) {
+    if (!settingsModal || settingsModal.style.display === 'none') return;
+
+    if (e.key === 'Escape') {
+        settingsModal.style.display = 'none';
+        if (settingsToggle) settingsToggle.focus();
+        return;
+    }
+
+    if (e.key === 'Tab') {
+        const modalFocusableElements = settingsModal.querySelectorAll(focusableElements);
+        const firstFocusable = modalFocusableElements[0];
+        const lastFocusable = modalFocusableElements[modalFocusableElements.length - 1];
+
+        // If shift+tab and first element is focused, move to last
+        if (e.shiftKey && document.activeElement === firstFocusable) {
+            e.preventDefault();
+            lastFocusable.focus();
+        }
+        // If tab and last element is focused, move to first
+        else if (!e.shiftKey && document.activeElement === lastFocusable) {
+            e.preventDefault();
+            firstFocusable.focus();
+        }
+    }
+}
 
 function handleSettingsKeyboard(e) {
     if (!settingsModal || settingsModal.style.display === 'none') return;
