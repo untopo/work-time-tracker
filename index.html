@@ -771,7 +771,7 @@ input[type="time"]:focus {
             document.documentElement.classList.add('dark');
         }
 
-        // State management
+       // State management
 console.log("Loading stored data:", {
     rates: localStorage.getItem('rates'),
     calls: localStorage.getItem('calls'),
@@ -786,10 +786,9 @@ let goal = parseFloat(localStorage.getItem('goal')) || 0;
 
 // Set current date in local timezone
 const now = new Date();
-const year = now.getFullYear();
-const month = String(now.getMonth() + 1).padStart(2, '0');
-const day = String(now.getDate()).padStart(2, '0');
-let selectedDate = `${year}-${month}-${day}`;
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Adjust for timezone
+const localDate = now.toISOString().split('T')[0];
+let selectedDate = localDate;
 statsDatePicker.value = selectedDate;
 
         // DOM elements
@@ -836,10 +835,8 @@ statsDatePicker.addEventListener('change', (e) => {
 
 currentDateBtn.addEventListener('click', () => {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const today = `${year}-${month}-${day}`;
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Adjust for timezone
+    const today = now.toISOString().split('T')[0];
     statsDatePicker.value = today;
     selectedDate = today;
     displayCalls();
