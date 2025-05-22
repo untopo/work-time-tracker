@@ -617,6 +617,13 @@ input[type="time"]:focus {
                 </h3>
                 <p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
             </div>
+            <!-- Total Calls Today Card -->
+<div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
+    <h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2">
+        <i class="fas fa-phone mr-2"></i>Total Calls Today
+    </h3>
+    <p id="total-calls-today" class="text-2xl font-bold text-blue-800 dark:text-blue-200">0</p>
+</div>
             <!-- Earnings Cards -->
 <div class="col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
     <!-- Daily Earnings -->
@@ -776,7 +783,7 @@ input[type="time"]:focus {
         let callTimer = null;
         let editingCallIndex = null;
         let goal = parseFloat(localStorage.getItem('goal')) || 0;
-        let selectedDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+        let selectedDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format statsDatePicker.value = selectedDate;
 
         // DOM elements
         const modalTitle = document.getElementById('modal-title');
@@ -994,33 +1001,43 @@ function editCall(index) {
 }
 
         function updateTotals() {
-            let totalMins = 0;
-            let totalEarned = 0;
+    let totalMins = 0;
+    let totalEarned = 0;
 
-            calls.forEach(call => {
-                const rate = rates[call.rateIndex];
-                totalMins += call.duration;
-                totalEarned += (rate.amount / 60) * call.duration;
-            });
+    // Filter calls for selected date
+    const dayStart = new Date(selectedDate);
+    const dayEnd = new Date(selectedDate);
+    dayEnd.setHours(23, 59, 59, 999);
+    
+    const filteredCalls = calls.filter(call => {
+        const callDate = new Date(call.date);
+        return callDate >= dayStart && callDate <= dayEnd;
+    });
 
-            if (currentCall) {
-                const currentDuration = (Date.now() - currentCall.startTime) / 60000;
-                const currentRate = rates[currentCall.rateIndex];
-                totalMins += currentDuration;
-                totalEarned += (currentRate.amount / 60) * currentDuration;
-            }
+    filteredCalls.forEach(call => {
+        const rate = rates[call.rateIndex];
+        totalMins += call.duration;
+        totalEarned += (rate.amount / 60) * call.duration;
+    });
 
-            totalMinutes.textContent = formatDuration(totalMins);
-            totalEarnings.textContent = formatMoney(totalEarned);
+    if (currentCall) {
+        const currentDuration = (Date.now() - currentCall.startTime) / 60000;
+        const currentRate = rates[currentCall.rateIndex];
+        totalMins += currentDuration;
+        totalEarned += (currentRate.amount / 60) * currentDuration;
+    }
 
-            // Update goal progress
-            if (goal > 0) {
-                const progress = Math.min((totalEarned / goal) * 100, 100);
-                goalProgressBar.style.width = `${progress}%`;
-                goalProgressText.textContent = `${Math.round(progress)}%`;
-                goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
-            }
-        }
+    totalMinutes.textContent = formatDuration(totalMins);
+    totalEarnings.textContent = formatMoney(totalEarned);
+
+    // Update goal progress
+    if (goal > 0) {
+        const progress = Math.min((totalEarned / goal) * 100, 100);
+        goalProgressBar.style.width = `${progress}%`;
+        goalProgressText.textContent = `${Math.round(progress)}%`;
+        goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
+    }
+}
         
         // Call timer functionality
         function updateCallTimer() {
@@ -1069,6 +1086,7 @@ function editCall(index) {
             endCallBtn.disabled = true;
             liveCallInfo.style.display = 'none';
             displayCalls();
+            updateStatistics();
         });
 
         // Call modal functionality
@@ -1124,6 +1142,7 @@ cancelCall.addEventListener('click', () => {
     callModal.style.display = 'none';
     callForm.reset();
     modalTitle.textContent = 'Add Call';
+    updateStatistics();
 });
 
         // Goal management
@@ -1146,6 +1165,9 @@ function updateStatistics() {
         const callDate = new Date(call.date);
         return callDate >= dayStart && callDate <= dayEnd;
     });
+
+    // Calculate total calls for today
+    document.getElementById('total-calls-today').textContent = daysCalls.length.toString();
     
     // For monthly stats
     const now = new Date(selectedDate);
@@ -1155,6 +1177,29 @@ function updateStatistics() {
     
     let firstHalfEarnings = 0;
     let secondHalfEarnings = 0;
+    
+    // Calculate average earning rate per minute
+    let totalMinutesWorked = 0;
+    let totalEarnings = 0;
+    
+    calls.forEach(call => {
+        const rate = rates[call.rateIndex];
+        const minutes = Math.floor(call.duration / 60);
+        totalMinutesWorked += minutes;
+        totalEarnings += rate.amount * minutes;
+    });
+    
+    const avgEarningPerMinute = totalMinutesWorked > 0 ? totalEarnings / totalMinutesWorked : 0;
+    
+    // Calculate minutes to goal
+    if (goal > 0 && avgEarningPerMinute > 0) {
+        const remainingAmount = Math.max(0, goal - totalEarnings);
+        const estimatedMinutes = Math.ceil(remainingAmount / avgEarningPerMinute);
+        document.getElementById('goal-estimate').textContent = 
+            remainingAmount > 0 ? `~${estimatedMinutes} mins to goal` : 'Goal Reached!';
+    } else {
+        document.getElementById('goal-estimate').textContent = 'Set goal & log calls';
+    }
     
     calls.forEach(call => {
         const callDate = new Date(call.date);
@@ -1182,12 +1227,12 @@ function updateStatistics() {
         const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
         avgDuration.textContent = formatDuration(avgDurationValue);
         
-        const totalEarned = daysCalls.reduce((sum, call) => {
+        const dailyEarned = daysCalls.reduce((sum, call) => {
             const rate = rates[call.rateIndex];
             return sum + (rate.amount / 60) * call.duration;
         }, 0);
         
-        dailyTotalEarnings.textContent = formatMoney(totalEarned);
+        dailyTotalEarnings.textContent = formatMoney(dailyEarned);
     } else {
         avgDuration.textContent = '00:00:00';
         dailyTotalEarnings.textContent = '$0.00';
