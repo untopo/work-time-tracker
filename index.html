@@ -954,8 +954,9 @@ input[type="time"]:focus {
                 const rate = rates[call.rateIndex];
                 if (!rate) return '';
                 
-                const duration = call.duration;
-                const earned = (rate.amount / 3600) * duration; // Calculate based on seconds
+                                const duration = call.duration;
+                const minutes = duration / 60; // Convert seconds to minutes
+                const earned = (rate.amount / 60) * minutes; // hourly rate / 60 = per-minute rate
                         
                 return `
                     <tr>
@@ -1026,8 +1027,8 @@ input[type="time"]:focus {
             filteredCalls.forEach(call => {
                 const rate = rates[call.rateIndex];
                 if (rate) {
-                    totalDuration += call.duration;
-                    totalEarned += (rate.amount / 3600) * call.duration; // Calculate based on seconds
+                                       totalDuration += call.duration;
+                    totalEarned += (rate.amount / 60) * (call.duration / 60);
                 }
             });
 
@@ -1060,7 +1061,7 @@ input[type="time"]:focus {
             const rate = rates[currentCall.rateIndex];
             if (!rate) return;
             
-            const earned = (rate.amount / 3600) * duration; // Calculate based on seconds
+            const earned = (rate.amount / 60) * (duration / 60);
             
             if (liveCallTimer) liveCallTimer.textContent = formatDuration(duration);
             if (liveCallEarnings) liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
@@ -1228,7 +1229,7 @@ input[type="time"]:focus {
                 const rate = rates[call.rateIndex];
                 if (rate) {
                     totalSecondsWorked += call.duration;
-                    totalEarnings += (rate.amount / 3600) * call.duration;
+                    totalEarnings += (rate.amount / 60) * (call.duration / 60);
                 }
             });
             
@@ -1239,7 +1240,7 @@ input[type="time"]:focus {
             if (goalEstimateElement && goal > 0 && avgEarningPerSecond > 0) {
                 const currentDayEarnings = daysCalls.reduce((sum, call) => {
                     const rate = rates[call.rateIndex];
-                    return rate ? sum + (rate.amount / 3600) * call.duration : sum;
+                    return rate ? sum + (rate.amount / 60) * (call.duration / 60) : sum;
                 }, 0);
                 
                 const remainingAmount = Math.max(0, goal - currentDayEarnings);
@@ -1257,7 +1258,7 @@ input[type="time"]:focus {
                 if (callDate >= monthStart && callDate <= monthEnd) {
                     const rate = rates[call.rateIndex];
                     if (rate) {
-                        const earned = (rate.amount / 3600) * call.duration;
+                        const earned = (rate.amount / 60) * (call.duration / 60);
                         
                         if (callDate <= midMonth) {
                             firstHalfEarnings += earned;
@@ -1285,7 +1286,7 @@ input[type="time"]:focus {
                 
                 const dailyEarned = daysCalls.reduce((sum, call) => {
                     const rate = rates[call.rateIndex];
-                    return rate ? sum + (rate.amount / 3600) * call.duration : sum;
+                    return rate ? sum + (rate.amount / 60) * (call.duration / 60) : sum;
                 }, 0);
                 
                 if (dailyTotalEarnings) dailyTotalEarnings.textContent = formatMoney(dailyEarned);
