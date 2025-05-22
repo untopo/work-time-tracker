@@ -531,7 +531,7 @@ input[type="time"]:focus {
                             <span class="text-gray-600 dark:text-gray-300 mr-2">$</span>
                             <input type="number" id="rate-amount" placeholder="Amount" required step="0.01" min="0"
                                 class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                            <span class="text-gray-600 dark:text-gray-300 ml-2">/hr</span>
+                            <span class="text-gray-600 dark:text-gray-300 ml-2">/min</span>
                         </div>
                         <div class="flex gap-2">
                             <button type="submit"
@@ -954,9 +954,9 @@ input[type="time"]:focus {
                 const rate = rates[call.rateIndex];
                 if (!rate) return '';
                 
-                                                const duration = call.duration;
-                const hours = duration / 3600; // Convert seconds to hours
-                const earned = rate.amount * hours; // Simply multiply hourly rate by hours
+                                                                const duration = call.duration;
+                const minutes = duration / 60; // Convert seconds to minutes
+                const earned = rate.amount * minutes; // Multiply per-minute rate by minutes
                         
                 return `
                     <tr>
@@ -1028,7 +1028,7 @@ input[type="time"]:focus {
                 const rate = rates[call.rateIndex];
                 if (rate) {
                                                            totalDuration += call.duration;
-                    totalEarned += rate.amount * (call.duration / 3600); // Convert seconds to hours and multiply by hourly rate
+                    totalEarned += rate.amount * (call.duration / 60); // Convert seconds to hours and multiply by hourly rate
                 }
             });
 
@@ -1061,8 +1061,8 @@ input[type="time"]:focus {
             const rate = rates[currentCall.rateIndex];
             if (!rate) return;
             
-            const hours = duration / 3600; // Convert seconds to hours
-            const earned = rate.amount * hours; // Simply multiply hourly rate by hours
+                        const minutes = duration / 60; // Convert seconds to minutes
+            const earned = rate.amount * minutes; // Multiply per-minute rate by minutes
             
             if (liveCallTimer) liveCallTimer.textContent = formatDuration(duration);
             if (liveCallEarnings) liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
@@ -1230,7 +1230,7 @@ input[type="time"]:focus {
                 const rate = rates[call.rateIndex];
                 if (rate) {
                     totalSecondsWorked += call.duration;
-                                        totalEarnings += rate.amount * (call.duration / 3600); // Convert seconds to hours and multiply by hourly rate
+                                        totalEarnings += rate.amount * (call.duration / 60); // Convert seconds to hours and multiply by hourly rate
                 }
             });
             
