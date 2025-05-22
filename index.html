@@ -807,14 +807,15 @@
 
         function filterCallsByDate(calls, targetDate) {
     if (!targetDate) return calls;
+    
     const target = new Date(targetDate);
     target.setHours(0, 0, 0, 0);
-    const targetEnd = new Date(targetDate);
-    targetEnd.setHours(23, 59, 59, 999);
     
     return calls.filter(call => {
         const callDate = new Date(call.date);
-        return callDate >= target && callDate <= targetEnd;
+        return callDate.getFullYear() === target.getFullYear() &&
+               callDate.getMonth() === target.getMonth() &&
+               callDate.getDate() === target.getDate();
     });
 }
 
@@ -1172,20 +1173,20 @@ if (goalAmount) {
         }
 
         function addCallToLog(date, duration, rateIndex) {
-    // Create date object and keep local timezone
+    // Create a new Date object in local time
     const callDate = new Date(date);
     
-    // Format date in a way that preserves timezone
-    const formattedDate = new Date(
-        callDate.getFullYear(),
-        callDate.getMonth(),
-        callDate.getDate(),
-        callDate.getHours(),
-        callDate.getMinutes()
-    ).toISOString();
+    // Create ISO string that preserves local time
+    const year = callDate.getFullYear();
+    const month = String(callDate.getMonth() + 1).padStart(2, '0');
+    const day = String(callDate.getDate()).padStart(2, '0');
+    const hours = String(callDate.getHours()).padStart(2, '0');
+    const minutes = String(callDate.getMinutes()).padStart(2, '0');
+    const seconds = String(callDate.getSeconds()).padStart(2, '0');
+    const localDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 
     calls.push({
-        date: formattedDate,
+        date: localDate,
         duration: duration,
         rateIndex: rateIndex
     });
@@ -1427,7 +1428,6 @@ if (callForm) {
             return;
         }
         
-        // Get date from input and preserve timezone
         const inputDate = new Date(callDate.value);
         
         if (editingCallIndex !== null) {
@@ -1436,19 +1436,11 @@ if (callForm) {
                 duration: totalSeconds,
                 rateIndex: parseInt(callRate.value)
             };
+            localStorage.setItem('calls', JSON.stringify(calls));
         } else {
-            // Add new call
             addCallToLog(inputDate, totalSeconds, parseInt(callRate.value));
         }
         
-        closeModal();
-    });
-}
-            // Add new call
-            addCallToLog(inputDate, totalSeconds, parseInt(callRate.value));
-        }
-        
-        localStorage.setItem('calls', JSON.stringify(calls));
         closeModal();
         displayCalls();
         updateStatistics();
