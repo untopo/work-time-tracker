@@ -617,11 +617,45 @@ input[type="time"]:focus {
                 </h3>
                 <p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
             </div>
-            <!-- Daily Earnings Card -->
-            <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-                <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-                    <i class="fas fa-money-bill-wave mr-2"></i>Daily Earnings
-                </h3>
+            <!-- Earnings Cards -->
+<div class="col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
+    <!-- Daily Earnings -->
+    <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+            <i class="fas fa-money-bill-wave mr-2"></i>Daily Earnings
+        </h3>
+        <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+            Total: <span id="daily-total-earnings">$0.00</span>
+        </p>
+    </div>
+    <!-- First Half Month -->
+    <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+            <i class="fas fa-calendar-day mr-2"></i>First Half Month
+        </h3>
+        <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+            <span id="first-half-earnings">$0.00</span>
+        </p>
+    </div>
+    <!-- Second Half Month -->
+    <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+            <i class="fas fa-calendar-week mr-2"></i>Second Half Month
+        </h3>
+        <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+            <span id="second-half-earnings">$0.00</span>
+        </p>
+    </div>
+    <!-- Total Month -->
+    <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+            <i class="fas fa-calendar-alt mr-2"></i>Total Month
+        </h3>
+        <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+            <span id="monthly-total-earnings">$0.00</span>
+        </p>
+    </div>
+</div>
                 <div class="space-y-2">
                     <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">Total: <span id="daily-total-earnings">$0.00</span></p>
                 </div>
@@ -1105,10 +1139,10 @@ cancelCall.addEventListener('click', () => {
             updateTotals();
         });
                 
-// Date picker handlers
 statsDatePicker.addEventListener('change', (e) => {
     selectedDate = e.target.value;
     displayCalls();
+    updateStatistics();
 });
 
 currentDateBtn.addEventListener('click', () => {
@@ -1116,8 +1150,9 @@ currentDateBtn.addEventListener('click', () => {
     statsDatePicker.value = today;
     selectedDate = today;
     displayCalls();
+    updateStatistics();
 });
-
+                
 function updateStatistics() {
     if (!selectedDate) return;
     
@@ -1125,10 +1160,58 @@ function updateStatistics() {
     const dayEnd = new Date(selectedDate);
     dayEnd.setHours(23, 59, 59, 999);
     
+    // For daily stats
     const daysCalls = calls.filter(call => {
         const callDate = new Date(call.date);
         return callDate >= dayStart && callDate <= dayEnd;
     });
+    
+    // For monthly stats
+    const now = new Date(selectedDate);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const midMonth = new Date(now.getFullYear(), now.getMonth(), 15, 23, 59, 59);
+    
+    let firstHalfEarnings = 0;
+    let secondHalfEarnings = 0;
+    
+    calls.forEach(call => {
+        const callDate = new Date(call.date);
+        if (callDate >= monthStart && callDate <= monthEnd) {
+            const rate = rates[call.rateIndex];
+            const minutes = Math.floor(call.duration / 60);
+            const earned = rate.amount * minutes;
+            
+            if (callDate <= midMonth) {
+                firstHalfEarnings += earned;
+            } else {
+                secondHalfEarnings += earned;
+            }
+        }
+    });
+    
+    // Update monthly earnings displays
+    document.getElementById('first-half-earnings').textContent = formatMoney(firstHalfEarnings);
+    document.getElementById('second-half-earnings').textContent = formatMoney(secondHalfEarnings);
+    document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
+    
+    // Update daily statistics
+    if (daysCalls.length > 0) {
+        const totalDuration = daysCalls.reduce((sum, call) => sum + call.duration, 0);
+        const avgDurationValue = Math.floor(totalDuration / daysCalls.length);
+        avgDuration.textContent = formatDuration(avgDurationValue);
+        
+        const totalEarned = daysCalls.reduce((sum, call) => {
+            const rate = rates[call.rateIndex];
+            return sum + (rate.amount / 60) * call.duration;
+        }, 0);
+        
+        dailyTotalEarnings.textContent = formatMoney(totalEarned);
+    } else {
+        avgDuration.textContent = '00:00:00';
+        dailyTotalEarnings.textContent = '$0.00';
+    }
+}
     
     // Calculate statistics
     if (daysCalls.length > 0) {
