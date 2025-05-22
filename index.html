@@ -1361,9 +1361,9 @@ if (endCallBtn) {
 
         const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
         
-        // Add call using local time
-        const now = new Date();
-        addCallToLog(now, duration, currentCall.rateIndex);
+        // Create a date object from the call's start time instead of current time
+        const callDate = new Date(currentCall.startTime);
+        addCallToLog(callDate, duration, currentCall.rateIndex);
 
         // Clear timers and reset state
         activeTimers.forEach(timerId => clearInterval(timerId));
@@ -1455,26 +1455,35 @@ lastActiveElement.focus();
 
 // Call modal functionality
 if (addCallBtn) {
-addCallBtn.addEventListener('click', () => {
-if (rates.length === 0) {
-alert('Please add at least one rate before adding a call.');
-return;
-}
-editingCallIndex = null;
-if (modalTitle) modalTitle.textContent = 'Add Call';
-if (callForm) callForm.reset();
-const now = new Date();
-if (callDate) callDate.value = getLocalISOString(now);
+    addCallBtn.addEventListener('click', () => {
+        if (rates.length === 0) {
+            alert('Please add at least one rate before adding a call.');
+            return;
+        }
+        editingCallIndex = null;
+        if (modalTitle) modalTitle.textContent = 'Add Call';
+        if (callForm) callForm.reset();
+        
+        // Set the date input to current local time
+        const now = new Date();
+        if (callDate) {
+            // Format the date to match datetime-local input format
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            callDate.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
 
-// Store last active element and show modal
-lastActiveElement = document.activeElement;
-if (callModal) {
-callModal.style.display = 'flex';
-// Focus first input after modal is shown
-const firstInput = callModal.querySelector('input');
-if (firstInput) firstInput.focus();
-}
-});
+        // Store last active element and show modal
+        lastActiveElement = document.activeElement;
+        if (callModal) {
+            callModal.style.display = 'flex';
+            // Focus first input after modal is shown
+            if (callDate) callDate.focus();
+        }
+    });
 }
 
 if (closeModalBtn) {
