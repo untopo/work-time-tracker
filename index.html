@@ -1237,7 +1237,7 @@ input[type="time"]:focus {
             
             // Calculate time to goal
             const goalEstimateElement = document.getElementById('goal-estimate');
-            if (goalEstimateElement && goal > 0 && avgEarningPerSecond > 0) {
+            if (goalEstimateElement && goal > 0 && avgEarningPerMinute > 0) {
                 const currentDayEarnings = daysCalls.reduce((sum, call) => {
                     const rate = rates[call.rateIndex];
                     return rate ? sum + (rate.amount / 60) * (call.duration / 60) : sum;
