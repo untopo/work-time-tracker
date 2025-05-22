@@ -699,7 +699,7 @@
         <form id="call-form">
             <div class="mb-4">
                 <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
-                <input type="datetime-local" id="call-date" 
+                <input type="datetime-local" id="call-date" required 
                     class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
             </div>
             <div class="mb-4">
@@ -961,10 +961,12 @@
         const currentDateBtn = document.getElementById('current-date-btn');
         const dailyTotalEarnings = document.getElementById('daily-total-earnings');
         const avgDuration = document.getElementById('avg-duration');
-
+        
         // Initialize goal amount display
-        if (goalAmount) goalAmount.value = goal || '';
-
+if (goalAmount) {
+    goalAmount.value = goal || '';
+}
+        
         // Initialize date picker
         if (statsDatePicker) {
             statsDatePicker.value = selectedDate;
@@ -1286,6 +1288,34 @@
                     else if (!event.shiftKey && document.activeElement === lastFocusable) {
                         event.preventDefault();
                         firstFocusable.focus();
+
+function handleSettingsKeyboard(e) {
+    if (!settingsModal || settingsModal.style.display === 'none') return;
+
+    if (e.key === 'Escape') {
+        settingsModal.style.display = 'none';
+        if (settingsToggle) settingsToggle.focus();
+        return;
+    }
+
+    if (e.key === 'Tab') {
+        const modalFocusableElements = settingsModal.querySelectorAll(focusableElements);
+        const firstFocusable = modalFocusableElements[0];
+        const lastFocusable = modalFocusableElements[modalFocusableElements.length - 1];
+
+        // If shift+tab and first element is focused, move to last
+        if (e.shiftKey && document.activeElement === firstFocusable) {
+            e.preventDefault();
+            lastFocusable.focus();
+        }
+        // If tab and last element is focused, move to first
+        else if (!e.shiftKey && document.activeElement === lastFocusable) {
+            e.preventDefault();
+            firstFocusable.focus();
+        }
+    }
+}
+                        
                     }
                 }
             }
@@ -1459,8 +1489,26 @@ if (exportDataBtn) {
         try {
             exportDataBtn.disabled = true;
             exportDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
-            await exportData();
+            
+            const dataToExport = {
+                rates,
+                calls,
+                goal,
+                version: '1.0',
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `work-time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         } catch (error) {
+            console.error('Export failed:', error);
             alert('Failed to export data. Please try again.');
         } finally {
             exportDataBtn.disabled = false;
@@ -1478,10 +1526,51 @@ if (document.getElementById('import-file')) {
         try {
             importBtn.classList.add('pointer-events-none', 'opacity-50');
             importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
-            await importData(file);
-            alert('Data imported successfully!');
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // Validate imported data
+                    if (!importedData.rates || !Array.isArray(importedData.rates) ||
+                        !importedData.calls || !Array.isArray(importedData.calls)) {
+                        throw new Error('Invalid data format');
+                    }
+                    
+                    // Import the data
+                    rates = importedData.rates;
+                    calls = importedData.calls;
+                    if (typeof importedData.goal === 'number') {
+                        goal = importedData.goal;
+                        if (goalAmount) goalAmount.value = goal;
+                    }
+                    
+                    // Save to localStorage
+                    localStorage.setItem('rates', JSON.stringify(rates));
+                    localStorage.setItem('calls', JSON.stringify(calls));
+                    localStorage.setItem('goal', goal);
+                    
+                    // Update displays
+                    displayRates();
+                    displayCalls();
+                    updateStatistics();
+                    updateStorageInfo();
+                    
+                    alert('Data imported successfully!');
+                } catch (err) {
+                    console.error('Import error:', err);
+                    alert('Error importing data. Please make sure the file is a valid backup.');
+                }
+            };
+            reader.onerror = () => {
+                alert('Failed to read file');
+            };
+            reader.readAsText(file);
+            
         } catch (error) {
-            alert('Error importing data. Please make sure the file is a valid backup.');
+            console.error('Import failed:', error);
+            alert('Error importing data. Please try again.');
         } finally {
             importBtn.classList.remove('pointer-events-none', 'opacity-50');
             importBtn.innerHTML = '<i class="fas fa-upload"></i> Import Data';
@@ -1575,6 +1664,16 @@ window.addEventListener('beforeunload', () => {
     activeTimers.forEach(timerId => clearInterval(timerId));
     activeTimers.clear();
 });
+
+// Add keyboard event listeners for both modals
+document.addEventListener('keydown', (e) => {
+    if (callModal && callModal.style.display === 'flex') {
+        handleModalKeyboard(e);
+    } else if (settingsModal && settingsModal.style.display === 'flex') {
+        handleSettingsKeyboard(e);
+    }
+});
+        
     </script>
 </body>
 </html>
