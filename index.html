@@ -788,6 +788,7 @@ input[type="time"]:focus {
 
         // State management
         let rates = JSON.parse(localStorage.getItem('rates')) || [];
+        let activeTimers = new Set(); // Track all active timers
         let calls = JSON.parse(localStorage.getItem('calls')) || [];
         let currentCall = null;
         let callTimer = null;
@@ -1076,36 +1077,54 @@ input[type="time"]:focus {
 
         if (startCallBtn) {
             startCallBtn.addEventListener('click', () => {
-                if (rates.length === 0) {
-                    alert('Please add at least one rate before starting a call.');
-                    return;
-                }
+    if (rates.length === 0) {
+        alert('Please add at least one rate before starting a call.');
+        return;
+    }
 
-                                const liveCallRate = document.getElementById('live-call-rate');
-                currentCall = {
-                    startTime: Date.now(),
-                    rateIndex: liveCallRate ? parseInt(liveCallRate.value) : 0
-                };
+    // Clear any existing timers first
+    activeTimers.forEach(timerId => clearInterval(timerId));
+    activeTimers.clear();
 
-                startCallBtn.disabled = true;
-                if (endCallBtn) endCallBtn.disabled = false;
-                if (liveCallInfo) liveCallInfo.style.display = 'block';
-                callTimer = setInterval(updateCallTimer, 1000);
-            });
+    const liveCallRate = document.getElementById('live-call-rate');
+    currentCall = {
+        startTime: Date.now(),
+        rateIndex: liveCallRate ? parseInt(liveCallRate.value) : 0
+    };
+
+    startCallBtn.disabled = true;
+    if (endCallBtn) endCallBtn.disabled = false;
+    if (liveCallInfo) liveCallInfo.style.display = 'block';
+    const newTimer = setInterval(updateCallTimer, 1000);
+    activeTimers.add(newTimer);
+    callTimer = newTimer;
+});
         }
 
         if (endCallBtn) {
             endCallBtn.addEventListener('click', () => {
-                if (!currentCall) return;
+    if (!currentCall) return;
 
-                const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-                const date = new Date(currentCall.startTime);
-                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-                calls.push({
-                    date: date.toISOString(),
-                    duration: duration,
-                    rateIndex: currentCall.rateIndex
-                });
+    const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+    const date = new Date(currentCall.startTime);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    calls.push({
+        date: date.toISOString(),
+        duration: duration,
+        rateIndex: currentCall.rateIndex
+    });
+
+    // Clear all active timers
+    activeTimers.forEach(timerId => clearInterval(timerId));
+    activeTimers.clear();
+    callTimer = null;
+    currentCall = null;
+    if (startCallBtn) startCallBtn.disabled = false;
+    endCallBtn.disabled = true;
+    if (liveCallInfo) liveCallInfo.style.display = 'none';
+    displayCalls();
+    updateStatistics();
+});
 
                 clearInterval(callTimer);
                 currentCall = null;
@@ -1316,6 +1335,12 @@ input[type="time"]:focus {
         displayRates();
         displayCalls();
         updateStatistics();
+
+        // Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    activeTimers.forEach(timerId => clearInterval(timerId));
+    activeTimers.clear();
+});
     </script>
 </body>
 </html>
