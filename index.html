@@ -904,7 +904,6 @@ currentDateBtn.addEventListener('click', () => {
 function updateStatsForDate(date) {
     selectedDate = date;
     
-    // Filter calls for selected date
     const daysCalls = calls.filter(call => {
         const callDate = new Date(call.date);
         const callDateStr = callDate.toISOString().split('T')[0];
@@ -919,23 +918,17 @@ function updateStatsForDate(date) {
         avgDuration.textContent = formatDuration(avgDurationValue);
         
         // Daily earnings
-        const totalEarned = daysCalls.reduce((sum, call) => {
+        const dailyEarned = daysCalls.reduce((sum, call) => {
             const rate = rates[call.rateIndex];
-            const minutes = Math.floor(call.duration / 60);
-            return sum + (rate.amount * minutes);
+            return sum + (rate.amount / 60) * call.duration;
         }, 0);
         
-        dailyTotalEarnings.textContent = formatMoney(totalEarned);
+        dailyTotalEarnings.textContent = formatMoney(dailyEarned);
     } else {
         avgDuration.textContent = '00:00:00';
         dailyTotalEarnings.textContent = '$0.00';
     }
 }
-    
-    const daysCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
-        return callDate >= dayStart && callDate <= dayEnd;
-    });
     
     // Calculate statistics
     if (daysCalls.length > 0) {
