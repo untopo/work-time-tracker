@@ -934,17 +934,17 @@ function updateStatsForDate(date) {
 }
     function displayCalls() {
     // Filter calls for selected date if we have one
-    let displayedCalls = calls;
-    if (selectedDate) {
-        const dayStart = new Date(selectedDate);
-        const dayEnd = new Date(selectedDate);
-        dayEnd.setHours(23, 59, 59, 999);
-        
-        displayedCalls = calls.filter(call => {
-            const callDate = new Date(call.date);
-            return callDate >= dayStart && callDate <= dayEnd;
-        });
-    }
+let displayedCalls = calls;
+if (selectedDate) {
+    const dayStart = new Date(selectedDate + 'T00:00:00');
+    const dayEnd = new Date(selectedDate + 'T23:59:59');
+    
+    displayedCalls = calls.filter(call => {
+        const callDate = new Date(call.date);
+        const callDateStr = callDate.toISOString().split('T')[0];
+        return callDateStr === selectedDate;
+    });
+}
 
     // Sort filtered calls by date
     displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -1012,14 +1012,11 @@ function editCall(index) {
     let totalEarned = 0;
 
     // Filter calls for selected date
-    const dayStart = new Date(selectedDate);
-    const dayEnd = new Date(selectedDate);
-    dayEnd.setHours(23, 59, 59, 999);
-    
-    const filteredCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
-        return callDate >= dayStart && callDate <= dayEnd;
-    });
+const filteredCalls = calls.filter(call => {
+    const callDate = new Date(call.date);
+    const callDateStr = callDate.toISOString().split('T')[0];
+    return callDateStr === selectedDate;
+});
 
     filteredCalls.forEach(call => {
         const rate = rates[call.rateIndex];
@@ -1168,14 +1165,11 @@ cancelCall.addEventListener('click', () => {
 function updateStatistics() {
     if (!selectedDate) return;
     
-    const dayStart = new Date(selectedDate);
-    const dayEnd = new Date(selectedDate);
-    dayEnd.setHours(23, 59, 59, 999);
-    
     // For daily stats
     const daysCalls = calls.filter(call => {
         const callDate = new Date(call.date);
-        return callDate >= dayStart && callDate <= dayEnd;
+        const callDateStr = callDate.toISOString().split('T')[0];
+        return callDateStr === selectedDate;
     });
 
     // Calculate total calls for today
