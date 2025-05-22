@@ -861,15 +861,15 @@ const focusableElements = 'button, [href], input, select, textarea, [tabindex]:n
 
 // Timezone utility functions
 function getLocalISOString(date) {
-const d = new Date(date);
-
-// Keep the date in local timezone
-const year = d.getFullYear();
-const month = String(d.getMonth() + 1).padStart(2, '0');
-const day = String(d.getDate()).padStart(2, '0');
-const hours = String(d.getHours()).padStart(2, '0');
-const minutes = String(d.getMinutes()).padStart(2, '0');
-return `${year}-${month}-${day}T${hours}:${minutes}`;
+    const d = new Date(date);
+    // Keep the date in local timezone
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
 
 function isDateInFuture(dateToCheck) {
@@ -1173,27 +1173,28 @@ if (callDate) callDate.focus();
 }
 
 function addCallToLog(date, duration, rateIndex) {
-// Create a new Date object in local time
-const callDate = new Date(date);
+    // Create a new Date object in local time
+    const callDate = new Date(date);
+    
+    // Store the date in ISO format but preserve local time
+    const localDate = new Date(
+        callDate.getFullYear(),
+        callDate.getMonth(),
+        callDate.getDate(),
+        callDate.getHours(),
+        callDate.getMinutes(),
+        callDate.getSeconds()
+    ).toISOString();
 
-// Create ISO string that preserves local time
-const year = callDate.getFullYear();
-const month = String(callDate.getMonth() + 1).padStart(2, '0');
-const day = String(callDate.getDate()).padStart(2, '0');
-const hours = String(callDate.getHours()).padStart(2, '0');
-const minutes = String(callDate.getMinutes()).padStart(2, '0');
-const seconds = String(callDate.getSeconds()).padStart(2, '0');
-const localDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-
-calls.push({
-date: localDate,
-duration: duration,
-rateIndex: rateIndex
-});
-
-localStorage.setItem('calls', JSON.stringify(calls));
-displayCalls();
-updateStatistics();
+    calls.push({
+        date: localDate,
+        duration: duration,
+        rateIndex: rateIndex
+    });
+    
+    localStorage.setItem('calls', JSON.stringify(calls));
+    displayCalls();
+    updateStatistics();
 }
 
 function displayCalls() {
@@ -1213,7 +1214,15 @@ const earned = rate.amount * minutes; // Multiply per-minute rate by minutes
 
 return `
 <tr>
-<td>${new Date(call.date).toLocaleString()}</td>
+<td>${new Date(call.date).toLocaleString(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+})}</td>
 <td>${formatDuration(duration)}</td>
 <td>${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</td>
 <td>${formatMoney(earned)}</td>
@@ -1278,25 +1287,24 @@ callTimer = newTimer;
 }
 
 if (endCallBtn) {
-endCallBtn.addEventListener('click', () => {
-if (!currentCall) return;
+    endCallBtn.addEventListener('click', () => {
+        if (!currentCall) return;
 
-const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+        const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+        
+        // Add call using local time
+        const now = new Date();
+        addCallToLog(now, duration, currentCall.rateIndex);
 
-// Add call with current time
-addCallToLog(new Date(), duration, currentCall.rateIndex);
-
-// Clear timers and reset state
-activeTimers.forEach(timerId => clearInterval(timerId));
-activeTimers.clear();
-callTimer = null;
-currentCall = null;
-if (startCallBtn) startCallBtn.disabled = false;
-endCallBtn.disabled = true;
-if (liveCallInfo) liveCallInfo.style.display = 'none';
-displayCalls();
-updateStatistics();
-});
+        // Clear timers and reset state
+        activeTimers.forEach(timerId => clearInterval(timerId));
+        activeTimers.clear();
+        callTimer = null;
+        currentCall = null;
+        if (startCallBtn) startCallBtn.disabled = false;
+        endCallBtn.disabled = true;
+        if (liveCallInfo) liveCallInfo.style.display = 'none';
+    });
 }
 
 // Modal keyboard handler
@@ -1431,14 +1439,24 @@ return;
 const inputDate = new Date(callDate.value);
 
 if (editingCallIndex !== null) {
-calls[editingCallIndex] = {
-date: inputDate.toISOString(),
-duration: totalSeconds,
-rateIndex: parseInt(callRate.value)
-};
-localStorage.setItem('calls', JSON.stringify(calls));
+    // Create a local date object and preserve timezone
+    const localDate = new Date(
+        inputDate.getFullYear(),
+        inputDate.getMonth(),
+        inputDate.getDate(),
+        inputDate.getHours(),
+        inputDate.getMinutes(),
+        inputDate.getSeconds()
+    ).toISOString();
+
+    calls[editingCallIndex] = {
+        date: localDate,
+        duration: totalSeconds,
+        rateIndex: parseInt(callRate.value)
+    };
+    localStorage.setItem('calls', JSON.stringify(calls));
 } else {
-addCallToLog(inputDate, totalSeconds, parseInt(callRate.value));
+    addCallToLog(inputDate, totalSeconds, parseInt(callRate.value));
 }
 
 closeModal();
