@@ -783,22 +783,16 @@ let currentCall = null;
 let callTimer = null;
 let editingCallIndex = null;
 let goal = parseFloat(localStorage.getItem('goal')) || 0;
-// Initialize date picker with today's date
-const statsDatePicker = document.getElementById('stats-date-picker');
-const today = new Date();
-const year = today.getFullYear();
-const month = String(today.getMonth() + 1).padStart(2, '0');
-const day = String(today.getDate()).padStart(2, '0');
-let selectedDate = `${year}-${month}-${day}`;
-statsDatePicker.value = selectedDate;
 
-// Set current date in local timezone
+// Initialize date picker with today's local date
 const now = new Date();
-now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // Adjust for timezone
-const localDate = now.toISOString().split('T')[0];
-let selectedDate = localDate;
-statsDatePicker.value = selectedDate;
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+let selectedDate = now.toISOString().split('T')[0];
 
+// Set up date picker
+const statsDatePicker = document.getElementById('stats-date-picker');
+statsDatePicker.value = selectedDate;
+                
         // DOM elements
         const modalTitle = document.getElementById('modal-title');
         const ratesList = document.getElementById('rates-list');
