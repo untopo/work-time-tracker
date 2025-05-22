@@ -806,9 +806,17 @@
         };
 
         function filterCallsByDate(calls, targetDate) {
-            if (!targetDate) return calls;
-            return calls.filter(call => isSameDay(new Date(call.date), new Date(targetDate)));
-        }
+    if (!targetDate) return calls;
+    const target = new Date(targetDate);
+    target.setHours(0, 0, 0, 0);
+    const targetEnd = new Date(targetDate);
+    targetEnd.setHours(23, 59, 59, 999);
+    
+    return calls.filter(call => {
+        const callDate = new Date(call.date);
+        return callDate >= target && callDate <= targetEnd;
+    });
+}
 
         const formatDuration = (totalSeconds) => {
             const hours = Math.floor(totalSeconds / 3600);
@@ -852,11 +860,9 @@
 
         // Timezone utility functions
         function getLocalISOString(date) {
-            date = new Date(date);
-            const offset = date.getTimezoneOffset();
-            date.setMinutes(date.getMinutes() - offset);
-            return date.toISOString().slice(0, 16);
-        }
+    date = new Date(date);
+    return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+}
 
         function isDateInFuture(dateToCheck) {
             const now = new Date();
@@ -1243,26 +1249,24 @@ if (goalAmount) {
             endCallBtn.addEventListener('click', () => {
                 if (!currentCall) return;
 
-                const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-                const date = new Date(currentCall.startTime);
-                const offset = date.getTimezoneOffset();
-                date.setMinutes(date.getMinutes() - offset);
-                calls.push({
-                    date: date.toISOString(),
-                    duration: duration,
-                    rateIndex: currentCall.rateIndex
-                });
+const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+const date = new Date(currentCall.startTime);
+calls.push({
+    date: new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString(),
+    duration: duration,
+    rateIndex: currentCall.rateIndex
+});
 
-                // Clear all active timers
-                activeTimers.forEach(timerId => clearInterval(timerId));
-                activeTimers.clear();
-                callTimer = null;
-                currentCall = null;
-                if (startCallBtn) startCallBtn.disabled = false;
-                endCallBtn.disabled = true;
-                if (liveCallInfo) liveCallInfo.style.display = 'none';
-                displayCalls();
-                updateStatistics();
+// Clear all active timers
+activeTimers.forEach(timerId => clearInterval(timerId));
+activeTimers.clear();
+callTimer = null;
+currentCall = null;
+if (startCallBtn) startCallBtn.disabled = false;
+endCallBtn.disabled = true;
+if (liveCallInfo) liveCallInfo.style.display = 'none';
+displayCalls();
+updateStatistics();
             });
         }
 
