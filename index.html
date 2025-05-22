@@ -1078,14 +1078,16 @@ function editCall(index) {
         });
 
         endCallBtn.addEventListener('click', () => {
-            if (!currentCall) return;
+    if (!currentCall) return;
 
-            const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-            calls.push({
-                date: new Date(currentCall.startTime).toISOString(),
-                duration: duration,
-                rateIndex: currentCall.rateIndex
-            });
+    const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+    const date = new Date(currentCall.startTime);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); // Adjust for timezone
+    calls.push({
+        date: date.toISOString(),
+        duration: duration,
+        rateIndex: currentCall.rateIndex
+    });
 
             clearInterval(callTimer);
             currentCall = null;
@@ -1132,8 +1134,11 @@ cancelCall.addEventListener('click', () => {
     const seconds = parseInt(document.getElementById('call-duration-seconds').value) || 0;
     const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
     
+    const date = new Date(callDate.value);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); // Adjust for timezone
+    
     const callData = {
-        date: new Date(callDate.value).toISOString(),
+        date: date.toISOString(),
         duration: totalSeconds,
         rateIndex: parseInt(callRate.value)
     };
