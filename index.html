@@ -1548,6 +1548,9 @@ if (settingsToggle) {
         if (settingsModal) {
             settingsModal.style.display = 'flex';
             updateStorageInfo();
+            // Focus first button when modal opens
+            const firstButton = settingsModal.querySelector('button');
+            if (firstButton) firstButton.focus();
         }
     });
 }
@@ -1577,9 +1580,24 @@ if (closeSettingsModal) {
     closeSettingsModal.addEventListener('click', () => {
         if (settingsModal) {
             settingsModal.style.display = 'none';
+            // Return focus to settings toggle when modal closes
+            if (settingsToggle) settingsToggle.focus();
         }
     });
 }
+
+// Add click outside modal to close
+if (settingsModal) {
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            settingsModal.style.display = 'none';
+            if (settingsToggle) settingsToggle.focus();
+        }
+    });
+}
+
+// Add keyboard event listener for settings modal
+document.addEventListener('keydown', handleSettingsKeyboard);
 
 // Export/Import functionality
 function exportData() {
@@ -1640,6 +1658,36 @@ function importData(file) {
         }
     };
     reader.readAsText(file);
+}
+
+        // Settings modal keyboard navigation
+function handleSettingsKeyboard(e) {
+    if (!settingsModal || settingsModal.style.display === 'none') return;
+
+    const focusableElements = settingsModal.querySelectorAll('button');
+    const firstFocusable = focusableElements[0];
+    const lastFocusable = focusableElements[focusableElements.length - 1];
+    const isTabPressed = e.key === 'Tab';
+    const isEscapePressed = e.key === 'Escape';
+
+    if (isEscapePressed) {
+        settingsModal.style.display = 'none';
+        return;
+    }
+
+    if (!isTabPressed) return;
+
+    if (e.shiftKey) {
+        if (document.activeElement === firstFocusable) {
+            e.preventDefault();
+            lastFocusable.focus();
+        }
+    } else {
+        if (document.activeElement === lastFocusable) {
+            e.preventDefault();
+            firstFocusable.focus();
+        }
+    }
 }
 
         
