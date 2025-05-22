@@ -482,9 +482,10 @@ input[type="time"]:focus {
                         </div>
                         <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
                     </div>
-                    <div class="mb-4 w-full">
-                        <label for="live-call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate for Live Call</label>
-                        <select id="live-call-rate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                                        <div class="w-full mb-4">
+                        <label for="live-call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Rate</label>
+                        <select id="live-call-rate" 
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
                             <!-- Rate options will be added dynamically -->
                         </select>
                     </div>
@@ -872,13 +873,14 @@ input[type="time"]:focus {
                     `<option value="${index}">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
                 ).join('');
             }
-            // Update live call rate selector
+                       // Update live call rate selector
             const liveCallRate = document.getElementById('live-call-rate');
             if (liveCallRate) {
                 const currentValue = liveCallRate.value;
                 liveCallRate.innerHTML = rates.map((rate, index) => 
-                    `<option value="${index}">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
+                    `<option value="${index}" class="bg-white dark:bg-gray-800">${rate.name} (${formatMoney(rate.amount)}/hr)</option>`
                 ).join('');
+                // Preserve selected value if it still exists in rates
                 if (rates.some((_, index) => index.toString() === currentValue)) {
                     liveCallRate.value = currentValue;
                 }
