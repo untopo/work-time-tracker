@@ -1456,10 +1456,10 @@ if (cancelCall) {
 window.addEventListener('beforeunload', () => {
     activeTimers.forEach(timerId => clearInterval(timerId));
     activeTimers.clear();
-});
 
 // Add keyboard event listener for modal
 document.addEventListener('keydown', handleModalKeyboard);
+    });
     </script>
 </body>
 </html>
