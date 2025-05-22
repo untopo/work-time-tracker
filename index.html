@@ -890,6 +890,26 @@ const filterCallsByDate = (calls, targetDate) => {
 let lastActiveElement = null;
 const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
+        // Timezone utility functions
+function getLocalISOString(date) {
+    const offset = date.getTimezoneOffset();
+    const offsetAbs = Math.abs(offset);
+    const offsetSign = offset < 0 ? '+' : '-';
+    const offsetHours = String(Math.floor(offsetAbs / 60)).padStart(2, '0');
+    const offsetMinutes = String(offsetAbs % 60).padStart(2, '0');
+    return date.getFullYear() +
+        '-' + String(date.getMonth() + 1).padStart(2, '0') +
+        '-' + String(date.getDate()).padStart(2, '0') +
+        'T' + String(date.getHours()).padStart(2, '0') +
+        ':' + String(date.getMinutes()).padStart(2, '0');
+}
+
+function isDateInFuture(dateToCheck) {
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);  // End of today
+    return dateToCheck > now;
+}
+
         // Initialize date picker with today's local date
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -1304,8 +1324,7 @@ function closeModal() {
         if (modalTitle) modalTitle.textContent = 'Add Call';
         if (callForm) callForm.reset();
         const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        if (callDate) callDate.value = now.toISOString().slice(0, 16);
+if (callDate) callDate.value = getLocalISOString(now);
         
         // Store last active element and show modal
         lastActiveElement = document.activeElement;
@@ -1340,15 +1359,15 @@ if (cancelCall) {
         if (!callDate || !callRate) return;
 
         // Validate date
-        const selectedDate = new Date(callDate.value);
-        if (isNaN(selectedDate.getTime())) {
-            alert('Please enter a valid date');
-            return;
-        }
-        if (selectedDate > new Date()) {
-            alert('Cannot add calls in the future');
-            return;
-        }
+const selectedDate = new Date(callDate.value);
+if (isNaN(selectedDate.getTime())) {
+    alert('Please enter a valid date');
+    return;
+}
+if (isDateInFuture(selectedDate)) {
+    alert('Cannot add calls in the future');
+    return;
+}
 
         // Validate duration
         const hours = parseInt(hoursInput?.value) || 0;
@@ -1376,7 +1395,6 @@ if (cancelCall) {
 
         // Process the validated data
         const date = new Date(callDate.value);
-        date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
         
         const callData = {
             date: date.toISOString(),
