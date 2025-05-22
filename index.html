@@ -1336,38 +1336,6 @@ function handleSettingsKeyboard(e) {
     }
 }
 
-function handleSettingsKeyboard(e) {
-    if (!settingsModal || settingsModal.style.display === 'none') return;
-
-    if (e.key === 'Escape') {
-        settingsModal.style.display = 'none';
-        if (settingsToggle) settingsToggle.focus();
-        return;
-    }
-
-    if (e.key === 'Tab') {
-        const modalFocusableElements = settingsModal.querySelectorAll(focusableElements);
-        const firstFocusable = modalFocusableElements[0];
-        const lastFocusable = modalFocusableElements[modalFocusableElements.length - 1];
-
-        // If shift+tab and first element is focused, move to last
-        if (e.shiftKey && document.activeElement === firstFocusable) {
-            e.preventDefault();
-            lastFocusable.focus();
-        }
-        // If tab and last element is focused, move to first
-        else if (!e.shiftKey && document.activeElement === lastFocusable) {
-            e.preventDefault();
-            firstFocusable.focus();
-        }
-    }
-}
-                        
-                    }
-                }
-            }
-        }
-
         // Modal close function
         function closeModal() {
             if (callModal) {
