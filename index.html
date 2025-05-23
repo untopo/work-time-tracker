@@ -794,6 +794,78 @@ Clean Old Data
 </div>
 </div>
 
+<!-- Footer Section -->
+<footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Main Footer Content -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Credits Column -->
+            <div class="text-center md:text-left">
+                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Work Time Tracker</h3>
+                <p class="text-gray-600 dark:text-gray-400 flex items-center justify-center md:justify-start gap-2">
+                    Made with 
+                    <span class="inline-block">
+                        <i class="fas fa-heart text-red-500 animate-beat"></i>
+                    </span>
+                    by 
+                    <a href="https://www.instagram.com/otpo/" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                        Topo
+                    </a>
+                </p>
+            </div>
+
+            <!-- Links Column -->
+            <div class="text-center md:text-left">
+                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Quick Links</h3>
+                <ul class="space-y-2">
+                    <li>
+                        <button id="keyboard-shortcuts" class="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
+                            <i class="fas fa-keyboard mr-2"></i>Keyboard Shortcuts
+                        </button>
+                    </li>
+                    <li>
+                        <button id="show-settings" class="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
+                            <i class="fas fa-cog mr-2"></i>Settings
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Info Column -->
+            <div class="text-center md:text-left">
+                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">System Info</h3>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                    <li class="flex items-center justify-center md:justify-start gap-2">
+                        <i class="fas fa-code-branch"></i>
+                        <span>Version 1.0.0</span>
+                    </li>
+                    <li class="flex items-center justify-center md:justify-start gap-2">
+                        <i class="fas fa-clock"></i>
+                        <span id="current-time">UTC: 2025-05-23 00:40:31</span>
+                    </li>
+                    <li class="flex items-center justify-center md:justify-start gap-2">
+                        <i class="fas fa-user"></i>
+                        <span>User: untopo</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Copyright Bar -->
+        <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+            <p>© 2025 Work Time Tracker. All rights reserved.</p>
+            <p class="mt-2">
+                <button id="privacy-policy" class="hover:text-blue-500 transition-colors">Privacy Policy</button>
+                <span class="mx-2">•</span>
+                <button id="terms-of-service" class="hover:text-blue-500 transition-colors">Terms of Service</button>
+            </p>
+        </div>
+    </div>
+</footer>
+    
 <script>
 // Utility functions
 const formatMoney = (amount) => `$${Number(amount).toFixed(2)}`;
@@ -1925,6 +1997,40 @@ handleModalKeyboard(e);
 } else if (settingsModal && settingsModal.style.display === 'flex') {
 handleSettingsKeyboard(e);
 }
+});
+
+    // Update current time in footer
+function updateCurrentTime() {
+    const timeElement = document.getElementById('current-time');
+    if (timeElement) {
+        const now = new Date();
+        const utcString = now.toISOString().replace('T', ' ').substring(0, 19);
+        timeElement.textContent = `UTC: ${utcString}`;
+    }
+}
+
+// Update time every second
+setInterval(updateCurrentTime, 1000);
+updateCurrentTime(); // Initial update
+
+// Footer button handlers
+document.getElementById('keyboard-shortcuts')?.addEventListener('click', () => {
+    alert('Keyboard Shortcuts:\n\nEsc - Close modals\nCtrl + D - Toggle dark mode\nCtrl + S - Open settings\nCtrl + A - Add new call');
+});
+
+document.getElementById('privacy-policy')?.addEventListener('click', () => {
+    alert('Privacy Policy: This app stores all data locally in your browser. No data is sent to external servers.');
+});
+
+document.getElementById('terms-of-service')?.addEventListener('click', () => {
+    alert('Terms of Service: This app is provided "as is" without any warranties. Use at your own discretion.');
+});
+
+document.getElementById('show-settings')?.addEventListener('click', () => {
+    if (settingsModal) {
+        settingsModal.style.display = 'flex';
+        updateStorageInfo();
+    }
 });
 
 </script>
