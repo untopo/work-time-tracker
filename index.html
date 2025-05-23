@@ -41,6 +41,16 @@ background-size: 200% auto;
 animation: gradient 4s linear infinite;
 }
 
+    /* Pulse animation for icons */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .animate-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
 /* Dark Mode Toggle & Date Picker Styles */
 #dark-toggle {
 transform: scale(1);
