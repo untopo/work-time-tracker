@@ -581,331 +581,337 @@ role="progressbar" style="width: 0%"></div>
 
 <!-- Statistics Dashboard Section -->
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
-<div class="p-6">
-<h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
-<i class="fas fa-chart-bar text-purple-500 mr-2"></i>Call Statistics
-</h2>
-<div class="flex justify-between items-center mb-6">
-<div class="flex items-center gap-4">
-<input type="date" id="stats-date-picker"
-class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
-/>
-<button id="current-date-btn"
-class="px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
-Current Date
-</button>
+    <div class="p-6">
+        <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <i class="fas fa-chart-bar text-purple-500 mr-2"></i>Call Statistics
+        </h2>
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-4">
+                <input type="date" id="stats-date-picker"
+                       class="px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                />
+                <button id="current-date-btn"
+                        class="px-4 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">
+                    Current Date
+                </button>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
+                <h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2">
+                    <i class="fas fa-clock mr-2"></i>Average Call Duration
+                </h3>
+                <p id="avg-duration" class="text-2xl font-bold text-blue-800 dark:text-blue-200">00:00:00</p>
+            </div>
+            <div class="bg-green-50 dark:bg-green-900/40 p-4 rounded-lg">
+                <h3 class="text-green-700 dark:text-green-300 font-medium mb-2">
+                    <i class="fas fa-bullseye mr-2"></i>Goal Progress
+                </h3>
+                <p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
+            </div>
+            <div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
+                <h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2">
+                    <i class="fas fa-phone mr-2"></i>Total Calls Today
+                </h3>
+                <p id="total-calls-today" class="text-2xl font-bold text-blue-800 dark:text-blue-200">0</p>
+            </div>
+        </div>
+
+        <div id="monthly-earnings-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+                <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+                    <i class="fas fa-calendar-day mr-2"></i>This Month
+                </h3>
+                <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+                    <span id="monthly-total-earnings">$0.00</span>
+                </p>
+            </div>
+            <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+                <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+                    <i class="fas fa-money-bill-wave mr-2"></i>Weekly Earnings
+                </h3>
+                <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+                    <span id="weekly-total-earnings">$0.00</span>
+                </p>
+            </div>
+            <div class="bg-green-50 dark:bg-green-900/40 p-4 rounded-lg">
+                <h3 class="text-green-700 dark:text-green-300 font-medium mb-2">
+                    <i class="fas fa-bullseye mr-2"></i>Daily Goal
+                </h3>
+                <p class="text-lg text-green-800 dark:text-green-200 font-bold">
+                    <span id="daily-goal-earnings">$0.00</span>
+                </p>
+            </div>
+        </div>
+
+        <div id="payment-cycle-earnings-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 hidden">
+            <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+                <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+                    <i class="fas fa-money-bill-wave mr-2"></i>Current Cycle Earnings
+                </h3>
+                <p id="cycle-earnings" class="text-2xl font-bold text-purple-800 dark:text-purple-200">
+                    $0.00
+                </p>
+            </div>
+            <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+                <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+                    <i class="fas fa-calendar-check mr-2"></i>Cycle Progress
+                </h3>
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                    <p class="mb-1">
+                        <i class="fas fa-calendar-day mr-2"></i>
+                        Start: <span id="cycle-start-date">N/A</span>
+                    </p>
+                    <p class="mb-1">
+                        <i class="fas fa-calendar-day mr-2"></i>
+                        End: <span id="cycle-end-date">N/A</span>
+                    </p>
+                    <p>
+                        <i class="fas fa-calendar-check mr-2"></i>
+                        Days Left: <span id="days-until-end">N/A</span>
+                    </p>
+                </div>
+            </div>
+            <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+                <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+                    <i class="fas fa-clock mr-2"></i>Pay Day Countdown
+                </h3>
+                <div class="text-sm text-gray-700 dark:text-gray-300">
+                    <p class="mb-1">
+                        <i class="fas fa-calendar-dollar mr-2"></i>
+                        Pay Date: <span id="pay-date">N/A</span>
+                    </p>
+                    <p>
+                        <i class="fas fa-clock mr-2"></i>
+                        Days to Pay: <span id="days-until-pay">N/A</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
-<h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2">
-<i class="fas fa-clock mr-2"></i>Average Call Duration
-</h3>
-<p id="avg-duration" class="text-2xl font-bold text-blue-800 dark:text-blue-200">00:00:00</p>
-</div>
-<div class="bg-green-50 dark:bg-green-900/40 p-4 rounded-lg">
-<h3 class="text-green-700 dark:text-green-300 font-medium mb-2">
-<i class="fas fa-bullseye mr-2"></i>Goal Progress
-</h3>
-<p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
-</div>
-<div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
-<h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2">
-<i class="fas fa-phone mr-2"></i>Total Calls Today
-</h3>
-<p id="total-calls-today" class="text-2xl font-bold text-blue-800 dark:text-blue-200">0</p>
-</div>
-<div id="monthly-earnings-cards" class="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-calendar-day mr-2"></i>This Month
-</h3>
-<p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
-<span id="monthly-total-earnings">$0.00</span>
-</p>
-</div>
-<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-calendar-alt mr-2"></i>Monthly Goal
-</h3>
-<p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
-<span id="monthly-goal-earnings">$0.00</span>
-</p>
-</div>
-<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-money-bill-wave mr-2"></i>Weekly Earnings
-</h3>
-<p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
-<span id="weekly-total-earnings">$0.00</span>
-</p>
-</div>
-</div>
-<div id="payment-cycle-earnings-cards" class="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4 hidden">
-<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-money-bill-wave mr-2"></i>Current Cycle Earnings
-</h3>
-<p id="cycle-earnings" class="text-2xl font-bold text-purple-800 dark:text-purple-200">
-$0.00
-</p>
-</div>
-<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-calendar-check mr-2"></i>Cycle Progress
-</h3>
-<div class="text-sm text-gray-700 dark:text-gray-300">
-<p class="mb-1">
-<i class="fas fa-calendar-day mr-2"></i>
-Start: <span id="cycle-start-date">N/A</span>
-</p>
-<p class="mb-1">
-<i class="fas fa-calendar-day mr-2"></i>
-End: <span id="cycle-end-date">N/A</span>
-</p>
-<p>
-<i class="fas fa-calendar-check mr-2"></i>
-Days Left: <span id="days-until-end">N/A</span>
-</p>
-</div>
-</div>
-<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-clock mr-2"></i>Pay Day Countdown
-</h3>
-<div class="text-sm text-gray-700 dark:text-gray-300">
-<p class="mb-1">
-<i class="fas fa-calendar-dollar mr-2"></i>
-Pay Date: <span id="pay-date">N/A</span>
-</p>
-<p>
-<i class="fas fa-clock mr-2"></i>
-Days to Pay: <span id="days-until-pay">N/A</span>
-</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
+
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
-<div class="p-6">
-<div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-<h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
-<i class="fas fa-history text-blue-500 mr-2"></i>Call Log
-</h2>
-<div class="flex flex-wrap items-center gap-4">
-<div class="flex items-center gap-2">
-<span class="text-gray-600 dark:text-gray-400">Total Time:</span>
-<span id="total-minutes" class="font-mono text-lg">00:00:00</span>
+    <div class="p-6">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+                <i class="fas fa-history text-blue-500 mr-2"></i>Call Log
+            </h2>
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-600 dark:text-gray-400">Total Time:</span>
+                    <span id="total-minutes" class="font-mono text-lg">00:00:00</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-600 dark:text-gray-400">Total Earnings:</span>
+                    <span id="total-earnings" class="font-mono text-lg">$0.00</span>
+                </div>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="call-log-table w-full">
+                <thead>
+                    <tr class="text-left">
+                        <th class="font-semibold">Date</th>
+                        <th class="font-semibold">Duration</th>
+                        <th class="font-semibold">Rate</th>
+                        <th class="font-semibold">Earned</th>
+                        <th class="font-semibold pl-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="call-log">
+                    </tbody>
+                <tfoot>
+                    <tr class="bg-gray-50 dark:bg-gray-800">
+                        <td colspan="5" class="py-4 text-center text-gray-500 dark:text-gray-400">
+                            End of call log
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 </div>
-<div class="flex items-center gap-2">
-<span class="text-gray-600 dark:text-gray-400">Total Earnings:</span>
-<span id="total-earnings" class="font-mono text-lg">$0.00</span>
-</div>
-</div>
-</div>
-<div class="overflow-x-auto">
-<table class="call-log-table w-full">
-<thead>
-<tr class="text-left">
-<th class="font-semibold">Date</th>
-<th class="font-semibold">Duration</th>
-<th class="font-semibold">Rate</th>
-<th class="font-semibold">Earned</th>
-<th class="font-semibold pl-4">Actions</th>
-</tr>
-</thead>
-<tbody id="call-log">
-</tbody>
-<tfoot>
-<tr class="bg-gray-50 dark:bg-gray-800">
-<td colspan="5" class="py-4 text-center text-gray-500 dark:text-gray-400">
-End of call log
-</td>
-</tr>
-</tfoot>
-</table>
-</div>
-</div>
-</div>
+
 <div id="call-modal"
-style="display: none;"
-role="dialog"
-aria-labelledby="modal-title"
-aria-modal="true"
-class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-<div class="flex justify-between items-center mb-4">
-<h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">Add Call</h3>
-<button id="close-modal"
-aria-label="Close modal"
-class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-<i class="fas fa-times"></i>
-</button>
+     style="display: none;"
+     role="dialog"
+     aria-labelledby="modal-title"
+     aria-modal="true"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">Add Call</h3>
+            <button id="close-modal"
+                    aria-label="Close modal"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="call-form">
+            <div class="mb-4">
+                <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
+                <input type="datetime-local" id="call-date" required
+                       class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+            </div>
+            <div class="mb-4">
+                <label for="call-duration-hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (HH:MM:SS)</label>
+                <div class="flex gap-2">
+                    <input type="number" id="call-duration-hours" min="0" max="24" placeholder="HH"
+                           aria-label="Hours"
+                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    <input type="number" id="call-duration-minutes" min="0" max="59" placeholder="MM"
+                           aria-label="Minutes"
+                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    <input type="number" id="call-duration-seconds" min="0" max="59" placeholder="SS"
+                           aria-label="Seconds"
+                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                </div>
+            </div>
+            <div class="mb-6">
+                <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
+                <select id="call-rate"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                </select>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" id="cancel-call"
+                        class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
-<form id="call-form">
-<div class="mb-4">
-<label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
-<input type="datetime-local" id="call-date" required
-class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-</div>
-<div class="mb-4">
-<label for="call-duration-hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (HH:MM:SS)</label>
-<div class="flex gap-2">
-<input type="number" id="call-duration-hours" min="0" max="24" placeholder="HH"
-aria-label="Hours"
-class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-<input type="number" id="call-duration-minutes" min="0" max="59" placeholder="MM"
-aria-label="Minutes"
-class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-<input type="number" id="call-duration-seconds" min="0" max="59" placeholder="SS"
-aria-label="Seconds"
-class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-</div>
-</div>
-<div class="mb-6">
-<label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
-<select id="call-rate"
-class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-</select>
-</div>
-<div class="flex justify-end gap-3">
-<button type="button" id="cancel-call"
-class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-Cancel
-</button>
-<button type="submit"
-class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-Save
-</button>
-</div>
-</form>
-</div>
-</div>
+
 <div id="settings-modal"
-style="display: none;"
-role="dialog"
-aria-labelledby="settings-modal-title"
-aria-modal="true"
-class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-<div class="flex justify-between items-center mb-4">
-<h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="settings-modal-title">Settings</h3>
-<button id="close-settings-modal"
-aria-label="Close settings"
-class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-<i class="fas fa-times"></i>
-</button>
-</div>
-<div class="space-y-4">
-<div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-<h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Management</h4>
-<div class="flex flex-col gap-2">
-<button id="export-data" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-<i class="fas fa-download"></i>
-Export Data
-</button>
-<label for="import-file" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors cursor-pointer">
-<i class="fas fa-upload"></i>
-Import Data
-</label>
-<input type="file" id="import-file" accept=".json" class="hidden">
-</div>
-</div>
-<div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-<h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Storage</h4>
-<div class="mb-2">
-<div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
-<span>Storage Used</span>
-<span id="storage-used">Calculating...</span>
-</div>
-<div class="h-2 bg-gray-200 dark:bg-gray-700 rounded">
-<div id="storage-bar" class="h-2 bg-blue-500 rounded" style="width: 0%"></div>
-</div>
-</div>
-</div>
-<div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-<div class="flex justify-between items-center mb-3">
-<h4 class="text-lg font-medium text-gray-900 dark:text-gray-100">Payment Cycles</h4>
-<label class="inline-flex items-center cursor-pointer">
-<input type="checkbox" id="payment-cycles-toggle" class="sr-only peer">
-<div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-<span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Payment Cycles</span>
-</label>
-</div>
-<div id="payment-cycles-config" class="hidden">
-<div class="mb-3">
-<button id="add-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-<i class="fas fa-plus"></i>
-Add Payment Cycle
-</button>
-</div>
-<div class="max-h-48 overflow-y-auto">
-<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-<thead class="bg-gray-50 dark:bg-gray-800">
-<tr>
-<th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Start Date</th>
-<th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">End Date</th>
-<th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Pay Date</th>
-<th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
-</tr>
-</thead>
-<tbody id="payment-cycles-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
-</tbody>
-</table>
-</div>
-</div>
-</div>
-<div>
-<h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Cleanup</h4>
-<button id="cleanup-data" class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
-<i class="fas fa-trash-alt"></i>
-Clean Old Data
-</button>
-</div>
-</div>
-</div>
+     style="display: none;"
+     role="dialog"
+     aria-labelledby="settings-modal-title"
+     aria-modal="true"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="settings-modal-title">Settings</h3>
+            <button id="close-settings-modal"
+                    aria-label="Close settings"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Management</h4>
+                <div class="flex flex-col gap-2">
+                    <button id="export-data" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-download"></i>
+                        Export Data
+                    </button>
+                    <label for="import-file" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors cursor-pointer">
+                        <i class="fas fa-upload"></i>
+                        Import Data
+                    </label>
+                    <input type="file" id="import-file" accept=".json" class="hidden">
+                </div>
+            </div>
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Storage</h4>
+                <div class="mb-2">
+                    <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <span>Storage Used</span>
+                        <span id="storage-used">Calculating...</span>
+                    </div>
+                    <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded">
+                        <div id="storage-bar" class="h-2 bg-blue-500 rounded" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100">Payment Cycles</h4>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="payment-cycles-toggle" class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Payment Cycles</span>
+                    </label>
+                </div>
+                <div id="payment-cycles-config" class="hidden">
+                    <div class="mb-3">
+                        <button id="add-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-plus"></i>
+                            Add Payment Cycle
+                        </button>
+                    </div>
+                    <div class="max-h-48 overflow-y-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-800">
+                                <tr>
+                                    <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Start Date</th>
+                                    <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">End Date</th>
+                                    <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Pay Date</th>
+                                    <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payment-cycles-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Cleanup</h4>
+                <button id="cleanup-data" class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+                    <i class="fas fa-trash-alt"></i>
+                    Clean Old Data
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 </div>
 <footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
-<div class="container mx-auto px-4 py-8 text-center">
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
-<div class="text-center">
-<h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Work Time Tracker</h3>
-<p class="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
-Made with 
-<span class="inline-block">
-<i class="fas fa-heart text-red-500 animate-beat"></i>
-</span>
-by 
-<a href="https://www.instagram.com/otpo/" 
-target="_blank" 
-rel="noopener noreferrer" 
-class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-Topo
-</a>
-</p>
-</div>
-<div class="text-center">
-<h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Your Local Time</h3>
-<ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-<li class="flex items-center justify-center gap-2">
-<i class="fas fa-clock"></i>
-<span id="user-time-zone"></span>
-</li>
-</ul>
-</div>
-</div>
-<div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-<p>© 2025 Work Time Tracker. All rights reserved.</p>
-<p class="mt-2">
-<button id="privacy-policy" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Privacy Policy</button>
-<span class="mx-2">•</span>
-<button id="terms-of-service" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Terms of Service</button>
-</p>
-</div>
-</div>
+    <div class="container mx-auto px-4 py-8 text-center">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
+            <div class="text-center">
+                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Work Time Tracker</h3>
+                <p class="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
+                    Made with
+                    <span class="inline-block">
+                        <i class="fas fa-heart text-red-500 animate-beat"></i>
+                    </span>
+                    by
+                    <a href="https://www.instagram.com/otpo/"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                        Topo
+                    </a>
+                </p>
+            </div>
+            <div class="text-center">
+                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Your Local Time</h3>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                    <li class="flex items-center justify-center gap-2">
+                        <i class="fas fa-clock"></i>
+                        <span id="user-time-zone"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+            <p>© 2025 Work Time Tracker. All rights reserved.</p>
+            <p class="mt-2">
+                <button id="privacy-policy" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Privacy Policy</button>
+                <span class="mx-2">•</span>
+                <button id="terms-of-service" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Terms of Service</button>
+            </p>
+        </div>
+    </div>
 </footer>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -1300,8 +1306,8 @@ Topo
             if (document.getElementById('weekly-total-earnings')) {
                 document.getElementById('weekly-total-earnings').textContent = formatMoney(weeklyEarnings);
             }
-            if (document.getElementById('monthly-goal-earnings')) {
-                document.getElementById('monthly-goal-earnings').textContent = formatMoney(goal);
+            if (document.getElementById('daily-goal-earnings')) {
+                document.getElementById('daily-goal-earnings').textContent = formatMoney(goal);
             }
         } else {
             // Update payment cycle earnings if payment cycles are enabled
