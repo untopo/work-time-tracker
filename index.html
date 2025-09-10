@@ -1,425 +1,425 @@
 <!DOCTYPE html>
 <html lang="en" class="">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Work Time Tracker</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-@keyframes heartbeat {
-    0% { transform: scale(1); }
-    25% { transform: scale(1.1); }
-    40% { transform: scale(1); }
-    60% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-.animate-beat {
-    animation: heartbeat 1s infinite;
-    display: inline-block;
-}
-
-.amount-input { width: 100px; }
-.scrollable-table { max-height: 400px; overflow-y: auto; }
-.fade-in-out { animation: fadeInOut 2.5s forwards; }
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(-10px);}
-    10% { opacity: 1; transform: translateY(0);}
-    90% { opacity: 1;}
-    100% { opacity: 0; transform: translateY(-10px);}
-}
-
-@keyframes gradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-.animate-gradient {
-    background-size: 200% auto;
-    animation: gradient 4s linear infinite;
-}
-
-/* Pulse animation for icons */
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-
-.animate-pulse {
-    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Dark Mode Toggle & Date Picker Styles */
-#dark-toggle {
-    transform: scale(1);
-    transition: all 0.3s ease;
-}
-
-#dark-toggle:hover {
-    transform: scale(1.1);
-}
-
-#dark-toggle i {
-    transform: rotate(0deg);
-    transition: transform 0.3s ease;
-}
-
-#dark-toggle:active i {
-    transform: rotate(360deg);
-}
-
-/* Date picker styles - consolidated */
-input[type="date"],
-input[type="time"],
-input[type="datetime-local"] {
-    background-color: white !important;
-    border: 1px solid #e2e8f0;
-    color: #1a202c;
-    border-radius: 0.375rem;
-    padding: 0.375rem 0.75rem;
-}
-
-html.dark input[type="date"],
-html.dark input[type="time"],
-html.dark input[type="datetime-local"] {
-    background-color: #1e293b !important;
-    border-color: #475569;
-    color: #f1f5f9;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    background-color: transparent;
-    cursor: pointer;
-    padding: 0.25rem;
-    filter: invert(0.8) brightness(1.2) saturate(0.8);
-}
-
-html.dark input[type="date"]::-webkit-calendar-picker-indicator,
-html.dark input[type="time"]::-webkit-calendar-picker-indicator,
-html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) brightness(0.8) saturate(0.8);
-}
-
-/* Focus states */
-input[type="date"]:focus,
-input[type="time"]:focus,
-input[type="datetime-local"]:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-}
-
-/* Enhanced Dark Mode Styles */
-html.dark {
-    color-scheme: dark;
-}
-
-html.dark body {
-    background-color: #0f172a;
-    color: #f1f5f9;
-}
-
-html.dark .card,
-html.dark .modal,
-html.dark #call-modal,
-html.dark #settings-modal {
-    background-color: #1e293b;
-    border: 1px solid #334155;
-}
-
-html.dark input,
-html.dark select,
-html.dark textarea {
-    background-color: #334155;
-    border-color: #475569;
-    color: #f1f5f9;
-}
-
-/* Call log totals dark mode fix */
-html.dark #total-minutes,
-html.dark #total-earnings {
-    color: #f1f5f9 !important;
-}
-
-html.dark .bg-gray-50 {
-    background-color: #1f2937 !important;
-}
-
-html.dark tfoot tr {
-    background-color: #1f2937 !important;
-    color: #f1f5f9 !important;
-}
-
-/* Edit button visibility fixes */
-.edit-rate-btn,
-.edit-call-btn {
-    display: inline-flex !important;
-    align-items: center;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    background-color: #3b82f6;
-    color: white !important;
-    font-size: 0.75rem;
-    font-weight: 600;
-    gap: 0.25rem;
-    transition: background-color 0.2s;
-    margin: 0 0.25rem;
-}
-
-.edit-rate-btn:hover,
-.edit-call-btn:hover {
-    background-color: #2563eb;
-}
-
-/* Improved text contrast in dark mode */
-html.dark .text-gray-900 {
-    color: #f1f5f9 !important;
-}
-
-html.dark .text-gray-800 {
-    color: #e2e8f0 !important;
-}
-
-html.dark .text-gray-700 {
-    color: #cbd5e1 !important;
-}
-
-html.dark .bg-white {
-    background-color: #1e293b !important;
-}
-
-html.dark .border-gray-200 {
-    border-color: #334155 !important;
-}
-
-/* Rates card improvements */
-.rate-edit-form {
-    background-color: white;
-    padding: 0.5rem;
-    border-radius: 0.75rem;
-    margin-bottom: 1rem;
-    width: 100%;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-html.dark .rate-edit-form {
-    background-color: #1e293b;
-    border: 1px solid #475569;
-}
-
-.rate-edit-form input {
-    width: 100%;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    border-radius: 0.25rem;
-    border: 1px solid #e2e8f0;
-    transition: all 0.2s ease;
-}
-
-html.dark .rate-edit-form input {
-    background-color: #334155;
-    border-color: #475569;
-    color: #f1f5f9;
-}
-
-.rate-edit-form button {
-    transition: all 0.2s ease;
-}
-
-.rates-list-item {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem;
-    margin-bottom: 0.5rem;
-    background-color: #f8fafc;
-    border-radius: 0.375rem;
-}
-
-html.dark .rates-list-item {
-    background-color: #1e293b;
-}
-
-.call-log-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-.call-log-table th,
-.call-log-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-html.dark .call-log-table th,
-html.dark .call-log-table td {
-    border-bottom: 1px solid #334155;
-}
-
-.call-log-table th {
-    font-weight: 600;
-    background-color: #f8fafc;
-}
-
-html.dark .call-log-table th {
-    background-color: #1e293b;
-    color: #f1f5f9;
-}
-
-.call-log-table tr:hover {
-    background-color: #f1f5f9;
-}
-
-html.dark .call-log-table tr:hover {
-    background-color: #334155;
-}
-
-.tag {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    background-color: #e2e8f0;
-    color: #4a5568;
-    font-size: 0.875rem;
-}
-
-html.dark .tag {
-    background-color: #475569;
-    color: #f1f5f9;
-}
-
-/* Modal styles with dark mode */
-#call-modal,
-#settings-modal {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
-    width: 90%;
-}
-
-html.dark #call-modal,
-html.dark #settings-modal {
-    background-color: #1e293b;
-    border-color: #475569;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-#call-modal input,
-#call-modal select,
-#settings-modal input,
-#settings-modal select {
-    width: 100%;
-    padding: 8px;
-    margin: 4px 0 12px;
-    border-radius: 4px;
-    border: 1px solid #e2e8f0;
-}
-
-html.dark #call-modal input,
-html.dark #call-modal select,
-html.dark #settings-modal input,
-html.dark #settings-modal select {
-    background-color: #334155;
-    border-color: #475569;
-    color: #f1f5f9;
-}
-
-/* Button styles with dark mode */
-.btn-primary {
-    background-color: #3b82f6;
-    color: white;
-    transition: background-color 0.2s;
-}
-
-.btn-primary:hover {
-    background-color: #2563eb;
-}
-
-html.dark .btn-primary {
-    background-color: #3b82f6;
-}
-
-html.dark .btn-primary:hover {
-    background-color: #1d4ed8;
-}
-
-/* Call log table specific styles */
-.call-log-table td button {
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-/* Make goal save button always visible */
-#goal-form button[type="submit"] {
-    display: inline-flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    background-color: #22c55e;
-    color: white;
-    padding: 0.375rem 0.75rem;
-    border-radius: 0.375rem;
-}
-
-#goal-form button[type="submit"]:hover {
-    background-color: #16a34a;
-}
-
-/* Style for Add Rate button */
-#show-rate-add {
-    background-color: #dbeafe !important;
-    color: #2563eb !important;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-#show-rate-add:hover {
-    background-color: #bfdbfe !important;
-}
-
-html.dark #show-rate-add {
-    background-color: #1e3a8a !important;
-    color: #60a5fa !important;
-}
-
-html.dark #show-rate-add:hover {
-    background-color: #1e40af !important;
-}
-
-/* Hidden file input */
-#file-input {
-    display: none;
-}
-
-/* Responsive containers */
-.tracker-container {
-    width: 100%;
-    max-width: 320px;
-}
-
-@media (max-width: 640px) {
-    .tracker-container {
-        max-width: 100%;
-    }
-
-    .rate-edit-form button {
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-
-    .rate-edit-form .flex {
-        flex-direction: column;
-    }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Time Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            40% { transform: scale(1); }
+            60% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .animate-beat {
+            animation: heartbeat 1s infinite;
+            display: inline-block;
+        }
+
+        .amount-input { width: 100px; }
+        .scrollable-table { max-height: 400px; overflow-y: auto; }
+        .fade-in-out { animation: fadeInOut 2.5s forwards; }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-10px);}
+            10% { opacity: 1; transform: translateY(0);}
+            90% { opacity: 1;}
+            100% { opacity: 0; transform: translateY(-10px);}
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .animate-gradient {
+            background-size: 200% auto;
+            animation: gradient 4s linear infinite;
+        }
+
+        /* Pulse animation for icons */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .animate-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Dark Mode Toggle & Date Picker Styles */
+        #dark-toggle {
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+
+        #dark-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        #dark-toggle i {
+            transform: rotate(0deg);
+            transition: transform 0.3s ease;
+        }
+
+        #dark-toggle:active i {
+            transform: rotate(360deg);
+        }
+
+        /* Date picker styles - consolidated */
+        input[type="date"],
+        input[type="time"],
+        input[type="datetime-local"] {
+            background-color: white !important;
+            border: 1px solid #e2e8f0;
+            color: #1a202c;
+            border-radius: 0.375rem;
+            padding: 0.375rem 0.75rem;
+        }
+
+        html.dark input[type="date"],
+        html.dark input[type="time"],
+        html.dark input[type="datetime-local"] {
+            background-color: #1e293b !important;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator,
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            background-color: transparent;
+            cursor: pointer;
+            padding: 0.25rem;
+            filter: invert(0.8) brightness(1.2) saturate(0.8);
+        }
+
+        html.dark input[type="date"]::-webkit-calendar-picker-indicator,
+        html.dark input[type="time"]::-webkit-calendar-picker-indicator,
+        html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(0.8) saturate(0.8);
+        }
+
+        /* Focus states */
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="datetime-local"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Enhanced Dark Mode Styles */
+        html.dark {
+            color-scheme: dark;
+        }
+
+        html.dark body {
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+
+        html.dark .card,
+        html.dark .modal,
+        html.dark #call-modal,
+        html.dark #settings-modal {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+        }
+
+        html.dark input,
+        html.dark select,
+        html.dark textarea {
+            background-color: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        /* Call log totals dark mode fix */
+        html.dark #total-minutes,
+        html.dark #total-earnings {
+            color: #f1f5f9 !important;
+        }
+
+        html.dark .bg-gray-50 {
+            background-color: #1f2937 !important;
+        }
+
+        html.dark tfoot tr {
+            background-color: #1f2937 !important;
+            color: #f1f5f9 !important;
+        }
+
+        /* Edit button visibility fixes */
+        .edit-rate-btn,
+        .edit-call-btn {
+            display: inline-flex !important;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            background-color: #3b82f6;
+            color: white !important;
+            font-size: 0.75rem;
+            font-weight: 600;
+            gap: 0.25rem;
+            transition: background-color 0.2s;
+            margin: 0 0.25rem;
+        }
+
+        .edit-rate-btn:hover,
+        .edit-call-btn:hover {
+            background-color: #2563eb;
+        }
+
+        /* Improved text contrast in dark mode */
+        html.dark .text-gray-900 {
+            color: #f1f5f9 !important;
+        }
+
+        html.dark .text-gray-800 {
+            color: #e2e8f0 !important;
+        }
+
+        html.dark .text-gray-700 {
+            color: #cbd5e1 !important;
+        }
+
+        html.dark .bg-white {
+            background-color: #1e293b !important;
+        }
+
+        html.dark .border-gray-200 {
+            border-color: #334155 !important;
+        }
+
+        /* Rates card improvements */
+        .rate-edit-form {
+            background-color: white;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        html.dark .rate-edit-form {
+            background-color: #1e293b;
+            border: 1px solid #475569;
+        }
+
+        .rate-edit-form input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        html.dark .rate-edit-form input {
+            background-color: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        .rate-edit-form button {
+            transition: all 0.2s ease;
+        }
+
+        .rates-list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background-color: #f8fafc;
+            border-radius: 0.375rem;
+        }
+
+        html.dark .rates-list-item {
+            background-color: #1e293b;
+        }
+
+        .call-log-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .call-log-table th,
+        .call-log-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        html.dark .call-log-table th,
+        html.dark .call-log-table td {
+            border-bottom: 1px solid #334155;
+        }
+
+        .call-log-table th {
+            font-weight: 600;
+            background-color: #f8fafc;
+        }
+
+        html.dark .call-log-table th {
+            background-color: #1e293b;
+            color: #f1f5f9;
+        }
+
+        .call-log-table tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        html.dark .call-log-table tr:hover {
+            background-color: #334155;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: #e2e8f0;
+            color: #4a5568;
+            font-size: 0.875rem;
+        }
+
+        html.dark .tag {
+            background-color: #475569;
+            color: #f1f5f9;
+        }
+
+        /* Modal styles with dark mode */
+        #call-modal,
+        #settings-modal {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        html.dark #call-modal,
+        html.dark #settings-modal {
+            background-color: #1e293b;
+            border-color: #475569;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #call-modal input,
+        #call-modal select,
+        #settings-modal input,
+        #settings-modal select {
+            width: 100%;
+            padding: 8px;
+            margin: 4px 0 12px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        html.dark #call-modal input,
+        html.dark #call-modal select,
+        html.dark #settings-modal input,
+        html.dark #settings-modal select {
+            background-color: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        /* Button styles with dark mode */
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        html.dark .btn-primary {
+            background-color: #3b82f6;
+        }
+
+        html.dark .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Call log table specific styles */
+        .call-log-table td button {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        /* Make goal save button always visible */
+        #goal-form button[type="submit"] {
+            display: inline-flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            background-color: #22c55e;
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+        }
+
+        #goal-form button[type="submit"]:hover {
+            background-color: #16a34a;
+        }
+
+        /* Style for Add Rate button */
+        #show-rate-add {
+            background-color: #dbeafe !important;
+            color: #2563eb !important;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        #show-rate-add:hover {
+            background-color: #bfdbfe !important;
+        }
+
+        html.dark #show-rate-add {
+            background-color: #1e3a8a !important;
+            color: #60a5fa !important;
+        }
+
+        html.dark #show-rate-add:hover {
+            background-color: #1e40af !important;
+        }
+
+        /* Hidden file input */
+        #file-input {
+            display: none;
+        }
+
+        /* Responsive containers */
+        .tracker-container {
+            width: 100%;
+            max-width: 320px;
+        }
+
+        @media (max-width: 640px) {
+            .tracker-container {
+                max-width: 100%;
+            }
+
+            .rate-edit-form button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .rate-edit-form .flex {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
 <div class="container mx-auto px-4 py-8 max-w-7xl">
@@ -430,8 +430,8 @@ html.dark #show-rate-add:hover {
         </button>
         <button id="dark-toggle" aria-label="Toggle dark mode"
             class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
-            <i class="fas fa-moon text-gray-600 block dark:hidden transition-transform duration-300"></i>
-            <i class="fas fa-sun hidden dark:block text-yellow-300 transition-transform duration-300"></i>
+            <i class="fas fa-sun text-yellow-500 hidden dark:block"></i>
+            <i class="fas fa-moon text-gray-600 dark:text-gray-300 block dark:hidden"></i>
         </button>
     </div>
 
@@ -570,7 +570,6 @@ html.dark #show-rate-add:hover {
     </div>
 </div>
 
-<!-- Statistics Dashboard Section -->
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
     <div class="p-6">
         <h2 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
@@ -601,11 +600,11 @@ html.dark #show-rate-add:hover {
                 </h3>
                 <p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
             </div>
-            <div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
-                <h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2">
-                    <i class="fas fa-phone mr-2"></i>Total Calls Today
+            <div class="bg-yellow-50 dark:bg-yellow-900/40 p-4 rounded-lg">
+                <h3 class="text-yellow-700 dark:text-yellow-300 font-medium mb-2">
+                    <i class="fas fa-chart-line mr-2"></i>Today's Earnings
                 </h3>
-                <p id="total-calls-today" class="text-2xl font-bold text-blue-800 dark:text-blue-200">0</p>
+                <p id="today-earnings" class="text-2xl font-bold text-yellow-800 dark:text-yellow-200">$0.00</p>
             </div>
         </div>
 
@@ -726,11 +725,11 @@ html.dark #show-rate-add:hover {
 </div>
 
 <div id="call-modal"
-     style="display: none;"
-     role="dialog"
-     aria-labelledby="modal-title"
-     aria-modal="true"
-     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      style="display: none;"
+      role="dialog"
+      aria-labelledby="modal-title"
+      aria-modal="true"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">Add Call</h3>
@@ -744,35 +743,35 @@ html.dark #show-rate-add:hover {
             <div class="mb-4">
                 <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
                 <input type="datetime-local" id="call-date" required
-                       class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
             </div>
             <div class="mb-4">
                 <label for="call-duration-hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (HH:MM:SS)</label>
                 <div class="flex gap-2">
                     <input type="number" id="call-duration-hours" min="0" max="24" placeholder="HH"
-                           aria-label="Hours"
-                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                            aria-label="Hours"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                     <input type="number" id="call-duration-minutes" min="0" max="59" placeholder="MM"
-                           aria-label="Minutes"
-                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                            aria-label="Minutes"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                     <input type="number" id="call-duration-seconds" min="0" max="59" placeholder="SS"
-                           aria-label="Seconds"
-                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                            aria-label="Seconds"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                 </div>
             </div>
             <div class="mb-6">
                 <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
                 <select id="call-rate"
-                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                         class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                 </select>
             </div>
             <div class="flex justify-end gap-3">
                 <button type="button" id="cancel-call"
-                        class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                         class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                     Cancel
                 </button>
                 <button type="submit"
-                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                         class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                     Save
                 </button>
             </div>
@@ -781,11 +780,11 @@ html.dark #show-rate-add:hover {
 </div>
 
 <div id="settings-modal"
-     style="display: none;"
-     role="dialog"
-     aria-labelledby="settings-modal-title"
-     aria-modal="true"
-     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      style="display: none;"
+      role="dialog"
+      aria-labelledby="settings-modal-title"
+      aria-modal="true"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="settings-modal-title">Settings</h3>
@@ -877,9 +876,9 @@ html.dark #show-rate-add:hover {
                     </span>
                     by
                     <a href="https://www.instagram.com/otpo/"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
                         Topo
                     </a>
                 </p>
