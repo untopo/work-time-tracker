@@ -467,7 +467,7 @@ html.dark #show-rate-add:hover {
             <label for="live-call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Rate</label>
             <select id="live-call-rate"
                 class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
-                </select>
+            </select>
         </div>
         <div class="flex flex-col gap-2 w-full">
             <button id="add-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600 transition w-full flex items-center justify-center gap-2">
@@ -488,83 +488,82 @@ html.dark #show-rate-add:hover {
             </div>
         </div>
     </div>
-</div>
 
-<!-- Rates & Goal Section -->
-<div class="tracker-container">
-    <div class="dark:bg-gray-800 rounded-xl shadow p-6 w-full mb-6">
-        <div class="flex flex-col items-center mb-4">
-            <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
-            </div>
-            <h2 class="text-lg font-semibold text-dark dark:text-gray-200">Rates</h2>
-        </div>
-        <div id="rates-list" class="mb-4">
-            </div>
-        <button id="show-rate-add" class="w-full flex items-center justify-center gap-2 py-1">
-            <i class="fas fa-plus"></i> Add Rate
-        </button>
-        <form id="rate-form" class="rate-edit-form" style="display: none;">
-            <input type="text" id="rate-name" placeholder="Rate Name" maxlength="50"
-                class="w-full mb-2 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-            <div class="flex items-center mb-2">
-                <span class="text-gray-600 dark:text-gray-300 mr-2">$</span>
-                <input type="number" id="rate-amount" placeholder="Amount" step="0.01" min="0.01" max="999999"
-                    class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                <span class="text-gray-600 dark:text-gray-300 ml-2">/min</span>
-            </div>
-            <div class="flex gap-2">
-                <button type="submit"
-                    class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                    Save
-                </button>
-                <button type="button" id="cancel-rate-add"
-                    class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
-                    Cancel
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <div class="dark:bg-gray-800 rounded-xl shadow p-6 w-full">
-        <div class="flex flex-col items-center mb-4">
-            <div class="bg-green-100 dark:bg-green-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                <i class="fas fa-bullseye text-3xl text-green-500 dark:text-green-300"></i>
-            </div>
-            <h2 class="text-lg font-semibold text-dark dark:text-gray-200">Daily Goal</h2>
-        </div>
-        <form id="goal-form" class="flex items-center gap-2">
-            <div class="flex-1">
-                <div class="flex items-center">
-                    <span class="text-gray-600 dark:text-gray-300 mr-2">$</span>
-                    <input type="number" id="goal-amount" placeholder="Amount" step="0.01" min="0" max="999999"
-                        class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+    <div class="flex flex-col w-full tracker-container">
+        <div class="dark:bg-gray-800 rounded-xl shadow p-6 w-full mb-6">
+            <div class="flex flex-col items-center mb-4">
+                <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                    <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
                 </div>
+                <h2 class="text-lg font-semibold text-dark dark:text-gray-200">Rates</h2>
             </div>
-            <button type="submit" class="px-4 py-2 rounded transition-colors duration-200">
-                <i class="fas fa-save"></i>
+            <div id="rates-list" class="mb-4">
+            </div>
+            <button id="show-rate-add" class="w-full flex items-center justify-center gap-2 py-1">
+                <i class="fas fa-plus"></i> Add Rate
             </button>
-        </form>
-        <div class="mt-4">
-            <div class="relative pt-1">
-                <div class="flex mb-2 items-center justify-between">
-                    <div>
-                        <span id="goal-progress-text"
-                            class="text-xs font-semibold inline-block text-green-600 dark:text-green-400">
-                            0%
-                        </span>
-                    </div>
-                    <div class="text-right">
-                        <span id="goal-amount-display"
-                            class="text-xs font-semibold inline-block text-green-600 dark:text-green-400">
-                            $0 / $0
-                        </span>
+            <form id="rate-form" class="rate-edit-form" style="display: none;">
+                <input type="text" id="rate-name" placeholder="Rate Name" maxlength="50"
+                    class="w-full mb-2 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                <div class="flex items-center mb-2">
+                    <span class="text-gray-600 dark:text-gray-300 mr-2">$</span>
+                    <input type="number" id="rate-amount" placeholder="Amount" step="0.01" min="0.01" max="999999"
+                        class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    <span class="text-gray-600 dark:text-gray-300 ml-2">/min</span>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit"
+                        class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                        Save
+                    </button>
+                    <button type="button" id="cancel-rate-add"
+                        class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="dark:bg-gray-800 rounded-xl shadow p-6 w-full">
+            <div class="flex flex-col items-center mb-4">
+                <div class="bg-green-100 dark:bg-green-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                    <i class="fas fa-bullseye text-3xl text-green-500 dark:text-green-300"></i>
+                </div>
+                <h2 class="text-lg font-semibold text-dark dark:text-gray-200">Daily Goal</h2>
+            </div>
+            <form id="goal-form" class="flex items-center gap-2">
+                <div class="flex-1">
+                    <div class="flex items-center">
+                        <span class="text-gray-600 dark:text-gray-300 mr-2">$</span>
+                        <input type="number" id="goal-amount" placeholder="Amount" step="0.01" min="0" max="999999"
+                            class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                     </div>
                 </div>
-                <div class="flex h-2 mb-4 overflow-hidden bg-green-200 rounded dark:bg-green-900">
-                    <div id="goal-progress-bar"
-                        class="flex flex-col justify-center overflow-hidden bg-green-500"
-                        role="progressbar" style="width: 0%"></div>
+                <button type="submit" class="px-4 py-2 rounded transition-colors duration-200">
+                    <i class="fas fa-save"></i>
+                </button>
+            </form>
+            <div class="mt-4">
+                <div class="relative pt-1">
+                    <div class="flex mb-2 items-center justify-between">
+                        <div>
+                            <span id="goal-progress-text"
+                                class="text-xs font-semibold inline-block text-green-600 dark:text-green-400">
+                                0%
+                            </span>
+                        </div>
+                        <div class="text-right">
+                            <span id="goal-amount-display"
+                                class="text-xs font-semibold inline-block text-green-600 dark:text-green-400">
+                                $0 / $0
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex h-2 mb-4 overflow-hidden bg-green-200 rounded dark:bg-green-900">
+                        <div id="goal-progress-bar"
+                            class="flex flex-col justify-center overflow-hidden bg-green-500"
+                            role="progressbar" style="width: 0%"></div>
+                    </div>
                 </div>
             </div>
         </div>
