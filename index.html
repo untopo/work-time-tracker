@@ -2146,20 +2146,7 @@ handleSettingsKeyboard(e);
 }
 });
 
-    // Update current time in footer (user's local time zone)
-        document.addEventListener('DOMContentLoaded', () => {
-            const userTimeZoneElement = document.getElementById('user-time-zone');
-            if (userTimeZoneElement) {
-                const now = new Date();
-                userTimeZoneElement.textContent = `Your local time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone} - ${now.toLocaleString()}`;
-            }
-
-            // Initial render and calculations
-            renderCalls();
-            calculateTotals();
-            loadSettings();
-        });
-
+    
 // Footer button handlers
 document.getElementById('privacy-policy')?.addEventListener('click', () => {
     alert('Privacy Policy: This app stores all data locally in your browser. No data is sent to external servers.');
@@ -2168,6 +2155,11 @@ document.getElementById('privacy-policy')?.addEventListener('click', () => {
 document.getElementById('terms-of-service')?.addEventListener('click', () => {
     alert('Terms of Service: This app is provided "as is" without any warranties. Use at your own discretion.');
 });
+
+displayRates();
+displayCalls();
+updateStatistics();
+updateStorageInfo();
 
 
 </script>
