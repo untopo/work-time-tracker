@@ -1739,61 +1739,108 @@ if (e.target === callModal) {
 closeModal();
 }
 });
-}// Settings modal functionality
+}
+
+// Settings modal functionality
 if (settingsToggle) {
 settingsToggle.addEventListener('click', () => {
 if (settingsModal) {
 settingsModal.style.display = 'flex';
 updateStorageInfo();
+// Payment Cycles Functionality
+const enablePaymentCyclesToggle = document.getElementById('enable-payment-cycles');
+const paymentCyclesConfig = document.getElementById('payment-cycles-config');
+const addPaymentCycleBtn = document.getElementById('add-payment-cycle');
+const paymentCyclesTable = document.getElementById('payment-cycles-table').getElementsByTagName('tbody')[0];
+
+// Initialize payment cycles from localStorage
+let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles')) || [];
+const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
+
+// Set initial state of toggle and config visibility
+if (enablePaymentCyclesToggle && paymentCyclesConfig) {
+    enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
+    paymentCyclesConfig.style.display = paymentCyclesEnabled ? 'block' : 'none';
+}
+
+// Toggle payment cycles configuration
+enablePaymentCyclesToggle?.addEventListener('change', (e) => {
+    const isEnabled = e.target.checked;
+    paymentCyclesConfig.style.display = isEnabled ? 'block' : 'none';
+    localStorage.setItem('paymentCyclesEnabled', isEnabled);
+    
+    if (isEnabled) {
+        renderPaymentCycles();
+    }
+});
+
+// Add new payment cycle
+addPaymentCycleBtn?.addEventListener('click', () => {
+    const startDate = prompt('Enter start date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+    if (!startDate) return;
+
+    const endDate = prompt('Enter end date (YYYY-MM-DD):', '');
+    if (!endDate) return;
+
+    const payDate = prompt('Enter pay date (YYYY-MM-DD):', '');
+    if (!payDate) return;
+
+    const newCycle = {
+        id: Date.now(),
+        startDate,
+        endDate,
+        payDate
+    };
+
+    paymentCycles.push(newCycle);
+    localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+    renderPaymentCycles();
+});
+
+// Render payment cycles
+function renderPaymentCycles() {
+    if (!paymentCyclesTable) return;
+    
+    paymentCyclesTable.innerHTML = '';
+    
+    paymentCycles.forEach(cycle => {
+        const row = document.createElement('tr');
+        row.className = 'border-t border-gray-200 dark:border-gray-700';
+        row.innerHTML = `
+            <td class="py-2">${cycle.startDate}</td>
+            <td class="py-2">${cycle.endDate}</td>
+            <td class="py-2">${cycle.payDate}</td>
+            <td class="py-2">
+                <button 
+                    onclick="deletePaymentCycle(${cycle.id})" 
+                    class="text-red-500 hover:text-red-700"
+                >
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        paymentCyclesTable.appendChild(row);
+    });
+}
+
+// Delete payment cycle
+function deletePaymentCycle(id) {
+    if (confirm('Are you sure you want to delete this payment cycle?')) {
+        paymentCycles = paymentCycles.filter(cycle => cycle.id !== id);
+        localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+        renderPaymentCycles();
+    }
+}
+
+// Initial render of payment cycles if enabled
+if (paymentCycles`
+
 // Focus first button when modal opens
 const firstButton = settingsModal.querySelector('button');
 if (firstButton) firstButton.focus();
 }
 });
 }
-
-    // Payment Cycles Functionality
-document.getElementById('enable-payment-cycles').addEventListener('change', function() {
-    const configSection = document.getElementById('payment-cycles-config');
-    configSection.classList.toggle('hidden', !this.checked);
-});
-
-document.getElementById('add-payment-cycle').addEventListener('click', function() {
-    const tbody = document.getElementById('payment-cycles-table').getElementsByTagName('tbody')[0];
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td class="py-2">
-            <input type="date" class="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:border-gray-700">
-        </td>
-        <td class="py-2">
-            <input type="date" class="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:border-gray-700">
-        </td>
-        <td class="py-2">
-            <input type="date" class="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:border-gray-700">
-        </td>
-        <td class="py-2">
-            <button class="delete-cycle text-red-500 hover:text-red-700">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-        </td>
-    `;
-    tbody.appendChild(row);
-
-    // Add delete functionality to the new row
-    row.querySelector('.delete-cycle').addEventListener('click', function() {
-        row.remove();
-    });
-});
-
-// Initialize payment cycles state from localStorage
-const enablePaymentCycles = localStorage.getItem('enablePaymentCycles') === 'true';
-document.getElementById('enable-payment-cycles').checked = enablePaymentCycles;
-document.getElementById('payment-cycles-config').classList.toggle('hidden', !enablePaymentCycles);
-
-// Save payment cycles state when changed
-document.getElementById('enable-payment-cycles').addEventListener('change', function() {
-    localStorage.setItem('enablePaymentCycles', this.checked);
-});
 
 // Click outside settings modal to close
 if (settingsModal) {
