@@ -460,7 +460,7 @@ class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:
 <div class="flex flex-col md:flex-row items-start justify-center gap-12 mb-8">
 <!-- Call Box -->
 <div class="tracker-container">
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
+dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
 <div class="flex flex-col items-center mb-2">
 <div class="bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
 <i class="fas fa-phone-volume text-3xl text-primary dark:text-blue-300"></i>
@@ -497,7 +497,7 @@ class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-5
 
 <!-- Rates & Goal Section -->
 <div class="tracker-container">
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 w-full mb-6">
+dark:bg-gray-800 rounded-xl shadow p-6 w-full mb-6">
 <div class="flex flex-col items-center mb-4">
 <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
 <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
@@ -533,7 +533,7 @@ Cancel
 </div>
 
 <!-- Daily Goal Section -->
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow p-6 w-full">
+dark:bg-gray-800 rounded-xl shadow p-6 w-full">
 <div class="flex flex-col items-center mb-4">
 <div class="bg-green-100 dark:bg-green-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
 <i class="fas fa-bullseye text-3xl text-green-500 dark:text-green-300"></i>
@@ -597,71 +597,69 @@ Current Date
 </div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-<!-- Average Duration Card -->
 <div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
 <h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2">
 <i class="fas fa-clock mr-2"></i>Average Call Duration
 </h3>
 <p id="avg-duration" class="text-2xl font-bold text-blue-800 dark:text-blue-200">00:00:00</p>
 </div>
-<!-- Goal Progress Card -->
 <div class="bg-green-50 dark:bg-green-900/40 p-4 rounded-lg">
 <h3 class="text-green-700 dark:text-green-300 font-medium mb-2">
 <i class="fas fa-bullseye mr-2"></i>Goal Progress
 </h3>
 <p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
 </div>
-<!-- Total Calls Today Card -->
 <div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
 <h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2">
 <i class="fas fa-phone mr-2"></i>Total Calls Today
 </h3>
 <p id="total-calls-today" class="text-2xl font-bold text-blue-800 dark:text-blue-200">0</p>
 </div>
-<!-- Earnings Cards -->
-<div class="col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
-<!-- Daily Earnings -->
+<div id="monthly-earnings-cards" class="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
 <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
 <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-money-bill-wave mr-2"></i>Daily Earnings
-</h3>
-<p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
-<span id="daily-total-earnings">$0.00</span>
-</p>
-</div>
-<!-- First Half Month -->
-<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-calendar-day mr-2"></i>First Half Month
-</h3>
-<p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
-<span id="first-half-earnings">$0.00</span>
-</p>
-</div>
-<!-- Second Half Month -->
-<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-calendar-week mr-2"></i>Second Half Month
-</h3>
-<p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
-<span id="second-half-earnings">$0.00</span>
-</p>
-</div>
-<!-- Total Month -->
-<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-calendar-alt mr-2"></i>Total Month
+<i class="fas fa-calendar-day mr-2"></i>This Month
 </h3>
 <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
 <span id="monthly-total-earnings">$0.00</span>
 </p>
 </div>
+<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+<i class="fas fa-calendar-alt mr-2"></i>Monthly Goal
+</h3>
+<p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+<span id="monthly-goal-earnings">$0.00</span>
+</p>
+</div>
+<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+<i class="fas fa-money-bill-wave mr-2"></i>Weekly Earnings
+</h3>
+<p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+<span id="weekly-total-earnings">$0.00</span>
+</p>
+</div>
+</div>
+<div id="payment-cycle-earnings-card" class="col-span-3 hidden">
+<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+<i class="fas fa-calendar-check mr-2"></i>Current Payment Cycle
+</h3>
+<p class="text-lg text-purple-800 dark:text-purple-200 font-bold mb-2">
+<span id="cycle-earnings">$0.00</span>
+</p>
+<div class="text-sm text-gray-700 dark:text-gray-300">
+<p class="mb-1"><i class="fas fa-calendar-day mr-2"></i>Cycle Ends: <span id="cycle-end-date"></span></p>
+<p class="mb-1"><i class="fas fa-calendar-check mr-2"></i>Days Left: <span id="days-until-end"></span></p>
+<p class="mb-1"><i class="fas fa-calendar-dollar mr-2"></i>Pay Date: <span id="pay-date"></span></p>
+<p><i class="fas fa-clock mr-2"></i>Days to Pay: <span id="days-until-pay"></span></p>
 </div>
 </div>
 </div>
 </div>
-
-<!-- Call Log Section -->
+</div>
+</div>
 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
 <div class="p-6">
 <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
@@ -679,7 +677,6 @@ Current Date
 </div>
 </div>
 </div>
-
 <div class="overflow-x-auto">
 <table class="call-log-table w-full">
 <thead>
@@ -692,7 +689,6 @@ Current Date
 </tr>
 </thead>
 <tbody id="call-log">
-<!-- Call log entries will be added here dynamically -->
 </tbody>
 <tfoot>
 <tr class="bg-gray-50 dark:bg-gray-800">
@@ -705,8 +701,6 @@ End of call log
 </div>
 </div>
 </div>
-
-<!-- Call Modal -->
 <div id="call-modal"
 style="display: none;"
 role="dialog"
@@ -761,8 +755,6 @@ Save
 </form>
 </div>
 </div>
-
-<!-- Settings Modal -->
 <div id="settings-modal"
 style="display: none;"
 role="dialog"
@@ -779,7 +771,6 @@ class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray
 </button>
 </div>
 <div class="space-y-4">
-<!-- Data Management -->
 <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
 <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Management</h4>
 <div class="flex flex-col gap-2">
@@ -794,7 +785,6 @@ Import Data
 <input type="file" id="import-file" accept=".json" class="hidden">
 </div>
 </div>
-<!-- Storage Info -->
 <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
 <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Storage</h4>
 <div class="mb-2">
@@ -807,97 +797,88 @@ Import Data
 </div>
 </div>
 </div>
-<!-- Payment Cycles -->
 <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-    <div class="flex justify-between items-center mb-3">
-        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100">Payment Cycles</h4>
-        <label class="inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="payment-cycles-toggle" class="sr-only peer">
-            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-            <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Payment Cycles</span>
-        </label>
-    </div>
-    <div id="payment-cycles-config" class="hidden">
-        <div class="mb-3">
-            <button id="add-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                <i class="fas fa-plus"></i>
-                Add Payment Cycle
-            </button>
-        </div>
-        <div class="max-h-48 overflow-y-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-800">
-                    <tr>
-                        <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Start Date</th>
-                        <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">End Date</th>
-                        <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Pay Date</th>
-                        <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="payment-cycles-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
-                    <!-- Payment cycles will be added here dynamically -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div class="flex justify-between items-center mb-3">
+<h4 class="text-lg font-medium text-gray-900 dark:text-gray-100">Payment Cycles</h4>
+<label class="inline-flex items-center cursor-pointer">
+<input type="checkbox" id="payment-cycles-toggle" class="sr-only peer">
+<div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+<span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Payment Cycles</span>
+</label>
 </div>
-
-<!-- Data Cleanup -->
+<div id="payment-cycles-config" class="hidden">
+<div class="mb-3">
+<button id="add-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+<i class="fas fa-plus"></i>
+Add Payment Cycle
+</button>
+</div>
+<div class="max-h-48 overflow-y-auto">
+<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+<thead class="bg-gray-50 dark:bg-gray-800">
+<tr>
+<th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Start Date</th>
+<th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">End Date</th>
+<th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Pay Date</th>
+<th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
+</tr>
+</thead>
+<tbody id="payment-cycles-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
+</tbody>
+</table>
+</div>
+</div>
+</div>
 <div>
-    <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Cleanup</h4>
-    <button id="cleanup-data" class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
-        <i class="fas fa-trash-alt"></i>
-        Clean Old Data
-    </button>
+<h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Cleanup</h4>
+<button id="cleanup-data" class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+<i class="fas fa-trash-alt"></i>
+Clean Old Data
+</button>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div>
-
 <footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
-        <div class="container mx-auto px-4 py-8 text-center">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
-                <div class="text-center">
-                    <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Work Time Tracker</h3>
-                    <p class="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
-                        Made with 
-                        <span class="inline-block">
-                            <i class="fas fa-heart text-red-500 animate-beat"></i>
-                        </span>
-                        by 
-                        <a href="https://www.instagram.com/otpo/" 
-                           target="_blank" 
-                           rel="noopener noreferrer" 
-                           class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                            Topo
-                        </a>
-                    </p>
-                </div>
-
-                <div class="text-center">
-                    <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Your Local Time</h3>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                        <li class="flex items-center justify-center gap-2">
-                            <i class="fas fa-clock"></i>
-                            <span id="user-time-zone"></span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-                <p>© 2025 Work Time Tracker. All rights reserved.</p>
-                <p class="mt-2">
-                    <button id="privacy-policy" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Privacy Policy</button>
-                    <span class="mx-2">•</span>
-                    <button id="terms-of-service" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Terms of Service</button>
-                </p>
-            </div>
-        </div>
-    </footer>
-
+<div class="container mx-auto px-4 py-8 text-center">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
+<div class="text-center">
+<h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Work Time Tracker</h3>
+<p class="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
+Made with 
+<span class="inline-block">
+<i class="fas fa-heart text-red-500 animate-beat"></i>
+</span>
+by 
+<a href="https://www.instagram.com/otpo/" 
+target="_blank" 
+rel="noopener noreferrer" 
+class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+Topo
+</a>
+</p>
+</div>
+<div class="text-center">
+<h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Your Local Time</h3>
+<ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+<li class="flex items-center justify-center gap-2">
+<i class="fas fa-clock"></i>
+<span id="user-time-zone"></span>
+</li>
+</ul>
+</div>
+</div>
+<div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+<p>© 2025 Work Time Tracker. All rights reserved.</p>
+<p class="mt-2">
+<button id="privacy-policy" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Privacy Policy</button>
+<span class="mx-2">•</span>
+<button id="terms-of-service" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Terms of Service</button>
+</p>
+</div>
+</div>
+</footer>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const userTimeZoneElement = document.getElementById('user-time-zone');
@@ -965,27 +946,40 @@ Import Data
     const paymentCyclesConfig = document.getElementById('payment-cycles-config');
     const addCycleButton = document.getElementById('add-cycle');
     const paymentCyclesList = document.getElementById('payment-cycles-list');
+    const monthlyEarningsCards = document.getElementById('monthly-earnings-cards');
+    const paymentCycleEarningsCard = document.getElementById('payment-cycle-earnings-card');
 
     // Load saved payment cycles state
-    const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
+    let paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
     if (enablePaymentCyclesToggle) {
         enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
-        paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
     }
 
     // Load saved payment cycles
     let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles') || '[]');
 
-    // Toggle payment cycles configuration
-    enablePaymentCyclesToggle?.addEventListener('change', function() {
-        const isEnabled = this.checked;
-        paymentCyclesConfig.classList.toggle('hidden', !isEnabled);
-        localStorage.setItem('paymentCyclesEnabled', isEnabled);
-    });
-
     // Function to format date for input
     function formatDateForInput(date) {
         return date.toISOString().split('T')[0];
+    }
+
+    // Function to format date for display
+    function formatDisplayDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    // Function to calculate days between dates
+    function daysBetween(d1, d2) {
+        const date1 = new Date(d1);
+        const date2 = new Date(d2);
+        const diffTime = Math.abs(date2 - date1);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
     }
 
     // Function to render payment cycles
@@ -1006,21 +1000,19 @@ Import Data
                 <input type="date" class="cycle-pay-date w-full bg-transparent" value="${cycle.payDate}">
             </td>
             <td class="px-2 py-2">
-                <button class="delete-cycle text-red-500 hover:text-red-700">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="flex gap-2">
+                    <button class="save-cycle-btn text-green-500 hover:text-green-700" title="Save">
+                        <i class="fas fa-save"></i>
+                    </button>
+                    <button class="delete-cycle text-red-500 hover:text-red-700" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         `;
-
             // Add event listeners
-            const deleteBtn = row.querySelector('.delete-cycle');
-            deleteBtn.addEventListener('click', () => deletePaymentCycle(index));
-
-            const dateInputs = row.querySelectorAll('input[type="date"]');
-            dateInputs.forEach(input => {
-                input.addEventListener('change', () => updatePaymentCycle(index, row));
-            });
-
+            row.querySelector('.save-cycle-btn').addEventListener('click', () => savePaymentCycle(index, row));
+            row.querySelector('.delete-cycle').addEventListener('click', () => deletePaymentCycle(index));
             paymentCyclesList.appendChild(row);
         });
     }
@@ -1040,16 +1032,19 @@ Import Data
         paymentCycles.push(newCycle);
         localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
         renderPaymentCycles();
+        updateStatistics();
     }
 
-    // Function to update a payment cycle
-    function updatePaymentCycle(index, row) {
+    // Function to save a payment cycle
+    function savePaymentCycle(index, row) {
         paymentCycles[index] = {
             startDate: row.querySelector('.cycle-start-date').value,
             endDate: row.querySelector('.cycle-end-date').value,
             payDate: row.querySelector('.cycle-pay-date').value
         };
         localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+        renderPaymentCycles(); // Re-render to show updated state
+        updateStatistics();
     }
 
     // Function to delete a payment cycle
@@ -1058,16 +1053,20 @@ Import Data
             paymentCycles.splice(index, 1);
             localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
             renderPaymentCycles();
+            updateStatistics();
         }
     }
 
     // Add payment cycle button click handler
     addCycleButton?.addEventListener('click', addPaymentCycle);
 
-    // Initial render if enabled
-    if (paymentCyclesEnabled) {
-        renderPaymentCycles();
-    }
+    // Toggle payment cycles configuration
+    enablePaymentCyclesToggle?.addEventListener('change', function() {
+        paymentCyclesEnabled = this.checked;
+        paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
+        localStorage.setItem('paymentCyclesEnabled', paymentCyclesEnabled);
+        updateStatistics();
+    });
 
     // State management
     let rates = JSON.parse(localStorage.getItem('rates')) || [];
@@ -1093,12 +1092,6 @@ Import Data
         const minutes = String(d.getMinutes()).padStart(2, '0');
         const seconds = String(d.getSeconds()).padStart(2, '0');
         return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-    }
-
-    function isDateInFuture(dateToCheck) {
-        const now = new Date();
-        now.setHours(23, 59, 59, 999); // End of today
-        return dateToCheck > now;
     }
 
     function updateTotals() {
@@ -1156,6 +1149,15 @@ Import Data
     function updateStatistics() {
         const filteredCalls = filterCallsByDate(calls, selectedDate);
 
+        // Show/Hide earnings cards based on toggle
+        const isEnabled = enablePaymentCyclesToggle?.checked;
+        if (monthlyEarningsCards) {
+            monthlyEarningsCards.classList.toggle('hidden', isEnabled);
+        }
+        if (paymentCycleEarningsCard) {
+            paymentCycleEarningsCard.classList.toggle('hidden', !isEnabled);
+        }
+
         // Update total calls today
         if (document.getElementById('total-calls-today')) {
             document.getElementById('total-calls-today').textContent = filteredCalls.length;
@@ -1171,49 +1173,6 @@ Import Data
                 }
             });
             document.getElementById('daily-total-earnings').textContent = formatMoney(dailyEarnings);
-        }
-
-        // Calculate monthly earnings
-        const now = new Date(selectedDate);
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const firstHalfStart = new Date(year, month, 1);
-        const firstHalfEnd = new Date(year, month, 15);
-        const secondHalfStart = new Date(year, month, 16);
-        const secondHalfEnd = new Date(year, month + 1, 0);
-
-        let firstHalfEarnings = 0;
-        let secondHalfEarnings = 0;
-
-        // Filter and calculate earnings for entire month
-        calls.forEach(call => {
-            const callDate = new Date(call.date);
-            const rate = rates[call.rateIndex];
-            if (!rate) return;
-
-            if (callDate.getFullYear() === year && callDate.getMonth() === month) {
-                const earned = (rate.amount / 60) * call.duration;
-
-                // First half of month (1-15)
-                if (callDate >= firstHalfStart && callDate <= firstHalfEnd) {
-                    firstHalfEarnings += earned;
-                }
-                // Second half of month (16-end)
-                else if (callDate >= secondHalfStart && callDate <= secondHalfEnd) {
-                    secondHalfEarnings += earned;
-                }
-            }
-        });
-
-        // Update monthly earnings displays
-        if (document.getElementById('first-half-earnings')) {
-            document.getElementById('first-half-earnings').textContent = formatMoney(firstHalfEarnings);
-        }
-        if (document.getElementById('second-half-earnings')) {
-            document.getElementById('second-half-earnings').textContent = formatMoney(secondHalfEarnings);
-        }
-        if (document.getElementById('monthly-total-earnings')) {
-            document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
         }
 
         // Update average duration
@@ -1276,6 +1235,90 @@ Import Data
             }
         }
 
+        // Update monthly earnings if payment cycles are NOT enabled
+        if (!isEnabled) {
+            const now = new Date(selectedDate);
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            let monthlyEarnings = 0;
+            let weeklyEarnings = 0;
+
+            calls.forEach(call => {
+                const callDate = new Date(call.date);
+                const rate = rates[call.rateIndex];
+                if (!rate) return;
+
+                const earned = (rate.amount / 60) * call.duration;
+
+                // Monthly Earnings
+                if (callDate >= firstDay && callDate <= lastDay) {
+                    monthlyEarnings += earned;
+                }
+                
+                // Weekly Earnings
+                const oneWeekAgo = new Date();
+                oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                if (callDate >= oneWeekAgo) {
+                    weeklyEarnings += earned;
+                }
+            });
+
+            if (document.getElementById('monthly-total-earnings')) {
+                document.getElementById('monthly-total-earnings').textContent = formatMoney(monthlyEarnings);
+            }
+            if (document.getElementById('weekly-total-earnings')) {
+                document.getElementById('weekly-total-earnings').textContent = formatMoney(weeklyEarnings);
+            }
+            if (document.getElementById('monthly-goal-earnings')) {
+                document.getElementById('monthly-goal-earnings').textContent = formatMoney(goal);
+            }
+        } else {
+            // Update payment cycle earnings if payment cycles are enabled
+            const now = new Date();
+            const currentCycle = paymentCycles.find(cycle => {
+                const start = new Date(cycle.startDate);
+                const end = new Date(cycle.endDate);
+                start.setHours(0, 0, 0, 0);
+                end.setHours(23, 59, 59, 999);
+                return now >= start && now <= end;
+            });
+
+            if (currentCycle) {
+                const cycleStartDate = new Date(currentCycle.startDate);
+                const cycleEndDate = new Date(currentCycle.endDate);
+                const payDate = new Date(currentCycle.payDate);
+
+                let cycleEarnings = 0;
+                calls.forEach(call => {
+                    const callDate = new Date(call.date);
+                    const rate = rates[call.rateIndex];
+                    if (!rate) return;
+                    if (callDate >= cycleStartDate && callDate <= cycleEndDate) {
+                        cycleEarnings += (rate.amount / 60) * call.duration;
+                    }
+                });
+                
+                const daysLeftInCycle = daysBetween(now, cycleEndDate);
+                const daysToPay = daysBetween(now, payDate);
+
+                document.getElementById('cycle-earnings').textContent = formatMoney(cycleEarnings);
+                document.getElementById('cycle-end-date').textContent = formatDisplayDate(currentCycle.endDate);
+                document.getElementById('days-until-end').textContent = `${daysLeftInCycle} days`;
+                document.getElementById('pay-date').textContent = formatDisplayDate(currentCycle.payDate);
+                document.getElementById('days-until-pay').textContent = `${daysToPay} days`;
+
+            } else {
+                // No active cycle found, clear the card
+                document.getElementById('cycle-earnings').textContent = formatMoney(0);
+                document.getElementById('cycle-end-date').textContent = 'N/A';
+                document.getElementById('days-until-end').textContent = 'N/A';
+                document.getElementById('pay-date').textContent = 'N/A';
+                document.getElementById('days-until-pay').textContent = 'N/A';
+            }
+        }
         updateTotals();
     }
 
@@ -1539,7 +1582,14 @@ Import Data
         const callDate = new Date(date);
 
         // Format date preserving local timezone without conversion
-        const localDate = `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, '0')}-${String(callDate.getDate()).padStart(2, '0')}T${String(callDate.getHours()).padStart(2, '0')}:${String(callDate.getMinutes()).padStart(2, '0')}:${String(callDate.getSeconds()).padStart(2, '0')}`;
+        const localDate = new Date(
+            callDate.getFullYear(),
+            callDate.getMonth(),
+            callDate.getDate(),
+            callDate.getHours(),
+            callDate.getMinutes(),
+            callDate.getSeconds()
+        ).toISOString();
 
         calls.push({
             date: localDate,
@@ -1854,6 +1904,7 @@ Import Data
             if (settingsModal) {
                 settingsModal.style.display = 'flex';
                 updateStorageInfo();
+                renderPaymentCycles();
 
                 // Click outside settings modal to close
                 if (settingsModal) {
@@ -1894,8 +1945,10 @@ Import Data
                 rates,
                 calls,
                 goal,
-                version: '1.0',
-                exportDate: new Date().toISOString()
+                version: '1.1',
+                exportDate: new Date().toISOString(),
+                paymentCycles: paymentCycles,
+                paymentCyclesEnabled: paymentCyclesEnabled
             };
 
             const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
@@ -1935,11 +1988,20 @@ Import Data
                         goal = importedData.goal;
                         if (goalAmount) goalAmount.value = goal;
                     }
+                    if (importedData.paymentCycles && Array.isArray(importedData.paymentCycles)) {
+                        paymentCycles = importedData.paymentCycles;
+                    }
+                    if (typeof importedData.paymentCyclesEnabled === 'boolean') {
+                        paymentCyclesEnabled = importedData.paymentCyclesEnabled;
+                        if (enablePaymentCyclesToggle) enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
+                    }
 
                     // Save to localStorage
                     localStorage.setItem('rates', JSON.stringify(rates));
                     localStorage.setItem('calls', JSON.stringify(calls));
                     localStorage.setItem('goal', goal);
+                    localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+                    localStorage.setItem('paymentCyclesEnabled', paymentCyclesEnabled);
 
                     // Update displays
                     displayRates();
@@ -2072,6 +2134,7 @@ Import Data
     displayCalls();
     updateStatistics();
     updateStorageInfo();
+    renderPaymentCycles();
 
     // Cleanup on page unload
     window.addEventListener('beforeunload', () => {
