@@ -456,43 +456,39 @@ class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:
             </p>
         </header>
 
-<!-- Controls and Settings Section -->
 <div class="flex flex-col md:flex-row items-start justify-center gap-12 mb-8">
-<!-- Call Box -->
-<div class="tracker-container">
-dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
-<div class="flex flex-col items-center mb-2">
-<div class="bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-<i class="fas fa-phone-volume text-3xl text-primary dark:text-blue-300"></i>
-</div>
-<h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
-</div>
-<div class="w-full mb-4">
-<label for="live-call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Rate</label>
-<select id="live-call-rate"
-class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
-<!-- Rate options will be added dynamically -->
-</select>
-</div>
-<div class="flex flex-col gap-2 w-full">
-<button id="add-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600 transition w-full flex items-center justify-center gap-2">
-<i class="fas fa-plus"></i> Add Call
-</button>
-<button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:hover:bg-green-800 transition w-full flex items-center justify-center gap-2">
-<i class="fas fa-play"></i> Start Call
-</button>
-<button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:hover:bg-red-800 transition w-full flex items-center justify-center gap-2">
-<i class="fas fa-stop"></i> End Call
-</button>
-</div>
-<div id="live-call-info" class="mt-4 w-full" style="display:none;">
-<div class="flex flex-col items-center bg-green-50 dark:bg-green-900 rounded-lg p-3 shadow-inner">
-<span class="text-green-700 dark:text-green-300 font-semibold text-sm mb-1">Ongoing Call</span>
-<span id="live-call-timer" class="font-mono text-xl text-green-900 dark:text-green-200 mb-1">00:00:00</span>
-<span id="live-call-earnings" class="font-mono text-lg text-green-800 dark:text-green-100">$0.00 earned</span>
-</div>
-</div>
-</div>
+    <div class="tracker-container dark:bg-gray-800 rounded-xl shadow p-6 flex flex-col items-center w-full">
+        <div class="flex flex-col items-center mb-2">
+            <div class="bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                <i class="fas fa-phone-volume text-3xl text-primary dark:text-blue-300"></i>
+            </div>
+            <h2 class="text-lg font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
+        </div>
+        <div class="w-full mb-4">
+            <label for="live-call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Rate</label>
+            <select id="live-call-rate"
+                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 bg-white dark:bg-gray-800">
+                </select>
+        </div>
+        <div class="flex flex-col gap-2 w-full">
+            <button id="add-call-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-600 transition w-full flex items-center justify-center gap-2">
+                <i class="fas fa-plus"></i> Add Call
+            </button>
+            <button id="start-call-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:hover:bg-green-800 transition w-full flex items-center justify-center gap-2">
+                <i class="fas fa-play"></i> Start Call
+            </button>
+            <button id="end-call-btn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:hover:bg-red-800 transition w-full flex items-center justify-center gap-2">
+                <i class="fas fa-stop"></i> End Call
+            </button>
+        </div>
+        <div id="live-call-info" class="mt-4 w-full" style="display:none;">
+            <div class="flex flex-col items-center bg-green-50 dark:bg-green-900 rounded-lg p-3 shadow-inner">
+                <span class="text-green-700 dark:text-green-300 font-semibold text-sm mb-1">Ongoing Call</span>
+                <span id="live-call-timer" class="font-mono text-xl text-green-900 dark:text-green-200 mb-1">00:00:00</span>
+                <span id="live-call-earnings" class="font-mono text-lg text-green-800 dark:text-green-100">$0.00 earned</span>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Rates & Goal Section -->
