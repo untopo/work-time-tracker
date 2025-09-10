@@ -906,98 +906,96 @@ Import Data
             userTimeZoneElement.textContent = `Your local time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone} - ${now.toLocaleString()}`;
         }
     });
-</script>
-    
-<script>
-// Utility functions
-const formatMoney = (amount) => `$${Number(amount).toFixed(2)}`;
-const isSameDay = (date1, date2) => {
-const d1 = new Date(date1);
-const d2 = new Date(date2);
-return d1.getFullYear() === d2.getFullYear() &&
-d1.getMonth() === d2.getMonth() &&
-d1.getDate() === d2.getDate();
-};
 
-function filterCallsByDate(calls, targetDate) {
-    if (!targetDate) return calls;
-    
-    // Parse target date
-    const [year, month, day] = targetDate.split('-').map(num => parseInt(num));
-    const target = new Date(year, month - 1, day); // month is 0-based
-    target.setHours(0, 0, 0, 0);
-    
-    return calls.filter(call => {
-        const callDate = new Date(call.date);
-        return callDate.getFullYear() === target.getFullYear() &&
+    // Utility functions
+    const formatMoney = (amount) => `$${Number(amount).toFixed(2)}`;
+    const isSameDay = (date1, date2) => {
+        const d1 = new Date(date1);
+        const d2 = new Date(date2);
+        return d1.getFullYear() === d2.getFullYear() &&
+            d1.getMonth() === d2.getMonth() &&
+            d1.getDate() === d2.getDate();
+    };
+
+    function filterCallsByDate(calls, targetDate) {
+        if (!targetDate) return calls;
+
+        // Parse target date
+        const [year, month, day] = targetDate.split('-').map(num => parseInt(num));
+        const target = new Date(year, month - 1, day); // month is 0-based
+        target.setHours(0, 0, 0, 0);
+
+        return calls.filter(call => {
+            const callDate = new Date(call.date);
+            return callDate.getFullYear() === target.getFullYear() &&
                 callDate.getMonth() === target.getMonth() &&
                 callDate.getDate() === target.getDate();
+        });
+    }
+
+    const formatDuration = (totalSeconds) => {
+        const hours = Math.floor(totalSeconds / 3600);
+        const mins = Math.floor((totalSeconds % 3600) / 60);
+        const secs = Math.floor(totalSeconds % 60);
+        return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    };
+
+    const sanitizeHTML = (str) => {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    };
+
+    // Dark mode toggle
+    const darkToggle = document.getElementById('dark-toggle');
+    if (darkToggle) {
+        darkToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        });
+
+        // Initialize dark mode from localStorage
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+    }
+
+    // Payment Cycles Management
+    const enablePaymentCyclesToggle = document.getElementById('payment-cycles-toggle');
+    const paymentCyclesConfig = document.getElementById('payment-cycles-config');
+    const addCycleButton = document.getElementById('add-cycle');
+    const paymentCyclesList = document.getElementById('payment-cycles-list');
+
+    // Load saved payment cycles state
+    const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
+    if (enablePaymentCyclesToggle) {
+        enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
+        paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
+    }
+
+    // Load saved payment cycles
+    let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles') || '[]');
+
+    // Toggle payment cycles configuration
+    enablePaymentCyclesToggle?.addEventListener('change', function() {
+        const isEnabled = this.checked;
+        paymentCyclesConfig.classList.toggle('hidden', !isEnabled);
+        localStorage.setItem('paymentCyclesEnabled', isEnabled);
     });
-}
 
-const formatDuration = (totalSeconds) => {
-const hours = Math.floor(totalSeconds / 3600);
-const mins = Math.floor((totalSeconds % 3600) / 60);
-const secs = Math.floor(totalSeconds % 60);
-return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-};
+    // Function to format date for input
+    function formatDateForInput(date) {
+        return date.toISOString().split('T')[0];
+    }
 
-const sanitizeHTML = (str) => {
-const div = document.createElement('div');
-div.textContent = str;
-return div.innerHTML;
-};
+    // Function to render payment cycles
+    function renderPaymentCycles() {
+        if (!paymentCyclesList) return;
 
-// Dark mode toggle
-const darkToggle = document.getElementById('dark-toggle');
-if (darkToggle) {
-darkToggle.addEventListener('click', () => {
-document.documentElement.classList.toggle('dark');
-localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
-});
-
-// Initialize dark mode from localStorage
-if (localStorage.getItem('darkMode') === 'true') {
-document.documentElement.classList.add('dark');
-}
-}
-
-// Payment Cycles Management
-const enablePaymentCyclesToggle = document.getElementById('payment-cycles-toggle');
-const paymentCyclesConfig = document.getElementById('payment-cycles-config');
-const addCycleButton = document.getElementById('add-cycle');
-const paymentCyclesList = document.getElementById('payment-cycles-list');
-
-// Load saved payment cycles state
-const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
-if (enablePaymentCyclesToggle) {
-    enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
-    paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
-}
-
-// Load saved payment cycles
-let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles') || '[]');
-
-// Toggle payment cycles configuration
-enablePaymentCyclesToggle?.addEventListener('change', function() {
-    const isEnabled = this.checked;
-    paymentCyclesConfig.classList.toggle('hidden', !isEnabled);
-    localStorage.setItem('paymentCyclesEnabled', isEnabled);
-});
-
-// Function to format date for input
-function formatDateForInput(date) {
-    return date.toISOString().split('T')[0];
-}
-
-// Function to render payment cycles
-function renderPaymentCycles() {
-    if (!paymentCyclesList) return;
-    
-    paymentCyclesList.innerHTML = '';
-    paymentCycles.forEach((cycle, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
+        paymentCyclesList.innerHTML = '';
+        paymentCycles.forEach((cycle, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
             <td class="px-2 py-2">
                 <input type="date" class="cycle-start-date w-full bg-transparent" value="${cycle.startDate}">
             </td>
@@ -1014,1255 +1012,1090 @@ function renderPaymentCycles() {
             </td>
         `;
 
-        // Add event listeners
-        const deleteBtn = row.querySelector('.delete-cycle');
-        deleteBtn.addEventListener('click', () => deletePaymentCycle(index));
+            // Add event listeners
+            const deleteBtn = row.querySelector('.delete-cycle');
+            deleteBtn.addEventListener('click', () => deletePaymentCycle(index));
 
-        const dateInputs = row.querySelectorAll('input[type="date"]');
-        dateInputs.forEach(input => {
-            input.addEventListener('change', () => updatePaymentCycle(index, row));
+            const dateInputs = row.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(input => {
+                input.addEventListener('change', () => updatePaymentCycle(index, row));
+            });
+
+            paymentCyclesList.appendChild(row);
         });
+    }
 
-        paymentCyclesList.appendChild(row);
-    });
-}
+    // Function to add a new payment cycle
+    function addPaymentCycle() {
+        const today = new Date();
+        const twoWeeksLater = new Date(today);
+        twoWeeksLater.setDate(today.getDate() + 14);
 
-// Function to add a new payment cycle
-function addPaymentCycle() {
-    const today = new Date();
-    const twoWeeksLater = new Date(today);
-    twoWeeksLater.setDate(today.getDate() + 14);
-    
-    const newCycle = {
-        startDate: formatDateForInput(today),
-        endDate: formatDateForInput(twoWeeksLater),
-        payDate: formatDateForInput(twoWeeksLater)
-    };
-    
-    paymentCycles.push(newCycle);
-    localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
-    renderPaymentCycles();
-}
+        const newCycle = {
+            startDate: formatDateForInput(today),
+            endDate: formatDateForInput(twoWeeksLater),
+            payDate: formatDateForInput(twoWeeksLater)
+        };
 
-// Function to update a payment cycle
-function updatePaymentCycle(index, row) {
-    paymentCycles[index] = {
-        startDate: row.querySelector('.cycle-start-date').value,
-        endDate: row.querySelector('.cycle-end-date').value,
-        payDate: row.querySelector('.cycle-pay-date').value
-    };
-    localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
-}
-
-// Function to delete a payment cycle
-function deletePaymentCycle(index) {
-    if (confirm('Are you sure you want to delete this payment cycle?')) {
-        paymentCycles.splice(index, 1);
+        paymentCycles.push(newCycle);
         localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
         renderPaymentCycles();
     }
-}
 
-// Add payment cycle button click handler
-addCycleButton?.addEventListener('click', addPaymentCycle);
-
-// Initial render if enabled
-if (paymentCyclesEnabled) {
-    renderPaymentCycles();
-}
-
-// State management
-let rates = JSON.parse(localStorage.getItem('rates')) || [];
-let activeTimers = new Set(); // Track all active timers
-let calls = JSON.parse(localStorage.getItem('calls')) || [];
-let currentCall = null;
-let callTimer = null;
-let editingCallIndex = null;
-let goal = parseFloat(localStorage.getItem('goal')) || 0;
-
-// Modal focus management
-let lastActiveElement = null;
-const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
-// Timezone utility functions
-function getLocalISOString(date) {
-    const d = new Date(date);
-    // Keep the date in local timezone
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const seconds = String(d.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-}
-
-function isDateInFuture(dateToCheck) {
-const now = new Date();
-now.setHours(23, 59, 59, 999); // End of today
-return dateToCheck > now;
-}
-
-function updateTotals() {
-let totalDuration = 0;
-let totalEarned = 0;
-
-// Calculate totals from completed calls for selected date
-const filteredCalls = filterCallsByDate(calls, selectedDate);
-filteredCalls.forEach(call => {
-const rate = rates[call.rateIndex];
-if (rate) {
-totalDuration += call.duration;
-totalEarned += (rate.amount / 60) * call.duration;
-}
-});
-
-// Add current call if it exists and is from today
-if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
-const currentDuration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-const currentRate = rates[currentCall.rateIndex];
-if (currentRate) {
-totalDuration += currentDuration;
-totalEarned += (currentRate.amount / 60) * currentDuration;
-}
-}
-
-// Update displays
-if (totalMinutes) totalMinutes.textContent = formatDuration(totalDuration);
-if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
-
-// Update goal progress
-if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
-const progress = Math.min((totalEarned / goal) * 100, 100);
-
-requestAnimationFrame(() => {
-goalProgressBar.style.transition = 'width 0.5s ease-out';
-goalProgressBar.style.width = `${progress}%`;
-
-if (progress >= 100) {
-goalProgressBar.classList.add('bg-green-500');
-goalProgressBar.classList.remove('bg-blue-500');
-goalProgressText.classList.add('text-green-600');
-} else {
-goalProgressBar.classList.add('bg-blue-500');
-goalProgressBar.classList.remove('bg-green-500');
-goalProgressText.classList.remove('text-green-600');
-}
-
-goalProgressText.textContent = `${Math.round(progress)}%`;
-goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
-});
-}
-}
-
-function updateStatistics() {
-    const filteredCalls = filterCallsByDate(calls, selectedDate);
-    
-    // Update total calls today
-    if (document.getElementById('total-calls-today')) {
-        document.getElementById('total-calls-today').textContent = filteredCalls.length;
+    // Function to update a payment cycle
+    function updatePaymentCycle(index, row) {
+        paymentCycles[index] = {
+            startDate: row.querySelector('.cycle-start-date').value,
+            endDate: row.querySelector('.cycle-end-date').value,
+            payDate: row.querySelector('.cycle-pay-date').value
+        };
+        localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
     }
 
-    // Update daily earnings
-    if (document.getElementById('daily-total-earnings')) {
-        let dailyEarnings = 0;
-        filteredCalls.forEach(call => {
-            const rate = rates[call.rateIndex];
-            if (rate) {
-                dailyEarnings += (rate.amount / 60) * call.duration;
-            }
-        });
-        document.getElementById('daily-total-earnings').textContent = formatMoney(dailyEarnings);
-    }
-
-    // Calculate monthly earnings
-    const now = new Date(selectedDate);
-    const year = now.getFullYear();
-    const month = now.getMonth();
-    const firstHalfStart = new Date(year, month, 1);
-    const firstHalfEnd = new Date(year, month, 15);
-    const secondHalfStart = new Date(year, month, 16);
-    const secondHalfEnd = new Date(year, month + 1, 0);
-
-    let firstHalfEarnings = 0;
-    let secondHalfEarnings = 0;
-
-    // Filter and calculate earnings for entire month
-    calls.forEach(call => {
-        const callDate = new Date(call.date);
-        const rate = rates[call.rateIndex];
-        if (!rate) return;
-
-        if (callDate.getFullYear() === year && callDate.getMonth() === month) {
-            const earned = (rate.amount / 60) * call.duration;
-            
-            // First half of month (1-15)
-            if (callDate >= firstHalfStart && callDate <= firstHalfEnd) {
-                firstHalfEarnings += earned;
-            }
-            // Second half of month (16-end)
-            else if (callDate >= secondHalfStart && callDate <= secondHalfEnd) {
-                secondHalfEarnings += earned;
-            }
-        }
-    });
-
-    // Update monthly earnings displays
-    if (document.getElementById('first-half-earnings')) {
-        document.getElementById('first-half-earnings').textContent = formatMoney(firstHalfEarnings);
-    }
-    if (document.getElementById('second-half-earnings')) {
-        document.getElementById('second-half-earnings').textContent = formatMoney(secondHalfEarnings);
-    }
-    if (document.getElementById('monthly-total-earnings')) {
-        document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
-    }
-
-    // Update average duration
-    if (document.getElementById('avg-duration')) {
-        if (filteredCalls.length > 0) {
-            const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
-            const avgDurationSeconds = Math.floor(totalDuration / filteredCalls.length);
-            document.getElementById('avg-duration').textContent = formatDuration(avgDurationSeconds);
-        } else {
-            document.getElementById('avg-duration').textContent = '00:00:00';
+    // Function to delete a payment cycle
+    function deletePaymentCycle(index) {
+        if (confirm('Are you sure you want to delete this payment cycle?')) {
+            paymentCycles.splice(index, 1);
+            localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+            renderPaymentCycles();
         }
     }
 
-            // Update goal estimate
-    if (document.getElementById('goal-estimate') && goal > 0) {
-        let currentEarnings = 0;
-        let totalMinutesWorked = 0;
-        
-        // Calculate total earnings and minutes from completed calls
+    // Add payment cycle button click handler
+    addCycleButton?.addEventListener('click', addPaymentCycle);
+
+    // Initial render if enabled
+    if (paymentCyclesEnabled) {
+        renderPaymentCycles();
+    }
+
+    // State management
+    let rates = JSON.parse(localStorage.getItem('rates')) || [];
+    let activeTimers = new Set(); // Track all active timers
+    let calls = JSON.parse(localStorage.getItem('calls')) || [];
+    let currentCall = null;
+    let callTimer = null;
+    let editingCallIndex = null;
+    let goal = parseFloat(localStorage.getItem('goal')) || 0;
+
+    // Modal focus management
+    let lastActiveElement = null;
+    const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+    // Timezone utility functions
+    function getLocalISOString(date) {
+        const d = new Date(date);
+        // Keep the date in local timezone
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const seconds = String(d.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    }
+
+    function isDateInFuture(dateToCheck) {
+        const now = new Date();
+        now.setHours(23, 59, 59, 999); // End of today
+        return dateToCheck > now;
+    }
+
+    function updateTotals() {
+        let totalDuration = 0;
+        let totalEarned = 0;
+
+        // Calculate totals from completed calls for selected date
+        const filteredCalls = filterCallsByDate(calls, selectedDate);
         filteredCalls.forEach(call => {
             const rate = rates[call.rateIndex];
             if (rate) {
-                const callMinutes = call.duration / 60; // Convert seconds to minutes
-                totalMinutesWorked += callMinutes;
-                currentEarnings += (rate.amount / 60) * call.duration;
+                totalDuration += call.duration;
+                totalEarned += (rate.amount / 60) * call.duration;
             }
         });
 
-        // Add current active call if it exists and is from today
+        // Add current call if it exists and is from today
         if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
             const currentDuration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-            const currentMinutes = currentDuration / 60;
             const currentRate = rates[currentCall.rateIndex];
             if (currentRate) {
-                totalMinutesWorked += currentMinutes;
-                currentEarnings += (currentRate.amount / 60) * currentDuration;
+                totalDuration += currentDuration;
+                totalEarned += (currentRate.amount / 60) * currentDuration;
             }
         }
 
-        if (currentEarnings >= goal) {
-            document.getElementById('goal-estimate').textContent = 'Goal reached!';
-        } else {
-            const remaining = goal - currentEarnings;
-            
-            // Calculate actual earning rate per minute based on today's performance
-            if (totalMinutesWorked > 0) {
-                const actualEarningRatePerMinute = currentEarnings / totalMinutesWorked;
-                const estimatedMinutesNeeded = Math.ceil(remaining / actualEarningRatePerMinute);
-                document.getElementById('goal-estimate').textContent = `~${estimatedMinutesNeeded} mins to goal`;
+        // Update displays
+        if (totalMinutes) totalMinutes.textContent = formatDuration(totalDuration);
+        if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
+
+        // Update goal progress
+        if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
+            const progress = Math.min((totalEarned / goal) * 100, 100);
+
+            requestAnimationFrame(() => {
+                goalProgressBar.style.transition = 'width 0.5s ease-out';
+                goalProgressBar.style.width = `${progress}%`;
+
+                if (progress >= 100) {
+                    goalProgressBar.classList.add('bg-green-500');
+                    goalProgressBar.classList.remove('bg-blue-500');
+                    goalProgressText.classList.add('text-green-600');
+                } else {
+                    goalProgressBar.classList.add('bg-blue-500');
+                    goalProgressBar.classList.remove('bg-green-500');
+                    goalProgressText.classList.remove('text-green-600');
+                }
+
+                goalProgressText.textContent = `${Math.round(progress)}%`;
+                goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
+            });
+        }
+    }
+
+    function updateStatistics() {
+        const filteredCalls = filterCallsByDate(calls, selectedDate);
+
+        // Update total calls today
+        if (document.getElementById('total-calls-today')) {
+            document.getElementById('total-calls-today').textContent = filteredCalls.length;
+        }
+
+        // Update daily earnings
+        if (document.getElementById('daily-total-earnings')) {
+            let dailyEarnings = 0;
+            filteredCalls.forEach(call => {
+                const rate = rates[call.rateIndex];
+                if (rate) {
+                    dailyEarnings += (rate.amount / 60) * call.duration;
+                }
+            });
+            document.getElementById('daily-total-earnings').textContent = formatMoney(dailyEarnings);
+        }
+
+        // Calculate monthly earnings
+        const now = new Date(selectedDate);
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const firstHalfStart = new Date(year, month, 1);
+        const firstHalfEnd = new Date(year, month, 15);
+        const secondHalfStart = new Date(year, month, 16);
+        const secondHalfEnd = new Date(year, month + 1, 0);
+
+        let firstHalfEarnings = 0;
+        let secondHalfEarnings = 0;
+
+        // Filter and calculate earnings for entire month
+        calls.forEach(call => {
+            const callDate = new Date(call.date);
+            const rate = rates[call.rateIndex];
+            if (!rate) return;
+
+            if (callDate.getFullYear() === year && callDate.getMonth() === month) {
+                const earned = (rate.amount / 60) * call.duration;
+
+                // First half of month (1-15)
+                if (callDate >= firstHalfStart && callDate <= firstHalfEnd) {
+                    firstHalfEarnings += earned;
+                }
+                // Second half of month (16-end)
+                else if (callDate >= secondHalfStart && callDate <= secondHalfEnd) {
+                    secondHalfEarnings += earned;
+                }
+            }
+        });
+
+        // Update monthly earnings displays
+        if (document.getElementById('first-half-earnings')) {
+            document.getElementById('first-half-earnings').textContent = formatMoney(firstHalfEarnings);
+        }
+        if (document.getElementById('second-half-earnings')) {
+            document.getElementById('second-half-earnings').textContent = formatMoney(secondHalfEarnings);
+        }
+        if (document.getElementById('monthly-total-earnings')) {
+            document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
+        }
+
+        // Update average duration
+        if (document.getElementById('avg-duration')) {
+            if (filteredCalls.length > 0) {
+                const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
+                const avgDurationSeconds = Math.floor(totalDuration / filteredCalls.length);
+                document.getElementById('avg-duration').textContent = formatDuration(avgDurationSeconds);
             } else {
-                // Fallback to selected rate if no calls yet today
-                const liveCallRate = document.getElementById('live-call-rate');
-                const selectedRateIndex = liveCallRate ? parseInt(liveCallRate.value) : 0;
-                const selectedRate = rates[selectedRateIndex];
-                if (selectedRate) {
-                    const minsToGoal = Math.ceil(remaining / (selectedRate.amount / 60));
-                    document.getElementById('goal-estimate').textContent = `${minsToGoal} mins to goal`;
+                document.getElementById('avg-duration').textContent = '00:00:00';
+            }
+        }
+
+        // Update goal estimate
+        if (document.getElementById('goal-estimate') && goal > 0) {
+            let currentEarnings = 0;
+            let totalMinutesWorked = 0;
+
+            // Calculate total earnings and minutes from completed calls
+            filteredCalls.forEach(call => {
+                const rate = rates[call.rateIndex];
+                if (rate) {
+                    const callMinutes = call.duration / 60; // Convert seconds to minutes
+                    totalMinutesWorked += callMinutes;
+                    currentEarnings += (rate.amount / 60) * call.duration;
+                }
+            });
+
+            // Add current active call if it exists and is from today
+            if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
+                const currentDuration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+                const currentMinutes = currentDuration / 60;
+                const currentRate = rates[currentCall.rateIndex];
+                if (currentRate) {
+                    totalMinutesWorked += currentMinutes;
+                    currentEarnings += (currentRate.amount / 60) * currentDuration;
+                }
+            }
+
+            if (currentEarnings >= goal) {
+                document.getElementById('goal-estimate').textContent = 'Goal reached!';
+            } else {
+                const remaining = goal - currentEarnings;
+
+                // Calculate actual earning rate per minute based on today's performance
+                if (totalMinutesWorked > 0) {
+                    const actualEarningRatePerMinute = currentEarnings / totalMinutesWorked;
+                    const estimatedMinutesNeeded = Math.ceil(remaining / actualEarningRatePerMinute);
+                    document.getElementById('goal-estimate').textContent = `~${estimatedMinutesNeeded} mins to goal`;
+                } else {
+                    // Fallback to selected rate if no calls yet today
+                    const liveCallRate = document.getElementById('live-call-rate');
+                    const selectedRateIndex = liveCallRate ? parseInt(liveCallRate.value) : 0;
+                    const selectedRate = rates[selectedRateIndex];
+                    if (selectedRate) {
+                        const minsToGoal = Math.ceil(remaining / (selectedRate.amount / 60));
+                        document.getElementById('goal-estimate').textContent = `${minsToGoal} mins to goal`;
+                    }
+                }
+            }
+        }
+
+        updateTotals();
+    }
+
+    // Initialize date picker with today's local date
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    let selectedDate = now.toISOString().split('T')[0];
+
+    // DOM elements - cached for performance
+    const modalTitle = document.getElementById('modal-title');
+    const settingsToggle = document.getElementById('settings-toggle');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettingsModal = document.getElementById('close-settings-modal');
+    const exportDataBtn = document.getElementById('export-data');
+    const importFileInput = document.getElementById('import-file');
+    const cleanupDataBtn = document.getElementById('cleanup-data');
+    const storageUsed = document.getElementById('storage-used');
+    const storageBar = document.getElementById('storage-bar');
+    const ratesList = document.getElementById('rates-list');
+    const rateForm = document.getElementById('rate-form');
+    const rateName = document.getElementById('rate-name');
+    const rateAmount = document.getElementById('rate-amount');
+    const showRateAdd = document.getElementById('show-rate-add');
+    const cancelRateAdd = document.getElementById('cancel-rate-add');
+    const callLog = document.getElementById('call-log');
+    const startCallBtn = document.getElementById('start-call-btn');
+    const endCallBtn = document.getElementById('end-call-btn');
+    const addCallBtn = document.getElementById('add-call-btn');
+    const callModal = document.getElementById('call-modal');
+    const callForm = document.getElementById('call-form');
+    const closeModalBtn = document.getElementById('close-modal');
+    const cancelCall = document.getElementById('cancel-call');
+    const callDate = document.getElementById('call-date');
+    const callRate = document.getElementById('call-rate');
+    const liveCallInfo = document.getElementById('live-call-info');
+    const liveCallTimer = document.getElementById('live-call-timer');
+    const liveCallEarnings = document.getElementById('live-call-earnings');
+    const goalForm = document.getElementById('goal-form');
+    const goalAmount = document.getElementById('goal-amount');
+    const goalProgressBar = document.getElementById('goal-progress-bar');
+    const goalProgressText = document.getElementById('goal-progress-text');
+    const goalAmountDisplay = document.getElementById('goal-amount-display');
+    const totalMinutes = document.getElementById('total-minutes');
+    const totalEarnings = document.getElementById('total-earnings');
+    const statsDatePicker = document.getElementById('stats-date-picker');
+    const currentDateBtn = document.getElementById('current-date-btn');
+    const dailyTotalEarnings = document.getElementById('daily-total-earnings');
+    const avgDuration = document.getElementById('avg-duration');
+
+    // Initialize goal form handler
+    if (goalForm) {
+        goalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newGoal = parseFloat(goalAmount.value);
+            if (!isNaN(newGoal) && newGoal >= 0) {
+                goal = newGoal;
+                localStorage.setItem('goal', goal);
+                updateStatistics();
+            }
+        });
+    }
+
+    // Initialize goal amount display
+    if (goalAmount) {
+        goalAmount.value = goal || '';
+    }
+
+    // Initialize date picker
+    if (statsDatePicker) {
+        statsDatePicker.value = selectedDate;
+        statsDatePicker.addEventListener('change', (e) => {
+            selectedDate = e.target.value;
+            displayCalls();
+            updateStatistics();
+        });
+    }
+
+    if (currentDateBtn) {
+        currentDateBtn.addEventListener('click', () => {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const today = now.toISOString().split('T')[0];
+            if (statsDatePicker) {
+                statsDatePicker.value = today;
+            }
+            selectedDate = today;
+            displayCalls();
+            updateStatistics();
+        });
+    }
+
+    // Rate management
+    function displayRates() {
+        if (!ratesList) return;
+
+        ratesList.innerHTML = rates.map((rate, index) => `
+            <div class="rates-list-item">
+                <div class="flex-1">
+                    <span class="font-medium">${sanitizeHTML(rate.name)}</span>
+                    <span class="text-gray-600 dark:text-gray-400"> - ${formatMoney(rate.amount)}/min</span>
+                </div>
+                <button onclick="deleteRate(${index})" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+
+        // Update rate options in call modal
+        if (callRate) {
+            callRate.innerHTML = rates.map((rate, index) =>
+                `<option value="${index}">${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</option>`
+            ).join('');
+        }
+
+        // Update live call rate selector
+        const liveCallRate = document.getElementById('live-call-rate');
+        if (liveCallRate) {
+            const currentValue = liveCallRate.value;
+            liveCallRate.innerHTML = rates.map((rate, index) =>
+                `<option value="${index}" class="bg-white dark:bg-gray-800">${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</option>`
+            ).join('');
+            // Preserve selected value if it still exists in rates
+            if (rates.some((_, index) => index.toString() === currentValue)) {
+                liveCallRate.value = currentValue;
+            }
+        }
+        localStorage.setItem('rates', JSON.stringify(rates));
+    }
+
+    function deleteRate(index) {
+        // Check if rate is being used by existing calls
+        const isRateInUse = calls.some(call => call.rateIndex === index);
+        if (isRateInUse) {
+            if (!confirm('This rate is being used by existing calls. Deleting it may affect call display. Continue?')) {
+                return;
+            }
+        }
+
+        rates.splice(index, 1);
+
+        // Update call indices to prevent broken references
+        calls.forEach(call => {
+            if (call.rateIndex > index) {
+                call.rateIndex--;
+            }
+        });
+
+        localStorage.setItem('calls', JSON.stringify(calls));
+        displayRates();
+        displayCalls();
+    }
+
+    // Rate form handlers
+    if (showRateAdd) {
+        showRateAdd.addEventListener('click', () => {
+            if (rateForm) {
+                rateForm.style.display = 'block';
+                showRateAdd.style.display = 'none';
+                if (rateName) rateName.focus();
+            }
+        });
+    }
+
+    if (cancelRateAdd) {
+        cancelRateAdd.addEventListener('click', () => {
+            if (rateForm && showRateAdd) {
+                rateForm.style.display = 'none';
+                showRateAdd.style.display = 'flex';
+                rateForm.reset();
+            }
+        });
+    }
+
+    if (rateForm) {
+        rateForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (rateName && rateAmount) {
+                const name = rateName.value.trim();
+                const amount = parseFloat(rateAmount.value);
+
+                // Validate rate name
+                if (!name) {
+                    alert('Rate name cannot be empty');
+                    return;
+                }
+                if (name.length > 50) {
+                    alert('Rate name is too long (maximum 50 characters)');
+                    return;
+                }
+
+                // Validate rate amount
+                if (isNaN(amount) || !isFinite(amount)) {
+                    alert('Please enter a valid number for the rate amount');
+                    return;
+                }
+                if (amount <= 0) {
+                    alert('Rate amount must be greater than 0');
+                    return;
+                }
+                if (amount > 999999) {
+                    alert('Rate amount is too high (maximum 999,999)');
+                    return;
+                }
+
+                rates.push({
+                    name: name,
+                    amount: amount
+                });
+                displayRates();
+                rateForm.style.display = 'none';
+                if (showRateAdd) {
+                    showRateAdd.style.display = 'flex';
+                }
+                rateForm.reset();
+            }
+        });
+    }
+
+    // Call management
+    function deleteCall(index) {
+        if (confirm('Are you sure you want to delete this call?')) {
+            calls.splice(index, 1);
+            localStorage.setItem('calls', JSON.stringify(calls));
+            displayCalls();
+            updateStatistics();
+        }
+    }
+
+    function editCall(index) {
+        const call = calls[index];
+        if (!call) return;
+
+        editingCallIndex = index;
+        const date = new Date(call.date);
+
+        if (modalTitle) modalTitle.textContent = 'Edit Call';
+        if (callDate) callDate.value = getLocalISOString(date);
+
+        const hours = Math.floor(call.duration / 3600);
+        const minutes = Math.floor((call.duration % 3600) / 60);
+        const seconds = call.duration % 60;
+
+        const hoursInput = document.getElementById('call-duration-hours');
+        const minutesInput = document.getElementById('call-duration-minutes');
+        const secondsInput = document.getElementById('call-duration-seconds');
+
+        if (hoursInput) hoursInput.value = hours;
+        if (minutesInput) minutesInput.value = minutes;
+        if (secondsInput) secondsInput.value = seconds;
+        if (callRate) callRate.value = call.rateIndex;
+
+        lastActiveElement = document.activeElement;
+        if (callModal) {
+            callModal.style.display = 'flex';
+            if (callDate) callDate.focus();
+        }
+    }
+
+    function addCallToLog(date, duration, rateIndex) {
+        // Create a new Date object in local time
+        const callDate = new Date(date);
+
+        // Format date preserving local timezone without conversion
+        const localDate = `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, '0')}-${String(callDate.getDate()).padStart(2, '0')}T${String(callDate.getHours()).padStart(2, '0')}:${String(callDate.getMinutes()).padStart(2, '0')}:${String(callDate.getSeconds()).padStart(2, '0')}`;
+
+        calls.push({
+            date: localDate,
+            duration: duration,
+            rateIndex: rateIndex
+        });
+
+        // Update the selected date to match the call's date to ensure it shows up immediately
+        selectedDate = `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, '0')}-${String(callDate.getDate()).padStart(2, '0')}`;
+        if (statsDatePicker) {
+            statsDatePicker.value = selectedDate;
+        }
+
+        localStorage.setItem('calls', JSON.stringify(calls));
+        displayCalls();
+        updateStatistics();
+    }
+
+    function displayCalls() {
+        if (!callLog) return;
+
+        // Sort filtered calls by date
+        let displayedCalls = filterCallsByDate(calls, selectedDate);
+        displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        callLog.innerHTML = displayedCalls.map((call, index) => {
+            const rate = rates[call.rateIndex];
+            if (!rate) return '';
+
+            const duration = call.duration;
+            const minutes = duration / 60; // Convert seconds to minutes
+            const earned = rate.amount * minutes; // Multiply per-minute rate by minutes
+
+            return `
+                <tr>
+                    <td>${new Date(call.date).toLocaleString(undefined, {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    })}</td>
+                    <td>${formatDuration(duration)}</td>
+                    <td>${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</td>
+                    <td>${formatMoney(earned)}</td>
+                    <td class="pl-4">
+                        <div class="flex gap-2">
+                            <button onclick="editCall(${calls.indexOf(call)})" class="text-blue-500 hover:text-blue-700">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteCall(${calls.indexOf(call)})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        updateTotals();
+        localStorage.setItem('calls', JSON.stringify(calls));
+    }
+
+    // Call timer functionality
+    function updateCallTimer() {
+        if (!currentCall) return;
+
+        const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+        const rate = rates[currentCall.rateIndex];
+        if (!rate) return;
+
+        const minutes = duration / 60; // Convert seconds to minutes
+        const earned = rate.amount * minutes; // Multiply per-minute rate by minutes
+
+        if (liveCallTimer) liveCallTimer.textContent = formatDuration(duration);
+        if (liveCallEarnings) liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
+        updateTotals();
+    }
+
+    if (startCallBtn) {
+        startCallBtn.addEventListener('click', () => {
+            if (rates.length === 0) {
+                alert('Please add at least one rate before starting a call.');
+                return;
+            }
+
+            // Clear any existing timers first
+            activeTimers.forEach(timerId => clearInterval(timerId));
+            activeTimers.clear();
+
+            const liveCallRate = document.getElementById('live-call-rate');
+            currentCall = {
+                startTime: Date.now(),
+                rateIndex: liveCallRate ? parseInt(liveCallRate.value) : 0
+            };
+
+            startCallBtn.disabled = true;
+            if (endCallBtn) endCallBtn.disabled = false;
+            if (liveCallInfo) liveCallInfo.style.display = 'block';
+            const newTimer = setInterval(updateCallTimer, 1000);
+            activeTimers.add(newTimer);
+            callTimer = newTimer;
+        });
+    }
+
+    if (endCallBtn) {
+        endCallBtn.addEventListener('click', () => {
+            if (!currentCall) return;
+
+            const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+
+            // Create a date object from the call's start time instead of current time
+            const callDate = new Date(currentCall.startTime);
+            addCallToLog(callDate, duration, currentCall.rateIndex);
+
+            // Clear timers and reset state
+            activeTimers.forEach(timerId => clearInterval(timerId));
+            activeTimers.clear();
+            callTimer = null;
+            currentCall = null;
+            if (startCallBtn) startCallBtn.disabled = false;
+            endCallBtn.disabled = true;
+            if (liveCallInfo) liveCallInfo.style.display = 'none';
+
+            // Update displays
+            displayCalls();
+            updateStatistics();
+        });
+    }
+
+    // Modal keyboard handler
+    function handleModalKeyboard(event) {
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+
+        if (event.key === 'Tab') {
+            // Only handle tab if modal is visible
+            if (callModal && callModal.style.display === 'flex') {
+                const focusable = callModal.querySelectorAll(focusableElements);
+                const firstFocusable = focusable[0];
+                const lastFocusable = focusable[focusable.length - 1];
+
+                // If shift+tab and first element is focused, move to last
+                if (event.shiftKey && document.activeElement === firstFocusable) {
+                    event.preventDefault();
+                    lastFocusable.focus();
+                }
+                // If tab and last element is focused, move to first
+                else if (!event.shiftKey && document.activeElement === lastFocusable) {
+                    event.preventDefault();
+                    firstFocusable.focus();
                 }
             }
         }
     }
 
-    updateTotals();
-}
-    
-// Initialize date picker with today's local date
-const now = new Date();
-now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-let selectedDate = now.toISOString().split('T')[0];
-
-// DOM elements - cached for performance
-const modalTitle = document.getElementById('modal-title');
-const settingsToggle = document.getElementById('settings-toggle');
-const settingsModal = document.getElementById('settings-modal');
-const closeSettingsModal = document.getElementById('close-settings-modal');
-const exportDataBtn = document.getElementById('export-data');
-const importFileInput = document.getElementById('import-file');
-const cleanupDataBtn = document.getElementById('cleanup-data');
-const storageUsed = document.getElementById('storage-used');
-const storageBar = document.getElementById('storage-bar');
-const ratesList = document.getElementById('rates-list');
-const rateForm = document.getElementById('rate-form');
-const rateName = document.getElementById('rate-name');
-const rateAmount = document.getElementById('rate-amount');
-const showRateAdd = document.getElementById('show-rate-add');
-const cancelRateAdd = document.getElementById('cancel-rate-add');
-const callLog = document.getElementById('call-log');
-const startCallBtn = document.getElementById('start-call-btn');
-const endCallBtn = document.getElementById('end-call-btn');
-const addCallBtn = document.getElementById('add-call-btn');
-const callModal = document.getElementById('call-modal');
-const callForm = document.getElementById('call-form');
-const closeModalBtn = document.getElementById('close-modal');
-const cancelCall = document.getElementById('cancel-call');
-const callDate = document.getElementById('call-date');
-const callRate = document.getElementById('call-rate');
-const liveCallInfo = document.getElementById('live-call-info');
-const liveCallTimer = document.getElementById('live-call-timer');
-const liveCallEarnings = document.getElementById('live-call-earnings');
-const goalForm = document.getElementById('goal-form');
-const goalAmount = document.getElementById('goal-amount');
-const goalProgressBar = document.getElementById('goal-progress-bar');
-const goalProgressText = document.getElementById('goal-progress-text');
-const goalAmountDisplay = document.getElementById('goal-amount-display');
-const totalMinutes = document.getElementById('total-minutes');
-const totalEarnings = document.getElementById('total-earnings');
-const statsDatePicker = document.getElementById('stats-date-picker');
-const currentDateBtn = document.getElementById('current-date-btn');
-const dailyTotalEarnings = document.getElementById('daily-total-earnings');
-const avgDuration = document.getElementById('avg-duration');
-
-// Initialize goal form handler
-if (goalForm) {
-    goalForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const newGoal = parseFloat(goalAmount.value);
-        if (!isNaN(newGoal) && newGoal >= 0) {
-            goal = newGoal;
-            localStorage.setItem('goal', goal);
-            updateStatistics();
-        }
-    });
-}
-    
-// Initialize goal amount display
-if (goalAmount) {
-goalAmount.value = goal || '';
-}
-
-// Initialize date picker
-if (statsDatePicker) {
-statsDatePicker.value = selectedDate;
-statsDatePicker.addEventListener('change', (e) => {
-selectedDate = e.target.value;
-displayCalls();
-updateStatistics();
-});
-}
-
-if (currentDateBtn) {
-currentDateBtn.addEventListener('click', () => {
-const now = new Date();
-now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-const today = now.toISOString().split('T')[0];
-if (statsDatePicker) {
-statsDatePicker.value = today;
-}
-selectedDate = today;
-displayCalls();
-updateStatistics();
-});
-}
-
-// Rate management
-function displayRates() {
-if (!ratesList) return;
-
-ratesList.innerHTML = rates.map((rate, index) => `
-<div class="rates-list-item">
-<div class="flex-1">
-<span class="font-medium">${sanitizeHTML(rate.name)}</span>
-<span class="text-gray-600 dark:text-gray-400"> - ${formatMoney(rate.amount)}/min</span>
-</div>
-<button onclick="deleteRate(${index})" class="text-red-500 hover:text-red-700">
-<i class="fas fa-trash"></i>
-</button>
-</div>
-`).join('');
-
-// Update rate options in call modal
-if (callRate) {
-callRate.innerHTML = rates.map((rate, index) =>
-`<option value="${index}">${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</option>`
-).join('');
-}
-
-// Update live call rate selector
-const liveCallRate = document.getElementById('live-call-rate');
-if (liveCallRate) {
-const currentValue = liveCallRate.value;
-liveCallRate.innerHTML = rates.map((rate, index) =>
-`<option value="${index}" class="bg-white dark:bg-gray-800">${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</option>`
-).join('');
-// Preserve selected value if it still exists in rates
-if (rates.some((_, index) => index.toString() === currentValue)) {
-liveCallRate.value = currentValue;
-}
-}
-localStorage.setItem('rates', JSON.stringify(rates));
-}
-
-function deleteRate(index) {
-// Check if rate is being used by existing calls
-const isRateInUse = calls.some(call => call.rateIndex === index);
-if (isRateInUse) {
-if (!confirm('This rate is being used by existing calls. Deleting it may affect call display. Continue?')) {
-return;
-}
-}
-
-rates.splice(index, 1);
-
-// Update call indices to prevent broken references
-calls.forEach(call => {
-if (call.rateIndex > index) {
-call.rateIndex--;
-}
-});
-
-localStorage.setItem('calls', JSON.stringify(calls));
-displayRates();
-displayCalls();
-}
-
-// Rate form handlers
-if (showRateAdd) {
-showRateAdd.addEventListener('click', () => {
-if (rateForm) {
-rateForm.style.display = 'block';
-showRateAdd.style.display = 'none';
-if (rateName) rateName.focus();
-}
-});
-}
-
-if (cancelRateAdd) {
-cancelRateAdd.addEventListener('click', () => {
-if (rateForm && showRateAdd) {
-rateForm.style.display = 'none';
-showRateAdd.style.display = 'flex';
-rateForm.reset();
-}
-});
-}
-
-if (rateForm) {
-rateForm.addEventListener('submit', (e) => {
-e.preventDefault();
-if (rateName && rateAmount) {
-const name = rateName.value.trim();
-const amount = parseFloat(rateAmount.value);
-
-// Validate rate name
-if (!name) {
-alert('Rate name cannot be empty');
-return;
-}
-if (name.length > 50) {
-alert('Rate name is too long (maximum 50 characters)');
-return;
-}
-
-// Validate rate amount
-if (isNaN(amount) || !isFinite(amount)) {
-alert('Please enter a valid number for the rate amount');
-return;
-}
-if (amount <= 0) {
-alert('Rate amount must be greater than 0');
-return;
-}
-if (amount > 999999) {
-alert('Rate amount is too high (maximum 999,999)');
-return;
-}
-
-rates.push({
-name: name,
-amount: amount
-});
-displayRates();
-rateForm.style.display = 'none';
-if (showRateAdd) {
-showRateAdd.style.display = 'flex';
-}
-rateForm.reset();
-}
-});
-}
-
-// Call management
-function deleteCall(index) {
-if (confirm('Are you sure you want to delete this call?')) {
-calls.splice(index, 1);
-localStorage.setItem('calls', JSON.stringify(calls));
-displayCalls();
-updateStatistics();
-}
-}
-
-function editCall(index) {
-const call = calls[index];
-if (!call) return;
-
-editingCallIndex = index;
-const date = new Date(call.date);
-
-if (modalTitle) modalTitle.textContent = 'Edit Call';
-if (callDate) callDate.value = getLocalISOString(date);
-
-const hours = Math.floor(call.duration / 3600);
-const minutes = Math.floor((call.duration % 3600) / 60);
-const seconds = call.duration % 60;
-
-const hoursInput = document.getElementById('call-duration-hours');
-const minutesInput = document.getElementById('call-duration-minutes');
-const secondsInput = document.getElementById('call-duration-seconds');
-
-if (hoursInput) hoursInput.value = hours;
-if (minutesInput) minutesInput.value = minutes;
-if (secondsInput) secondsInput.value = seconds;
-if (callRate) callRate.value = call.rateIndex;
-
-lastActiveElement = document.activeElement;
-if (callModal) {
-callModal.style.display = 'flex';
-if (callDate) callDate.focus();
-}
-}
-
-function addCallToLog(date, duration, rateIndex) {
-    // Create a new Date object in local time
-    const callDate = new Date(date);
-    
-    // Format date preserving local timezone without conversion
-    const localDate = `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, '0')}-${String(callDate.getDate()).padStart(2, '0')}T${String(callDate.getHours()).padStart(2, '0')}:${String(callDate.getMinutes()).padStart(2, '0')}:${String(callDate.getSeconds()).padStart(2, '0')}`;
-
-    calls.push({
-        date: localDate,
-        duration: duration,
-        rateIndex: rateIndex
-    });
-    
-    // Update the selected date to match the call's date to ensure it shows up immediately
-    selectedDate = `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, '0')}-${String(callDate.getDate()).padStart(2, '0')}`;
-    if (statsDatePicker) {
-        statsDatePicker.value = selectedDate;
-    }
-    
-    localStorage.setItem('calls', JSON.stringify(calls));
-    displayCalls();
-    updateStatistics();
-}
-
-function displayCalls() {
-if (!callLog) return;
-
-// Sort filtered calls by date
-let displayedCalls = filterCallsByDate(calls, selectedDate);
-displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-callLog.innerHTML = displayedCalls.map((call, index) => {
-const rate = rates[call.rateIndex];
-if (!rate) return '';
-
-const duration = call.duration;
-const minutes = duration / 60; // Convert seconds to minutes
-const earned = rate.amount * minutes; // Multiply per-minute rate by minutes
-
-return `
-<tr>
-<td>${new Date(call.date).toLocaleString(undefined, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-})}</td>
-<td>${formatDuration(duration)}</td>
-<td>${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</td>
-<td>${formatMoney(earned)}</td>
-<td class="pl-4">
-<div class="flex gap-2">
-<button onclick="editCall(${calls.indexOf(call)})" class="text-blue-500 hover:text-blue-700">
-<i class="fas fa-edit"></i>
-</button>
-<button onclick="deleteCall(${calls.indexOf(call)})" class="text-red-500 hover:text-red-700">
-<i class="fas fa-trash"></i>
-</button>
-</div>
-</td>
-</tr>
-`;
-}).join('');
-
-updateTotals();
-localStorage.setItem('calls', JSON.stringify(calls));
-}
-
-// Call timer functionality
-function updateCallTimer() {
-if (!currentCall) return;
-
-const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-const rate = rates[currentCall.rateIndex];
-if (!rate) return;
-
-const minutes = duration / 60; // Convert seconds to minutes
-const earned = rate.amount * minutes; // Multiply per-minute rate by minutes
-
-if (liveCallTimer) liveCallTimer.textContent = formatDuration(duration);
-if (liveCallEarnings) liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
-updateTotals();
-}
-
-if (startCallBtn) {
-startCallBtn.addEventListener('click', () => {
-if (rates.length === 0) {
-alert('Please add at least one rate before starting a call.');
-return;
-}
-
-// Clear any existing timers first
-activeTimers.forEach(timerId => clearInterval(timerId));
-activeTimers.clear();
-
-const liveCallRate = document.getElementById('live-call-rate');
-currentCall = {
-startTime: Date.now(),
-rateIndex: liveCallRate ? parseInt(liveCallRate.value) : 0
-};
-
-startCallBtn.disabled = true;
-if (endCallBtn) endCallBtn.disabled = false;
-if (liveCallInfo) liveCallInfo.style.display = 'block';
-const newTimer = setInterval(updateCallTimer, 1000);
-activeTimers.add(newTimer);
-callTimer = newTimer;
-});
-}
-
-if (endCallBtn) {
-    endCallBtn.addEventListener('click', () => {
-        if (!currentCall) return;
-
-        const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-        
-        // Create a date object from the call's start time instead of current time
-        const callDate = new Date(currentCall.startTime);
-        addCallToLog(callDate, duration, currentCall.rateIndex);
-
-        // Clear timers and reset state
-        activeTimers.forEach(timerId => clearInterval(timerId));
-        activeTimers.clear();
-        callTimer = null;
-        currentCall = null;
-        if (startCallBtn) startCallBtn.disabled = false;
-        endCallBtn.disabled = true;
-        if (liveCallInfo) liveCallInfo.style.display = 'none';
-        
-        // Update displays
-        displayCalls();
-        updateStatistics();
-    });
-}
-
-// Modal keyboard handler
-function handleModalKeyboard(event) {
-if (event.key === 'Escape') {
-closeModal();
-}
-
-if (event.key === 'Tab') {
-// Only handle tab if modal is visible
-if (callModal && callModal.style.display === 'flex') {
-const focusable = callModal.querySelectorAll(focusableElements);
-const firstFocusable = focusable[0];
-const lastFocusable = focusable[focusable.length - 1];
-
-// If shift+tab and first element is focused, move to last
-if (event.shiftKey && document.activeElement === firstFocusable) {
-event.preventDefault();
-lastFocusable.focus();
-}
-// If tab and last element is focused, move to first
-else if (!event.shiftKey && document.activeElement === lastFocusable) {
-event.preventDefault();
-firstFocusable.focus();
-}
-}
-}
-}
-
-// Settings keyboard handler
-function handleSettingsKeyboard(e) {
-if (!settingsModal || settingsModal.style.display === 'none') return;
-
-if (e.key === 'Escape') {
-settingsModal.style.display = 'none';
-if (settingsToggle) settingsToggle.focus();
-return;
-}
-
-if (e.key === 'Tab') {
-const modalFocusableElements = settingsModal.querySelectorAll(focusableElements);
-const firstFocusable = modalFocusableElements[0];
-const lastFocusable = modalFocusableElements[modalFocusableElements.length - 1];
-
-// If shift+tab and first element is focused, move to last
-if (e.shiftKey && document.activeElement === firstFocusable) {
-e.preventDefault();
-lastFocusable.focus();
-}
-// If tab and last element is focused, move to first
-else if (!e.shiftKey && document.activeElement === lastFocusable) {
-e.preventDefault();
-firstFocusable.focus();
-}
-}
-}
-
-// Modal close function
-function closeModal() {
-if (callModal) {
-callModal.style.display = 'none';
-}
-if (callForm) {
-callForm.reset();
-}
-editingCallIndex = null;
-if (modalTitle) {
-modalTitle.textContent = 'Add Call';
-}
-// Return focus to last active element
-if (lastActiveElement) {
-lastActiveElement.focus();
-}
-}
-
-// Call modal functionality
-if (addCallBtn) {
-    addCallBtn.addEventListener('click', () => {
-        if (rates.length === 0) {
-            alert('Please add at least one rate before adding a call.');
-            return;
-        }
-        editingCallIndex = null;
-        if (modalTitle) modalTitle.textContent = 'Add Call';
-        if (callForm) callForm.reset();
-        
-        // Set the date input to current local time
-        const now = new Date();
-        if (callDate) {
-            // Format the date to match datetime-local input format
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            callDate.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-        }
-
-        // Store last active element and show modal
-        lastActiveElement = document.activeElement;
-        if (callModal) {
-            callModal.style.display = 'flex';
-            // Focus first input after modal is shown
-            if (callDate) callDate.focus();
-        }
-    });
-}
-
-if (closeModalBtn) {
-closeModalBtn.addEventListener('click', () => {
-closeModal();
-});
-}
-
-if (cancelCall) {
-cancelCall.addEventListener('click', () => {
-closeModal();
-});
-}
-
-// Call form submit handler
-if (callForm) {
-callForm.addEventListener('submit', (e) => {
-e.preventDefault();
-
-const hoursInput = document.getElementById('call-duration-hours');
-const minutesInput = document.getElementById('call-duration-minutes');
-const secondsInput = document.getElementById('call-duration-seconds');
-
-const hours = parseInt(hoursInput.value) || 0;
-const minutes = parseInt(minutesInput.value) || 0;
-const seconds = parseInt(secondsInput.value) || 0;
-
-const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
-
-if (totalSeconds <= 0) {
-alert('Please enter a valid duration');
-return;
-}
-
-const inputDate = new Date(callDate.value);
-
-if (editingCallIndex !== null) {
-    // Create a local date object and preserve timezone
-    const localDate = new Date(
-        inputDate.getFullYear(),
-        inputDate.getMonth(),
-        inputDate.getDate(),
-        inputDate.getHours(),
-        inputDate.getMinutes(),
-        inputDate.getSeconds()
-    ).toISOString();
-
-    calls[editingCallIndex] = {
-        date: localDate,
-        duration: totalSeconds,
-        rateIndex: parseInt(callRate.value)
-    };
-    localStorage.setItem('calls', JSON.stringify(calls));
-} else {
-    addCallToLog(inputDate, totalSeconds, parseInt(callRate.value));
-}
-
-closeModal();
-displayCalls();
-updateStatistics();
-});
-}
-
-// Click outside modal to close
-if (callModal) {
-callModal.addEventListener('click', (e) => {
-if (e.target === callModal) {
-closeModal();
-}
-});
-}
-
-// Settings modal functionality
-if (settingsToggle) {
-settingsToggle.addEventListener('click', () => {
-if (settingsModal) {
-settingsModal.style.display = 'flex';
-updateStorageInfo();
-
-// Click outside settings modal to close
-if (settingsModal) {
-settingsModal.addEventListener('click', (e) => {
-if (e.target === settingsModal) {
-settingsModal.style.display = 'none';
-if (settingsToggle) settingsToggle.focus();
-}
-});
-}
-
-    // Settings modal close button handler
-if (closeSettingsModal) {
-    closeSettingsModal.addEventListener('click', () => {
-        if (settingsModal) {
+    // Settings keyboard handler
+    function handleSettingsKeyboard(e) {
+        if (!settingsModal || settingsModal.style.display === 'none') return;
+
+        if (e.key === 'Escape') {
             settingsModal.style.display = 'none';
             if (settingsToggle) settingsToggle.focus();
+            return;
+        }
+
+        if (e.key === 'Tab') {
+            const modalFocusableElements = settingsModal.querySelectorAll(focusableElements);
+            const firstFocusable = modalFocusableElements[0];
+            const lastFocusable = modalFocusableElements[modalFocusableElements.length - 1];
+
+            // If shift+tab and first element is focused, move to last
+            if (e.shiftKey && document.activeElement === firstFocusable) {
+                e.preventDefault();
+                lastFocusable.focus();
+            }
+            // If tab and last element is focused, move to first
+            else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                e.preventDefault();
+                firstFocusable.focus();
+            }
+        }
+    }
+
+    // Modal close function
+    function closeModal() {
+        if (callModal) {
+            callModal.style.display = 'none';
+        }
+        if (callForm) {
+            callForm.reset();
+        }
+        editingCallIndex = null;
+        if (modalTitle) {
+            modalTitle.textContent = 'Add Call';
+        }
+        // Return focus to last active element
+        if (lastActiveElement) {
+            lastActiveElement.focus();
+        }
+    }
+
+    // Call modal functionality
+    if (addCallBtn) {
+        addCallBtn.addEventListener('click', () => {
+            if (rates.length === 0) {
+                alert('Please add at least one rate before adding a call.');
+                return;
+            }
+            editingCallIndex = null;
+            if (modalTitle) modalTitle.textContent = 'Add Call';
+            if (callForm) callForm.reset();
+
+            // Set the date input to current local time
+            const now = new Date();
+            if (callDate) {
+                // Format the date to match datetime-local input format
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                callDate.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+
+            // Store last active element and show modal
+            lastActiveElement = document.activeElement;
+            if (callModal) {
+                callModal.style.display = 'flex';
+                // Focus first input after modal is shown
+                if (callDate) callDate.focus();
+            }
+        });
+    }
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            closeModal();
+        });
+    }
+
+    if (cancelCall) {
+        cancelCall.addEventListener('click', () => {
+            closeModal();
+        });
+    }
+
+    // Call form submit handler
+    if (callForm) {
+        callForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const hoursInput = document.getElementById('call-duration-hours');
+            const minutesInput = document.getElementById('call-duration-minutes');
+            const secondsInput = document.getElementById('call-duration-seconds');
+
+            const hours = parseInt(hoursInput.value) || 0;
+            const minutes = parseInt(minutesInput.value) || 0;
+            const seconds = parseInt(secondsInput.value) || 0;
+
+            const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+
+            if (totalSeconds <= 0) {
+                alert('Please enter a valid duration');
+                return;
+            }
+
+            const inputDate = new Date(callDate.value);
+
+            if (editingCallIndex !== null) {
+                // Create a local date object and preserve timezone
+                const localDate = new Date(
+                    inputDate.getFullYear(),
+                    inputDate.getMonth(),
+                    inputDate.getDate(),
+                    inputDate.getHours(),
+                    inputDate.getMinutes(),
+                    inputDate.getSeconds()
+                ).toISOString();
+
+                calls[editingCallIndex] = {
+                    date: localDate,
+                    duration: totalSeconds,
+                    rateIndex: parseInt(callRate.value)
+                };
+                localStorage.setItem('calls', JSON.stringify(calls));
+            } else {
+                addCallToLog(inputDate, totalSeconds, parseInt(callRate.value));
+            }
+
+            closeModal();
+            displayCalls();
+            updateStatistics();
+        });
+    }
+
+    // Click outside modal to close
+    if (callModal) {
+        callModal.addEventListener('click', (e) => {
+            if (e.target === callModal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Settings modal functionality
+    if (settingsToggle) {
+        settingsToggle.addEventListener('click', () => {
+            if (settingsModal) {
+                settingsModal.style.display = 'flex';
+                updateStorageInfo();
+
+                // Click outside settings modal to close
+                if (settingsModal) {
+                    settingsModal.addEventListener('click', (e) => {
+                        if (e.target === settingsModal) {
+                            settingsModal.style.display = 'none';
+                            if (settingsToggle) settingsToggle.focus();
+                        }
+                    });
+                }
+
+                // Settings modal close button handler
+                if (closeSettingsModal) {
+                    closeSettingsModal.addEventListener('click', () => {
+                        if (settingsModal) {
+                            settingsModal.style.display = 'none';
+                            if (settingsToggle) settingsToggle.focus();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    // Add keyboard event listeners for both modals
+    document.addEventListener('keydown', (e) => {
+        if (callModal && callModal.style.display === 'flex') {
+            handleModalKeyboard(e);
+        } else if (settingsModal && settingsModal.style.display === 'flex') {
+            handleSettingsKeyboard(e);
         }
     });
-}
 
-// Add keyboard event listeners for both modals
-document.addEventListener('keydown', (e) => {
-if (callModal && callModal.style.display === 'flex') {
-handleModalKeyboard(e);
-} else if (settingsModal && settingsModal.style.display === 'flex') {
-handleSettingsKeyboard(e);
-}
-});
+    // Export/Import functionality with error handling
+    function exportData() {
+        try {
+            const dataToExport = {
+                rates,
+                calls,
+                goal,
+                version: '1.0',
+                exportDate: new Date().toISOString()
+            };
 
-// Export/Import functionality with error handling
-function exportData() {
-try {
-const dataToExport = {
-rates,
-calls,
-goal,
-version: '1.0',
-exportDate: new Date().toISOString()
-};
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
+                type: 'application/json'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `work-time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Export failed:', error);
+            throw error;
+        }
+    }
 
-const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `work-time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(url);
-} catch (error) {
-console.error('Export failed:', error);
-throw error;
-}
-}
+    function importData(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
 
-function importData(file) {
-return new Promise((resolve, reject) => {
-const reader = new FileReader();
-reader.onload = function(e) {
-try {
-const importedData = JSON.parse(e.target.result);
+                    // Validate imported data
+                    if (!importedData.rates || !Array.isArray(importedData.rates) ||
+                        !importedData.calls || !Array.isArray(importedData.calls)) {
+                        throw new Error('Invalid data format');
+                    }
 
-// Validate imported data
-if (!importedData.rates || !Array.isArray(importedData.rates) ||
-!importedData.calls || !Array.isArray(importedData.calls)) {
-throw new Error('Invalid data format');
-}
+                    // Import the data
+                    rates = importedData.rates;
+                    calls = importedData.calls;
+                    if (typeof importedData.goal === 'number') {
+                        goal = importedData.goal;
+                        if (goalAmount) goalAmount.value = goal;
+                    }
 
-// Import the data
-rates = importedData.rates;
-calls = importedData.calls;
-if (typeof importedData.goal === 'number') {
-goal = importedData.goal;
-if (goalAmount) goalAmount.value = goal;
-}
+                    // Save to localStorage
+                    localStorage.setItem('rates', JSON.stringify(rates));
+                    localStorage.setItem('calls', JSON.stringify(calls));
+                    localStorage.setItem('goal', goal);
 
-// Save to localStorage
-localStorage.setItem('rates', JSON.stringify(rates));
-localStorage.setItem('calls', JSON.stringify(calls));
-localStorage.setItem('goal', goal);
+                    // Update displays
+                    displayRates();
+                    displayCalls();
+                    updateStatistics();
+                    updateStorageInfo();
 
-// Update displays
-displayRates();
-displayCalls();
-updateStatistics();
-updateStorageInfo();
+                    resolve();
+                } catch (err) {
+                    console.error('Import error:', err);
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsText(file);
+        });
+    }
 
-resolve();
-} catch (err) {
-console.error('Import error:', err);
-reject(err);
-}
-};
-reader.onerror = () => reject(new Error('Failed to read file'));
-reader.readAsText(file);
-});
-}
+    // Add Export/Import event listeners
+    if (exportDataBtn) {
+        exportDataBtn.addEventListener('click', async () => {
+            try {
+                exportDataBtn.disabled = true;
+                exportDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+                exportData(); // Calling the exportData function
+            } catch (error) {
+                alert('Failed to export data. Please try again.');
+            } finally {
+                exportDataBtn.disabled = false;
+                exportDataBtn.innerHTML = '<i class="fas fa-download"></i> Export Data';
+            }
+        });
+    }
 
-// Add Export/Import event listeners
-if (exportDataBtn) {
-exportDataBtn.addEventListener('click', async () => {
-try {
-exportDataBtn.disabled = true;
-exportDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+    if (document.getElementById('import-file')) {
+        document.getElementById('import-file').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-const dataToExport = {
-rates,
-calls,
-goal,
-version: '1.0',
-exportDate: new Date().toISOString()
-};
+            const importBtn = document.querySelector('label[for="import-file"]');
+            try {
+                importBtn.classList.add('pointer-events-none', 'opacity-50');
+                importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+                await importData(file); // Calling the importData function
+                alert('Data imported successfully!');
+            } catch (error) {
+                alert('Error importing data. Please make sure the file is a valid backup.');
+            } finally {
+                importBtn.classList.remove('pointer-events-none', 'opacity-50');
+                importBtn.innerHTML = '<i class="fas fa-upload"></i> Import Data';
+                e.target.value = ''; // Reset file input
+            }
+        });
+    }
 
-const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = `work-time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(url);
-} catch (error) {
-console.error('Export failed:', error);
-alert('Failed to export data. Please try again.');
-} finally {
-exportDataBtn.disabled = false;
-exportDataBtn.innerHTML = '<i class="fas fa-download"></i> Export Data';
-}
-});
-}
+    // Data cleanup functionality with confirmation
+    if (cleanupDataBtn) {
+        cleanupDataBtn.addEventListener('click', () => {
+            if (!confirm('This will delete all calls older than 3 months. Continue?')) {
+                return;
+            }
 
-if (document.getElementById('import-file')) {
-document.getElementById('import-file').addEventListener('change', async (e) => {
-const file = e.target.files[0];
-if (!file) return;
+            try {
+                cleanupDataBtn.disabled = true;
+                cleanupDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cleaning...';
+                const monthsToKeep = 3;
+                const cutoffDate = new Date();
+                cutoffDate.setMonth(cutoffDate.getMonth() - monthsToKeep);
 
-const importBtn = document.querySelector('label[for="import-file"]');
-try {
-importBtn.classList.add('pointer-events-none', 'opacity-50');
-importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+                const oldCallsCount = calls.length;
+                calls = calls.filter(call => new Date(call.date) > cutoffDate);
+                const removedCalls = oldCallsCount - calls.length;
 
-const reader = new FileReader();
-reader.onload = async function(e) {
-try {
-const importedData = JSON.parse(e.target.result);
+                localStorage.setItem('calls', JSON.stringify(calls));
+                displayCalls();
+                updateStatistics();
+                updateStorageInfo();
 
-// Validate imported data
-if (!importedData.rates || !Array.isArray(importedData.rates) ||
-!importedData.calls || !Array.isArray(importedData.calls)) {
-throw new Error('Invalid data format');
-}
+                alert(`Cleaned up ${removedCalls} calls older than ${monthsToKeep} months.`);
+            } catch (error) {
+                alert('Failed to clean up data. Please try again.');
+            } finally {
+                cleanupDataBtn.disabled = false;
+                cleanupDataBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Clean Old Data';
+            }
+        });
+    }
 
-// Import the data
-rates = importedData.rates;
-calls = importedData.calls;
-if (typeof importedData.goal === 'number') {
-goal = importedData.goal;
-if (goalAmount) goalAmount.value = goal;
-}
+    // Storage info update with error handling
+    function updateStorageInfo() {
+        if (!storageUsed || !storageBar) return;
 
-// Save to localStorage
-localStorage.setItem('rates', JSON.stringify(rates));
-localStorage.setItem('calls', JSON.stringify(calls));
-localStorage.setItem('goal', goal);
+        try {
+            const totalSize = JSON.stringify({
+                rates,
+                calls,
+                goal,
+                darkMode: document.documentElement.classList.contains('dark')
+            }).length;
 
-// Update displays
-displayRates();
-displayCalls();
-updateStatistics();
-updateStorageInfo();
+            const maxSize = 5 * 1024 * 1024; // Approximate 5MB limit
+            const usedPercentage = (totalSize / maxSize) * 100;
 
-alert('Data imported successfully!');
-} catch (err) {
-console.error('Import error:', err);
-alert('Error importing data. Please make sure the file is a valid backup.');
-}
-};
-reader.onerror = () => {
-alert('Failed to read file');
-};
-reader.readAsText(file);
+            storageUsed.textContent = `${(totalSize / 1024).toFixed(2)}KB / ${(maxSize / 1024 / 1024).toFixed(2)}MB`;
+            storageBar.style.width = `${Math.min(usedPercentage, 100)}%`;
 
-} catch (error) {
-console.error('Import failed:', error);
-alert('Error importing data. Please try again.');
-} finally {
-importBtn.classList.remove('pointer-events-none', 'opacity-50');
-importBtn.innerHTML = '<i class="fas fa-upload"></i> Import Data';
-e.target.value = ''; // Reset file input
-}
-});
-}
+            // Update storage bar color based on usage
+            if (usedPercentage > 80) {
+                storageBar.classList.add('bg-red-500');
+                storageBar.classList.remove('bg-blue-500');
+                storageUsed.classList.add('text-red-500');
+            } else {
+                storageBar.classList.add('bg-blue-500');
+                storageBar.classList.remove('bg-red-500');
+                storageUsed.classList.remove('text-red-500');
+            }
 
-// Data cleanup functionality with confirmation
-if (cleanupDataBtn) {
-cleanupDataBtn.addEventListener('click', () => {
-if (!confirm('This will delete all calls older than 3 months. Continue?')) {
-return;
-}
-
-try {
-cleanupDataBtn.disabled = true;
-cleanupDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cleaning...';
-
-const monthsToKeep = 3;
-const cutoffDate = new Date();
-cutoffDate.setMonth(cutoffDate.getMonth() - monthsToKeep);
-
-const oldCallsCount = calls.length;
-calls = calls.filter(call => new Date(call.date) > cutoffDate);
-const removedCalls = oldCallsCount - calls.length;
-
-localStorage.setItem('calls', JSON.stringify(calls));
-displayCalls();
-updateStatistics();
-updateStorageInfo();
-
-alert(`Cleaned up ${removedCalls} calls older than ${monthsToKeep} months.`);
-} catch (error) {
-console.error('Cleanup failed:', error);
-alert('Failed to clean up data. Please try again.');
-} finally {
-cleanupDataBtn.disabled = false;
-cleanupDataBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Clean Old Data';
-}
-});
-}
-
-// Storage info update with error handling
-function updateStorageInfo() {
-if (!storageUsed || !storageBar) return;
-
-try {
-const totalSize = JSON.stringify({
-rates,
-calls,
-goal,
-darkMode: document.documentElement.classList.contains('dark')
-}).length;
-
-const maxSize = 5 * 1024 * 1024; // Approximate 5MB limit
-const usedPercentage = (totalSize / maxSize) * 100;
-
-storageUsed.textContent = `${(totalSize / 1024).toFixed(2)}KB / ${(maxSize / 1024 / 1024).toFixed(2)}MB`;
-storageBar.style.width = `${Math.min(usedPercentage, 100)}%`;
-
-// Update storage bar color based on usage
-if (usedPercentage > 80) {
-storageBar.classList.add('bg-red-500');
-storageBar.classList.remove('bg-blue-500');
-storageUsed.classList.add('text-red-500');
-} else {
-storageBar.classList.add('bg-blue-500');
-storageBar.classList.remove('bg-red-500');
-storageUsed.classList.remove('text-red-500');
-}
-
-// Warn user if storage is getting full
-if (usedPercentage > 90) {
-console.warn('Storage usage is very high. Consider cleaning up old data.');
-}
-} catch (error) {
-console.error('Failed to update storage info:', error);
-storageUsed.textContent = 'Error calculating storage';
-}
-}
-
-// Add Export/Import event listeners
-if (exportDataBtn) {
-exportDataBtn.addEventListener('click', async () => {
-try {
-exportDataBtn.disabled = true;
-exportDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
-exportData(); // Calling the exportData function
-} catch (error) {
-alert('Failed to export data. Please try again.');
-} finally {
-exportDataBtn.disabled = false;
-exportDataBtn.innerHTML = '<i class="fas fa-download"></i> Export Data';
-}
-});
-}
-
-if (document.getElementById('import-file')) {
-document.getElementById('import-file').addEventListener('change', async (e) => {
-const file = e.target.files[0];
-if (!file) return;
-
-const importBtn = document.querySelector('label[for="import-file"]');
-try {
-importBtn.classList.add('pointer-events-none', 'opacity-50');
-importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
-await importData(file); // Calling the importData function
-alert('Data imported successfully!');
-} catch (error) {
-alert('Error importing data. Please make sure the file is a valid backup.');
-} finally {
-importBtn.classList.remove('pointer-events-none', 'opacity-50');
-importBtn.innerHTML = '<i class="fas fa-upload"></i> Import Data';
-e.target.value = ''; // Reset file input
-}
-});
-}
-
-// Data cleanup functionality with confirmation
-if (cleanupDataBtn) {
-cleanupDataBtn.addEventListener('click', () => {
-if (!confirm('This will delete all calls older than 3 months. Continue?')) {
-return;
-}
-
-try {
-cleanupDataBtn.disabled = true;
-cleanupDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cleaning...';
-const monthsToKeep = 3;
-const cutoffDate = new Date();
-cutoffDate.setMonth(cutoffDate.getMonth() - monthsToKeep);
-
-const oldCallsCount = calls.length;
-calls = calls.filter(call => new Date(call.date) > cutoffDate);
-const removedCalls = oldCallsCount - calls.length;
-
-localStorage.setItem('calls', JSON.stringify(calls));
-displayCalls();
-updateStatistics();
-updateStorageInfo();
-
-alert(`Cleaned up ${removedCalls} calls older than ${monthsToKeep} months.`);
-} catch (error) {
-alert('Failed to clean up data. Please try again.');
-} finally {
-cleanupDataBtn.disabled = false;
-cleanupDataBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Clean Old Data';
-}
-});
-}
-
-// Storage info update with error handling
-function updateStorageInfo() {
-if (!storageUsed || !storageBar) return;
-
-try {
-const totalSize = JSON.stringify({
-rates,
-calls,
-goal,
-darkMode: document.documentElement.classList.contains('dark')
-}).length;
-
-const maxSize = 5 * 1024 * 1024; // Approximate 5MB limit
-const usedPercentage = (totalSize / maxSize) * 100;
-
-storageUsed.textContent = `${(totalSize / 1024).toFixed(2)}KB / ${(maxSize / 1024 / 1024).toFixed(2)}MB`;
-storageBar.style.width = `${Math.min(usedPercentage, 100)}%`;
-
-// Update storage bar color based on usage
-if (usedPercentage > 80) {
-storageBar.classList.add('bg-red-500');
-storageBar.classList.remove('bg-blue-500');
-storageUsed.classList.add('text-red-500');
-} else {
-storageBar.classList.add('bg-blue-500');
-storageBar.classList.remove('bg-red-500');
-storageUsed.classList.remove('text-red-500');
-}
-
-// Warn user if storage is getting full
-if (usedPercentage > 90) {
-console.warn('Storage usage is very high. Consider cleaning up old data.');
-}
-} catch (error) {
-storageUsed.textContent = 'Error calculating storage';
-}
-}
+            // Warn user if storage is getting full
+            if (usedPercentage > 90) {
+                console.warn('Storage usage is very high. Consider cleaning up old data.');
+            }
+        } catch (error) {
+            storageUsed.textContent = 'Error calculating storage';
+        }
+    }
 
 
-// Initialize displays and add event listeners
-displayRates();
-displayCalls();
-updateStatistics();
-updateStorageInfo();
+    // Initialize displays and add event listeners
+    displayRates();
+    displayCalls();
+    updateStatistics();
+    updateStorageInfo();
 
-// Cleanup on page unload
-window.addEventListener('beforeunload', () => {
-activeTimers.forEach(timerId => clearInterval(timerId));
-activeTimers.clear();
-});
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        activeTimers.forEach(timerId => clearInterval(timerId));
+        activeTimers.clear();
+    });
 
-// Add keyboard event listeners for both modals
-document.addEventListener('keydown', (e) => {
-if (callModal && callModal.style.display === 'flex') {
-handleModalKeyboard(e);
-} else if (settingsModal && settingsModal.style.display === 'flex') {
-handleSettingsKeyboard(e);
-}
-});
+    // Add keyboard event listeners for both modals
+    document.addEventListener('keydown', (e) => {
+        if (callModal && callModal.style.display === 'flex') {
+            handleModalKeyboard(e);
+        } else if (settingsModal && settingsModal.style.display === 'flex') {
+            handleSettingsKeyboard(e);
+        }
+    });
 
-// Footer button handlers
-document.getElementById('privacy-policy')?.addEventListener('click', () => {
-    alert('Privacy Policy: This app stores all data locally in your browser. No data is sent to external servers.');
-});
+    // Footer button handlers
+    document.getElementById('privacy-policy')?.addEventListener('click', () => {
+        alert('Privacy Policy: This app stores all data locally in your browser. No data is sent to external servers.');
+    });
 
-document.getElementById('terms-of-service')?.addEventListener('click', () => {
-    alert('Terms of Service: This app is provided "as is" without any warranties. Use at your own discretion.');
-});
+    document.getElementById('terms-of-service')?.addEventListener('click', () => {
+        alert('Terms of Service: This app is provided "as is" without any warranties. Use at your own discretion.');
+    });
 </script>
 </body>
 </html>
