@@ -812,14 +812,14 @@ Import Data
     <div class="flex justify-between items-center mb-3">
         <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100">Payment Cycles</h4>
         <label class="inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="payment-cycles-toggle" class="sr-only peer">
+            <input type="checkbox" id="enable-payment-cycles" class="sr-only peer">
             <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
             <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Payment Cycles</span>
         </label>
     </div>
     <div id="payment-cycles-config" class="hidden">
         <div class="mb-3">
-            <button id="add-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+            <button id="add-payment-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
                 <i class="fas fa-plus"></i>
                 Add Payment Cycle
             </button>
@@ -962,6 +962,12 @@ document.documentElement.classList.add('dark');
 }
 }
 
+// Payment Cycles Management
+const enablePaymentCyclesToggle = document.getElementById('payment-cycles-toggle');
+const paymentCyclesConfig = document.getElementById('payment-cycles-config');
+const addCycleButton = document.getElementById('add-cycle');
+const paymentCyclesList = document.getElementById('payment-cycles-list');
+
 
 // Load saved payment cycles state
 const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
@@ -979,6 +985,9 @@ enablePaymentCyclesToggle?.addEventListener('change', function() {
         const isEnabled = this.checked;
         paymentCyclesConfig.classList.toggle('hidden', !isEnabled);
         localStorage.setItem('paymentCyclesEnabled', isEnabled);
+        if (isEnabled) {
+            renderPaymentCycles();
+        }
     }
 });
 
