@@ -963,14 +963,20 @@ document.documentElement.classList.add('dark');
 }
 
 // Payment Cycles Management
-const enablePaymentCyclesToggle = document.getElementById('enable-payment-cycles');
+const enablePaymentCyclesToggle = document.getElementById('payment-cycles-toggle');
 const paymentCyclesConfig = document.getElementById('payment-cycles-config');
-const addCycleButton = document.getElementById('add-payment-cycle');
+const addCycleButton = document.getElementById('add-cycle');
 const paymentCyclesList = document.getElementById('payment-cycles-list');
 
-// Load saved payment cycles state
-const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
-if (enablePaymentCyclesToggle) {
+// Payment Cycles Management
+const enablePaymentCyclesToggle = document.getElementById('payment-cycles-toggle');
+const paymentCyclesConfig = document.getElementById('payment-cycles-config');
+const addPaymentCycleButton = document.getElementById('add-cycle');
+const paymentCyclesList = document.getElementById('payment-cycles-list');
+
+// Load saved payment cycles state and initialize UI
+if (enablePaymentCyclesToggle && paymentCyclesConfig) {
+    const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
     enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
     paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
 }
@@ -980,9 +986,11 @@ let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles') || '[]');
 
 // Toggle payment cycles configuration
 enablePaymentCyclesToggle?.addEventListener('change', function() {
-    const isEnabled = this.checked;
-    paymentCyclesConfig.classList.toggle('hidden', !isEnabled);
-    localStorage.setItem('paymentCyclesEnabled', isEnabled);
+    if (paymentCyclesConfig) {
+        const isEnabled = this.checked;
+        paymentCyclesConfig.classList.toggle('hidden', !isEnabled);
+        localStorage.setItem('paymentCyclesEnabled', isEnabled);
+    }
 });
 
 // Function to format date for input
