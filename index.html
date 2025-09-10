@@ -930,8 +930,8 @@ function filterCallsByDate(calls, targetDate) {
     return calls.filter(call => {
         const callDate = new Date(call.date);
         return callDate.getFullYear() === target.getFullYear() &&
-               callDate.getMonth() === target.getMonth() &&
-               callDate.getDate() === target.getDate();
+                callDate.getMonth() === target.getMonth() &&
+                callDate.getDate() === target.getDate();
     });
 }
 
@@ -963,9 +963,9 @@ document.documentElement.classList.add('dark');
 }
 
 // Payment Cycles Management
-const enablePaymentCyclesToggle = document.getElementById('enable-payment-cycles');
+const enablePaymentCyclesToggle = document.getElementById('payment-cycles-toggle');
 const paymentCyclesConfig = document.getElementById('payment-cycles-config');
-const addCycleButton = document.getElementById('add-payment-cycle');
+const addCycleButton = document.getElementById('add-cycle');
 const paymentCyclesList = document.getElementById('payment-cycles-list');
 
 // Load saved payment cycles state
@@ -2125,6 +2125,115 @@ storageUsed.textContent = 'Error calculating storage';
 }
 }
 
+// Add Export/Import event listeners
+if (exportDataBtn) {
+exportDataBtn.addEventListener('click', async () => {
+try {
+exportDataBtn.disabled = true;
+exportDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+exportData(); // Calling the exportData function
+} catch (error) {
+alert('Failed to export data. Please try again.');
+} finally {
+exportDataBtn.disabled = false;
+exportDataBtn.innerHTML = '<i class="fas fa-download"></i> Export Data';
+}
+});
+}
+
+if (document.getElementById('import-file')) {
+document.getElementById('import-file').addEventListener('change', async (e) => {
+const file = e.target.files[0];
+if (!file) return;
+
+const importBtn = document.querySelector('label[for="import-file"]');
+try {
+importBtn.classList.add('pointer-events-none', 'opacity-50');
+importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+await importData(file); // Calling the importData function
+alert('Data imported successfully!');
+} catch (error) {
+alert('Error importing data. Please make sure the file is a valid backup.');
+} finally {
+importBtn.classList.remove('pointer-events-none', 'opacity-50');
+importBtn.innerHTML = '<i class="fas fa-upload"></i> Import Data';
+e.target.value = ''; // Reset file input
+}
+});
+}
+
+// Data cleanup functionality with confirmation
+if (cleanupDataBtn) {
+cleanupDataBtn.addEventListener('click', () => {
+if (!confirm('This will delete all calls older than 3 months. Continue?')) {
+return;
+}
+
+try {
+cleanupDataBtn.disabled = true;
+cleanupDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cleaning...';
+const monthsToKeep = 3;
+const cutoffDate = new Date();
+cutoffDate.setMonth(cutoffDate.getMonth() - monthsToKeep);
+
+const oldCallsCount = calls.length;
+calls = calls.filter(call => new Date(call.date) > cutoffDate);
+const removedCalls = oldCallsCount - calls.length;
+
+localStorage.setItem('calls', JSON.stringify(calls));
+displayCalls();
+updateStatistics();
+updateStorageInfo();
+
+alert(`Cleaned up ${removedCalls} calls older than ${monthsToKeep} months.`);
+} catch (error) {
+alert('Failed to clean up data. Please try again.');
+} finally {
+cleanupDataBtn.disabled = false;
+cleanupDataBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Clean Old Data';
+}
+});
+}
+
+// Storage info update with error handling
+function updateStorageInfo() {
+if (!storageUsed || !storageBar) return;
+
+try {
+const totalSize = JSON.stringify({
+rates,
+calls,
+goal,
+darkMode: document.documentElement.classList.contains('dark')
+}).length;
+
+const maxSize = 5 * 1024 * 1024; // Approximate 5MB limit
+const usedPercentage = (totalSize / maxSize) * 100;
+
+storageUsed.textContent = `${(totalSize / 1024).toFixed(2)}KB / ${(maxSize / 1024 / 1024).toFixed(2)}MB`;
+storageBar.style.width = `${Math.min(usedPercentage, 100)}%`;
+
+// Update storage bar color based on usage
+if (usedPercentage > 80) {
+storageBar.classList.add('bg-red-500');
+storageBar.classList.remove('bg-blue-500');
+storageUsed.classList.add('text-red-500');
+} else {
+storageBar.classList.add('bg-blue-500');
+storageBar.classList.remove('bg-red-500');
+storageUsed.classList.remove('text-red-500');
+}
+
+// Warn user if storage is getting full
+if (usedPercentage > 90) {
+console.warn('Storage usage is very high. Consider cleaning up old data.');
+}
+} catch (error) {
+storageUsed.textContent = 'Error calculating storage';
+}
+}
+
+
 // Initialize displays and add event listeners
 displayRates();
 displayCalls();
@@ -2146,7 +2255,6 @@ handleSettingsKeyboard(e);
 }
 });
 
-    
 // Footer button handlers
 document.getElementById('privacy-policy')?.addEventListener('click', () => {
     alert('Privacy Policy: This app stores all data locally in your browser. No data is sent to external servers.');
@@ -2155,13 +2263,6 @@ document.getElementById('privacy-policy')?.addEventListener('click', () => {
 document.getElementById('terms-of-service')?.addEventListener('click', () => {
     alert('Terms of Service: This app is provided "as is" without any warranties. Use at your own discretion.');
 });
-
-displayRates();
-displayCalls();
-updateStatistics();
-updateStorageInfo();
-
-
 </script>
 </body>
 </html>
