@@ -812,17 +812,17 @@ Import Data
     <div class="flex justify-between items-center mb-3">
         <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100">Payment Cycles</h4>
         <label class="inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="enable-payment-cycles" class="sr-only peer">
+            <input type="checkbox" id="payment-cycles-toggle" class="sr-only peer">
             <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
             <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Payment Cycles</span>
         </label>
     </div>
     <div id="payment-cycles-config" class="hidden">
         <div class="mb-3">
-            <button id="add-payment-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-    <i class="fas fa-plus"></i>
-    Add Payment Cycle
-</button>
+            <button id="add-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                <i class="fas fa-plus"></i>
+                Add Payment Cycle
+            </button>
         </div>
         <div class="max-h-48 overflow-y-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -965,37 +965,25 @@ document.documentElement.classList.add('dark');
 // Payment Cycles Management
 const enablePaymentCyclesToggle = document.getElementById('enable-payment-cycles');
 const paymentCyclesConfig = document.getElementById('payment-cycles-config');
-const addPaymentCycleButton = document.getElementById('add-payment-cycle');
+const addCycleButton = document.getElementById('add-payment-cycle');
 const paymentCyclesList = document.getElementById('payment-cycles-list');
+
+// Load saved payment cycles state
+const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
+if (enablePaymentCyclesToggle) {
+    enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
+    paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
+}
 
 // Load saved payment cycles
 let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles') || '[]');
 
-// Load saved payment cycles state and initialize UI
-if (enablePaymentCyclesToggle && paymentCyclesConfig) {
-    const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
-    enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
-    paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
-    
-    // Initialize cycles if enabled
-    if (paymentCyclesEnabled) {
-        renderPaymentCycles();
-    }
-}
-
 // Toggle payment cycles configuration
 enablePaymentCyclesToggle?.addEventListener('change', function() {
     const isEnabled = this.checked;
-    paymentCyclesConfig?.classList.toggle('hidden', !isEnabled);
+    paymentCyclesConfig.classList.toggle('hidden', !isEnabled);
     localStorage.setItem('paymentCyclesEnabled', isEnabled);
-    if (isEnabled) {
-        renderPaymentCycles();
-    }
 });
-
-// Add payment cycle button click handler 
-addPaymentCycleButton?.addEventListener('click', addPaymentCycle);
-    
 
 // Function to format date for input
 function formatDateForInput(date) {
@@ -1075,6 +1063,13 @@ function deletePaymentCycle(index) {
     }
 }
 
+// Add payment cycle button click handler
+addCycleButton?.addEventListener('click', addPaymentCycle);
+
+// Initial render if enabled
+if (paymentCyclesEnabled) {
+    renderPaymentCycles();
+}
 
 // State management
 let rates = JSON.parse(localStorage.getItem('rates')) || [];
@@ -1092,67 +1087,72 @@ const focusableElements = 'button, [href], input, select, textarea, [tabindex]:n
 // Timezone utility functions
 function getLocalISOString(date) {
     const d = new Date(date);
-            
     // Keep the date in local timezone
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     const hours = String(d.getHours()).padStart(2, '0');
     const minutes = String(d.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}
+
+function isDateInFuture(dateToCheck) {
+const now = new Date();
+now.setHours(23, 59, 59, 999); // End of today
+return dateToCheck > now;
 }
 
 function updateTotals() {
-    let totalDuration = 0;
-    let totalEarned = 0;
+let totalDuration = 0;
+let totalEarned = 0;
 
-    // Calculate totals from completed calls for selected date
-    const filteredCalls = filterCallsByDate(calls, selectedDate);
-    filteredCalls.forEach(call => {
-        const rate = rates[call.rateIndex];
-        if (rate) {
-            totalDuration += call.duration;
-            totalEarned += (rate.amount / 60) * call.duration;
-        }
-    });
+// Calculate totals from completed calls for selected date
+const filteredCalls = filterCallsByDate(calls, selectedDate);
+filteredCalls.forEach(call => {
+const rate = rates[call.rateIndex];
+if (rate) {
+totalDuration += call.duration;
+totalEarned += (rate.amount / 60) * call.duration;
+}
+});
 
-    // Add current call if it exists and is from today
-    if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
-        const currentDuration = Math.floor((Date.now() - currentCall.startTime) / 1000);
-        const currentRate = rates[currentCall.rateIndex];
-        if (currentRate) {
-            totalDuration += currentDuration;
-            totalEarned += (currentRate.amount / 60) * currentDuration;
-        }
-    }
-
+// Add current call if it exists and is from today
+if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
+const currentDuration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+const currentRate = rates[currentCall.rateIndex];
+if (currentRate) {
+totalDuration += currentDuration;
+totalEarned += (currentRate.amount / 60) * currentDuration;
+}
+}
 
 // Update displays
-    if (totalMinutes) totalMinutes.textContent = formatDuration(totalDuration);
-    if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
+if (totalMinutes) totalMinutes.textContent = formatDuration(totalDuration);
+if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
 
-    // Update goal progress
-    if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
-        const progress = Math.min((totalEarned / goal) * 100, 100);
-        
-        requestAnimationFrame(() => {
-            goalProgressBar.style.transition = 'width 0.5s ease-out';
-            goalProgressBar.style.width = `${progress}%`;
-            
-            if (progress >= 100) {
-                goalProgressBar.classList.add('bg-green-500');
-                goalProgressBar.classList.remove('bg-blue-500');
-                goalProgressText.classList.add('text-green-600');
-            } else {
-                goalProgressBar.classList.add('bg-blue-500');
-                goalProgressBar.classList.remove('bg-green-500');
-                goalProgressText.classList.remove('text-green-600');
-            }
-            
-            goalProgressText.textContent = `${Math.round(progress)}%`;
-            goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
-        });
-    }
+// Update goal progress
+if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
+const progress = Math.min((totalEarned / goal) * 100, 100);
+
+requestAnimationFrame(() => {
+goalProgressBar.style.transition = 'width 0.5s ease-out';
+goalProgressBar.style.width = `${progress}%`;
+
+if (progress >= 100) {
+goalProgressBar.classList.add('bg-green-500');
+goalProgressBar.classList.remove('bg-blue-500');
+goalProgressText.classList.add('text-green-600');
+} else {
+goalProgressBar.classList.add('bg-blue-500');
+goalProgressBar.classList.remove('bg-green-500');
+goalProgressText.classList.remove('text-green-600');
+}
+
+goalProgressText.textContent = `${Math.round(progress)}%`;
+goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
+});
+}
 }
 
 function updateStatistics() {
@@ -1218,31 +1218,16 @@ function updateStatistics() {
         document.getElementById('monthly-total-earnings').textContent = formatMoney(firstHalfEarnings + secondHalfEarnings);
     }
 
-   // Update average duration
-    let totalDuration = 0;
-    filteredCalls.forEach(call => {
-        totalDuration += call.duration;
-    });
-    const avgDuration = filteredCalls.length > 0 ? totalDuration / filteredCalls.length : 0;
-    if (avgDuration) avgDuration.textContent = formatDuration(avgDuration);
-}
-
-function updateStorageInfo() {
-    if (!storageUsed || !storageBar) return;
-    
-    try {
-        const totalSize = JSON.stringify({
-            rates,
-            calls,
-            goal,
-            darkMode: document.documentElement.classList.contains('dark')
-        }).length;
-        
-        const maxSize = 5 * 1024 * 1024; // Approximate 5MB limit
-        const usedPercentage = (totalSize / maxSize) * 100;
-        
-        storageUsed.textContent = `${(totalSize / 1024).toFixed(2)}KB / ${(maxSize / 1024 / 1024).toFixed(2)}MB`;
-        storageBar.style.width = `${Math.min(usedPercentage, 100)}%`;
+    // Update average duration
+    if (document.getElementById('avg-duration')) {
+        if (filteredCalls.length > 0) {
+            const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
+            const avgDurationSeconds = Math.floor(totalDuration / filteredCalls.length);
+            document.getElementById('avg-duration').textContent = formatDuration(avgDurationSeconds);
+        } else {
+            document.getElementById('avg-duration').textContent = '00:00:00';
+        }
+    }
 
             // Update goal estimate
     if (document.getElementById('goal-estimate') && goal > 0) {
@@ -2170,8 +2155,9 @@ handleSettingsKeyboard(e);
             }
 
             // Initial render and calculations
-            displayCalls();
-            updateTotals();            
+            renderCalls();
+            calculateTotals();
+            loadSettings();
         });
 
 // Footer button handlers
