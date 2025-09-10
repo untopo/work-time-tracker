@@ -1752,6 +1752,49 @@ if (firstButton) firstButton.focus();
 });
 }
 
+    // Payment Cycles Functionality
+document.getElementById('enable-payment-cycles').addEventListener('change', function() {
+    const configSection = document.getElementById('payment-cycles-config');
+    configSection.classList.toggle('hidden', !this.checked);
+});
+
+document.getElementById('add-payment-cycle').addEventListener('click', function() {
+    const tbody = document.getElementById('payment-cycles-table').getElementsByTagName('tbody')[0];
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td class="py-2">
+            <input type="date" class="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:border-gray-700">
+        </td>
+        <td class="py-2">
+            <input type="date" class="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:border-gray-700">
+        </td>
+        <td class="py-2">
+            <input type="date" class="w-full px-2 py-1 border rounded dark:bg-gray-800 dark:border-gray-700">
+        </td>
+        <td class="py-2">
+            <button class="delete-cycle text-red-500 hover:text-red-700">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(row);
+
+    // Add delete functionality to the new row
+    row.querySelector('.delete-cycle').addEventListener('click', function() {
+        row.remove();
+    });
+});
+
+// Initialize payment cycles state from localStorage
+const enablePaymentCycles = localStorage.getItem('enablePaymentCycles') === 'true';
+document.getElementById('enable-payment-cycles').checked = enablePaymentCycles;
+document.getElementById('payment-cycles-config').classList.toggle('hidden', !enablePaymentCycles);
+
+// Save payment cycles state when changed
+document.getElementById('enable-payment-cycles').addEventListener('change', function() {
+    localStorage.setItem('enablePaymentCycles', this.checked);
+});
+
 // Click outside settings modal to close
 if (settingsModal) {
 settingsModal.addEventListener('click', (e) => {
