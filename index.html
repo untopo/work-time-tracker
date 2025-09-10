@@ -963,24 +963,28 @@ document.documentElement.classList.add('dark');
 }
 
 // Payment Cycles Management
-const enablePaymentCyclesToggle = document.getElementById('payment-cycles-toggle');
+const paymentCyclesToggle = document.getElementById('payment-cycles-toggle');
 const paymentCyclesConfig = document.getElementById('payment-cycles-config');
 const addCycleButton = document.getElementById('add-cycle');
 const paymentCyclesList = document.getElementById('payment-cycles-list');
 
-
-// Load saved payment cycles state
-const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
-if (enablePaymentCyclesToggle && paymentCyclesConfig) {
-    enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
-    paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
-}
-
 // Load saved payment cycles
 let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles') || '[]');
 
+// Load saved payment cycles state and initialize UI
+if (paymentCyclesToggle && paymentCyclesConfig) {
+    const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
+    paymentCyclesToggle.checked = paymentCyclesEnabled;
+    paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
+    
+    // Initialize cycles if enabled
+    if (paymentCyclesEnabled) {
+        renderPaymentCycles();
+    }
+}
+
 // Toggle payment cycles configuration
-enablePaymentCyclesToggle?.addEventListener('change', function() {
+paymentCyclesToggle?.addEventListener('change', function() {
     if (paymentCyclesConfig) {
         const isEnabled = this.checked;
         paymentCyclesConfig.classList.toggle('hidden', !isEnabled);
