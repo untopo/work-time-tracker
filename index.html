@@ -965,7 +965,7 @@ document.documentElement.classList.add('dark');
 // Payment Cycles Management
 const enablePaymentCyclesToggle = document.getElementById('enable-payment-cycles');
 const paymentCyclesConfig = document.getElementById('payment-cycles-config');
-const addPaymentCycleButton = document.getElementById('add-payment-cycle'); // Use consistent ID
+const addPaymentCycleButton = document.getElementById('add-payment-cycle');
 const paymentCyclesList = document.getElementById('payment-cycles-list');
 
 // Load saved payment cycles
@@ -993,7 +993,7 @@ enablePaymentCyclesToggle?.addEventListener('change', function() {
     }
 });
 
-// Add payment cycle button click handler
+// Add payment cycle button click handler 
 addPaymentCycleButton?.addEventListener('click', addPaymentCycle);
     
 
@@ -1075,13 +1075,6 @@ function deletePaymentCycle(index) {
     }
 }
 
-// Add payment cycle button click handler
-addCycleButton?.addEventListener('click', addPaymentCycle);
-
-// Initial render if enabled
-if (paymentCyclesEnabled) {
-    renderPaymentCycles();
-}
 
 // State management
 let rates = JSON.parse(localStorage.getItem('rates')) || [];
