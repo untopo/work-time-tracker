@@ -641,19 +641,47 @@ Current Date
 </p>
 </div>
 </div>
-<div id="payment-cycle-earnings-card" class="col-span-3 hidden">
+<div id="payment-cycle-earnings-cards" class="col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4 hidden">
 <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
 <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
-<i class="fas fa-calendar-check mr-2"></i>Current Payment Cycle
+<i class="fas fa-money-bill-wave mr-2"></i>Current Cycle Earnings
 </h3>
-<p class="text-lg text-purple-800 dark:text-purple-200 font-bold mb-2">
-<span id="cycle-earnings">$0.00</span>
+<p id="cycle-earnings" class="text-2xl font-bold text-purple-800 dark:text-purple-200">
+$0.00
 </p>
+</div>
+<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+<i class="fas fa-calendar-check mr-2"></i>Cycle Progress
+</h3>
 <div class="text-sm text-gray-700 dark:text-gray-300">
-<p class="mb-1"><i class="fas fa-calendar-day mr-2"></i>Cycle Ends: <span id="cycle-end-date"></span></p>
-<p class="mb-1"><i class="fas fa-calendar-check mr-2"></i>Days Left: <span id="days-until-end"></span></p>
-<p class="mb-1"><i class="fas fa-calendar-dollar mr-2"></i>Pay Date: <span id="pay-date"></span></p>
-<p><i class="fas fa-clock mr-2"></i>Days to Pay: <span id="days-until-pay"></span></p>
+<p class="mb-1">
+<i class="fas fa-calendar-day mr-2"></i>
+Start: <span id="cycle-start-date">N/A</span>
+</p>
+<p class="mb-1">
+<i class="fas fa-calendar-day mr-2"></i>
+End: <span id="cycle-end-date">N/A</span>
+</p>
+<p>
+<i class="fas fa-calendar-check mr-2"></i>
+Days Left: <span id="days-until-end">N/A</span>
+</p>
+</div>
+</div>
+<div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+<h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2">
+<i class="fas fa-clock mr-2"></i>Pay Day Countdown
+</h3>
+<div class="text-sm text-gray-700 dark:text-gray-300">
+<p class="mb-1">
+<i class="fas fa-calendar-dollar mr-2"></i>
+Pay Date: <span id="pay-date">N/A</span>
+</p>
+<p>
+<i class="fas fa-clock mr-2"></i>
+Days to Pay: <span id="days-until-pay">N/A</span>
+</p>
 </div>
 </div>
 </div>
@@ -947,7 +975,7 @@ Topo
     const addCycleButton = document.getElementById('add-cycle');
     const paymentCyclesList = document.getElementById('payment-cycles-list');
     const monthlyEarningsCards = document.getElementById('monthly-earnings-cards');
-    const paymentCycleEarningsCard = document.getElementById('payment-cycle-earnings-card');
+    const paymentCycleEarningsCards = document.getElementById('payment-cycle-earnings-cards');
 
     // Load saved payment cycles state
     let paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
@@ -1154,8 +1182,8 @@ Topo
         if (monthlyEarningsCards) {
             monthlyEarningsCards.classList.toggle('hidden', isEnabled);
         }
-        if (paymentCycleEarningsCard) {
-            paymentCycleEarningsCard.classList.toggle('hidden', !isEnabled);
+        if (paymentCycleEarningsCards) {
+            paymentCycleEarningsCards.classList.toggle('hidden', !isEnabled);
         }
 
         // Update total calls today
@@ -1305,6 +1333,7 @@ Topo
                 const daysToPay = daysBetween(now, payDate);
 
                 document.getElementById('cycle-earnings').textContent = formatMoney(cycleEarnings);
+                document.getElementById('cycle-start-date').textContent = formatDisplayDate(currentCycle.startDate);
                 document.getElementById('cycle-end-date').textContent = formatDisplayDate(currentCycle.endDate);
                 document.getElementById('days-until-end').textContent = `${daysLeftInCycle} days`;
                 document.getElementById('pay-date').textContent = formatDisplayDate(currentCycle.payDate);
@@ -1313,6 +1342,7 @@ Topo
             } else {
                 // No active cycle found, clear the card
                 document.getElementById('cycle-earnings').textContent = formatMoney(0);
+                document.getElementById('cycle-start-date').textContent = 'N/A';
                 document.getElementById('cycle-end-date').textContent = 'N/A';
                 document.getElementById('days-until-end').textContent = 'N/A';
                 document.getElementById('pay-date').textContent = 'N/A';
@@ -2011,8 +2041,8 @@ Topo
 
                     resolve();
                 } catch (err) {
-                    console.error('Import error:', err);
-                    reject(err);
+                console.error('Import error:', err);
+                reject(err);
                 }
             };
             reader.onerror = () => reject(new Error('Failed to read file'));
