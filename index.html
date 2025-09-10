@@ -820,9 +820,9 @@ Import Data
     <div id="payment-cycles-config" class="hidden">
         <div class="mb-3">
             <button id="add-payment-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                <i class="fas fa-plus"></i>
-                Add Payment Cycle
-            </button>
+    <i class="fas fa-plus"></i>
+    Add Payment Cycle
+</button>
         </div>
         <div class="max-h-48 overflow-y-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -965,28 +965,36 @@ document.documentElement.classList.add('dark');
 // Payment Cycles Management
 const enablePaymentCyclesToggle = document.getElementById('enable-payment-cycles');
 const paymentCyclesConfig = document.getElementById('payment-cycles-config');
-const addPaymentCycleButton = document.getElementById('add-payment-cycle');
+const addPaymentCycleButton = document.getElementById('add-payment-cycle'); // Use consistent ID
 const paymentCyclesList = document.getElementById('payment-cycles-list');
-
-// Load saved payment cycles state and initialize UI
-const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
-if (enablePaymentCyclesToggle && paymentCyclesConfig) {
-    enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
-    paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
-}
 
 // Load saved payment cycles
 let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles') || '[]');
 
+// Load saved payment cycles state and initialize UI
+if (enablePaymentCyclesToggle && paymentCyclesConfig) {
+    const paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
+    enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
+    paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
+    
+    // Initialize cycles if enabled
+    if (paymentCyclesEnabled) {
+        renderPaymentCycles();
+    }
+}
+
 // Toggle payment cycles configuration
 enablePaymentCyclesToggle?.addEventListener('change', function() {
     const isEnabled = this.checked;
-    paymentCyclesConfig.classList.toggle('hidden', !isEnabled);
+    paymentCyclesConfig?.classList.toggle('hidden', !isEnabled);
     localStorage.setItem('paymentCyclesEnabled', isEnabled);
     if (isEnabled) {
         renderPaymentCycles();
     }
 });
+
+// Add payment cycle button click handler
+addPaymentCycleButton?.addEventListener('click', addPaymentCycle);
 
 // Function to format date for input
 function formatDateForInput(date) {
