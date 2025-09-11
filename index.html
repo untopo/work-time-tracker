@@ -943,12 +943,15 @@ function handleSettingsKeyboard(e) {
     target.setHours(0, 0, 0, 0);
 
     return calls.filter(call => {
-        const callDate = new Date(call.date);
-        const selectedDateStr = target.toISOString().split('T')[0];
-        const callDateStr = callDate.toISOString().split('T')[0];
-        return callDateStr === selectedDateStr;
-    });
+    const callDate = new Date(call.date);
+    return (
+        callDate.getFullYear() === target.getFullYear() &&
+        callDate.getMonth() === target.getMonth() &&
+        callDate.getDate() === target.getDate()
+    );
+});
 }
+
         const formatDuration = (totalSeconds) => {
     if (!totalSeconds || isNaN(totalSeconds)) return "00:00:00";  // 🔒 protección
     const hours = Math.floor(totalSeconds / 3600);
