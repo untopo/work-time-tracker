@@ -1603,7 +1603,9 @@
         
         // Initialize displays and add event listeners
         displayRates();
-        displayCalls();
+        const today = new Date().toISOString().slice(0, 10);
+        statsDatePicker.value = today;
+        displayCalls(today);
         updateStatistics();
         updateStorageInfo();
         renderPaymentCycles();
