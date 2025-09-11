@@ -1299,61 +1299,62 @@ calls.forEach(call => {
     }
 
     // Weekly Earnings (desde 7 días antes de la fecha seleccionada hasta esa fecha)
-    if (callDate >= oneWeekAgo && callDate <= now) {
-        weeklyEarnings += earned;
-    }
+if (callDate >= oneWeekAgo && callDate <= now) {
+    weeklyEarnings += earned;
+}
 });
 
-        const monthlyEl = document.getElementById('monthly-total-earnings');
-        if (monthlyEl) monthlyEl.textContent = formatMoney(monthlyEarnings);
+const monthlyEl = document.getElementById('monthly-total-earnings');
+if (monthlyEl) monthlyEl.textContent = formatMoney(monthlyEarnings);
 
-        const weeklyEl = document.getElementById('weekly-total-earnings');
-        if (weeklyEl) weeklyEl.textContent = formatMoney(weeklyEarnings);
+const weeklyEl = document.getElementById('weekly-total-earnings');
+if (weeklyEl) weeklyEl.textContent = formatMoney(weeklyEarnings);
 
-        const dailyGoalEl = document.getElementById('daily-goal-earnings');
-        if (dailyGoalEl) dailyGoalEl.textContent = formatMoney(goal);
-    } else {
-        const now = new Date();
-        const currentCycle = paymentCycles.find(cycle => {
-            const start = new Date(cycle.startDate);
-            const end = new Date(cycle.endDate);
-            start.setHours(0, 0, 0, 0);
-            end.setHours(23, 59, 59, 999);
-            return now >= start && now <= end;
+const dailyGoalEl = document.getElementById('daily-goal-earnings');
+if (dailyGoalEl) dailyGoalEl.textContent = formatMoney(goal);
+} else {
+    const selected = new Date(selectedDate); // usar la fecha seleccionada
+    const currentCycle = paymentCycles.find(cycle => {
+        const start = new Date(cycle.startDate);
+        const end = new Date(cycle.endDate);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        return selected >= start && selected <= end;
+    });
+
+    if (currentCycle) {
+        const cycleStartDate = new Date(currentCycle.startDate);
+        const cycleEndDate = new Date(currentCycle.endDate);
+        const payDate = new Date(currentCycle.payDate);
+
+        let cycleEarnings = 0;
+        calls.forEach(call => {
+            const callDate = new Date(call.date);
+            const rate = rates[call.rateIndex];
+            if (rate && callDate >= cycleStartDate && callDate <= cycleEndDate) {
+                cycleEarnings += (rate.amount / 60) * call.duration;
+            }
         });
 
-        if (currentCycle) {
-            const cycleStartDate = new Date(currentCycle.startDate);
-            const cycleEndDate = new Date(currentCycle.endDate);
-            const payDate = new Date(currentCycle.payDate);
-
-            let cycleEarnings = 0;
-            calls.forEach(call => {
-                const callDate = new Date(call.date);
-                const rate = rates[call.rateIndex];
-                if (rate && callDate >= cycleStartDate && callDate <= cycleEndDate) {
-                    cycleEarnings += (rate.amount / 60) * call.duration;
-                }
-            });
-
-            document.getElementById('cycle-earnings').textContent = formatMoney(cycleEarnings);
-            document.getElementById('cycle-start-date').textContent = formatDisplayDate(currentCycle.startDate);
-            document.getElementById('cycle-end-date').textContent = formatDisplayDate(currentCycle.endDate);
-            document.getElementById('days-until-end').textContent = `${daysBetween(now, cycleEndDate)} days`;
-            document.getElementById('pay-date').textContent = formatDisplayDate(currentCycle.payDate);
-            document.getElementById('days-until-pay').textContent = `${daysBetween(now, payDate)} days`;
-        } else {
-            document.getElementById('cycle-earnings').textContent = formatMoney(0);
-            document.getElementById('cycle-start-date').textContent = 'N/A';
-            document.getElementById('cycle-end-date').textContent = 'N/A';
-            document.getElementById('days-until-end').textContent = 'N/A';
-            document.getElementById('pay-date').textContent = 'N/A';
-            document.getElementById('days-until-pay').textContent = 'N/A';
-        }
+        document.getElementById('cycle-earnings').textContent = formatMoney(cycleEarnings);
+        document.getElementById('cycle-start-date').textContent = formatDisplayDate(currentCycle.startDate);
+        document.getElementById('cycle-end-date').textContent = formatDisplayDate(currentCycle.endDate);
+        document.getElementById('days-until-end').textContent = `${daysBetween(selected, cycleEndDate)} days`;
+        document.getElementById('pay-date').textContent = formatDisplayDate(currentCycle.payDate);
+        document.getElementById('days-until-pay').textContent = `${daysBetween(selected, payDate)} days`;
+    } else {
+        document.getElementById('cycle-earnings').textContent = formatMoney(0);
+        document.getElementById('cycle-start-date').textContent = 'N/A';
+        document.getElementById('cycle-end-date').textContent = 'N/A';
+        document.getElementById('days-until-end').textContent = 'N/A';
+        document.getElementById('pay-date').textContent = 'N/A';
+        document.getElementById('days-until-pay').textContent = 'N/A';
     }
-
-    updateTotals();
 }
+
+updateTotals();
+}
+
 
      // Initialize date picker with today's local date
 const now = new Date();
