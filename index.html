@@ -1145,19 +1145,24 @@ function formatDateForInput(date) {
         }
 
         function updateTotals() {
-            let totalDuration = 0;
-            let totalEarned = 0;
+    const totalCallsEl = document.getElementById('total-calls');
+    const totalDurationEl = document.getElementById('total-duration');
+    const totalEarningsEl = document.getElementById('total-earnings');
 
-            // Calculate totals from completed calls for selected date
-            const filteredCalls = filterCallsByDate(calls, selectedDate);
-            filteredCalls.forEach(call => {
-                const rate = rates[call.rateIndex];
-                if (rate) {
-                    totalDuration += call.duration;
-                    totalEarned += (rate.amount / 60) * call.duration;
-                }
-            });
+    let totalCalls = calls.length;
+    let totalSeconds = 0;
+    let totalEarnings = 0;
 
+    calls.forEach(call => {
+        totalSeconds += call.duration;
+        const rate = rates[call.rateIndex];
+        if (rate) totalEarnings += (rate.amount / 60) * call.duration;
+    });
+
+    if (totalCallsEl) totalCallsEl.textContent = totalCalls;
+    if (totalDurationEl) totalDurationEl.textContent = formatDuration(totalSeconds);
+    if (totalEarningsEl) totalEarningsEl.textContent = formatMoney(totalEarnings);
+}
 
             
             // Add current call if it exists and is from today
