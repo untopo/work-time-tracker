@@ -1284,18 +1284,25 @@ function formatDateForInput(date) {
 
         let monthlyEarnings = 0;
         let weeklyEarnings = 0;
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const oneWeekAgo = new Date(now); // usar la fecha seleccionada como referencia
+oneWeekAgo.setDate(now.getDate() - 7);
 
-        calls.forEach(call => {
-            const callDate = new Date(call.date);
-            const rate = rates[call.rateIndex];
-            if (!rate) return;
-            const earned = (rate.amount / 60) * call.duration;
+calls.forEach(call => {
+    const callDate = new Date(call.date);
+    const rate = rates[call.rateIndex];
+    if (!rate) return;
+    const earned = (rate.amount / 60) * call.duration;
 
-            if (callDate >= firstDay && callDate <= lastDay) monthlyEarnings += earned;
-            if (callDate >= oneWeekAgo) weeklyEarnings += earned;
-        });
+    // Monthly Earnings
+    if (callDate >= firstDay && callDate <= lastDay) {
+        monthlyEarnings += earned;
+    }
+
+    // Weekly Earnings (desde 7 días antes de la fecha seleccionada hasta esa fecha)
+    if (callDate >= oneWeekAgo && callDate <= now) {
+        weeklyEarnings += earned;
+    }
+});
 
         const monthlyEl = document.getElementById('monthly-total-earnings');
         if (monthlyEl) monthlyEl.textContent = formatMoney(monthlyEarnings);
