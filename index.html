@@ -1190,7 +1190,10 @@ function formatDateForInput(date) {
         }
 
         function updateStatistics() {
-    const selectedDateStr = selectedDate.toLocaleDateString("en-CA"); // YYYY-MM-DD
+    const selectedDateStr = selectedDate.getFullYear() + "-" +
+        String(selectedDate.getMonth() + 1).padStart(2, "0") + "-" +
+        String(selectedDate.getDate()).padStart(2, "0");
+}
 
     const filteredCalls = calls.filter(call => {
         const callDate = new Date(call.date);
@@ -1373,9 +1376,11 @@ function formatDateForInput(date) {
             updateTotals();
         }
 
-      // Initialize date picker with today's local date
+     // Initialize date picker with today's local date
 const now = new Date();
-let selectedDate = now.toLocaleDateString("en-CA"); // YYYY-MM-DD
+let selectedDate = now.getFullYear() + "-" +
+    String(now.getMonth() + 1).padStart(2, "0") + "-" +
+    String(now.getDate()).padStart(2, "0");
 
 
         // DOM elements - cached for performance
