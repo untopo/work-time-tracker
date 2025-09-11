@@ -927,8 +927,8 @@
             target.setHours(0, 0, 0, 0);
 
             return calls.filter(call => {
-    const callDate = new Date(call.date);
-    // Normalize both dates to a YYYY-MM-DD string to avoid timezone issues
+    // We assume the date is stored under call.startTime
+    const callDate = new Date(call.startTime); 
     const selectedDateStr = target.toISOString().split('T')[0];
     const callDateStr = callDate.toISOString().split('T')[0];
     return callDateStr === selectedDateStr;
