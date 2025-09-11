@@ -90,7 +90,7 @@
         }
 
         input[type="date"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-time-picker-indicator,
         input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             background-color: transparent;
             cursor: pointer;
@@ -99,7 +99,7 @@
         }
 
         html.dark input[type="date"]::-webkit-calendar-picker-indicator,
-        html.dark input[type="time"]::-webkit-calendar-picker-indicator,
+        html.dark input[type="time"]::-webkit-time-picker-indicator,
         html.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             filter: invert(1) brightness(0.8) saturate(0.8);
         }
@@ -944,7 +944,7 @@
 
         function saveCalls() {
             localStorage.setItem('calls', JSON.stringify(calls));
-            displayCalls();
+            displayCalls(statsDatePicker.value); // Pass the current filter date
             updateStatistics();
             updateStorageInfo();
             renderPaymentCycles();
@@ -977,6 +977,15 @@
         function formatDate(date) {
             const d = new Date(date);
             return d.toLocaleDateString();
+        }
+        
+        // This helper function ensures the date format is consistent for the input
+        function formatInputDate(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = (d.getMonth() + 1).toString().padStart(2, '0');
+            const day = d.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
         function isSameDay(date1, date2) {
@@ -1051,6 +1060,12 @@
             selectCallRate.innerHTML = '';
             const callRateSelect = document.getElementById('call-rate');
             callRateSelect.innerHTML = '';
+            if (rates.length === 0) {
+                const emptyOption = new Option('No rates available', '');
+                selectCallRate.add(emptyOption);
+                callRateSelect.add(emptyOption.cloneNode(true));
+                return;
+            }
             rates.forEach(rate => {
                 const option = new Option(`${rate.name} - ${formatCurrency(rate.amount)}/min`, rate.id);
                 selectCallRate.add(option);
@@ -1473,8 +1488,9 @@
         });
 
         currentDateBtn.addEventListener('click', () => {
-            statsDatePicker.value = '';
-            displayCalls();
+            const today = formatInputDate(new Date());
+            statsDatePicker.value = today;
+            displayCalls(today);
         });
 
         // Daily Goal
@@ -1603,7 +1619,8 @@
         
         // Initialize displays and add event listeners
         displayRates();
-        const today = new Date().toISOString().slice(0, 10);
+        updateCallRateSelect(); // FIX: Call this on load to populate the dropdowns
+        const today = formatInputDate(new Date()); // FIX: Use a helper function for consistent formatting
         statsDatePicker.value = today;
         displayCalls(today);
         updateStatistics();
