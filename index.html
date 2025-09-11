@@ -951,7 +951,7 @@ function getLocalDateString(date) {
     target.setHours(0, 0, 0, 0);
 
     return calls.filter(call => {
-        const callDate = new Date(call.date);
+        const callDate = parseLocalDateString(call.date);
         return (
             callDate.getFullYear() === target.getFullYear() &&
             callDate.getMonth() === target.getMonth() &&
@@ -1205,7 +1205,7 @@ if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
     const selectedDateStr = getLocalDateString(new Date(selectedDate));
 
     const filteredCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
+        const callDate = parseLocalDateString(call.date);
         const callDateStr = getLocalDateString(callDate);
         return callDateStr === selectedDateStr;
     });
@@ -1293,7 +1293,7 @@ if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
 oneWeekAgo.setDate(now.getDate() - 7);
 
 calls.forEach(call => {
-    const callDate = new Date(call.date);
+    const callDate = parseLocalDateString(call.date);
     const rate = rates[call.rateIndex];
     if (!rate) return;
     const earned = (rate.amount / 60) * call.duration;
@@ -1334,7 +1334,7 @@ if (dailyGoalEl) dailyGoalEl.textContent = formatMoney(goal);
 
         let cycleEarnings = 0;
         calls.forEach(call => {
-            const callDate = new Date(call.date);
+            const callDate = parseLocalDateString(call.date);
             const rate = rates[call.rateIndex];
             if (rate && callDate >= cycleStartDate && callDate <= cycleEndDate) {
                 cycleEarnings += (rate.amount / 60) * call.duration;
