@@ -1651,7 +1651,7 @@ if (currentDateBtn) {
     };
     calls.push(callData);
 
-    // Actualizar fecha seleccionada
+    // Actualizar la fecha seleccionada para que el registro aparezca inmediatamente
     const dateString = callDate.toLocaleDateString("en-CA"); // YYYY-MM-DD local
     selectedDate = dateString;
     if (statsDatePicker) {
@@ -1662,7 +1662,6 @@ if (currentDateBtn) {
     displayCalls();
     updateStatistics();
 }
-
 
         function displayCalls() {
             if (!callLog) return;
