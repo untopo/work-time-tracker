@@ -1363,24 +1363,30 @@ if (dailyGoalEl) dailyGoalEl.textContent = formatMoney(goal);
             }
         });
 
-        document.getElementById('cycle-earnings').textContent = formatMoney(cycleEarnings);
-document.getElementById('cycle-start-date').textContent = formatDisplayDate(currentCycle.startDate);
-document.getElementById('cycle-end-date').textContent = formatDisplayDate(currentCycle.endDate);
-document.getElementById('days-until-end').textContent = `${daysBetween(selectedDate, currentCycle.endDate)} days`;
-document.getElementById('pay-date').textContent = formatDisplayDate(currentCycle.payDate);
-document.getElementById('days-until-pay').textContent = `${daysBetween(selectedDate, currentCycle.payDate)} days`;
+        const cycleEarningsElem = document.getElementById('cycle-earnings');
+const cycleStartElem = document.getElementById('cycle-start-date');
+const cycleEndElem = document.getElementById('cycle-end-date');
+const daysUntilEndElem = document.getElementById('days-until-end');
+const payDateElem = document.getElementById('pay-date');
+const daysUntilPayElem = document.getElementById('days-until-pay');
+
+if (currentCycle) {
+    cycleEarningsElem.textContent = formatMoney(cycleEarnings);
+    cycleStartElem.textContent = formatDisplayDate(currentCycle.startDate);
+    cycleEndElem.textContent = formatDisplayDate(currentCycle.endDate);
+    daysUntilEndElem.textContent = `${daysBetween(selectedDate, currentCycle.endDate)} days`;
+    payDateElem.textContent = formatDisplayDate(currentCycle.payDate);
+    daysUntilPayElem.textContent = `${daysBetween(selectedDate, currentCycle.payDate)} days`;
 } else {
-    document.getElementById('cycle-earnings').textContent = formatMoney(0);
-    document.getElementById('cycle-start-date').textContent = 'N/A';
-    document.getElementById('cycle-end-date').textContent = 'N/A';
-    document.getElementById('days-until-end').textContent = 'N/A';
-    document.getElementById('pay-date').textContent = 'N/A';
-    document.getElementById('days-until-pay').textContent = 'N/A';
-}
+    cycleEarningsElem.textContent = formatMoney(0);
+    cycleStartElem.textContent = 'N/A';
+    cycleEndElem.textContent = 'N/A';
+    daysUntilEndElem.textContent = 'N/A';
+    payDateElem.textContent = 'N/A';
+    daysUntilPayElem.textContent = 'N/A';
 }
 
 updateTotals();
-}
 
 
 
