@@ -1687,7 +1687,7 @@ function displayCalls() {
         const earned = (rate.amount / 60) * duration;
 
         return `
-            <tr data-call-index="${calls.indexOf(call)}">
+            <tr data-call-index="${displayedCalls.indexOf(call)}">
                 <td>${parseLocalDateString(call.date).toLocaleString(undefined, {
                     year: 'numeric',
                     month: '2-digit',
