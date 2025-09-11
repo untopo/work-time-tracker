@@ -1642,25 +1642,26 @@ if (currentDateBtn) {
         }
 
         function addCallToLog(date, duration, rateIndex) {
-            // Create a new Date object from the provided date string, which is already in local time
-            const callDate = new Date(date);
-            const callData = {
-                date: callDate.toISOString(), // Store as ISO string
-                duration: duration,
-                rateIndex: rateIndex
-            };
-            calls.push(callData);
+    // Create a new Date object from the provided date string, which is already in local time
+    const callDate = new Date(date);
+    const callData = {
+        date: callDate.toISOString(), // Store as ISO string
+        duration: duration,
+        rateIndex: rateIndex
+    };
+    calls.push(callData);
 
-           // Update the selected date to match the call's date to ensure it shows up immediately
-const dateString = callDate.toLocaleDateString("en-CA"); // YYYY-MM-DD en local
-selectedDate = dateString;
-if (statsDatePicker) {
-    statsDatePicker.value = selectedDate;
+    // Update the selected date to match the call's date to ensure it shows up immediately
+    const dateString = callDate.toLocaleDateString("en-CA"); // YYYY-MM-DD en local
+    selectedDate = dateString;
+    if (statsDatePicker) {
+        statsDatePicker.value = selectedDate;
+    }
+
+    localStorage.setItem('calls', JSON.stringify(calls));
+    displayCalls();
+    updateStatistics();
 }
-
-localStorage.setItem('calls', JSON.stringify(calls));
-displayCalls();
-updateStatistics();
 
         function displayCalls() {
             if (!callLog) return;
