@@ -1190,11 +1190,10 @@ function formatDateForInput(date) {
         }
 
         function updateStatistics() {
-    const selectedDateStr = new Date(selectedDate).toLocaleDateString("en-CA"); // YYYY-MM-DD local
+    const selectedDateStr = getLocalDateString(new Date(selectedDate)); // YYYY-MM-DD local
 
     const filteredCalls = calls.filter(call => {
-        const callDate = new Date(call.date);
-        const callDateStr = callDate.toLocaleDateString("en-CA");
+        const callDateStr = getLocalDateString(new Date(call.date));
         return callDateStr === selectedDateStr;
     });
 
@@ -1207,47 +1206,35 @@ function formatDateForInput(date) {
         paymentCycleEarningsCards.classList.toggle('hidden', !isEnabled);
     }
 
-    // Update total calls today
-    if (document.getElementById('total-calls-today')) {
-        document.getElementById('total-calls-today').textContent = filteredCalls.length;
-    }
+    // Total calls today
+    const totalCallsEl = document.getElementById('total-calls-today');
+    if (totalCallsEl) totalCallsEl.textContent = filteredCalls.length;
 
-    // Update daily earnings
-    if (document.getElementById('daily-total-earnings')) {
-        let dailyEarnings = 0;
-        filteredCalls.forEach(call => {
-            const rate = rates[call.rateIndex];
-            if (rate) {
-                dailyEarnings += (rate.amount / 60) * call.duration;
-            }
-        });
-        document.getElementById('daily-total-earnings').textContent = formatMoney(dailyEarnings);
-    }
+    // Daily earnings
+    const dailyEarnings = filteredCalls.reduce((sum, call) => {
+        const rate = rates[call.rateIndex];
+        return rate ? sum + (rate.amount / 60) * call.duration : sum;
+    }, 0);
+    const dailyEarningsEl = document.getElementById('daily-total-earnings');
+    if (dailyEarningsEl) dailyEarningsEl.textContent = formatMoney(dailyEarnings);
 
-    // Update average duration
-    if (document.getElementById('avg-duration')) {
+    // Avg duration
+    const avgEl = document.getElementById('avg-duration');
+    if (avgEl) {
         if (filteredCalls.length > 0) {
             const totalDuration = filteredCalls.reduce((sum, call) => sum + (call.duration || 0), 0);
             const avgDurationSeconds = Math.floor(totalDuration / filteredCalls.length);
-            document.getElementById('avg-duration').textContent = formatDuration(avgDurationSeconds);
+            avgEl.textContent = formatDuration(avgDurationSeconds);
         } else {
-            document.getElementById('avg-duration').textContent = '00:00:00';
+            avgEl.textContent = '00:00:00';
         }
     }
 
-    // Update goal estimate
-    if (document.getElementById('goal-estimate') && goal > 0) {
-        let currentEarnings = 0;
-        let totalMinutesWorked = 0;
-
-        filteredCalls.forEach(call => {
-            const rate = rates[call.rateIndex];
-            if (rate) {
-                const callMinutes = call.duration / 60;
-                totalMinutesWorked += callMinutes;
-                currentEarnings += (rate.amount / 60) * call.duration;
-            }
-        });
+    // Goal estimate
+    const goalEl = document.getElementById('goal-estimate');
+    if (goalEl && goal > 0) {
+        let currentEarnings = dailyEarnings;
+        let totalMinutesWorked = filteredCalls.reduce((sum, call) => sum + call.duration / 60, 0);
 
         if (currentCall && isSameDay(new Date(currentCall.date), new Date(selectedDate))) {
             const currentDuration = Math.floor((Date.now() - currentCall.date) / 1000);
@@ -1260,26 +1247,26 @@ function formatDateForInput(date) {
         }
 
         if (currentEarnings >= goal) {
-            document.getElementById('goal-estimate').textContent = 'Goal reached!';
+            goalEl.textContent = 'Goal reached!';
         } else {
             const remaining = goal - currentEarnings;
             if (totalMinutesWorked > 0) {
-                const actualEarningRatePerMinute = currentEarnings / totalMinutesWorked;
-                const estimatedMinutesNeeded = Math.ceil(remaining / actualEarningRatePerMinute);
-                document.getElementById('goal-estimate').textContent = `~${estimatedMinutesNeeded} mins to goal`;
+                const earningRatePerMinute = currentEarnings / totalMinutesWorked;
+                const estimatedMinutesNeeded = Math.ceil(remaining / earningRatePerMinute);
+                goalEl.textContent = `~${estimatedMinutesNeeded} mins to goal`;
             } else {
                 const liveCallRate = document.getElementById('live-call-rate');
                 const selectedRateIndex = liveCallRate ? parseInt(liveCallRate.value) : 0;
                 const selectedRate = rates[selectedRateIndex];
                 if (selectedRate) {
                     const minsToGoal = Math.ceil(remaining / (selectedRate.amount / 60));
-                    document.getElementById('goal-estimate').textContent = `${minsToGoal} mins to goal`;
+                    goalEl.textContent = `${minsToGoal} mins to goal`;
                 }
             }
         }
     }
 
-    // Update monthly earnings if payment cycles are NOT enabled
+    // Monthly or Payment Cycle earnings
     if (!isEnabled) {
         const now = new Date(selectedDate);
         const year = now.getFullYear();
@@ -1289,36 +1276,28 @@ function formatDateForInput(date) {
 
         let monthlyEarnings = 0;
         let weeklyEarnings = 0;
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
         calls.forEach(call => {
             const callDate = new Date(call.date);
             const rate = rates[call.rateIndex];
             if (!rate) return;
-
             const earned = (rate.amount / 60) * call.duration;
 
-            if (callDate >= firstDay && callDate <= lastDay) {
-                monthlyEarnings += earned;
-            }
-
-            const oneWeekAgo = new Date();
-            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-            if (callDate >= oneWeekAgo) {
-                weeklyEarnings += earned;
-            }
+            if (callDate >= firstDay && callDate <= lastDay) monthlyEarnings += earned;
+            if (callDate >= oneWeekAgo) weeklyEarnings += earned;
         });
 
-        if (document.getElementById('monthly-total-earnings')) {
-            document.getElementById('monthly-total-earnings').textContent = formatMoney(monthlyEarnings);
-        }
-        if (document.getElementById('weekly-total-earnings')) {
-            document.getElementById('weekly-total-earnings').textContent = formatMoney(weeklyEarnings);
-        }
-        if (document.getElementById('daily-goal-earnings')) {
-            document.getElementById('daily-goal-earnings').textContent = formatMoney(goal);
-        }
+        const monthlyEl = document.getElementById('monthly-total-earnings');
+        if (monthlyEl) monthlyEl.textContent = formatMoney(monthlyEarnings);
+
+        const weeklyEl = document.getElementById('weekly-total-earnings');
+        if (weeklyEl) weeklyEl.textContent = formatMoney(weeklyEarnings);
+
+        const dailyGoalEl = document.getElementById('daily-goal-earnings');
+        if (dailyGoalEl) dailyGoalEl.textContent = formatMoney(goal);
     } else {
-        // Update payment cycle earnings if payment cycles are enabled
         const now = new Date();
         const currentCycle = paymentCycles.find(cycle => {
             const start = new Date(cycle.startDate);
@@ -1337,21 +1316,17 @@ function formatDateForInput(date) {
             calls.forEach(call => {
                 const callDate = new Date(call.date);
                 const rate = rates[call.rateIndex];
-                if (!rate) return;
-                if (callDate >= cycleStartDate && callDate <= cycleEndDate) {
+                if (rate && callDate >= cycleStartDate && callDate <= cycleEndDate) {
                     cycleEarnings += (rate.amount / 60) * call.duration;
                 }
             });
 
-            const daysLeftInCycle = daysBetween(now, cycleEndDate);
-            const daysToPay = daysBetween(now, payDate);
-
             document.getElementById('cycle-earnings').textContent = formatMoney(cycleEarnings);
             document.getElementById('cycle-start-date').textContent = formatDisplayDate(currentCycle.startDate);
             document.getElementById('cycle-end-date').textContent = formatDisplayDate(currentCycle.endDate);
-            document.getElementById('days-until-end').textContent = `${daysLeftInCycle} days`;
+            document.getElementById('days-until-end').textContent = `${daysBetween(now, cycleEndDate)} days`;
             document.getElementById('pay-date').textContent = formatDisplayDate(currentCycle.payDate);
-            document.getElementById('days-until-pay').textContent = `${daysToPay} days`;
+            document.getElementById('days-until-pay').textContent = `${daysBetween(now, payDate)} days`;
         } else {
             document.getElementById('cycle-earnings').textContent = formatMoney(0);
             document.getElementById('cycle-start-date').textContent = 'N/A';
