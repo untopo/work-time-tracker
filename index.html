@@ -1653,67 +1653,71 @@ if (currentDateBtn) {
 }
 
         function displayCalls() {
-            if (!callLog) return;
+    if (!callLog) return;
 
-            // Sort filtered calls by date
-            let displayedCalls = filterCallsByDate(calls, selectedDate);
-            displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Filtrar llamadas por la fecha seleccionada
+    let displayedCalls = filterCallsByDate(calls, selectedDate);
+    displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-            callLog.innerHTML = displayedCalls.map(call => {
-                const rate = rates[call.rateIndex];
-                if (!rate) return '';
+    callLog.innerHTML = displayedCalls.map((call, index) => {
+        const rate = rates[call.rateIndex];
+        if (!rate) return '';
 
-                const duration = call.duration;
-                const minutes = duration / 60; // Convert seconds to minutes
-                const earned = (rate.amount / 60) * duration; // Correct calculation here: rate is per minute, duration is in seconds
+        const duration = call.duration;
+        const minutes = duration / 60; // Convertir segundos a minutos
+        const earned = (rate.amount / 60) * duration; // rate es por minuto, duration en segundos
 
-                return `
-                    <tr data-call-index="${calls.indexOf(call)}">
-                        <td>${new Date(call.date).toLocaleString(undefined, {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false
-                        })}</td>
-                        <td>${formatDuration(duration)}</td>
-                        <td>${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</td>
-                        <td>${formatMoney(earned)}</td>
-                        <td class="pl-4">
-                            <div class="flex gap-2">
-                                <button data-action="edit" class="text-blue-500 hover:text-blue-700">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button data-action="delete" class="text-red-500 hover:text-red-700">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+        return `
+            <tr data-call-index="${index}">
+                <td>${new Date(call.date).toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                })}</td>
+                <td>${formatDuration(duration)}</td>
+                <td>${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</td>
+                <td>${formatMoney(earned)}</td>
+                <td class="pl-4">
+                    <div class="flex gap-2">
+                        <button data-action="edit" class="text-blue-500 hover:text-blue-700">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button data-action="delete" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
 
-            // Add a single event listener to the parent table body
-            callLog.addEventListener('click', (e) => {
-                const button = e.target.closest('button');
-                if (!button) return;
+    // Usar event delegation en el padre
+    callLog.addEventListener('click', (e) => {
+        const button = e.target.closest('button');
+        if (!button) return;
 
-                const row = e.target.closest('tr');
-                if (!row) return;
+        const row = e.target.closest('tr');
+        if (!row) return;
 
-                const originalIndex = parseInt(row.dataset.callIndex);
-                if (button.dataset.action === 'edit') {
-                    editCall(originalIndex);
-                } else if (button.dataset.action === 'delete') {
-                    deleteCall(originalIndex);
-                }
-            });
+        const displayedIndex = parseInt(row.dataset.callIndex);
+        const originalCall = displayedCalls[displayedIndex];
+        const originalIndex = calls.findIndex(c => c.date === originalCall.date && c.duration === originalCall.duration && c.rateIndex === originalCall.rateIndex);
 
-            updateTotals();
-            localStorage.setItem('calls', JSON.stringify(calls));
+        if (button.dataset.action === 'edit') {
+            editCall(originalIndex);
+        } else if (button.dataset.action === 'delete') {
+            deleteCall(originalIndex);
         }
+    });
+
+    updateTotals();
+    localStorage.setItem('calls', JSON.stringify(calls));
+}
+
 
         // Call timer functionality
         function updateCallTimer() {
