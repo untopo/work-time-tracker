@@ -1193,13 +1193,13 @@ function formatDateForInput(date) {
     const selectedDateStr = selectedDate.getFullYear() + "-" +
         String(selectedDate.getMonth() + 1).padStart(2, "0") + "-" +
         String(selectedDate.getDate()).padStart(2, "0");
-}
 
     const filteredCalls = calls.filter(call => {
         const callDate = new Date(call.date);
         const callDateStr = callDate.toLocaleDateString("en-CA"); // también en local
         return callDateStr === selectedDateStr;
     });
+
 
             // Show/Hide earnings cards based on toggle
             const isEnabled = enablePaymentCyclesToggle?.checked;
