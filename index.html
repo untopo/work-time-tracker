@@ -943,7 +943,7 @@ function handleSettingsKeyboard(e) {
     target.setHours(0, 0, 0, 0);
 
     return calls.filter(call => {
-        const callDate = new Date(call.startTime);
+        const callDate = new Date(call.date);
         const selectedDateStr = target.toISOString().split('T')[0];
         const callDateStr = callDate.toISOString().split('T')[0];
         return callDateStr === selectedDateStr;
@@ -1144,8 +1144,8 @@ function handleSettingsKeyboard(e) {
             });
 
             // Add current call if it exists and is from today
-            if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
-                const currentDuration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+            if (currentCall && isSameDay(new Date(currentCall.date), new Date(selectedDate))) {
+                const currentDuration = Math.floor((Date.now() - currentCall.date) / 1000);
                 const currentRate = rates[currentCall.rateIndex];
                 if (currentRate) {
                     totalDuration += currentDuration;
@@ -1185,7 +1185,7 @@ function handleSettingsKeyboard(e) {
             const selectedDateStr = selectedDate.toISOString().split('T')[0];
 
     const filteredCalls = calls.filter(call => {
-        const callDate = new Date(call.startTime);
+        const callDate = new Date(call.date);
         const callDateStr = callDate.toISOString().split('T')[0];
         return callDateStr === selectedDateStr;
     });
@@ -1243,8 +1243,8 @@ function handleSettingsKeyboard(e) {
                 });
 
                 // Add current active call if it exists and is from today
-                if (currentCall && isSameDay(new Date(currentCall.startTime), new Date(selectedDate))) {
-                    const currentDuration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+                if (currentCall && isSameDay(new Date(currentCall.date), new Date(selectedDate))) {
+                    const currentDuration = Math.floor((Date.now() - currentCall.date) / 1000);
                     const currentMinutes = currentDuration / 60;
                     const currentRate = rates[currentCall.rateIndex];
                     if (currentRate) {
@@ -1717,7 +1717,7 @@ function handleSettingsKeyboard(e) {
         function updateCallTimer() {
             if (!currentCall) return;
 
-            const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+            const duration = Math.floor((Date.now() - currentCall.date) / 1000);
             const rate = rates[currentCall.rateIndex];
             if (!rate) return;
 
@@ -1741,7 +1741,7 @@ function handleSettingsKeyboard(e) {
 
                 const liveCallRate = document.getElementById('live-call-rate');
                 currentCall = {
-                    startTime: Date.now(),
+                    date: Date.now(),
                     rateIndex: liveCallRate ? parseInt(liveCallRate.value) : 0
                 };
 
@@ -1758,10 +1758,10 @@ function handleSettingsKeyboard(e) {
             endCallBtn.addEventListener('click', () => {
                 if (!currentCall) return;
 
-                const duration = Math.floor((Date.now() - currentCall.startTime) / 1000);
+                const duration = Math.floor((Date.now() - currentCall.date) / 1000);
 
                 // Create a date object from the call's start time instead of current time
-                const callDate = new Date(currentCall.startTime);
+                const callDate = new Date(currentCall.date);
                 addCallToLog(callDate.toISOString(), duration, currentCall.rateIndex);
 
                 // Clear timers and reset state
