@@ -1649,8 +1649,7 @@ if (currentDateBtn) {
     displayCalls();
     updateStatistics();
 }
-
-        function displayCalls() {
+function displayCalls() {
     if (!callLog) return;
 
     // Filtrar y ordenar las llamadas por fecha local
@@ -1692,26 +1691,24 @@ if (currentDateBtn) {
         `;
     }).join('');
 
-    // Event delegation
-    callLog.addEventListener('click', (e) => {
-        const button = e.target.closest('button');
-        if (!button) return;
-
-        const row = e.target.closest('tr');
-        if (!row) return;
-
-        const originalIndex = parseInt(row.dataset.callIndex);
-        if (button.dataset.action === 'edit') {
-            editCall(originalIndex);
-        } else if (button.dataset.action === 'delete') {
-            deleteCall(originalIndex);
-        }
-    });
-
     updateTotals();
     localStorage.setItem('calls', JSON.stringify(calls));
 }
 
+        callLog.addEventListener('click', (e) => {
+    const button = e.target.closest('button');
+    if (!button) return;
+
+    const row = e.target.closest('tr');
+    if (!row) return;
+
+    const originalIndex = parseInt(row.dataset.callIndex);
+    if (button.dataset.action === 'edit') {
+        editCall(originalIndex);
+    } else if (button.dataset.action === 'delete') {
+        deleteCall(originalIndex);
+    }
+});
 
         // Call timer functionality
         function updateCallTimer() {
