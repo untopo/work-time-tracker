@@ -689,18 +689,18 @@
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
                 <i class="fas fa-calendar-check mr-2"></i>Cycle Progress
             </h3>
-            <div class="text-sm text-gray-700 dark:text-gray-300">
+            <div class="text-sm text-gray-900 dark:text-gray-100">
                 <p class="mb-1">
                     <i class="fas fa-calendar-day mr-2"></i>
-                    Start: <span id="cycle-start-date">N/A</span>
+                    Start: <span id="cycle-start-date" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
                 </p>
                 <p class="mb-1">
                     <i class="fas fa-calendar-day mr-2"></i>
-                    End: <span id="cycle-end-date">N/A</span>
+                    End: <span id="cycle-end-date" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
                 </p>
                 <p>
                     <i class="fas fa-calendar-check mr-2"></i>
-                    Days Left: <span id="days-until-end">N/A</span>
+                    Days Left: <span id="days-until-end" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
                 </p>
             </div>
         </div>
@@ -708,14 +708,14 @@
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
                 <i class="fas fa-clock mr-2"></i>Pay Day Countdown
             </h3>
-            <div class="text-sm text-gray-700 dark:text-gray-300">
+            <div class="text-sm text-gray-900 dark:text-gray-100">
                 <p class="mb-1">
                     <i class="fas fa-calendar-dollar mr-2"></i>
-                    Pay Date: <span id="pay-date">N/A</span>
+                    Pay Date: <span id="pay-date" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
                 </p>
                 <p>
                     <i class="fas fa-clock mr-2"></i>
-                    Days to Pay: <span id="days-until-pay">N/A</span>
+                    Days to Pay: <span id="days-until-pay" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
                 </p>
             </div>
         </div>
@@ -1062,12 +1062,12 @@
 
     function formatDate(date) {
         if (!date) return 'N/A';
+        // Fix for time zone issue - use UTC methods
         const d = new Date(date);
-        return d.toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+        const year = d.getUTCFullYear();
+        const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     function formatDateTime(date) {
@@ -1156,9 +1156,15 @@
             });
             const cycleEarnings = cycleCalls.reduce((sum, call) => sum + call.earned, 0);
             cycleEarningsDisplay.textContent = formatEarnings(cycleEarnings);
-            cycleStartDateDisplay.textContent = formatDate(currentCycle.startDate);
-            cycleEndDateDisplay.textContent = formatDate(currentCycle.endDate);
-            payDateDisplay.textContent = formatDate(currentCycle.payDate);
+            // Fix for date display
+            const cycleStartLocal = new Date(currentCycle.startDate);
+            const cycleEndLocal = new Date(currentCycle.endDate);
+            const cyclePayLocal = new Date(currentCycle.payDate);
+
+            cycleStartDateDisplay.textContent = cycleStartLocal.toLocaleDateString();
+            cycleEndDateDisplay.textContent = cycleEndLocal.toLocaleDateString();
+            payDateDisplay.textContent = cyclePayLocal.toLocaleDateString();
+            
             const daysLeft = Math.ceil((new Date(currentCycle.endDate) - now) / (1000 * 60 * 60 * 24));
             daysUntilEndDisplay.textContent = daysLeft > 0 ? `${daysLeft} day${daysLeft > 1 ? 's' : ''}` : 'Today!';
             const daysToPay = Math.ceil((new Date(currentCycle.payDate) - now) / (1000 * 60 * 60 * 24));
@@ -1536,10 +1542,15 @@
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors';
             const originalIndex = paymentCycles.findIndex(c => c.startDate === cycle.startDate && c.endDate === cycle.endDate);
+            
+            const startDisplay = new Date(cycle.startDate).toLocaleDateString();
+            const endDisplay = new Date(cycle.endDate).toLocaleDateString();
+            const payDisplay = new Date(cycle.payDate).toLocaleDateString();
+
             row.innerHTML = `
-                <td class="px-2 py-2">${formatDate(cycle.startDate)}</td>
-                <td class="px-2 py-2">${formatDate(cycle.endDate)}</td>
-                <td class="px-2 py-2">${formatDate(cycle.payDate)}</td>
+                <td class="px-2 py-2">${startDisplay}</td>
+                <td class="px-2 py-2">${endDisplay}</td>
+                <td class="px-2 py-2">${payDisplay}</td>
                 <td class="px-2 py-2 text-right">
                     <button class="edit-cycle-btn text-blue-500 hover:text-blue-700 mr-2" data-index="${originalIndex}">
                         <i class="fas fa-edit"></i>
@@ -1602,18 +1613,20 @@
     function handleEditCycleFormSubmit(e) {
         e.preventDefault();
 
-        const startDate = cycleStartDateInput.value;
-        const endDate = cycleEndDateInput.value;
-        const payDate = cyclePayDateInput.value;
+        // Fix for timezone bug: use UTC dates
+        const startDate = new Date(cycleStartDateInput.value);
+        const endDate = new Date(cycleEndDateInput.value);
+        const payDate = new Date(cyclePayDateInput.value);
 
         if (!startDate || !endDate || !payDate) {
             alert('Please fill in all dates.');
             return;
         }
 
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        const pay = new Date(payDate);
+        // Normalize to start of day in UTC
+        const start = new Date(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate());
+        const end = new Date(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate());
+        const pay = new Date(payDate.getUTCFullYear(), payDate.getUTCMonth(), payDate.getUTCDate());
 
         if (end < start) {
             alert('End date cannot be before start date.');
