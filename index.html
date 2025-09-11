@@ -904,6 +904,22 @@
     </div>
 </footer>
 <script>
+    function handleModalKeyboard(e) {
+    if (e.key === 'Escape') {
+        callModal.style.display = 'none';
+        if (isAddingCall) {
+            stopTimer();
+            isAddingCall = false;
+        }
+    }
+}
+
+function handleSettingsKeyboard(e) {
+    if (e.key === 'Escape') {
+        settingsModal.style.display = 'none';
+    }
+}
+    
     document.addEventListener('DOMContentLoaded', () => {
         const userTimeZoneElement = document.getElementById('user-time-zone');
         if (userTimeZoneElement) {
@@ -1167,7 +1183,13 @@
         }
 
         function updateStatistics() {
-            const filteredCalls = filterCallsByDate(calls, selectedDate);
+            const selectedDateStr = selectedDate.toISOString().split('T')[0];
+
+    const filteredCalls = calls.filter(call => {
+        const callDate = new Date(call.startTime);
+        const callDateStr = callDate.toISOString().split('T')[0];
+        return callDateStr === selectedDateStr;
+    });
 
             // Show/Hide earnings cards based on toggle
             const isEnabled = enablePaymentCyclesToggle?.checked;
