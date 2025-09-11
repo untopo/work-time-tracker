@@ -1631,7 +1631,8 @@ if (currentDateBtn) {
     // Crear fecha local a partir de la entrada
     const callDate = new Date(date);
     const callData = {
-        date: getLocalISOString(callDate), // Guardar en formato local
+        // Guardar en formato compatible con parseLocalDateString
+        date: `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, "0")}-${String(callDate.getDate()).padStart(2, "0")}T${String(callDate.getHours()).padStart(2, "0")}:${String(callDate.getMinutes()).padStart(2, "0")}:${String(callDate.getSeconds()).padStart(2, "0")}`,
         duration: duration,
         rateIndex: rateIndex
     };
@@ -1652,21 +1653,20 @@ if (currentDateBtn) {
         function displayCalls() {
     if (!callLog) return;
 
-    // Filtrar llamadas por la fecha seleccionada
+    // Filtrar y ordenar las llamadas por fecha local
     let displayedCalls = filterCallsByDate(calls, selectedDate);
-    displayedCalls.sort((a, b) => new Date(b.date) - new Date(a.date));
+    displayedCalls.sort((a, b) => parseLocalDateString(b.date) - parseLocalDateString(a.date));
 
-    callLog.innerHTML = displayedCalls.map((call, index) => {
+    callLog.innerHTML = displayedCalls.map(call => {
         const rate = rates[call.rateIndex];
         if (!rate) return '';
 
         const duration = call.duration;
-        const minutes = duration / 60; // Convertir segundos a minutos
-        const earned = (rate.amount / 60) * duration; // rate es por minuto, duration en segundos
+        const earned = (rate.amount / 60) * duration;
 
         return `
-            <tr data-call-index="${index}">
-                <td>${new Date(call.date).toLocaleString(undefined, {
+            <tr data-call-index="${calls.indexOf(call)}">
+                <td>${parseLocalDateString(call.date).toLocaleString(undefined, {
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit',
@@ -1692,7 +1692,7 @@ if (currentDateBtn) {
         `;
     }).join('');
 
-    // Usar event delegation en el padre
+    // Event delegation
     callLog.addEventListener('click', (e) => {
         const button = e.target.closest('button');
         if (!button) return;
@@ -1700,10 +1700,7 @@ if (currentDateBtn) {
         const row = e.target.closest('tr');
         if (!row) return;
 
-        const displayedIndex = parseInt(row.dataset.callIndex);
-        const originalCall = displayedCalls[displayedIndex];
-        const originalIndex = calls.findIndex(c => c.date === originalCall.date && c.duration === originalCall.duration && c.rateIndex === originalCall.rateIndex);
-
+        const originalIndex = parseInt(row.dataset.callIndex);
         if (button.dataset.action === 'edit') {
             editCall(originalIndex);
         } else if (button.dataset.action === 'delete') {
