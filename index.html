@@ -1197,10 +1197,11 @@ function formatDateForInput(date) {
         }
 
         function updateStatistics() {
-    const selectedDateStr = getLocalDateString(new Date(selectedDate)); // YYYY-MM-DD local
+    const selectedDateStr = getLocalDateString(new Date(selectedDate));
 
     const filteredCalls = calls.filter(call => {
-        const callDateStr = getLocalDateString(new Date(call.date));
+        const callDate = new Date(call.date);
+        const callDateStr = getLocalDateString(callDate);
         return callDateStr === selectedDateStr;
     });
 
