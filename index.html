@@ -1344,9 +1344,9 @@ if (dailyGoalEl) dailyGoalEl.textContent = formatMoney(goal);
         document.getElementById('cycle-earnings').textContent = formatMoney(cycleEarnings);
 document.getElementById('cycle-start-date').textContent = formatDisplayDate(currentCycle.startDate);
 document.getElementById('cycle-end-date').textContent = formatDisplayDate(currentCycle.endDate);
-document.getElementById('days-until-end').textContent = `${daysBetween(selected, cycleEndDate)} days`;
+document.getElementById('days-until-end').textContent = `${daysBetween(selectedDate, currentCycle.endDate)} days`;
 document.getElementById('pay-date').textContent = formatDisplayDate(currentCycle.payDate);
-document.getElementById('days-until-pay').textContent = `${daysBetween(selected, payDate)} days`;
+document.getElementById('days-until-pay').textContent = `${daysBetween(selectedDate, currentCycle.payDate)} days`;
 } else {
     document.getElementById('cycle-earnings').textContent = formatMoney(0);
     document.getElementById('cycle-start-date').textContent = 'N/A';
