@@ -1588,14 +1588,15 @@ if (currentDateBtn) {
         }
 
         // Call management
-        function deleteCall(index) {
-            if (confirm('Are you sure you want to delete this call?')) {
-                calls.splice(index, 1);
-                localStorage.setItem('calls', JSON.stringify(calls));
-                displayCalls();
-                updateStatistics();
-            }
-        }
+function deleteCall(index) {
+    if (confirm('Are you sure you want to delete this call?')) {
+        const callToDelete = calls.findIndex(c => c === calls[index]);
+        if (callToDelete !== -1) calls.splice(callToDelete, 1);
+        localStorage.setItem('calls', JSON.stringify(calls));
+        displayCalls();
+        updateStatistics();
+    }
+}
 
         function editCall(index) {
             const call = calls[index];
