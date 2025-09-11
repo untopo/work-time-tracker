@@ -2140,14 +2140,14 @@
 
 
         // Global Event Listeners
-        // This consolidates the duplicated keydown listeners.
-        document.addEventListener('keydown', (e) => {
-            if (callModal && callModal.style.display === 'flex') {
-                handleModalKeyboard(e);
-            } else if (settingsModal && settingsModal.style.display === 'flex') {
-                handleSettingsKeyboard(e);
-            }
-        });
+// This consolidates the duplicated keydown listeners.
+document.addEventListener('keydown', (e) => {
+    if (callModal && callModal.style.display === 'flex') {
+        handleModalKeyboard(e);
+    } else if (settingsModal && settingsModal.style.display === 'flex') {
+        handleSettingsKeyboard(e);
+    }
+});
         
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
