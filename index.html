@@ -1219,7 +1219,7 @@ function handleSettingsKeyboard(e) {
             // Update average duration
             if (document.getElementById('avg-duration')) {
                 if (filteredCalls.length > 0) {
-                    const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
+                    const totalDuration = filteredCalls.reduce((sum, call) => sum + (call.duration || 0), 0);
                     const avgDurationSeconds = Math.floor(totalDuration / filteredCalls.length);
                     document.getElementById('avg-duration').textContent = formatDuration(avgDurationSeconds);
                 } else {
