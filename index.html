@@ -939,18 +939,20 @@ function handleSettingsKeyboard(e) {
 
         function filterCallsByDate(calls, targetDate) {
     if (!targetDate) return calls;
+
     const target = new Date(targetDate);
     target.setHours(0, 0, 0, 0);
 
     return calls.filter(call => {
-    const callDate = new Date(call.date);
-    return (
-        callDate.getFullYear() === target.getFullYear() &&
-        callDate.getMonth() === target.getMonth() &&
-        callDate.getDate() === target.getDate()
-    );
-});
+        const callDate = new Date(call.date);
+        return (
+            callDate.getFullYear() === target.getFullYear() &&
+            callDate.getMonth() === target.getMonth() &&
+            callDate.getDate() === target.getDate()
+        );
+    });
 }
+
 
         const formatDuration = (totalSeconds) => {
     if (!totalSeconds || isNaN(totalSeconds)) return "00:00:00";  // 🔒 protección
