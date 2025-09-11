@@ -937,6 +937,13 @@ function handleSettingsKeyboard(e) {
                 d1.getDate() === d2.getDate();
         };
 
+        // Utility: always return local date string YYYY-MM-DD
+function getLocalDateString(date) {
+    return date.getFullYear() + "-" +
+        String(date.getMonth() + 1).padStart(2, "0") + "-" +
+        String(date.getDate()).padStart(2, "0");
+}
+
         function filterCallsByDate(calls, targetDate) {
     if (!targetDate) return calls;
 
