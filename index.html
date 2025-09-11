@@ -1643,12 +1643,12 @@ if (currentDateBtn) {
 
         function addCallToLog(date, duration, rateIndex) {
     // Create a new Date object from the provided date string, which is already in local time
-    const callDate = new Date(date);
     const callData = {
-        date: callDate.toISOString(), // Store as ISO string
-        duration: duration,
-        rateIndex: rateIndex
-    };
+    date: getLocalISOString(callDate), // Guardar con fecha local
+    duration: duration,
+    rateIndex: rateIndex
+};
+
     calls.push(callData);
 
     // Update the selected date to match the call's date to ensure it shows up immediately
