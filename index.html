@@ -126,7 +126,8 @@
         html.dark .card,
         html.dark .modal,
         html.dark #call-modal,
-        html.dark #settings-modal {
+        html.dark #settings-modal,
+        html.dark #edit-cycle-modal {
             background-color: #1e293b;
             border: 1px solid #334155;
         }
@@ -295,7 +296,8 @@
 
         /* Modal styles with dark mode */
         #call-modal,
-        #settings-modal {
+        #settings-modal,
+        #edit-cycle-modal {
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -304,7 +306,8 @@
         }
 
         html.dark #call-modal,
-        html.dark #settings-modal {
+        html.dark #settings-modal,
+        html.dark #edit-cycle-modal {
             background-color: #1e293b;
             border-color: #475569;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
@@ -313,7 +316,9 @@
         #call-modal input,
         #call-modal select,
         #settings-modal input,
-        #settings-modal select {
+        #settings-modal select,
+        #edit-cycle-modal input,
+        #edit-cycle-modal select {
             width: 100%;
             padding: 8px;
             margin: 4px 0 12px;
@@ -324,7 +329,9 @@
         html.dark #call-modal input,
         html.dark #call-modal select,
         html.dark #settings-modal input,
-        html.dark #settings-modal select {
+        html.dark #settings-modal select,
+        html.dark #edit-cycle-modal input,
+        html.dark #edit-cycle-modal select {
             background-color: #334155;
             border-color: #475569;
             color: #f1f5f9;
@@ -803,7 +810,7 @@
                 </div>
                 <div id="payment-cycles-config" class="hidden">
                     <div class="mb-3">
-                        <button id="add-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                        <button id="show-add-cycle-btn" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
                             <i class="fas fa-plus"></i> Add Payment Cycle
                         </button>
                     </div>
@@ -838,11 +845,47 @@
     </div>
 </div>
 
+<div id="edit-cycle-modal" style="display: none;"
+     role="dialog" aria-labelledby="edit-cycle-modal-title" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="edit-cycle-modal-title">Edit Payment Cycle</h3>
+            <button id="close-edit-cycle-modal" aria-label="Close modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="edit-cycle-form">
+            <div class="mb-4">
+                <label for="cycle-start-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                <input type="date" id="cycle-start-date-input" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+            </div>
+            <div class="mb-4">
+                <label for="cycle-end-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                <input type="date" id="cycle-end-date-input" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+            </div>
+            <div class="mb-6">
+                <label for="cycle-pay-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pay Date</label>
+                <input type="date" id="cycle-pay-date-input" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" id="cancel-edit-cycle" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"> Cancel </button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"> Save </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <footer class="text-center text-gray-500 dark:text-gray-400 text-sm mt-8">
-    <div class="flex justify-center space-x-4">
-        <button id="privacy-policy" class="hover:underline">Privacy Policy</button>
-        <button id="terms-of-service" class="hover:underline">Terms of Service</button>
+    <div class="flex justify-center flex-col items-center space-y-2">
+        <span id="local-time" class="text-lg font-semibold text-gray-700 dark:text-gray-300"></span>
+        <div class="flex justify-center space-x-4">
+            <a href="https://www.instagram.com/your_instagram_id" target="_blank" rel="noopener noreferrer" class="hover:underline text-blue-500 dark:text-blue-400">
+                Made by topo
+            </a>
+            <button id="privacy-policy" class="hover:underline">Privacy Policy</button>
+            <button id="terms-of-service" class="hover:underline">Terms of Service</button>
+        </div>
     </div>
 </footer>
 
@@ -895,7 +938,7 @@
     const paymentCyclesToggle = document.getElementById('payment-cycles-toggle');
     const paymentCyclesConfig = document.getElementById('payment-cycles-config');
     const paymentCyclesList = document.getElementById('payment-cycles-list');
-    const addCycleBtn = document.getElementById('add-cycle');
+    const showAddCycleBtn = document.getElementById('show-add-cycle-btn');
     const cycleEarningsDisplay = document.getElementById('cycle-earnings');
     const cycleStartDateDisplay = document.getElementById('cycle-start-date');
     const cycleEndDateDisplay = document.getElementById('cycle-end-date');
@@ -906,6 +949,14 @@
     const paymentCycleEarningsCards = document.getElementById('payment-cycle-earnings-cards');
     const storageUsedDisplay = document.getElementById('storage-used');
     const storageBar = document.getElementById('storage-bar');
+    const localTimeDisplay = document.getElementById('local-time');
+    const editCycleModal = document.getElementById('edit-cycle-modal');
+    const closeEditCycleModalBtn = document.getElementById('close-edit-cycle-modal');
+    const cancelEditCycleBtn = document.getElementById('cancel-edit-cycle');
+    const editCycleForm = document.getElementById('edit-cycle-form');
+    const cycleStartDateInput = document.getElementById('cycle-start-date-input');
+    const cycleEndDateInput = document.getElementById('cycle-end-date-input');
+    const cyclePayDateInput = document.getElementById('cycle-pay-date-input');
     let rates = JSON.parse(localStorage.getItem('rates')) || [];
     let calls = JSON.parse(localStorage.getItem('calls')) || [];
     let dailyGoal = JSON.parse(localStorage.getItem('dailyGoal')) || { amount: 0 };
@@ -917,6 +968,8 @@
     let currentCallRate = null;
     let isEditingCall = false;
     let editingCallIndex = null;
+    let isEditingCycle = false;
+    let editingCycleIndex = null;
 
     // Helper Functions
     function formatTime(milliseconds) {
@@ -928,6 +981,7 @@
     }
 
     function formatDate(date) {
+        if (!date) return 'N/A';
         const d = new Date(date);
         return d.toLocaleDateString(undefined, {
             year: 'numeric',
@@ -953,6 +1007,13 @@
         storageUsedDisplay.textContent = `${totalKB.toFixed(2)} KB`;
         storageBar.style.width = `${Math.min(usagePercentage, 100)}%`;
         storageBar.style.backgroundColor = usagePercentage > 80 ? '#ef4444' : '#3b82f6';
+    }
+
+    function updateLocalTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        localTimeDisplay.textContent = `${dateString}, ${timeString}`;
     }
 
     function updateStatistics() {
@@ -1334,6 +1395,17 @@
         settingsModal.style.display = 'none';
     }
 
+    function openEditCycleModal() {
+        editCycleModal.style.display = 'flex';
+    }
+
+    function closeEditCycleModal() {
+        editCycleModal.style.display = 'none';
+        isEditingCycle = false;
+        editingCycleIndex = null;
+        editCycleForm.reset();
+    }
+
     // Payment Cycle Management
     function renderPaymentCycles() {
         paymentCyclesToggle.checked = paymentCyclesEnabled;
@@ -1348,15 +1420,22 @@
             paymentCyclesList.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">No cycles configured.</td></tr>`;
             return;
         }
-        paymentCycles.forEach((cycle, index) => {
+        
+        const sortedCycles = [...paymentCycles].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+
+        sortedCycles.forEach((cycle, index) => {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors';
+            const originalIndex = paymentCycles.findIndex(c => c.startDate === cycle.startDate && c.endDate === cycle.endDate);
             row.innerHTML = `
                 <td class="px-2 py-2">${formatDate(cycle.startDate)}</td>
                 <td class="px-2 py-2">${formatDate(cycle.endDate)}</td>
                 <td class="px-2 py-2">${formatDate(cycle.payDate)}</td>
                 <td class="px-2 py-2 text-right">
-                    <button class="delete-cycle-btn text-red-500 hover:text-red-700" data-index="${index}">
+                    <button class="edit-cycle-btn text-blue-500 hover:text-blue-700 mr-2" data-index="${originalIndex}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-cycle-btn text-red-500 hover:text-red-700" data-index="${originalIndex}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -1364,9 +1443,16 @@
             paymentCyclesList.appendChild(row);
         });
 
+        document.querySelectorAll('.edit-cycle-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const index = parseInt(e.currentTarget.dataset.index);
+                editPaymentCycle(index);
+            });
+        });
+
         document.querySelectorAll('.delete-cycle-btn').forEach(button => {
             button.addEventListener('click', (e) => {
-                const index = e.currentTarget.dataset.index;
+                const index = parseInt(e.currentTarget.dataset.index);
                 if (confirm('Are you sure you want to delete this payment cycle?')) {
                     paymentCycles.splice(index, 1);
                     savePaymentCycles();
@@ -1386,36 +1472,60 @@
         }
     }
 
-    function generatePaymentCycle() {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth();
-        const day = today.getDate();
+    function addPaymentCycle() {
+        isEditingCycle = false;
+        document.getElementById('edit-cycle-modal-title').textContent = 'Add Payment Cycle';
+        openEditCycleModal();
+    }
 
-        let startDate, endDate, payDate;
+    function editPaymentCycle(index) {
+        const cycleToEdit = paymentCycles[index];
+        isEditingCycle = true;
+        editingCycleIndex = index;
+        document.getElementById('edit-cycle-modal-title').textContent = 'Edit Payment Cycle';
 
-        if (day <= 15) {
-            startDate = new Date(year, month, 1);
-            endDate = new Date(year, month, 15);
-            payDate = new Date(year, month, 30);
-        } else {
-            startDate = new Date(year, month, 16);
-            endDate = new Date(year, month + 1, 0); // Last day of the current month
-            payDate = new Date(year, month + 1, 15); // 15th of the next month
-        }
-        
-        // Check for duplicates
-        if (paymentCycles.some(cycle => cycle.startDate === startDate.toISOString() && cycle.endDate === endDate.toISOString())) {
-            alert('A payment cycle for this period already exists.');
+        cycleStartDateInput.value = cycleToEdit.startDate.split('T')[0];
+        cycleEndDateInput.value = cycleToEdit.endDate.split('T')[0];
+        cyclePayDateInput.value = cycleToEdit.payDate.split('T')[0];
+        openEditCycleModal();
+    }
+
+    function handleEditCycleFormSubmit(e) {
+        e.preventDefault();
+
+        const startDate = cycleStartDateInput.value;
+        const endDate = cycleEndDateInput.value;
+        const payDate = cyclePayDateInput.value;
+
+        if (!startDate || !endDate || !payDate) {
+            alert('Please fill in all dates.');
             return;
         }
 
-        paymentCycles.push({
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString(),
-            payDate: payDate.toISOString()
-        });
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const pay = new Date(payDate);
+
+        if (end < start) {
+            alert('End date cannot be before start date.');
+            return;
+        }
+
+        const newCycle = {
+            startDate: start.toISOString(),
+            endDate: end.toISOString(),
+            payDate: pay.toISOString()
+        };
+
+        if (isEditingCycle) {
+            paymentCycles[editingCycleIndex] = newCycle;
+        } else {
+            paymentCycles.push(newCycle);
+        }
+
         savePaymentCycles();
+        closeEditCycleModal();
+        showToast('Payment cycle saved!');
     }
 
     // Event Listeners
@@ -1436,7 +1546,17 @@
             if (e.target === settingsModal) {
                 closeSettingsModal();
             }
+            if (e.target === editCycleModal) {
+                closeEditCycleModal();
+            }
         });
+        
+        // New Payment Cycle Modal
+        showAddCycleBtn.addEventListener('click', addPaymentCycle);
+        closeEditCycleModalBtn.addEventListener('click', closeEditCycleModal);
+        cancelEditCycleBtn.addEventListener('click', closeEditCycleModal);
+        editCycleForm.addEventListener('submit', handleEditCycleFormSubmit);
+
 
         // Dark Mode
         darkToggleBtn.addEventListener('click', () => {
@@ -1544,6 +1664,7 @@
                         saveCalls();
                         saveDailyGoal();
                         savePaymentCycles();
+                        populateRateSelects();
                         showToast('Data imported successfully!');
                         closeSettingsModal();
                     }
@@ -1587,8 +1708,6 @@
             savePaymentCycles();
         });
         
-        addCycleBtn.addEventListener('click', generatePaymentCycle);
-        
         // Toast Notification
         function showToast(message) {
             const toast = document.createElement('div');
@@ -1624,21 +1743,19 @@
         // Global Event Listeners
         function handleModalKeyboard(e) {
             if (e.key === 'Escape') {
-                closeCallModal();
+                if (callModal.style.display === 'flex') {
+                    closeCallModal();
+                }
+                if (settingsModal.style.display === 'flex') {
+                    closeSettingsModal();
+                }
+                if (editCycleModal.style.display === 'flex') {
+                    closeEditCycleModal();
+                }
             }
         }
-        function handleSettingsKeyboard(e) {
-            if (e.key === 'Escape') {
-                closeSettingsModal();
-            }
-        }
-        document.addEventListener('keydown', (e) => {
-            if (callModal && callModal.style.display === 'flex') {
-                handleModalKeyboard(e);
-            } else if (settingsModal && settingsModal.style.display === 'flex') {
-                handleSettingsKeyboard(e);
-            }
-        });
+        
+        document.addEventListener('keydown', handleModalKeyboard);
         
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
@@ -1661,6 +1778,8 @@
         updateStatistics();
         updateStorageInfo();
         renderPaymentCycles();
+        updateLocalTime();
+        setInterval(updateLocalTime, 1000);
     });
 </script>
 </body>
