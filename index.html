@@ -461,6 +461,23 @@
         html.dark .slogan-text-color {
             color: #cbd5e1; /* Visible dark mode color */
         }
+        
+        /* Specific fix for text visibility within the payment cycle card */
+        #payment-cycle-earnings-cards p {
+            color: #4b5563; /* A medium gray for light mode */
+        }
+        
+        html.dark #payment-cycle-earnings-cards p {
+            color: #cbd5e1; /* A light gray for dark mode */
+        }
+        
+        #payment-cycle-earnings-cards p .font-semibold {
+            color: #1f2937; /* Very dark gray for contrast in light mode */
+        }
+        
+        html.dark #payment-cycle-earnings-cards p .font-semibold {
+            color: #f1f5f9; /* Very light gray for contrast in dark mode */
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
@@ -692,15 +709,15 @@
             <div class="text-sm text-gray-900 dark:text-gray-100">
                 <p class="mb-1">
                     <i class="fas fa-calendar-day mr-2"></i>
-                    Start: <span id="cycle-start-date" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
+                    Start: <span id="cycle-start-date" class="font-semibold">N/A</span>
                 </p>
                 <p class="mb-1">
                     <i class="fas fa-calendar-day mr-2"></i>
-                    End: <span id="cycle-end-date" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
+                    End: <span id="cycle-end-date" class="font-semibold">N/A</span>
                 </p>
                 <p>
                     <i class="fas fa-calendar-check mr-2"></i>
-                    Days Left: <span id="days-until-end" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
+                    Days Left: <span id="days-until-end" class="font-semibold">N/A</span>
                 </p>
             </div>
         </div>
@@ -711,11 +728,11 @@
             <div class="text-sm text-gray-900 dark:text-gray-100">
                 <p class="mb-1">
                     <i class="fas fa-calendar-dollar mr-2"></i>
-                    Pay Date: <span id="pay-date" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
+                    Pay Date: <span id="pay-date" class="font-semibold">N/A</span>
                 </p>
                 <p>
                     <i class="fas fa-clock mr-2"></i>
-                    Days to Pay: <span id="days-until-pay" class="font-semibold text-gray-900 dark:text-gray-100">N/A</span>
+                    Days to Pay: <span id="days-until-pay" class="font-semibold">N/A</span>
                 </p>
             </div>
         </div>
