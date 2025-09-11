@@ -2044,33 +2044,38 @@ if (currentDateBtn) {
 
         // Export/Import functionality with error handling
         function exportData() {
-            try {
-                const dataToExport = {
-                    rates,
-                    calls,
-                    goal,
-                    version: '1.1',
-                    exportDate: new Date().toLocaleString(),
-                    paymentCycles: paymentCycles,
-                    paymentCyclesEnabled: paymentCyclesEnabled
-                };
+    try {
+        const dataToExport = {
+            rates,
+            calls,
+            goal,
+            version: '1.1',
+            exportDate: new Date().toLocaleString(),
+            paymentCycles: paymentCycles,
+            paymentCyclesEnabled: paymentCyclesEnabled
+        };
 
-                const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
-                    type: 'application/json'
-                });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `work-time-tracker-backup-${new Date().toLocaleString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error('Export failed:', error);
-                throw error;
-            }
-        }
+        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
+            type: 'application/json'
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        // Use a local-date (YYYY-MM-DD) safe format for the filename
+        const fileDate = new Date().toLocaleDateString("en-CA"); // e.g. 2025-09-10
+        a.href = url;
+        a.download = `work-time-tracker-backup-${fileDate}.json`;
+
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Export failed:', error);
+        throw error;
+    }
+}
+
 
         function importData(file) {
             return new Promise((resolve, reject) => {
