@@ -1599,34 +1599,34 @@ function deleteCall(index) {
 }
 
         function editCall(index) {
-            const call = calls[index];
-            if (!call) return;
+    const call = calls[index];
+    if (!call) return;
 
-            editingCallIndex = index;
-            const date = new Date(call.date);
+    editingCallIndex = index;
+    const date = new Date(call.date);
 
-            if (modalTitle) modalTitle.textContent = 'Edit Call';
-            if (callDate) callDate.value = getLocalISOString(date).substring(0, 16); // Correct format for datetime-local
+    if (modalTitle) modalTitle.textContent = 'Edit Call';
+    if (callDate) callDate.value = getLocalISOString(date).substring(0, 16); // Correct format for datetime-local
 
-            const hours = Math.floor(call.duration / 3600);
-            const minutes = Math.floor((call.duration % 3600) / 60);
-            const seconds = call.duration % 60;
+    const hours = Math.floor(call.duration / 60); // Cambiado a minutos totales
+    const minutes = call.duration % 60;           // Minutos restantes
+    const seconds = 0;                            // Ignorado, no se usa
 
-            const hoursInput = document.getElementById('call-duration-hours');
-            const minutesInput = document.getElementById('call-duration-minutes');
-            const secondsInput = document.getElementById('call-duration-seconds');
+    const hoursInput = document.getElementById('call-duration-hours');
+    const minutesInput = document.getElementById('call-duration-minutes');
+    const secondsInput = document.getElementById('call-duration-seconds');
 
-            if (hoursInput) hoursInput.value = hours;
-            if (minutesInput) minutesInput.value = minutes;
-            if (secondsInput) secondsInput.value = seconds;
-            if (callRate) callRate.value = call.rateIndex;
+    if (hoursInput) hoursInput.value = hours;
+    if (minutesInput) minutesInput.value = minutes;
+    if (secondsInput) secondsInput.value = seconds;
+    if (callRate) callRate.value = call.rateIndex;
 
-            lastActiveElement = document.activeElement;
-            if (callModal) {
-                callModal.style.display = 'flex';
-                if (callDate) callDate.focus();
-            }
-        }
+    lastActiveElement = document.activeElement;
+    if (callModal) {
+        callModal.style.display = 'flex';
+        if (callDate) callDate.focus();
+    }
+}
 
         function addCallToLog(date, duration, rateIndex) {
     // Crear fecha local a partir de la entrada
