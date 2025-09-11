@@ -711,12 +711,10 @@
                     </tr>
                 </thead>
                 <tbody id="call-log">
-                    </tbody>
+                </tbody>
                 <tfoot>
                     <tr class="bg-gray-50 dark:bg-gray-800">
-                        <td colspan="5" class="py-4 text-center text-gray-500 dark:text-gray-400">
-                            End of call log
-                        </td>
+                        <td colspan="5" class="py-4 text-center text-gray-500 dark:text-gray-400"> End of call log </td>
                     </tr>
                 </tfoot>
             </table>
@@ -724,18 +722,14 @@
     </div>
 </div>
 
-<div id="call-modal"
-      style="display: none;"
-      role="dialog"
-      aria-labelledby="modal-title"
-      aria-modal="true"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+<div id="call-modal" style="display: none;"
+    role="dialog" aria-labelledby="modal-title" aria-modal="true"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">Add Call</h3>
-            <button id="close-modal"
-                    aria-label="Close modal"
-                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <button id="close-modal" aria-label="Close modal"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -743,35 +737,32 @@
             <div class="mb-4">
                 <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
                 <input type="datetime-local" id="call-date" required
-                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
             </div>
             <div class="mb-4">
                 <label for="call-duration-hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (HH:MM:SS)</label>
                 <div class="flex gap-2">
-                    <input type="number" id="call-duration-hours" min="0" max="24" placeholder="HH"
-                            aria-label="Hours"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                    <input type="number" id="call-duration-minutes" min="0" max="59" placeholder="MM"
-                            aria-label="Minutes"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                    <input type="number" id="call-duration-seconds" min="0" max="59" placeholder="SS"
-                            aria-label="Seconds"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    <input type="number" id="call-duration-hours" min="0" max="24" placeholder="HH" aria-label="Hours"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    <input type="number" id="call-duration-minutes" min="0" max="59" placeholder="MM" aria-label="Minutes"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    <input type="number" id="call-duration-seconds" min="0" max="59" placeholder="SS" aria-label="Seconds"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                 </div>
             </div>
             <div class="mb-6">
                 <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
                 <select id="call-rate"
-                         class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
                 </select>
             </div>
             <div class="flex justify-end gap-3">
                 <button type="button" id="cancel-call"
-                         class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                    class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                     Cancel
                 </button>
                 <button type="submit"
-                         class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                     Save
                 </button>
             </div>
@@ -779,18 +770,14 @@
     </div>
 </div>
 
-<div id="settings-modal"
-      style="display: none;"
-      role="dialog"
-      aria-labelledby="settings-modal-title"
-      aria-modal="true"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+<div id="settings-modal" style="display: none;"
+    role="dialog" aria-labelledby="settings-modal-title" aria-modal="true"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="settings-modal-title">Settings</h3>
-            <button id="close-settings-modal"
-                    aria-label="Close settings"
-                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <button id="close-settings-modal" aria-label="Close settings"
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -798,13 +785,13 @@
             <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
                 <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Management</h4>
                 <div class="flex flex-col gap-2">
-                    <button id="export-data" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                        <i class="fas fa-download"></i>
-                        Export Data
+                    <button id="export-data"
+                        class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                        <i class="fas fa-download"></i> Export Data
                     </button>
-                    <label for="import-file" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors cursor-pointer">
-                        <i class="fas fa-upload"></i>
-                        Import Data
+                    <label for="import-file"
+                        class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors cursor-pointer">
+                        <i class="fas fa-upload"></i> Import Data
                     </label>
                     <input type="file" id="import-file" accept=".json" class="hidden">
                 </div>
@@ -832,9 +819,9 @@
                 </div>
                 <div id="payment-cycles-config" class="hidden">
                     <div class="mb-3">
-                        <button id="add-cycle" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-plus"></i>
-                            Add Payment Cycle
+                        <button id="add-cycle"
+                            class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-plus"></i> Add Payment Cycle
                         </button>
                     </div>
                     <div class="max-h-48 overflow-y-auto">
@@ -848,1365 +835,756 @@
                                 </tr>
                             </thead>
                             <tbody id="payment-cycles-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
-                                </tbody>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
             <div>
                 <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Cleanup</h4>
-                <button id="cleanup-data" class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
-                    <i class="fas fa-trash-alt"></i>
-                    Clean Old Data
+                <button id="cleanup-data"
+                    class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
+                    <i class="fas fa-trash-alt"></i> Clean Old Data
                 </button>
             </div>
         </div>
     </div>
 </div>
-</div>
-<footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
-    <div class="container mx-auto px-4 py-8 text-center">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
-            <div class="text-center">
-                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Work Time Tracker</h3>
-                <p class="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
-                    Made with
-                    <span class="inline-block">
-                        <i class="fas fa-heart text-red-500 animate-beat"></i>
-                    </span>
-                    by
-                    <a href="https://www.instagram.com/otpo/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-                        Topo
-                    </a>
-                </p>
-            </div>
-            <div class="text-center">
-                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Your Local Time</h3>
-                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                    <li class="flex items-center justify-center gap-2">
-                        <i class="fas fa-clock"></i>
-                        <span id="user-time-zone"></span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>© 2025 Work Time Tracker. All rights reserved.</p>
-            <p class="mt-2">
-                <button id="privacy-policy" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Privacy Policy</button>
-                <span class="mx-2">•</span>
-                <button id="terms-of-service" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Terms of Service</button>
-            </p>
-        </div>
+
+<div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="modal-backdrop"></div>
+
+<footer class="text-center text-gray-500 dark:text-gray-400 text-sm mt-8">
+    <div class="flex justify-center items-center gap-4 mb-2">
+        <a href="#" id="privacy-policy" class="hover:underline">Privacy Policy</a>
+        <span>•</span>
+        <a href="#" id="terms-of-service" class="hover:underline">Terms of Service</a>
     </div>
+    <p>&copy; 2023 Work Time Tracker</p>
 </footer>
 <script>
-    function handleModalKeyboard(e) {
-    if (e.key === 'Escape') {
-        callModal.style.display = 'none';
-        if (isAddingCall) {
-            stopTimer();
-            isAddingCall = false;
-        }
-    }
-}
-
-function handleSettingsKeyboard(e) {
-    if (e.key === 'Escape') {
-        settingsModal.style.display = 'none';
-    }
-}
-    
     document.addEventListener('DOMContentLoaded', () => {
-        const userTimeZoneElement = document.getElementById('user-time-zone');
-        if (userTimeZoneElement) {
-            const now = new Date();
-            userTimeZoneElement.textContent = `Your local time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone} - ${now.toLocaleString()}`;
+        // --- DOM Elements ---
+        const darkToggle = document.getElementById('dark-toggle');
+        const settingsToggle = document.getElementById('settings-toggle');
+        const rateForm = document.getElementById('rate-form');
+        const rateNameInput = document.getElementById('rate-name');
+        const rateAmountInput = document.getElementById('rate-amount');
+        const ratesList = document.getElementById('rates-list');
+        const showRateAddBtn = document.getElementById('show-rate-add');
+        const cancelRateAddBtn = document.getElementById('cancel-rate-add');
+        const startCallBtn = document.getElementById('start-call-btn');
+        const endCallBtn = document.getElementById('end-call-btn');
+        const addCallBtn = document.getElementById('add-call-btn');
+        const selectCallRate = document.getElementById('select-call-rate');
+        const callLogTable = document.getElementById('call-log');
+        const callModal = document.getElementById('call-modal');
+        const callForm = document.getElementById('call-form');
+        const closeModalBtn = document.getElementById('close-modal');
+        const cancelCallBtn = document.getElementById('cancel-call');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeSettingsModalBtn = document.getElementById('close-settings-modal');
+        const statsDatePicker = document.getElementById('stats-date-picker');
+        const currentDateBtn = document.getElementById('current-date-btn');
+        const goalForm = document.getElementById('goal-form');
+        const goalAmountInput = document.getElementById('goal-amount');
+        const goalProgressText = document.getElementById('goal-progress-text');
+        const goalAmountDisplay = document.getElementById('goal-amount-display');
+        const goalProgressBar = document.getElementById('goal-progress-bar');
+        const liveCallInfo = document.getElementById('live-call-info');
+        const liveCallTimer = document.getElementById('live-call-timer');
+        const liveCallEarnings = document.getElementById('live-call-earnings');
+        const totalMinutesEl = document.getElementById('total-minutes');
+        const totalEarningsEl = document.getElementById('total-earnings');
+        const avgDurationEl = document.getElementById('avg-duration');
+        const todayEarningsEl = document.getElementById('today-earnings');
+        const goalEstimateEl = document.getElementById('goal-estimate');
+        const firstHalfEarningsEl = document.getElementById('first-half-earnings');
+        const secondHalfEarningsEl = document.getElementById('second-half-earnings');
+        const monthlyTotalEarningsEl = document.getElementById('monthly-total-earnings');
+        const paymentCyclesToggle = document.getElementById('payment-cycles-toggle');
+        const paymentCyclesConfig = document.getElementById('payment-cycles-config');
+        const paymentCyclesList = document.getElementById('payment-cycles-list');
+        const addCycleBtn = document.getElementById('add-cycle');
+        const cycleEarningsEl = document.getElementById('cycle-earnings');
+        const cycleStartDateEl = document.getElementById('cycle-start-date');
+        const cycleEndDateEl = document.getElementById('cycle-end-date');
+        const daysUntilEndEl = document.getElementById('days-until-end');
+        const payDateEl = document.getElementById('pay-date');
+        const daysUntilPayEl = document.getElementById('days-until-pay');
+        const exportDataBtn = document.getElementById('export-data');
+        const importFile = document.getElementById('import-file');
+        const cleanupDataBtn = document.getElementById('cleanup-data');
+        const storageUsedEl = document.getElementById('storage-used');
+        const storageBarEl = document.getElementById('storage-bar');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+
+        // --- Data Variables ---
+        let rates = JSON.parse(localStorage.getItem('rates')) || [];
+        let calls = JSON.parse(localStorage.getItem('calls')) || [];
+        let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles')) || [];
+        let dailyGoal = JSON.parse(localStorage.getItem('dailyGoal')) || { amount: 0 };
+        let editingRateId = null;
+        let editingCallId = null;
+        let activeTimerId = null;
+        let activeCallStartTime = null;
+        let lastUpdateTime = Date.now();
+        const activeTimers = new Set();
+        const MAX_STORAGE_MB = 5;
+
+        // --- Helper Functions ---
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
         }
 
-        // Utility functions
-        const formatMoney = (amount) => `$${Number(amount).toFixed(2)}`;
-        const isSameDay = (date1, date2) => {
+        function saveRates() {
+            localStorage.setItem('rates', JSON.stringify(rates));
+            displayRates();
+            updateCallRateSelect();
+        }
+
+        function saveCalls() {
+            localStorage.setItem('calls', JSON.stringify(calls));
+            displayCalls();
+            updateStatistics();
+            updateStorageInfo();
+            renderPaymentCycles();
+        }
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function parseDuration(hours, minutes, seconds) {
+            return (parseInt(hours) || 0) * 3600 + (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        }
+
+        function getRateById(id) {
+            return rates.find(rate => rate.id === id);
+        }
+
+        function calculateEarnings(durationInSeconds, ratePerMinute) {
+            const minutes = durationInSeconds / 60;
+            return minutes * ratePerMinute;
+        }
+
+        function formatDate(date) {
+            const d = new Date(date);
+            return d.toLocaleDateString();
+        }
+
+        function isSameDay(date1, date2) {
             const d1 = new Date(date1);
             const d2 = new Date(date2);
             return d1.getFullYear() === d2.getFullYear() &&
-                d1.getMonth() === d2.getMonth() &&
-                d1.getDate() === d2.getDate();
-        };
+                   d1.getMonth() === d2.getMonth() &&
+                   d1.getDate() === d2.getDate();
+        }
 
-        // Utility: always return local date string YYYY-MM-DD
-function getLocalDateString(date) {
-    return date.getFullYear() + "-" +
-        String(date.getMonth() + 1).padStart(2, "0") + "-" +
-        String(date.getDate()).padStart(2, "0");
-}
+        function daysBetween(start, end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const differenceInTime = endDate.getTime() - startDate.getTime();
+            return Math.ceil(differenceInTime / (1000 * 3600 * 24));
+        }
 
-// Convierte un string ISO a Date local
-function parseLocalDateString(isoString) {
-    const date = new Date(isoString);
-    return new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-}
+        // --- Modal Control ---
+        function showModal(modal) {
+            modal.style.display = 'flex';
+            modalBackdrop.style.display = 'block';
+        }
 
-// Utility: ISO string en formato local YYYY-MM-DDTHH:MM
-function getLocalISOString(date) {
-    const tzOffset = -date.getTimezoneOffset();
-    const diff = tzOffset >= 0 ? '+' : '-';
-    const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
-    return date.getFullYear() +
-        '-' + pad(date.getMonth() + 1) +
-        '-' + pad(date.getDate()) +
-        'T' + pad(date.getHours()) +
-        ':' + pad(date.getMinutes());
-}
+        function hideModal(modal) {
+            modal.style.display = 'none';
+            modalBackdrop.style.display = 'none';
+        }
 
-function filterCallsByDate(calls, targetDate) {
-    if (!targetDate) return calls;
-
-    const target = new Date(targetDate);
-    target.setHours(0, 0, 0, 0);
-
-    return calls.filter(call => {
-        const callDate = parseLocalDateString(call.date);
-        return (
-            callDate.getFullYear() === target.getFullYear() &&
-            callDate.getMonth() === target.getMonth() &&
-            callDate.getDate() === target.getDate()
-        );
-    });
-}
-
-        const formatDuration = (totalSeconds) => {
-    if (!totalSeconds || isNaN(totalSeconds)) return "00:00:00";  // Protección contra valores inválidos
-    
-    const hours = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = Math.floor(totalSeconds % 60);
-
-    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-};
-
-        const sanitizeHTML = (str) => {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        };
-
-        // Dark mode toggle
-        const darkToggle = document.getElementById('dark-toggle');
-        if (darkToggle) {
-            darkToggle.addEventListener('click', () => {
-                document.documentElement.classList.toggle('dark');
-                localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+        // --- Core Functions ---
+        function displayRates() {
+            ratesList.innerHTML = '';
+            rates.forEach(rate => {
+                const li = document.createElement('div');
+                li.className = 'rates-list-item bg-gray-100 dark:bg-gray-700 p-3 rounded-lg flex items-center justify-between mb-2 shadow-sm transition-all duration-200';
+                li.innerHTML = `
+                    <div class="flex-1">
+                        <span class="font-medium text-gray-900 dark:text-gray-100">${rate.name}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-300 ml-2">${formatCurrency(rate.amount)}/min</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="edit-rate-btn text-blue-500 hover:text-blue-700 transition">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-rate-btn text-red-500 hover:text-red-700 transition" data-id="${rate.id}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+                li.querySelector('.edit-rate-btn').addEventListener('click', () => {
+                    editingRateId = rate.id;
+                    rateNameInput.value = rate.name;
+                    rateAmountInput.value = rate.amount;
+                    rateForm.style.display = 'block';
+                    showRateAddBtn.style.display = 'none';
+                    rateNameInput.focus();
+                });
+                li.querySelector('.delete-rate-btn').addEventListener('click', () => {
+                    deleteRate(rate.id);
+                });
+                ratesList.appendChild(li);
             });
+        }
 
-            // Initialize dark mode from localStorage
-            if (localStorage.getItem('darkMode') === 'true') {
-                document.documentElement.classList.add('dark');
+        function deleteRate(id) {
+            if (confirm('Are you sure you want to delete this rate?')) {
+                rates = rates.filter(rate => rate.id !== id);
+                saveRates();
             }
         }
 
-        // Payment Cycles Management
-        const enablePaymentCyclesToggle = document.getElementById('payment-cycles-toggle');
-        const paymentCyclesConfig = document.getElementById('payment-cycles-config');
-        const addCycleButton = document.getElementById('add-cycle');
-        const paymentCyclesList = document.getElementById('payment-cycles-list');
-        const monthlyEarningsCards = document.getElementById('monthly-earnings-cards');
-        const paymentCycleEarningsCards = document.getElementById('payment-cycle-earnings-cards');
-
-        // Load saved payment cycles state
-        let paymentCyclesEnabled = localStorage.getItem('paymentCyclesEnabled') === 'true';
-        if (enablePaymentCyclesToggle) {
-            enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
-        }
-
-        // Load saved payment cycles
-        let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles') || '[]');
-
-        // Function to format date for input
-function formatDateForInput(date) {
-    return date.toLocaleDateString("en-CA"); // YYYY-MM-DD en local
-}
-
-        // Function to format date for display
-        function formatDisplayDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+        function updateCallRateSelect() {
+            selectCallRate.innerHTML = '';
+            const callRateSelect = document.getElementById('call-rate');
+            callRateSelect.innerHTML = '';
+            rates.forEach(rate => {
+                const option = new Option(`${rate.name} - ${formatCurrency(rate.amount)}/min`, rate.id);
+                selectCallRate.add(option);
+                callRateSelect.add(option.cloneNode(true));
             });
         }
 
-        // Function to calculate days between dates
-        function daysBetween(d1, d2) {
-            const date1 = new Date(d1);
-            const date2 = new Date(d2);
-            const diffTime = Math.abs(date2 - date1);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays;
+        function displayCalls(dateFilter = null) {
+            callLogTable.innerHTML = '';
+            let totalDuration = 0;
+            let totalEarnings = 0;
+            let filteredCalls = calls;
+
+            if (dateFilter) {
+                const filterDate = new Date(dateFilter);
+                filteredCalls = calls.filter(call => isSameDay(new Date(call.date), filterDate));
+            }
+
+            if (filteredCalls.length === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls logged for this date.</td>`;
+                callLogTable.appendChild(tr);
+            } else {
+                filteredCalls.forEach((call, index) => {
+                    const rate = getRateById(call.rateId) || { name: 'Unknown', amount: 0 };
+                    totalDuration += call.duration;
+                    totalEarnings += calculateEarnings(call.duration, rate.amount);
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'transition-colors duration-200';
+                    tr.innerHTML = `
+                        <td class="py-3 px-2 whitespace-nowrap">${formatDate(call.date)}</td>
+                        <td class="py-3 px-2 whitespace-nowrap font-mono">${formatTime(call.duration)}</td>
+                        <td class="py-3 px-2 whitespace-nowrap">
+                            <span class="tag bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">${rate.name}</span>
+                        </td>
+                        <td class="py-3 px-2 whitespace-nowrap font-mono text-green-600 dark:text-green-400 font-bold">${formatCurrency(calculateEarnings(call.duration, rate.amount))}</td>
+                        <td class="py-3 px-2 whitespace-nowrap pl-4">
+                            <button class="edit-call-btn text-blue-500 hover:text-blue-700 transition" data-id="${call.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-call-btn text-red-500 hover:text-red-700 transition" data-id="${call.id}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    `;
+                    tr.querySelector('.edit-call-btn').addEventListener('click', () => {
+                        openCallModalForEdit(call.id);
+                    });
+                    tr.querySelector('.delete-call-btn').addEventListener('click', () => {
+                        deleteCall(call.id);
+                    });
+                    callLogTable.appendChild(tr);
+                });
+            }
+
+            totalMinutesEl.textContent = formatTime(totalDuration);
+            totalEarningsEl.textContent = formatCurrency(totalEarnings);
         }
 
-        // Function to render payment cycles
+        function deleteCall(id) {
+            if (confirm('Are you sure you want to delete this call?')) {
+                calls = calls.filter(call => call.id !== id);
+                saveCalls();
+            }
+        }
+
+        function updateStatistics() {
+            const today = new Date();
+            const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+
+            const todayCalls = calls.filter(call => new Date(call.date).getTime() >= startOfToday);
+            const totalTodayDuration = todayCalls.reduce((sum, call) => sum + call.duration, 0);
+            const totalTodayEarnings = todayCalls.reduce((sum, call) => sum + calculateEarnings(call.duration, getRateById(call.rateId)?.amount || 0), 0);
+
+            todayEarningsEl.textContent = formatCurrency(totalTodayEarnings);
+
+            const avgDuration = todayCalls.length > 0 ? totalTodayDuration / todayCalls.length : 0;
+            avgDurationEl.textContent = formatTime(Math.round(avgDuration));
+
+            // Goal Progress
+            const goal = dailyGoal.amount;
+            if (goal > 0) {
+                const progressPercentage = Math.min((totalTodayEarnings / goal) * 100, 100);
+                goalProgressText.textContent = `${Math.round(progressPercentage)}%`;
+                goalAmountDisplay.textContent = `${formatCurrency(totalTodayEarnings)} / ${formatCurrency(goal)}`;
+                goalProgressBar.style.width = `${progressPercentage}%`;
+
+                if (totalTodayEarnings < goal) {
+                    const remaining = goal - totalTodayEarnings;
+                    const estimatedRate = totalTodayEarnings / (totalTodayDuration / 60);
+                    if (estimatedRate > 0) {
+                        const remainingMinutes = Math.ceil(remaining / estimatedRate);
+                        goalEstimateEl.textContent = `${remainingMinutes} min to goal`;
+                    } else {
+                        goalEstimateEl.textContent = `-- mins to goal`;
+                    }
+                } else {
+                    goalEstimateEl.textContent = `Goal Reached! 🎉`;
+                }
+            } else {
+                goalProgressText.textContent = 'N/A';
+                goalAmountDisplay.textContent = 'No Goal Set';
+                goalProgressBar.style.width = '0%';
+                goalEstimateEl.textContent = '--';
+            }
+
+            // Monthly Earnings
+            const firstHalfStart = new Date(today.getFullYear(), today.getMonth(), 1).getTime();
+            const firstHalfEnd = new Date(today.getFullYear(), today.getMonth(), 15, 23, 59, 59).getTime();
+            const secondHalfStart = new Date(today.getFullYear(), today.getMonth(), 16).getTime();
+            const secondHalfEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59).getTime();
+
+            const firstHalfEarnings = calls.reduce((sum, call) => {
+                const callDate = new Date(call.date).getTime();
+                if (callDate >= firstHalfStart && callDate <= firstHalfEnd) {
+                    return sum + calculateEarnings(call.duration, getRateById(call.rateId)?.amount || 0);
+                }
+                return sum;
+            }, 0);
+
+            const secondHalfEarnings = calls.reduce((sum, call) => {
+                const callDate = new Date(call.date).getTime();
+                if (callDate >= secondHalfStart && callDate <= secondHalfEnd) {
+                    return sum + calculateEarnings(call.duration, getRateById(call.rateId)?.amount || 0);
+                }
+                return sum;
+            }, 0);
+
+            firstHalfEarningsEl.textContent = formatCurrency(firstHalfEarnings);
+            secondHalfEarningsEl.textContent = formatCurrency(secondHalfEarnings);
+            monthlyTotalEarningsEl.textContent = formatCurrency(firstHalfEarnings + secondHalfEarnings);
+        }
+
+        function updateStorageInfo() {
+            const totalBytes = JSON.stringify(localStorage).length;
+            const totalMB = (totalBytes / 1024 / 1024).toFixed(2);
+            storageUsedEl.textContent = `${totalMB} MB`;
+            const percentage = Math.min((totalMB / MAX_STORAGE_MB) * 100, 100);
+            storageBarEl.style.width = `${percentage}%`;
+        }
+
         function renderPaymentCycles() {
-            if (!paymentCyclesList) return;
+            const paymentCyclesEnabled = paymentCyclesToggle.checked;
+            document.getElementById('monthly-earnings-cards').classList.toggle('hidden', paymentCyclesEnabled);
+            document.getElementById('payment-cycle-earnings-cards').classList.toggle('hidden', !paymentCyclesEnabled);
+
+            if (!paymentCyclesEnabled || paymentCycles.length === 0) {
+                paymentCyclesList.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">No payment cycles configured.</td></tr>`;
+                cycleEarningsEl.textContent = formatCurrency(0);
+                cycleStartDateEl.textContent = 'N/A';
+                cycleEndDateEl.textContent = 'N/A';
+                daysUntilEndEl.textContent = 'N/A';
+                payDateEl.textContent = 'N/A';
+                daysUntilPayEl.textContent = 'N/A';
+                return;
+            }
 
             paymentCyclesList.innerHTML = '';
             paymentCycles.forEach((cycle, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                <td class="px-2 py-2">
-                    <input type="date" class="cycle-start-date w-full bg-transparent" value="${cycle.startDate}">
-                </td>
-                <td class="px-2 py-2">
-                    <input type="date" class="cycle-end-date w-full bg-transparent" value="${cycle.endDate}">
-                </td>
-                <td class="px-2 py-2">
-                    <input type="date" class="cycle-pay-date w-full bg-transparent" value="${cycle.payDate}">
-                </td>
-                <td class="px-2 py-2">
-                    <div class="flex gap-2">
-                        <button class="save-cycle-btn text-green-500 hover:text-green-700" title="Save">
-                            <i class="fas fa-save"></i>
+                const tr = document.createElement('tr');
+                tr.className = 'transition-colors duration-200';
+                tr.innerHTML = `
+                    <td class="px-2 py-3 whitespace-nowrap">${cycle.startDate}</td>
+                    <td class="px-2 py-3 whitespace-nowrap">${cycle.endDate}</td>
+                    <td class="px-2 py-3 whitespace-nowrap">${cycle.payDate || 'N/A'}</td>
+                    <td class="px-2 py-3 whitespace-nowrap">
+                        <button class="delete-cycle-btn text-red-500 hover:text-red-700 transition" data-index="${index}">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
-                        <button class="delete-cycle text-red-500 hover:text-red-700" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-                // Add event listeners
-                row.querySelector('.save-cycle-btn').addEventListener('click', () => savePaymentCycle(index, row));
-                row.querySelector('.delete-cycle').addEventListener('click', () => deletePaymentCycle(index));
-                paymentCyclesList.appendChild(row);
+                    </td>
+                `;
+                tr.querySelector('.delete-cycle-btn').addEventListener('click', () => {
+                    deletePaymentCycle(index);
+                });
+                paymentCyclesList.appendChild(tr);
             });
+
+            // Calculate current cycle stats
+            const now = new Date();
+            const currentCycle = paymentCycles.find(cycle => {
+                const start = new Date(cycle.startDate);
+                const end = new Date(cycle.endDate);
+                return now >= start && now <= end;
+            });
+
+            if (currentCycle) {
+                const currentCycleCalls = calls.filter(call => {
+                    const callDate = new Date(call.date);
+                    return callDate >= new Date(currentCycle.startDate) && callDate <= new Date(currentCycle.endDate);
+                });
+                const totalCycleEarnings = currentCycleCalls.reduce((sum, call) => sum + calculateEarnings(call.duration, getRateById(call.rateId)?.amount || 0), 0);
+                cycleEarningsEl.textContent = formatCurrency(totalCycleEarnings);
+                cycleStartDateEl.textContent = formatDate(currentCycle.startDate);
+                cycleEndDateEl.textContent = formatDate(currentCycle.endDate);
+                daysUntilEndEl.textContent = daysBetween(now, new Date(currentCycle.endDate));
+
+                if (currentCycle.payDate) {
+                    payDateEl.textContent = formatDate(currentCycle.payDate);
+                    daysUntilPayEl.textContent = daysBetween(now, new Date(currentCycle.payDate));
+                }
+            } else {
+                cycleEarningsEl.textContent = formatCurrency(0);
+                cycleStartDateEl.textContent = 'N/A';
+                cycleEndDateEl.textContent = 'N/A';
+                daysUntilEndEl.textContent = 'N/A';
+                payDateEl.textContent = 'N/A';
+                daysUntilPayEl.textContent = 'N/A';
+            }
         }
 
-        // Function to add a new payment cycle
-        function addPaymentCycle() {
-            const today = new Date();
-            const twoWeeksLater = new Date(today);
-            twoWeeksLater.setDate(today.getDate() + 14);
-
-            const newCycle = {
-                startDate: formatDateForInput(today),
-                endDate: formatDateForInput(twoWeeksLater),
-                payDate: formatDateForInput(twoWeeksLater)
-            };
-
-            paymentCycles.push(newCycle);
-            localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
-            renderPaymentCycles();
-            updateStatistics();
-        }
-
-        // Function to save a payment cycle
-        function savePaymentCycle(index, row) {
-            paymentCycles[index] = {
-                startDate: row.querySelector('.cycle-start-date').value,
-                endDate: row.querySelector('.cycle-end-date').value,
-                payDate: row.querySelector('.cycle-pay-date').value
-            };
-            localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
-            renderPaymentCycles(); // Re-render to show updated state
-            updateStatistics();
-        }
-
-        // Function to delete a payment cycle
         function deletePaymentCycle(index) {
             if (confirm('Are you sure you want to delete this payment cycle?')) {
                 paymentCycles.splice(index, 1);
                 localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
                 renderPaymentCycles();
-                updateStatistics();
             }
         }
 
-        // Add payment cycle button click handler
-        addCycleButton?.addEventListener('click', addPaymentCycle);
+        // --- Event Handlers ---
 
-        // Toggle payment cycles configuration
-        enablePaymentCyclesToggle?.addEventListener('change', function() {
-            paymentCyclesEnabled = this.checked;
-            paymentCyclesConfig.classList.toggle('hidden', !paymentCyclesEnabled);
-            localStorage.setItem('paymentCyclesEnabled', paymentCyclesEnabled);
-            updateStatistics();
-        });
-
-        // State management
-        let rates = JSON.parse(localStorage.getItem('rates')) || [];
-        let activeTimers = new Set(); // Track all active timers
-        let calls = JSON.parse(localStorage.getItem('calls')) || [];
-        let currentCall = null;
-        let callTimer = null;
-        let editingCallIndex = null;
-        let goal = parseFloat(localStorage.getItem('goal')) || 0;
-
-        // Modal focus management
-        let lastActiveElement = null;
-        const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
-        // Timezone utility functions
-        function getLocalISOString(date) {
-            const d = new Date(date);
-            // Keep the date in local timezone
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            const hours = String(d.getHours()).padStart(2, '0');
-            const minutes = String(d.getMinutes()).padStart(2, '0');
-            const seconds = String(d.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-        }
-
-        function updateTotals() {
-    const totalCallsEl = document.getElementById('total-calls');
-    const totalDurationEl = document.getElementById('total-duration');
-    const totalEarningsEl = document.getElementById('total-earnings');
-
-    let totalCalls = calls.length;
-    let totalSeconds = 0;
-    let totalEarnings = 0;
-
-    calls.forEach(call => {
-        totalSeconds += call.duration;
-        const rate = rates[call.rateIndex];
-        if (rate) totalEarnings += (rate.amount / 60) * call.duration;
-    });
-
-    if (totalCallsEl) totalCallsEl.textContent = totalCalls;
-    if (totalDurationEl) totalDurationEl.textContent = formatDuration(totalSeconds);
-    if (totalEarningsEl) totalEarningsEl.textContent = formatMoney(totalEarnings);
-}
-
-            
-            // Add current call if it exists and is from today
-if (currentCall && isSameDay(new Date(currentCall.date), new Date(selectedDate))) {
-    const currentDuration = Math.floor((Date.now() - currentCall.date) / 1000);
-    const currentRate = rates[currentCall.rateIndex];
-    if (currentRate) {
-        totalDuration += currentDuration;
-        totalEarned += (currentRate.amount / 60) * currentDuration;
-    }
-}
-
-// Update displays
-if (totalMinutes) totalMinutes.textContent = formatDuration(totalDuration);
-if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
-
-
-            
-
-            // Update goal progress
-            if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
-                const progress = Math.min((totalEarned / goal) * 100, 100);
-
-                requestAnimationFrame(() => {
-                    goalProgressBar.style.transition = 'width 0.5s ease-out';
-                    goalProgressBar.style.width = `${progress}%`;
-
-                    if (progress >= 100) {
-                        goalProgressBar.classList.add('bg-green-500');
-                        goalProgressBar.classList.remove('bg-blue-500');
-                        goalProgressText.classList.add('text-green-600');
-                    } else {
-                        goalProgressBar.classList.add('bg-blue-500');
-                        goalProgressBar.classList.remove('bg-green-500');
-                        goalProgressText.classList.remove('text-green-600');
-                    }
-
-                    goalProgressText.textContent = `${Math.round(progress)}%`;
-                    goalAmountDisplay.textContent = `${formatMoney(totalEarned)} / ${formatMoney(goal)}`;
-                });
-            }
-        }
-
-        function updateStatistics() {
-    const selectedDateStr = getLocalDateString(new Date(selectedDate));
-
-    const filteredCalls = calls.filter(call => {
-        const callDate = parseLocalDateString(call.date);
-        const callDateStr = getLocalDateString(callDate);
-        return callDateStr === selectedDateStr;
-    });
-
-    // Show/Hide earnings cards based on toggle
-    const isEnabled = enablePaymentCyclesToggle?.checked;
-    if (monthlyEarningsCards) {
-        monthlyEarningsCards.classList.toggle('hidden', isEnabled);
-    }
-    if (paymentCycleEarningsCards) {
-        paymentCycleEarningsCards.classList.toggle('hidden', !isEnabled);
-    }
-
-    // Total calls today
-    const totalCallsEl = document.getElementById('total-calls-today');
-    if (totalCallsEl) totalCallsEl.textContent = filteredCalls.length;
-
-    // Daily earnings
-    const dailyEarnings = filteredCalls.reduce((sum, call) => {
-        const rate = rates[call.rateIndex];
-        return rate ? sum + (rate.amount / 60) * call.duration : sum;
-    }, 0);
-    const dailyEarningsEl = document.getElementById('daily-total-earnings');
-    if (dailyEarningsEl) dailyEarningsEl.textContent = formatMoney(dailyEarnings);
-
-    // Avg duration
-    const avgEl = document.getElementById('avg-duration');
-    if (avgEl) {
-        if (filteredCalls.length > 0) {
-            const totalDuration = filteredCalls.reduce((sum, call) => sum + (call.duration || 0), 0);
-            const avgDurationSeconds = Math.floor(totalDuration / filteredCalls.length);
-            avgEl.textContent = formatDuration(avgDurationSeconds);
-        } else {
-            avgEl.textContent = '00:00:00';
-        }
-    }
-
-    // Goal estimate
-    const goalEl = document.getElementById('goal-estimate');
-    if (goalEl && goal > 0) {
-        let currentEarnings = dailyEarnings;
-        let totalMinutesWorked = filteredCalls.reduce((sum, call) => sum + call.duration / 60, 0);
-
-        if (currentCall && isSameDay(new Date(currentCall.date), new Date(selectedDate))) {
-            const currentDuration = Math.floor((Date.now() - currentCall.date) / 1000);
-            const currentMinutes = currentDuration / 60;
-            const currentRate = rates[currentCall.rateIndex];
-            if (currentRate) {
-                totalMinutesWorked += currentMinutes;
-                currentEarnings += (currentRate.amount / 60) * currentDuration;
-            }
-        }
-
-        if (currentEarnings >= goal) {
-            goalEl.textContent = 'Goal reached!';
-        } else {
-            const remaining = goal - currentEarnings;
-            if (totalMinutesWorked > 0) {
-                const earningRatePerMinute = currentEarnings / totalMinutesWorked;
-                const estimatedMinutesNeeded = Math.ceil(remaining / earningRatePerMinute);
-                goalEl.textContent = `~${estimatedMinutesNeeded} mins to goal`;
+        // Dark mode toggle
+        darkToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
             } else {
-                const liveCallRate = document.getElementById('live-call-rate');
-                const selectedRateIndex = liveCallRate ? parseInt(liveCallRate.value) : 0;
-                const selectedRate = rates[selectedRateIndex];
-                if (selectedRate) {
-                    const minsToGoal = Math.ceil(remaining / (selectedRate.amount / 60));
-                    goalEl.textContent = `${minsToGoal} mins to goal`;
-                }
-            }
-        }
-    }
-
-    // Monthly or Payment Cycle earnings
-    if (!isEnabled) {
-        const now = new Date(selectedDate);
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-
-        let monthlyEarnings = 0;
-        let weeklyEarnings = 0;
-        const oneWeekAgo = new Date(now); // usar la fecha seleccionada como referencia
-oneWeekAgo.setDate(now.getDate() - 7);
-
-calls.forEach(call => {
-    const callDate = parseLocalDateString(call.date);
-    const rate = rates[call.rateIndex];
-    if (!rate) return;
-    const earned = (rate.amount / 60) * call.duration;
-
-    // Monthly Earnings
-    if (callDate >= firstDay && callDate <= lastDay) {
-        monthlyEarnings += earned;
-    }
-
-    // Weekly Earnings (desde 7 días antes de la fecha seleccionada hasta esa fecha)
-if (callDate >= oneWeekAgo && callDate <= now) {
-    weeklyEarnings += earned;
-}
-});
-
-const monthlyEl = document.getElementById('monthly-total-earnings');
-if (monthlyEl) monthlyEl.textContent = formatMoney(monthlyEarnings);
-
-const weeklyEl = document.getElementById('weekly-total-earnings');
-if (weeklyEl) weeklyEl.textContent = formatMoney(weeklyEarnings);
-
-const dailyGoalEl = document.getElementById('daily-goal-earnings');
-if (dailyGoalEl) dailyGoalEl.textContent = formatMoney(goal);
-} else {
-    const selected = new Date(selectedDate); // usar la fecha seleccionada
-    const currentCycle = paymentCycles.find(cycle => {
-        const start = new Date(cycle.startDate);
-        const end = new Date(cycle.endDate);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(23, 59, 59, 999);
-        return selected >= start && selected <= end;
-    });
-
-    if (currentCycle) {
-        const cycleStartDate = new Date(currentCycle.startDate);
-        const cycleEndDate = new Date(currentCycle.endDate);
-        const payDate = new Date(currentCycle.payDate);
-
-        let cycleEarnings = 0;
-        calls.forEach(call => {
-            const callDate = parseLocalDateString(call.date);
-            const rate = rates[call.rateIndex];
-            if (rate && callDate >= cycleStartDate && callDate <= cycleEndDate) {
-                cycleEarnings += (rate.amount / 60) * call.duration;
+                localStorage.setItem('theme', 'light');
             }
         });
 
-        const cycleEarningsElem = document.getElementById('cycle-earnings');
-const cycleStartElem = document.getElementById('cycle-start-date');
-const cycleEndElem = document.getElementById('cycle-end-date');
-const daysUntilEndElem = document.getElementById('days-until-end');
-const payDateElem = document.getElementById('pay-date');
-const daysUntilPayElem = document.getElementById('days-until-pay');
-
-if (currentCycle) {
-    cycleEarningsElem.textContent = formatMoney(cycleEarnings);
-    cycleStartElem.textContent = formatDisplayDate(currentCycle.startDate);
-    cycleEndElem.textContent = formatDisplayDate(currentCycle.endDate);
-    daysUntilEndElem.textContent = `${daysBetween(selectedDate, currentCycle.endDate)} days`;
-    payDateElem.textContent = formatDisplayDate(currentCycle.payDate);
-    daysUntilPayElem.textContent = `${daysBetween(selectedDate, currentCycle.payDate)} days`;
-} else {
-    cycleEarningsElem.textContent = formatMoney(0);
-    cycleStartElem.textContent = 'N/A';
-    cycleEndElem.textContent = 'N/A';
-    daysUntilEndElem.textContent = 'N/A';
-    payDateElem.textContent = 'N/A';
-    daysUntilPayElem.textContent = 'N/A';
-}
-
-updateTotals();
-
-
-
-     // Initialize date picker with today's local date
-const now = new Date();
-let selectedDate = now.getFullYear() + "-" +
-    String(now.getMonth() + 1).padStart(2, "0") + "-" +
-    String(now.getDate()).padStart(2, "0");
-
-
-        // DOM elements - cached for performance
-        const modalTitle = document.getElementById('modal-title');
-        const settingsToggle = document.getElementById('settings-toggle');
-        const settingsModal = document.getElementById('settings-modal');
-        const closeSettingsModal = document.getElementById('close-settings-modal');
-        const exportDataBtn = document.getElementById('export-data');
-        const importFileInput = document.getElementById('import-file');
-        const cleanupDataBtn = document.getElementById('cleanup-data');
-        const storageUsed = document.getElementById('storage-used');
-        const storageBar = document.getElementById('storage-bar');
-        const ratesList = document.getElementById('rates-list');
-        const rateForm = document.getElementById('rate-form');
-        const rateName = document.getElementById('rate-name');
-        const rateAmount = document.getElementById('rate-amount');
-        const showRateAdd = document.getElementById('show-rate-add');
-        const cancelRateAdd = document.getElementById('cancel-rate-add');
-        const callLog = document.getElementById('call-log');
-        const startCallBtn = document.getElementById('start-call-btn');
-        const endCallBtn = document.getElementById('end-call-btn');
-        const addCallBtn = document.getElementById('add-call-btn');
-        const callModal = document.getElementById('call-modal');
-        const callForm = document.getElementById('call-form');
-        const closeModalBtn = document.getElementById('close-modal');
-        const cancelCall = document.getElementById('cancel-call');
-        const callDate = document.getElementById('call-date');
-        const callRate = document.getElementById('call-rate');
-        const liveCallInfo = document.getElementById('live-call-info');
-        const liveCallTimer = document.getElementById('live-call-timer');
-        const liveCallEarnings = document.getElementById('live-call-earnings');
-        const goalForm = document.getElementById('goal-form');
-        const goalAmount = document.getElementById('goal-amount');
-        const goalProgressBar = document.getElementById('goal-progress-bar');
-        const goalProgressText = document.getElementById('goal-progress-text');
-        const goalAmountDisplay = document.getElementById('goal-amount-display');
-        const totalMinutes = document.getElementById('total-minutes');
-        const totalEarnings = document.getElementById('total-earnings');
-        const statsDatePicker = document.getElementById('stats-date-picker');
-        const currentDateBtn = document.getElementById('current-date-btn');
-        const dailyTotalEarnings = document.getElementById('daily-total-earnings');
-        const avgDuration = document.getElementById('avg-duration');
-
-        // Initialize goal form handler
-        if (goalForm) {
-            goalForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const newGoal = parseFloat(goalAmount.value);
-                if (!isNaN(newGoal) && newGoal >= 0) {
-                    goal = newGoal;
-                    localStorage.setItem('goal', goal);
-                    updateStatistics();
-                }
-            });
-        }
-
-        // Initialize goal amount display
-        if (goalAmount) {
-            goalAmount.value = goal || '';
-        }
-
-        if (statsDatePicker) {
-    statsDatePicker.value = selectedDate;
-    statsDatePicker.addEventListener('change', (e) => {
-        selectedDate = e.target.value;
-        displayCalls();
-        updateStatistics();
-    });
-}
-
-if (currentDateBtn) {
-    currentDateBtn.addEventListener('click', () => {
-        const now = new Date();
-        // Usar fecha local directamente
-        const today = now.toLocaleDateString("en-CA"); // YYYY-MM-DD
-        if (statsDatePicker) {
-            statsDatePicker.value = today;
-        }
-        selectedDate = today;
-        displayCalls();
-        updateStatistics();
-    });
-}
-
-
-        // Rate management
-        function displayRates() {
-            if (!ratesList) return;
-
-            ratesList.innerHTML = rates.map((rate, index) => `
-                <div class="rates-list-item">
-                    <div class="flex-1">
-                        <span class="font-medium">${sanitizeHTML(rate.name)}</span>
-                        <span class="text-gray-600 dark:text-gray-400"> - ${formatMoney(rate.amount)}/min</span>
-                    </div>
-                    <button data-rate-index="${index}" class="delete-rate-btn text-red-500 hover:text-red-700">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `).join('');
-
-            // Attach a single event listener to the parent container
-            ratesList.querySelectorAll('.delete-rate-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const index = parseInt(e.currentTarget.dataset.rateIndex);
-                    deleteRate(index);
-                });
-            });
-
-            // Update rate options in call modal
-            if (callRate) {
-                callRate.innerHTML = rates.map((rate, index) =>
-                    `<option value="${index}">${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</option>`
-                ).join('');
-            }
-
-            // Update live call rate selector
-            const liveCallRate = document.getElementById('live-call-rate');
-            if (liveCallRate) {
-                const currentValue = liveCallRate.value;
-                liveCallRate.innerHTML = rates.map((rate, index) =>
-                    `<option value="${index}" class="bg-white dark:bg-gray-800">${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</option>`
-                ).join('');
-                // Preserve selected value if it still exists in rates
-                if (rates.some((_, index) => index.toString() === currentValue)) {
-                    liveCallRate.value = currentValue;
-                }
-            }
-            localStorage.setItem('rates', JSON.stringify(rates));
-        }
-
-        function deleteRate(index) {
-            // Check if rate is being used by existing calls
-            const isRateInUse = calls.some(call => call.rateIndex === index);
-            if (isRateInUse) {
-                if (!confirm('This rate is being used by existing calls. Deleting it may affect call display. Continue?')) {
-                    return;
-                }
-            }
-
-            rates.splice(index, 1);
-
-            // Update call indices to prevent broken references
-            calls.forEach(call => {
-                if (call.rateIndex > index) {
-                    call.rateIndex--;
-                }
-            });
-
-            localStorage.setItem('calls', JSON.stringify(calls));
-            displayRates();
-            displayCalls();
-        }
-
-        // Rate form handlers
-        if (showRateAdd) {
-            showRateAdd.addEventListener('click', () => {
-                if (rateForm) {
-                    rateForm.style.display = 'block';
-                    showRateAdd.style.display = 'none';
-                    if (rateName) rateName.focus();
-                }
-            });
-        }
-
-        if (cancelRateAdd) {
-            cancelRateAdd.addEventListener('click', () => {
-                if (rateForm && showRateAdd) {
-                    rateForm.style.display = 'none';
-                    showRateAdd.style.display = 'flex';
-                    rateForm.reset();
-                }
-            });
-        }
-
-        if (rateForm) {
-            rateForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                if (rateName && rateAmount) {
-                    const name = rateName.value.trim();
-                    const amount = parseFloat(rateAmount.value);
-
-                    // Validate rate name
-                    if (!name) {
-                        alert('Rate name cannot be empty');
-                        return;
-                    }
-                    if (name.length > 50) {
-                        alert('Rate name is too long (maximum 50 characters)');
-                        return;
-                    }
-
-                    // Validate rate amount
-                    if (isNaN(amount) || !isFinite(amount)) {
-                        alert('Please enter a valid number for the rate amount');
-                        return;
-                    }
-                    if (amount <= 0) {
-                        alert('Rate amount must be greater than 0');
-                        return;
-                    }
-                    if (amount > 999999) {
-                        alert('Rate amount is too high (maximum 999,999)');
-                        return;
-                    }
-
-                    rates.push({
-                        name: name,
-                        amount: amount
-                    });
-                    displayRates();
-                    rateForm.style.display = 'none';
-                    if (showRateAdd) {
-                        showRateAdd.style.display = 'flex';
-                    }
-                    rateForm.reset();
-                }
-            });
-        }
-
-        // Call management
-function deleteCall(index) {
-    if (confirm('Are you sure you want to delete this call?')) {
-        const callToDelete = calls.findIndex(c => c === calls[index]);
-        if (callToDelete !== -1) calls.splice(callToDelete, 1);
-        localStorage.setItem('calls', JSON.stringify(calls));
-        displayCalls();
-        updateStatistics();
-    }
-}
-
-        function editCall(index) {
-    const call = calls[index];
-    if (!call) return;
-
-    editingCallIndex = index;
-    const date = new Date(call.date);
-
-    if (modalTitle) modalTitle.textContent = 'Edit Call';
-    if (callDate) callDate.value = getLocalISOString(date).substring(0, 16); // Correct format for datetime-local
-
-    const hours = Math.floor(call.duration / 60); // Cambiado a minutos totales
-    const minutes = call.duration % 60;           // Minutos restantes
-    const seconds = 0;                            // Ignorado, no se usa
-
-    const hoursInput = document.getElementById('call-duration-hours');
-    const minutesInput = document.getElementById('call-duration-minutes');
-    const secondsInput = document.getElementById('call-duration-seconds');
-
-    if (hoursInput) hoursInput.value = hours;
-    if (minutesInput) minutesInput.value = minutes;
-    if (secondsInput) secondsInput.value = seconds;
-    if (callRate) callRate.value = call.rateIndex;
-
-    lastActiveElement = document.activeElement;
-    if (callModal) {
-        callModal.style.display = 'flex';
-        if (callDate) callDate.focus();
-    }
-}
-
-        function addCallToLog(date, duration, rateIndex) {
-    // Crear fecha local a partir de la entrada
-    const callDate = new Date(date);
-    const callData = {
-        // Guardar en formato compatible con parseLocalDateString
-        date: `${callDate.getFullYear()}-${String(callDate.getMonth() + 1).padStart(2, "0")}-${String(callDate.getDate()).padStart(2, "0")}T${String(callDate.getHours()).padStart(2, "0")}:${String(callDate.getMinutes()).padStart(2, "0")}:${String(callDate.getSeconds()).padStart(2, "0")}`,
-        duration: duration,
-        rateIndex: rateIndex
-    };
-    calls.push(callData);
-
-    // Actualizar la fecha seleccionada para que el registro aparezca inmediatamente
-    const dateString = callDate.toLocaleDateString("en-CA"); // YYYY-MM-DD local
-    selectedDate = dateString;
-    if (statsDatePicker) {
-        statsDatePicker.value = selectedDate;
-    }
-
-    localStorage.setItem('calls', JSON.stringify(calls));
-    displayCalls();
-    updateStatistics();
-}
-function displayCalls() {
-    if (!callLog) return;
-
-    // Filtrar y ordenar las llamadas por fecha local
-    let displayedCalls = filterCallsByDate(calls, selectedDate);
-    displayedCalls.sort((a, b) => parseLocalDateString(b.date) - parseLocalDateString(a.date));
-
-    callLog.innerHTML = displayedCalls.map(call => {
-        const rate = rates[call.rateIndex];
-        if (!rate) return '';
-
-        const duration = call.duration;
-        const earned = (rate.amount / 60) * duration;
-
-        return `
-            <tr data-call-index="${displayedCalls.indexOf(call)}">
-                <td>${parseLocalDateString(call.date).toLocaleString(undefined, {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false
-                })}</td>
-                <td>${formatDuration(duration)}</td>
-                <td>${sanitizeHTML(rate.name)} (${formatMoney(rate.amount)}/min)</td>
-                <td>${formatMoney(earned)}</td>
-                <td class="pl-4">
-                    <div class="flex gap-2">
-                        <button data-action="edit" class="text-blue-500 hover:text-blue-700">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button data-action="delete" class="text-red-500 hover:text-red-700">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-    }).join('');
-
-    updateTotals();
-    localStorage.setItem('calls', JSON.stringify(calls));
-}
-
-        callLog.addEventListener('click', (e) => {
-    const button = e.target.closest('button');
-    if (!button) return;
-
-    const row = e.target.closest('tr');
-    if (!row) return;
-
-    const originalIndex = parseInt(row.dataset.callIndex);
-    if (button.dataset.action === 'edit') {
-        editCall(originalIndex);
-    } else if (button.dataset.action === 'delete') {
-        deleteCall(originalIndex);
-    }
-});
-
-        // Call timer functionality
-        function updateCallTimer() {
-            if (!currentCall) return;
-
-            const duration = Math.floor((Date.now() - currentCall.date) / 1000);
-            const rate = rates[currentCall.rateIndex];
-            if (!rate) return;
-
-            const earned = (rate.amount / 60) * duration;
-
-            if (liveCallTimer) liveCallTimer.textContent = formatDuration(duration);
-            if (liveCallEarnings) liveCallEarnings.textContent = `${formatMoney(earned)} earned`;
-            updateTotals();
-        }
-
-        if (startCallBtn) {
-            startCallBtn.addEventListener('click', () => {
-                if (rates.length === 0) {
-                    alert('Please add at least one rate before starting a call.');
-                    return;
-                }
-
-                // Clear any existing timers first
-                activeTimers.forEach(timerId => clearInterval(timerId));
-                activeTimers.clear();
-
-                const liveCallRate = document.getElementById('live-call-rate');
-                currentCall = {
-                    date: Date.now(),
-                    rateIndex: liveCallRate ? parseInt(liveCallRate.value) : 0
-                };
-
-                startCallBtn.disabled = true;
-                if (endCallBtn) endCallBtn.disabled = false;
-                if (liveCallInfo) liveCallInfo.style.display = 'block';
-                const newTimer = setInterval(updateCallTimer, 1000);
-                activeTimers.add(newTimer);
-                callTimer = newTimer;
-            });
-        }
-
-        if (endCallBtn) {
-            endCallBtn.addEventListener('click', () => {
-                if (!currentCall) return;
-
-                const duration = Math.floor((Date.now() - currentCall.date) / 1000);
-
-                // Create a date object from the call's start time instead of current time
-                const callDate = new Date(currentCall.date);
-                addCallToLog(callDate.toISOString(), duration, currentCall.rateIndex);
-
-                // Clear timers and reset state
-                activeTimers.forEach(timerId => clearInterval(timerId));
-                activeTimers.clear();
-                callTimer = null;
-                currentCall = null;
-                if (startCallBtn) startCallBtn.disabled = false;
-                endCallBtn.disabled = true;
-                if (liveCallInfo) liveCallInfo.style.display = 'none';
-
-                // Update displays
-                displayCalls();
-                updateStatistics();
-            });
-        }
-
-        // Modal keyboard handler
-        function handleModalKeyboard(event) {
-            if (event.key === 'Escape') {
-                closeModal();
-            }
-
-            if (event.key === 'Tab') {
-                // Only handle tab if modal is visible
-                if (callModal && callModal.style.display === 'flex') {
-                    const focusable = callModal.querySelectorAll(focusableElements);
-                    const firstFocusable = focusable[0];
-                    const lastFocusable = focusable[focusable.length - 1];
-
-                    // If shift+tab and first element is focused, move to last
-                    if (event.shiftKey && document.activeElement === firstFocusable) {
-                        event.preventDefault();
-                        lastFocusable.focus();
-                    }
-                    // If tab and last element is focused, move to first
-                    else if (!event.shiftKey && document.activeElement === lastFocusable) {
-                        event.preventDefault();
-                        firstFocusable.focus();
-                    }
-                }
-            }
-        }
-
-        // Settings keyboard handler
-        function handleSettingsKeyboard(e) {
-            if (!settingsModal || settingsModal.style.display === 'none') return;
-
-            if (e.key === 'Escape') {
-                settingsModal.style.display = 'none';
-                if (settingsToggle) settingsToggle.focus();
+        // Show/Hide Add Rate form
+        showRateAddBtn.addEventListener('click', () => {
+            rateForm.style.display = 'block';
+            showRateAddBtn.style.display = 'none';
+            rateNameInput.focus();
+        });
+
+        cancelRateAddBtn.addEventListener('click', () => {
+            rateForm.style.display = 'none';
+            showRateAddBtn.style.display = 'block';
+            rateNameInput.value = '';
+            rateAmountInput.value = '';
+            editingRateId = null;
+        });
+
+        // Add/Edit Rate
+        rateForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = rateNameInput.value.trim();
+            const amount = parseFloat(rateAmountInput.value);
+
+            if (!name || isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid rate name and amount.');
                 return;
             }
 
-            if (e.key === 'Tab') {
-                const modalFocusableElements = settingsModal.querySelectorAll(focusableElements);
-                const firstFocusable = modalFocusableElements[0];
-                const lastFocusable = modalFocusableElements[modalFocusableElements.length - 1];
-
-                // If shift+tab and first element is focused, move to last
-                if (e.shiftKey && document.activeElement === firstFocusable) {
-                    e.preventDefault();
-                    lastFocusable.focus();
+            if (editingRateId) {
+                const rate = rates.find(r => r.id === editingRateId);
+                if (rate) {
+                    rate.name = name;
+                    rate.amount = amount;
                 }
-                // If tab and last element is focused, move to first
-                else if (!e.shiftKey && document.activeElement === lastFocusable) {
-                    e.preventDefault();
-                    firstFocusable.focus();
-                }
+                editingRateId = null;
+            } else {
+                rates.push({
+                    id: generateId(),
+                    name,
+                    amount
+                });
             }
-        }
 
-        // Modal close function
-        function closeModal() {
-            if (callModal) {
-                callModal.style.display = 'none';
-            }
-            if (callForm) {
-                callForm.reset();
-            }
-            editingCallIndex = null;
-            if (modalTitle) {
-                modalTitle.textContent = 'Add Call';
-            }
-            // Return focus to last active element
-            if (lastActiveElement) {
-                lastActiveElement.focus();
-            }
-        }
-
-        // Call modal functionality
-        if (addCallBtn) {
-            addCallBtn.addEventListener('click', () => {
-                if (rates.length === 0) {
-                    alert('Please add at least one rate before adding a call.');
-                    return;
-                }
-                editingCallIndex = null;
-                if (modalTitle) modalTitle.textContent = 'Add Call';
-                if (callForm) callForm.reset();
-
-                // Set the date input to current local time
-                const now = new Date();
-                if (callDate) {
-                    callDate.value = getLocalISOString(now).substring(0, 16);
-                }
-
-                // Store last active element and show modal
-                lastActiveElement = document.activeElement;
-                if (callModal) {
-                    callModal.style.display = 'flex';
-                    // Focus first input after modal is shown
-                    if (callDate) callDate.focus();
-                }
-            });
-        }
-
-        if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', () => {
-                closeModal();
-            });
-        }
-
-        if (cancelCall) {
-            cancelCall.addEventListener('click', () => {
-                closeModal();
-            });
-        }
-
-        // Call form submit handler
-if (callForm) {
-    callForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const hoursInput = document.getElementById('call-duration-hours');
-        const minutesInput = document.getElementById('call-duration-minutes');
-        const secondsInput = document.getElementById('call-duration-seconds');
-
-        const hours = parseInt(hoursInput.value) || 0;
-        const minutes = parseInt(minutesInput.value) || 0;
-        const seconds = parseInt(secondsInput.value) || 0;
-
-        const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
-
-        if (totalSeconds <= 0) {
-            alert('Please enter a valid duration');
-            return;
-        }
-
-        const dateValue = callDate.value;
-        const rateIndexValue = parseInt(callRate.value);
-
-        if (editingCallIndex >= 0) {
-            calls[editingCallIndex] = {
-                date: dateValue,
-                duration: totalSeconds,
-                rateIndex: rateIndexValue
-            };
-        } else {
-            calls.push({
-                date: dateValue,
-                duration: totalSeconds,
-                rateIndex: rateIndexValue
-            });
-        }
-
-        displayCalls();
-        updateStatistics();
-        localStorage.setItem('calls', JSON.stringify(calls));
-        editingCallIndex = -1;
-        if (callModal) callModal.style.display = 'none';
-        if (lastActiveElement) lastActiveElement.focus();
-    });
-}
-
-// Click outside modal to close
-if (callModal) {
-    callModal.addEventListener('click', (e) => {
-        if (e.target === callModal) {
-            callModal.style.display = 'none';
-        }
-    });
-}
-
-        // Settings modal functionality
-        if (settingsToggle) {
-            settingsToggle.addEventListener('click', () => {
-                if (settingsModal) {
-                    settingsModal.style.display = 'flex';
-                    updateStorageInfo();
-                    renderPaymentCycles();
-                }
-            });
-        }
-
-        // A single event listener for closing settings modal
-        if (settingsModal) {
-            settingsModal.addEventListener('click', (e) => {
-                if (e.target === settingsModal) {
-                    settingsModal.style.display = 'none';
-                    if (settingsToggle) settingsToggle.focus();
-                }
-            });
-        }
-
-        if (closeSettingsModal) {
-            closeSettingsModal.addEventListener('click', () => {
-                if (settingsModal) {
-                    settingsModal.style.display = 'none';
-                    if (settingsToggle) settingsToggle.focus();
-                }
-            });
-        }
-
-        // Data cleanup functionality with confirmation
-        if (cleanupDataBtn) {
-            cleanupDataBtn.addEventListener('click', () => {
-                if (!confirm('This will delete all calls older than 3 months. Continue?')) {
-                    return;
-                }
-
-                try {
-                    cleanupDataBtn.disabled = true;
-                    cleanupDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cleaning...';
-                    const monthsToKeep = 3;
-                    const cutoffDate = new Date();
-                    cutoffDate.setMonth(cutoffDate.getMonth() - monthsToKeep);
-
-                    const oldCallsCount = calls.length;
-                    calls = calls.filter(call => new Date(call.date) > cutoffDate);
-                    const removedCalls = oldCallsCount - calls.length;
-
-                    localStorage.setItem('calls', JSON.stringify(calls));
-                    displayCalls();
-                    updateStatistics();
-                    updateStorageInfo();
-
-                    alert(`Cleaned up ${removedCalls} calls older than ${monthsToKeep} months.`);
-                } catch (error) {
-                    alert('Failed to clean up data. Please try again.');
-                } finally {
-                    cleanupDataBtn.disabled = false;
-                    cleanupDataBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Clean Old Data';
-                }
-            });
-        }
-
-        // Storage info update with error handling
-        function updateStorageInfo() {
-            if (!storageUsed || !storageBar) return;
-
-            try {
-                const totalSize = JSON.stringify({
-                    rates,
-                    calls,
-                    goal,
-                    darkMode: document.documentElement.classList.contains('dark')
-                }).length;
-
-                const maxSize = 5 * 1024 * 1024; // Approximate 5MB limit
-                const usedPercentage = (totalSize / maxSize) * 100;
-
-                storageUsed.textContent = `${(totalSize / 1024).toFixed(2)}KB / ${(maxSize / 1024 / 1024).toFixed(2)}MB`;
-                storageBar.style.width = `${Math.min(usedPercentage, 100)}%`;
-
-                // Update storage bar color based on usage
-                if (usedPercentage > 80) {
-                    storageBar.classList.add('bg-red-500');
-                    storageBar.classList.remove('bg-blue-500');
-                    storageUsed.classList.add('text-red-500');
-                } else {
-                    storageBar.classList.add('bg-blue-500');
-                    storageBar.classList.remove('bg-red-500');
-                    storageUsed.classList.remove('text-red-500');
-                }
-
-                // Warn user if storage is getting full
-                if (usedPercentage > 90) {
-                    console.warn('Storage usage is very high. Consider cleaning up old data.');
-                }
-            } catch (error) {
-                storageUsed.textContent = 'Error calculating storage';
-            }
-        }
-
-        // Export/Import functionality with error handling
-        function exportData() {
-    try {
-        const dataToExport = {
-            rates,
-            calls,
-            goal,
-            version: '1.1',
-            exportDate: new Date().toLocaleString(),
-            paymentCycles: paymentCycles,
-            paymentCyclesEnabled: paymentCyclesEnabled
-        };
-
-        const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
-            type: 'application/json'
+            saveRates();
+            rateNameInput.value = '';
+            rateAmountInput.value = '';
+            rateForm.style.display = 'none';
+            showRateAddBtn.style.display = 'block';
         });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
 
-        // Use a local-date (YYYY-MM-DD) safe format for the filename
-        const fileDate = new Date().toLocaleDateString("en-CA"); // e.g. 2025-09-10
-        a.href = url;
-        a.download = `work-time-tracker-backup-${fileDate}.json`;
+        // Start Call
+        startCallBtn.addEventListener('click', () => {
+            if (activeTimerId) {
+                alert('A call is already in progress.');
+                return;
+            }
 
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    } catch (error) {
-        console.error('Export failed:', error);
-        throw error;
-    }
-}
+            const rateId = selectCallRate.value;
+            if (!rateId) {
+                alert('Please add and select a rate first.');
+                return;
+            }
 
+            liveCallInfo.style.display = 'flex';
+            const selectedRate = getRateById(rateId);
+            activeCallStartTime = Date.now();
+            lastUpdateTime = activeCallStartTime;
 
-        function importData(file) {
-            return new Promise((resolve, reject) => {
+            liveCallEarnings.textContent = `${formatCurrency(0)} earned`;
+
+            activeTimerId = setInterval(() => {
+                const now = Date.now();
+                const elapsedTimeInSeconds = (now - activeCallStartTime) / 1000;
+                liveCallTimer.textContent = formatTime(elapsedTimeInSeconds);
+
+                const earnings = calculateEarnings(elapsedTimeInSeconds, selectedRate.amount);
+                liveCallEarnings.textContent = `${formatCurrency(earnings)} earned`;
+            }, 1000);
+        });
+
+        // End Call
+        endCallBtn.addEventListener('click', () => {
+            if (!activeTimerId) return;
+
+            clearInterval(activeTimerId);
+            const callDuration = Math.round((Date.now() - activeCallStartTime) / 1000);
+            const rateId = selectCallRate.value;
+            const rate = getRateById(rateId);
+
+            if (rate) {
+                calls.push({
+                    id: generateId(),
+                    date: new Date().toISOString(),
+                    duration: callDuration,
+                    rateId: rate.id,
+                });
+                saveCalls();
+            }
+
+            // Reset UI
+            liveCallInfo.style.display = 'none';
+            liveCallTimer.textContent = '00:00:00';
+            liveCallEarnings.textContent = '$0.00 earned';
+            activeTimerId = null;
+            activeCallStartTime = null;
+        });
+
+        // Manual Add Call
+        addCallBtn.addEventListener('click', () => {
+            document.getElementById('modal-title').textContent = 'Add Call';
+            callForm.reset();
+            editingCallId = null;
+            showModal(callModal);
+        });
+
+        // Call Modal
+        function openCallModalForEdit(id) {
+            editingCallId = id;
+            const call = calls.find(c => c.id === id);
+            if (call) {
+                document.getElementById('modal-title').textContent = 'Edit Call';
+                const date = new Date(call.date);
+                const duration = call.duration;
+                const hours = Math.floor(duration / 3600);
+                const minutes = Math.floor((duration % 3600) / 60);
+                const seconds = duration % 60;
+                document.getElementById('call-date').value = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, -1);
+                document.getElementById('call-duration-hours').value = hours;
+                document.getElementById('call-duration-minutes').value = minutes;
+                document.getElementById('call-duration-seconds').value = seconds;
+                document.getElementById('call-rate').value = call.rateId;
+                showModal(callModal);
+            }
+        }
+
+        callForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const date = document.getElementById('call-date').value;
+            const hours = document.getElementById('call-duration-hours').value;
+            const minutes = document.getElementById('call-duration-minutes').value;
+            const seconds = document.getElementById('call-duration-seconds').value;
+            const rateId = document.getElementById('call-rate').value;
+
+            if (!date || !rateId) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const duration = parseDuration(hours, minutes, seconds);
+            if (duration <= 0) {
+                alert('Duration must be greater than zero.');
+                return;
+            }
+
+            if (editingCallId) {
+                const call = calls.find(c => c.id === editingCallId);
+                if (call) {
+                    call.date = new Date(date).toISOString();
+                    call.duration = duration;
+                    call.rateId = rateId;
+                }
+            } else {
+                calls.push({
+                    id: generateId(),
+                    date: new Date(date).toISOString(),
+                    duration: duration,
+                    rateId: rateId,
+                });
+            }
+
+            saveCalls();
+            hideModal(callModal);
+        });
+
+        closeModalBtn.addEventListener('click', () => hideModal(callModal));
+        cancelCallBtn.addEventListener('click', () => hideModal(callModal));
+        modalBackdrop.addEventListener('click', () => {
+            hideModal(callModal);
+            hideModal(settingsModal);
+        });
+
+        // Settings Modal
+        settingsToggle.addEventListener('click', () => {
+            showModal(settingsModal);
+        });
+        closeSettingsModalBtn.addEventListener('click', () => hideModal(settingsModal));
+
+        // Stats Date Picker
+        statsDatePicker.addEventListener('change', (e) => {
+            displayCalls(e.target.value);
+        });
+
+        currentDateBtn.addEventListener('click', () => {
+            statsDatePicker.value = '';
+            displayCalls();
+        });
+
+        // Daily Goal
+        goalForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const amount = parseFloat(goalAmountInput.value);
+            if (isNaN(amount) || amount < 0) {
+                alert('Please enter a valid goal amount.');
+                return;
+            }
+            dailyGoal = { amount };
+            localStorage.setItem('dailyGoal', JSON.stringify(dailyGoal));
+            updateStatistics();
+        });
+
+        // Payment Cycles
+        paymentCyclesToggle.addEventListener('change', () => {
+            localStorage.setItem('paymentCyclesEnabled', paymentCyclesToggle.checked);
+            renderPaymentCycles();
+        });
+
+        addCycleBtn.addEventListener('click', () => {
+            const startDate = prompt('Enter start date (YYYY-MM-DD):');
+            const endDate = prompt('Enter end date (YYYY-MM-DD):');
+            const payDate = prompt('Enter pay date (YYYY-MM-DD, optional):');
+
+            if (startDate && endDate) {
+                paymentCycles.push({
+                    startDate,
+                    endDate,
+                    payDate: payDate || null
+                });
+                localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+                renderPaymentCycles();
+            }
+        });
+
+        // Export/Import
+        exportDataBtn.addEventListener('click', () => {
+            const data = {
+                rates,
+                calls,
+                paymentCycles,
+                dailyGoal
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `work-time-tracker-data-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function(event) {
                     try {
-                        const importedData = JSON.parse(e.target.result);
-
-                        // Validate imported data
-                        if (!importedData.rates || !Array.isArray(importedData.rates) ||
-                            !importedData.calls || !Array.isArray(importedData.calls)) {
-                            throw new Error('Invalid data format');
+                        const importedData = JSON.parse(event.target.result);
+                        if (importedData.rates && importedData.calls) {
+                            localStorage.setItem('rates', JSON.stringify(importedData.rates));
+                            localStorage.setItem('calls', JSON.stringify(importedData.calls));
+                            if (importedData.dailyGoal) localStorage.setItem('dailyGoal', JSON.stringify(importedData.dailyGoal));
+                            if (importedData.paymentCycles) localStorage.setItem('paymentCycles', JSON.stringify(importedData.paymentCycles));
+                            alert('Data imported successfully!');
+                            window.location.reload();
+                        } else {
+                            alert('Invalid data format.');
                         }
-
-                        // Import the data
-                        rates = importedData.rates;
-                        calls = importedData.calls;
-                        if (typeof importedData.goal === 'number') {
-                            goal = importedData.goal;
-                            if (goalAmount) goalAmount.value = goal;
-                        }
-                        if (importedData.paymentCycles && Array.isArray(importedData.paymentCycles)) {
-                            paymentCycles = importedData.paymentCycles;
-                        }
-                        if (typeof importedData.paymentCyclesEnabled === 'boolean') {
-                            paymentCyclesEnabled = importedData.paymentCyclesEnabled;
-                            if (enablePaymentCyclesToggle) enablePaymentCyclesToggle.checked = paymentCyclesEnabled;
-                        }
-
-                        // Save to localStorage
-                        localStorage.setItem('rates', JSON.stringify(rates));
-                        localStorage.setItem('calls', JSON.stringify(calls));
-                        localStorage.setItem('goal', goal);
-                        localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
-                        localStorage.setItem('paymentCyclesEnabled', paymentCyclesEnabled);
-
-                        // Update displays
-                        displayRates();
-                        displayCalls();
-                        updateStatistics();
-                        updateStorageInfo();
-
-                        resolve();
-                    } catch (err) {
-                        console.error('Import error:', err);
-                        reject(err);
+                    } catch (error) {
+                        alert('Error parsing file: ' + error.message);
                     }
                 };
-                reader.onerror = () => reject(new Error('Failed to read file'));
                 reader.readAsText(file);
-            });
-        }
-        
-        // Add Export/Import event listeners
-        if (exportDataBtn) {
-            exportDataBtn.addEventListener('click', async () => {
-                try {
-                    exportDataBtn.disabled = true;
-                    exportDataBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
-                    exportData();
-                } catch (error) {
-                    alert('Failed to export data. Please try again.');
-                } finally {
-                    exportDataBtn.disabled = false;
-                    exportDataBtn.innerHTML = '<i class="fas fa-download"></i> Export Data';
-                }
-            });
-        }
+            }
+        });
 
-        if (document.getElementById('import-file')) {
-            document.getElementById('import-file').addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const importBtn = document.querySelector('label[for="import-file"]');
-                try {
-                    importBtn.classList.add('pointer-events-none', 'opacity-50');
-                    importBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
-                    await importData(file);
-                    alert('Data imported successfully!');
-                } catch (error) {
-                    alert('Error importing data. Please make sure the file is a valid backup.');
-                } finally {
-                    importBtn.classList.remove('pointer-events-none', 'opacity-50');
-                    importBtn.innerHTML = '<i class="fas fa-upload"></i> Import Data';
-                    e.target.value = ''; // Reset file input
-                }
-            });
-        }
-
+        // Data Cleanup
+        cleanupDataBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete all calls older than 6 months?')) {
+                const sixMonthsAgo = new Date();
+                sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                calls = calls.filter(call => new Date(call.date) >= sixMonthsAgo);
+                saveCalls();
+                alert('Old data has been cleaned up.');
+            }
+        });
 
         // Global Event Listeners
-// This consolidates the duplicated keydown listeners.
-document.addEventListener('keydown', (e) => {
-    if (callModal && callModal.style.display === 'flex') {
-        handleModalKeyboard(e);
-    } else if (settingsModal && settingsModal.style.display === 'flex') {
-        handleSettingsKeyboard(e);
-    }
-});
+        function handleModalKeyboard(e) {
+            if (e.key === 'Escape') {
+                hideModal(callModal);
+            }
+        }
+        function handleSettingsKeyboard(e) {
+            if (e.key === 'Escape') {
+                hideModal(settingsModal);
+            }
+        }
+        
+        // This consolidates the duplicated keydown listeners.
+        document.addEventListener('keydown', (e) => {
+            if (callModal && callModal.style.display === 'flex') {
+                handleModalKeyboard(e);
+            } else if (settingsModal && settingsModal.style.display === 'flex') {
+                handleSettingsKeyboard(e);
+            }
+        });
         
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
