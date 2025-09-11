@@ -1158,19 +1158,24 @@ function formatDateForInput(date) {
                 }
             });
 
-            // Add current call if it exists and is from today
-            if (currentCall && isSameDay(new Date(currentCall.date), new Date(selectedDate))) {
-                const currentDuration = Math.floor((Date.now() - currentCall.date) / 1000);
-                const currentRate = rates[currentCall.rateIndex];
-                if (currentRate) {
-                    totalDuration += currentDuration;
-                    totalEarned += (currentRate.amount / 60) * currentDuration;
-                }
-            }
 
-            // Update displays
-            if (totalMinutes) totalMinutes.textContent = formatDuration(totalDuration);
-            if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
+            
+            // Add current call if it exists and is from today
+if (currentCall && isSameDay(new Date(currentCall.date), new Date(selectedDate))) {
+    const currentDuration = Math.floor((Date.now() - currentCall.date) / 1000);
+    const currentRate = rates[currentCall.rateIndex];
+    if (currentRate) {
+        totalDuration += currentDuration;
+        totalEarned += (currentRate.amount / 60) * currentDuration;
+    }
+}
+
+// Update displays
+if (totalMinutes) totalMinutes.textContent = formatDuration(totalDuration);
+if (totalEarnings) totalEarnings.textContent = formatMoney(totalEarned);
+
+
+            
 
             // Update goal progress
             if (goal > 0 && goalProgressBar && goalProgressText && goalAmountDisplay) {
@@ -1337,23 +1342,24 @@ if (dailyGoalEl) dailyGoalEl.textContent = formatMoney(goal);
         });
 
         document.getElementById('cycle-earnings').textContent = formatMoney(cycleEarnings);
-        document.getElementById('cycle-start-date').textContent = formatDisplayDate(currentCycle.startDate);
-        document.getElementById('cycle-end-date').textContent = formatDisplayDate(currentCycle.endDate);
-        document.getElementById('days-until-end').textContent = `${daysBetween(selected, cycleEndDate)} days`;
-        document.getElementById('pay-date').textContent = formatDisplayDate(currentCycle.payDate);
-        document.getElementById('days-until-pay').textContent = `${daysBetween(selected, payDate)} days`;
-    } else {
-        document.getElementById('cycle-earnings').textContent = formatMoney(0);
-        document.getElementById('cycle-start-date').textContent = 'N/A';
-        document.getElementById('cycle-end-date').textContent = 'N/A';
-        document.getElementById('days-until-end').textContent = 'N/A';
-        document.getElementById('pay-date').textContent = 'N/A';
-        document.getElementById('days-until-pay').textContent = 'N/A';
-    }
+document.getElementById('cycle-start-date').textContent = formatDisplayDate(currentCycle.startDate);
+document.getElementById('cycle-end-date').textContent = formatDisplayDate(currentCycle.endDate);
+document.getElementById('days-until-end').textContent = `${daysBetween(selected, cycleEndDate)} days`;
+document.getElementById('pay-date').textContent = formatDisplayDate(currentCycle.payDate);
+document.getElementById('days-until-pay').textContent = `${daysBetween(selected, payDate)} days`;
+} else {
+    document.getElementById('cycle-earnings').textContent = formatMoney(0);
+    document.getElementById('cycle-start-date').textContent = 'N/A';
+    document.getElementById('cycle-end-date').textContent = 'N/A';
+    document.getElementById('days-until-end').textContent = 'N/A';
+    document.getElementById('pay-date').textContent = 'N/A';
+    document.getElementById('days-until-pay').textContent = 'N/A';
+}
 }
 
 updateTotals();
 }
+
 
 
      // Initialize date picker with today's local date
