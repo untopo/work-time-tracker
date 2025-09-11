@@ -1002,9 +1002,9 @@ function handleSettingsKeyboard(e) {
         let paymentCycles = JSON.parse(localStorage.getItem('paymentCycles') || '[]');
 
         // Function to format date for input
-        function formatDateForInput(date) {
-            return date.toISOString().split('T')[0];
-        }
+function formatDateForInput(date) {
+    return date.toLocaleDateString("en-CA"); // YYYY-MM-DD en local
+}
 
         // Function to format date for display
         function formatDisplayDate(dateString) {
@@ -1190,12 +1190,11 @@ function handleSettingsKeyboard(e) {
         }
 
         function updateStatistics() {
-    const selectedDateStr = selectedDate.toLocaleDateString("en-CA"); // formato YYYY-MM-DD
-}
+    const selectedDateStr = selectedDate.toLocaleDateString("en-CA"); // YYYY-MM-DD
 
     const filteredCalls = calls.filter(call => {
         const callDate = new Date(call.date);
-        const callDateStr = callDate.toISOString().split('T')[0];
+        const callDateStr = callDate.toLocaleDateString("en-CA"); // también en local
         return callDateStr === selectedDateStr;
     });
 
@@ -1374,10 +1373,10 @@ function handleSettingsKeyboard(e) {
             updateTotals();
         }
 
-        // Initialize date picker with today's local date
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        let selectedDate = now.toISOString().split('T')[0];
+      // Initialize date picker with today's local date
+const now = new Date();
+let selectedDate = now.toLocaleDateString("en-CA"); // YYYY-MM-DD
+
 
         // DOM elements - cached for performance
         const modalTitle = document.getElementById('modal-title');
@@ -1438,29 +1437,29 @@ function handleSettingsKeyboard(e) {
             goalAmount.value = goal || '';
         }
 
-        // Initialize date picker
         if (statsDatePicker) {
-            statsDatePicker.value = selectedDate;
-            statsDatePicker.addEventListener('change', (e) => {
-                selectedDate = e.target.value;
-                displayCalls();
-                updateStatistics();
-            });
-        }
+    statsDatePicker.value = selectedDate;
+    statsDatePicker.addEventListener('change', (e) => {
+        selectedDate = e.target.value;
+        displayCalls();
+        updateStatistics();
+    });
+}
 
-        if (currentDateBtn) {
-            currentDateBtn.addEventListener('click', () => {
-                const now = new Date();
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                const today = now.toISOString().split('T')[0];
-                if (statsDatePicker) {
-                    statsDatePicker.value = today;
-                }
-                selectedDate = today;
-                displayCalls();
-                updateStatistics();
-            });
+if (currentDateBtn) {
+    currentDateBtn.addEventListener('click', () => {
+        const now = new Date();
+        // Usar fecha local directamente
+        const today = now.toLocaleDateString("en-CA"); // YYYY-MM-DD
+        if (statsDatePicker) {
+            statsDatePicker.value = today;
         }
+        selectedDate = today;
+        displayCalls();
+        updateStatistics();
+    });
+}
+
 
         // Rate management
         function displayRates() {
@@ -1647,17 +1646,16 @@ function handleSettingsKeyboard(e) {
             };
             calls.push(callData);
 
-            // Update the selected date to match the call's date to ensure it shows up immediately
-            const dateString = callDate.toISOString().split('T')[0];
-            selectedDate = dateString;
-            if (statsDatePicker) {
-                statsDatePicker.value = selectedDate;
-            }
+           // Update the selected date to match the call's date to ensure it shows up immediately
+const dateString = callDate.toLocaleDateString("en-CA"); // YYYY-MM-DD en local
+selectedDate = dateString;
+if (statsDatePicker) {
+    statsDatePicker.value = selectedDate;
+}
 
-            localStorage.setItem('calls', JSON.stringify(calls));
-            displayCalls();
-            updateStatistics();
-        }
+localStorage.setItem('calls', JSON.stringify(calls));
+displayCalls();
+updateStatistics();
 
         function displayCalls() {
             if (!callLog) return;
