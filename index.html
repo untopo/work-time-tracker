@@ -944,7 +944,25 @@ function getLocalDateString(date) {
         String(date.getDate()).padStart(2, "0");
 }
 
-        function filterCallsByDate(calls, targetDate) {
+// Convierte un string ISO a Date local
+function parseLocalDateString(isoString) {
+    const date = new Date(isoString);
+    return new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+}
+
+// Utility: ISO string en formato local YYYY-MM-DDTHH:MM
+function getLocalISOString(date) {
+    const tzOffset = -date.getTimezoneOffset();
+    const diff = tzOffset >= 0 ? '+' : '-';
+    const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
+    return date.getFullYear() +
+        '-' + pad(date.getMonth() + 1) +
+        '-' + pad(date.getDate()) +
+        'T' + pad(date.getHours()) +
+        ':' + pad(date.getMinutes());
+}
+
+function filterCallsByDate(calls, targetDate) {
     if (!targetDate) return calls;
 
     const target = new Date(targetDate);
@@ -959,7 +977,6 @@ function getLocalDateString(date) {
         );
     });
 }
-
 
         const formatDuration = (totalSeconds) => {
     if (!totalSeconds || isNaN(totalSeconds)) return "00:00:00";  // Protección contra valores inválidos
