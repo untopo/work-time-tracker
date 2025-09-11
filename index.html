@@ -478,6 +478,19 @@
         html.dark #payment-cycle-earnings-cards p .font-semibold {
             color: #f1f5f9; /* Very light gray for contrast in dark mode */
         }
+
+        /* Fix for live call info alignment */
+        #live-call-info {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #live-call-info .flex {
+            width: 100%;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
@@ -540,7 +553,7 @@
             </button>
         </div>
         <div id="live-call-info" class="mt-6 w-full rounded-lg shadow-inner transition-all" style="display:none;">
-            <div class="flex flex-col items-center bg-green-50 dark:bg-green-900/40 rounded-lg p-4">
+            <div class="flex flex-col items-center bg-green-50 dark:bg-green-900/40 rounded-lg p-4 w-full">
                 <span class="text-green-700 dark:text-green-300 font-semibold text-lg mb-2">Ongoing Call</span>
                 <span id="live-call-timer" class="font-mono text-3xl text-green-900 dark:text-green-200 font-bold mb-2">00:00:00</span>
                 <span id="live-call-earnings" class="font-mono text-2xl text-green-800 dark:text-green-100 font-bold">$0.00 earned</span>
