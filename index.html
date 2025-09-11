@@ -979,7 +979,7 @@
     const todayEarningsDisplay = document.getElementById('today-earnings');
     const goalEstimateDisplay = document.getElementById('goal-estimate');
     const firstHalfEarningsDisplay = document.getElementById('first-half-earnings');
-    const secondHalfEarningsDisplay = document.getElementById('second-half-earnings');
+    const secondHalfEarningsDisplay = document = document.getElementById('second-half-earnings');
     const monthlyTotalEarningsDisplay = document.getElementById('monthly-total-earnings');
     const goalForm = document.getElementById('goal-form');
     const goalAmountInput = document.getElementById('goal-amount');
@@ -1015,13 +1015,14 @@
     const filterMonthBtn = document.getElementById('filter-month');
     
     // Bug Fix: Add try-catch for local storage parsing to prevent app crash on corrupted data
-    let rates, calls, dailyGoal, paymentCyclesEnabled, paymentCycles;
+    let rates, calls, dailyGoal, paymentCyclesEnabled, paymentCycles, lastSelectedRate;
     try {
         rates = JSON.parse(localStorage.getItem('rates')) || [];
         calls = JSON.parse(localStorage.getItem('calls')) || [];
         dailyGoal = JSON.parse(localStorage.getItem('dailyGoal')) || { amount: 0 };
         paymentCyclesEnabled = JSON.parse(localStorage.getItem('paymentCyclesEnabled')) || false;
         paymentCycles = JSON.parse(localStorage.getItem('paymentCycles')) || [];
+        lastSelectedRate = localStorage.getItem('lastSelectedRate') || null;
     } catch (e) {
         console.error("Failed to parse local storage data. Resetting app data.", e);
         localStorage.clear();
@@ -1030,6 +1031,7 @@
         dailyGoal = { amount: 0 };
         paymentCyclesEnabled = false;
         paymentCycles = [];
+        lastSelectedRate = null;
     }
 
     let activeTimers = new Set();
@@ -1089,8 +1091,7 @@
     }
 
     function updateStatistics() {
-        const today = new Date().toISOString().split('T')[0];
-        const selectedDate = statsDatePicker.value || today;
+        const selectedDate = statsDatePicker.value || new Date().toISOString().split('T')[0];
         const todayCalls = calls.filter(call => new Date(call.startTime).toISOString().split('T')[0] === selectedDate);
         const todayTotalDuration = todayCalls.reduce((sum, call) => sum + call.duration, 0);
         const todayTotalEarnings = todayCalls.reduce((sum, call) => sum + call.earned, 0);
@@ -1174,9 +1175,15 @@
 
     function saveCalls() {
         localStorage.setItem('calls', JSON.stringify(calls));
-        displayCalls();
+        // displayCalls();
         updateStatistics();
         updateStorageInfo();
+        // Re-render the call log based on the current filter
+        if (callLogFilter === 'date') {
+            displayCallsByDate(statsDatePicker.value);
+        } else {
+            displayCalls();
+        }
     }
 
     function saveDailyGoal() {
@@ -1191,6 +1198,13 @@
         renderPaymentCycles();
         updateStatistics();
         updateStorageInfo();
+    }
+    
+    function saveLastSelectedRate() {
+        const selectedRate = rateSelect.value;
+        if (selectedRate) {
+            localStorage.setItem('lastSelectedRate', selectedRate);
+        }
     }
 
     // Rate Management
@@ -1255,9 +1269,11 @@
             const option2 = option.cloneNode(true);
             callRateSelect.appendChild(option2);
         });
+
         if (rates.length > 0) {
-            rateSelect.value = rates[0].amount;
-            callRateSelect.value = rates[0].amount;
+            const defaultRate = lastSelectedRate && rates.some(r => r.amount == lastSelectedRate) ? lastSelectedRate : rates[0].amount;
+            rateSelect.value = defaultRate;
+            callRateSelect.value = defaultRate;
         }
     }
 
@@ -1268,16 +1284,19 @@
         let filteredCalls = [];
         const now = new Date();
         
-        let startDate;
         if (callLogFilter === 'today') {
-            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= startDate);
         } else if (callLogFilter === 'week') {
-            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+            const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= startDate);
         } else if (callLogFilter === 'month') {
-            startDate = new Date(now.getFullYear(), now.getMonth() -1 , now.getDate());
+            const startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= startDate);
+        } else if (callLogFilter === 'date') {
+            const selectedDate = statsDatePicker.value;
+            filteredCalls = calls.filter(call => new Date(call.startTime).toISOString().split('T')[0] === selectedDate);
         }
-
-        filteredCalls = calls.filter(call => new Date(call.startTime) >= startDate);
 
         const sortedCalls = [...filteredCalls].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
         
@@ -1328,7 +1347,6 @@
         });
     }
 
-    // Bug Fix 1: Refactored deleteCall to use splice on the global 'calls' array
     function deleteCall(index) {
         if (confirm("Are you sure you want to delete this call entry?")) {
             calls.splice(index, 1);
@@ -1468,7 +1486,7 @@
         callDurationMinutesInput.value = 0;
         callDurationSecondsInput.value = 0;
         if (rates.length > 0) {
-            callRateSelect.value = rates[0].amount;
+            callRateSelect.value = rateSelect.value;
         }
         callModal.style.display = 'flex';
     }
@@ -1620,23 +1638,16 @@
     
     // UI function to handle active filter button styling
     function updateCallLogFilterButtons() {
-        filterTodayBtn.classList.remove('bg-blue-500', 'text-white', 'dark:bg-blue-600');
-        filterWeekBtn.classList.remove('bg-blue-500', 'text-white', 'dark:bg-blue-600');
-        filterMonthBtn.classList.remove('bg-blue-500', 'text-white', 'dark:bg-blue-600');
-        
-        filterTodayBtn.classList.add('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
-        filterWeekBtn.classList.add('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
-        filterMonthBtn.classList.add('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        const buttons = [filterTodayBtn, filterWeekBtn, filterMonthBtn];
+        buttons.forEach(btn => {
+            btn.classList.remove('bg-blue-500', 'text-white', 'dark:bg-blue-600', 'dark:text-white');
+            btn.classList.add('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        });
 
-        if (callLogFilter === 'today') {
-            filterTodayBtn.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-600');
-            filterTodayBtn.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
-        } else if (callLogFilter === 'week') {
-            filterWeekBtn.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-600');
-            filterWeekBtn.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
-        } else if (callLogFilter === 'month') {
-            filterMonthBtn.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-600');
-            filterMonthBtn.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        const activeBtn = document.getElementById(`filter-${callLogFilter}`);
+        if (activeBtn) {
+            activeBtn.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+            activeBtn.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-600', 'dark:text-white');
         }
     }
 
@@ -1670,7 +1681,6 @@
         cancelEditCycleBtn.addEventListener('click', closeEditCycleModal);
         editCycleForm.addEventListener('submit', handleEditCycleFormSubmit);
 
-
         // Dark Mode
         darkToggleBtn.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
@@ -1683,6 +1693,7 @@
         }
 
         // Rates
+        rateSelect.addEventListener('change', saveLastSelectedRate);
         showRateAddBtn.addEventListener('click', () => {
             rateForm.style.display = 'block';
             showRateAddBtn.style.display = 'none';
@@ -1727,11 +1738,19 @@
         });
         
         // Stats Date Picker
-        statsDatePicker.addEventListener('change', updateStatistics);
+        statsDatePicker.addEventListener('change', () => {
+            callLogFilter = 'date';
+            updateStatistics();
+            displayCalls();
+            updateCallLogFilterButtons();
+        });
         currentDateBtn.addEventListener('click', () => {
             const today = new Date().toISOString().split('T')[0];
             statsDatePicker.value = today;
+            callLogFilter = 'today';
             updateStatistics();
+            displayCalls();
+            updateCallLogFilterButtons();
         });
         
         // Settings
