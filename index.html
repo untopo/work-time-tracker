@@ -925,12 +925,8 @@
             </div>
             <div class="text-center">
                 <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Your Local Time</h3>
-                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                    <li class="flex items-center justify-center gap-2">
-                        <i class="fas fa-clock"></i>
-                        <span id="user-time-zone"></span>
-                    </li>
-                </ul>
+                <p id="local-time" class="text-lg font-semibold text-gray-700 dark:text-gray-300"></p>
+                <p class="text-sm text-gray-600 dark:text-gray-400" id="user-time-zone"></p>
             </div>
         </div>
         <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
@@ -1005,6 +1001,7 @@
     const storageUsedDisplay = document.getElementById('storage-used');
     const storageBar = document.getElementById('storage-bar');
     const localTimeDisplay = document.getElementById('local-time');
+    const userTimeZoneDisplay = document.getElementById('user-time-zone');
     const editCycleModal = document.getElementById('edit-cycle-modal');
     const closeEditCycleModalBtn = document.getElementById('close-edit-cycle-modal');
     const cancelEditCycleBtn = document.getElementById('cancel-edit-cycle');
@@ -1012,7 +1009,7 @@
     const cycleStartDateInput = document.getElementById('cycle-start-date-input');
     const cycleEndDateInput = document.getElementById('cycle-end-date-input');
     const cyclePayDateInput = document.getElementById('cycle-pay-date-input');
-
+    
     const filterTodayBtn = document.getElementById('filter-today');
     const filterWeekBtn = document.getElementById('filter-week');
     const filterMonthBtn = document.getElementById('filter-month');
@@ -1072,6 +1069,14 @@
     function formatEarnings(amount) {
         return `$${amount.toFixed(2)}`;
     }
+    
+    function updateLocalTime() {
+        const now = new Date();
+        const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const timeString = now.toLocaleTimeString();
+        localTimeDisplay.textContent = `${dateString}, ${timeString}`;
+        userTimeZoneDisplay.textContent = now.toLocaleDateString(undefined, { day: '2-digit', timeZoneName: 'short' }).slice(4);
+    }
 
     function updateStorageInfo() {
         const totalBytes = new Blob([JSON.stringify(localStorage)]).size;
@@ -1081,13 +1086,6 @@
         storageUsedDisplay.textContent = `${totalKB.toFixed(2)} KB`;
         storageBar.style.width = `${Math.min(usagePercentage, 100)}%`;
         storageBar.style.backgroundColor = usagePercentage > 80 ? '#ef4444' : '#3b82f6';
-    }
-
-    function updateLocalTime() {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        localTimeDisplay.textContent = `${dateString}, ${timeString}`;
     }
 
     function updateStatistics() {
@@ -1135,13 +1133,6 @@
         firstHalfEarningsDisplay.textContent = formatEarnings(firstHalfEarnings);
         secondHalfEarningsDisplay.textContent = formatEarnings(secondHalfEarnings);
         monthlyTotalEarningsDisplay.textContent = formatEarnings(firstHalfEarnings + secondHalfEarnings);
-
-        const totalMinutes = calls.reduce((sum, call) => sum + call.duration, 0);
-        const totalEarnings = calls.reduce((sum, call) => sum + call.earned, 0);
-        totalMinutesDisplay.textContent = formatTime(totalMinutes);
-        totalEarningsDisplay.textContent = formatEarnings(totalEarnings);
-
-        const todayTotalDurationInMinutes = todayCalls.reduce((sum, call) => sum + call.duration, 0) / (1000 * 60);
 
         const currentCycle = paymentCycles.find(cycle => {
             const now = new Date();
@@ -1276,19 +1267,24 @@
         
         let filteredCalls = [];
         const now = new Date();
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
+        
+        let startDate;
         if (callLogFilter === 'today') {
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= todayStart);
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         } else if (callLogFilter === 'week') {
-            const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= weekStart);
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
         } else if (callLogFilter === 'month') {
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= monthStart);
+            startDate = new Date(now.getFullYear(), now.getMonth() -1 , now.getDate());
         }
 
+        filteredCalls = calls.filter(call => new Date(call.startTime) >= startDate);
+
         const sortedCalls = [...filteredCalls].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        
+        const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
+        const totalEarnings = filteredCalls.reduce((sum, call) => sum + call.earned, 0);
+        totalMinutesDisplay.textContent = formatTime(totalDuration);
+        totalEarningsDisplay.textContent = formatEarnings(totalEarnings);
         
         if (sortedCalls.length === 0) {
             callLogTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls logged for this period.</td></tr>`;
