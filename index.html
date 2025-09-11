@@ -1190,7 +1190,11 @@ function handleSettingsKeyboard(e) {
         }
 
         function updateStatistics() {
-            const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    const selectedDateStr = selectedDate.getFullYear() + "-" +
+        String(selectedDate.getMonth() + 1).padStart(2, "0") + "-" +
+        String(selectedDate.getDate()).padStart(2, "0");
+}
+
 
     const filteredCalls = calls.filter(call => {
         const callDate = new Date(call.date);
@@ -2056,7 +2060,7 @@ function handleSettingsKeyboard(e) {
                     calls,
                     goal,
                     version: '1.1',
-                    exportDate: new Date().toISOString(),
+                    exportDate: new Date().toLocaleString(),
                     paymentCycles: paymentCycles,
                     paymentCyclesEnabled: paymentCyclesEnabled
                 };
@@ -2067,7 +2071,7 @@ function handleSettingsKeyboard(e) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `work-time-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.download = `work-time-tracker-backup-${new Date().toLocaleString().split('T')[0]}.json`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
