@@ -1890,52 +1890,59 @@ function displayCalls() {
         }
 
         // Call form submit handler
-        if (callForm) {
-            callForm.addEventListener('submit', (e) => {
-                e.preventDefault();
+if (callForm) {
+    callForm.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-                const hoursInput = document.getElementById('call-duration-hours');
-                const minutesInput = document.getElementById('call-duration-minutes');
-                const secondsInput = document.getElementById('call-duration-seconds');
+        const hoursInput = document.getElementById('call-duration-hours');
+        const minutesInput = document.getElementById('call-duration-minutes');
+        const secondsInput = document.getElementById('call-duration-seconds');
 
-                const hours = parseInt(hoursInput.value) || 0;
-                const minutes = parseInt(minutesInput.value) || 0;
-                const seconds = parseInt(secondsInput.value) || 0;
+        const hours = parseInt(hoursInput.value) || 0;
+        const minutes = parseInt(minutesInput.value) || 0;
+        const seconds = parseInt(secondsInput.value) || 0;
 
-                const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+        const totalSeconds = (hours * 3600) + (minutes * 60) + seconds;
 
-                if (totalSeconds <= 0) {
-                    alert('Please enter a valid duration');
-                    return;
-                }
+        if (totalSeconds <= 0) {
+            alert('Please enter a valid duration');
+            return;
+        }
 
-                const inputDate = new Date(callDate.value);
+        const dateValue = callDate.value;
+        const rateIndexValue = parseInt(callRate.value);
 
-                if (editingCallIndex !== null) {
-                    calls[editingCallIndex] = {
-                        date: inputDate.toISOString(), // Save as ISO string for consistency
-                        duration: totalSeconds,
-                        rateIndex: parseInt(callRate.value)
-                    };
-                    localStorage.setItem('calls', JSON.stringify(calls));
-                } else {
-                    addCallToLog(inputDate.toISOString(), totalSeconds, parseInt(callRate.value));
-                }
-
-                closeModal();
-                displayCalls();
-                updateStatistics();
+        if (editingCallIndex >= 0) {
+            calls[editingCallIndex] = {
+                date: dateValue,
+                duration: totalSeconds,
+                rateIndex: rateIndexValue
+            };
+        } else {
+            calls.push({
+                date: dateValue,
+                duration: totalSeconds,
+                rateIndex: rateIndexValue
             });
         }
 
-        // Click outside modal to close
-        if (callModal) {
-            callModal.addEventListener('click', (e) => {
-                if (e.target === callModal) {
-                    closeModal();
-                }
-            });
+        displayCalls();
+        updateStatistics();
+        localStorage.setItem('calls', JSON.stringify(calls));
+        editingCallIndex = -1;
+        if (callModal) callModal.style.display = 'none';
+        if (lastActiveElement) lastActiveElement.focus();
+    });
+}
+
+// Click outside modal to close
+if (callModal) {
+    callModal.addEventListener('click', (e) => {
+        if (e.target === callModal) {
+            callModal.style.display = 'none';
         }
+    });
+}
 
         // Settings modal functionality
         if (settingsToggle) {
