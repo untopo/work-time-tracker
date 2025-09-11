@@ -720,6 +720,11 @@
             <i class="fas fa-history text-blue-500 mr-2"></i>Call Log
         </h2>
         <div class="flex flex-wrap items-center gap-4">
+            <button id="filter-today" class="px-3 py-1 text-sm rounded-full bg-blue-500 text-white dark:bg-blue-600 dark:text-white">Today</button>
+            <button id="filter-week" class="px-3 py-1 text-sm rounded-full bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Past Week</button>
+            <button id="filter-month" class="px-3 py-1 text-sm rounded-full bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Past Month</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
             <div class="flex items-center gap-2">
                 <span class="text-gray-600 dark:text-gray-400">Total Time:</span>
                 <span id="total-minutes" class="font-mono text-lg">00:00:00</span>
@@ -899,15 +904,42 @@
 </div>
 
 
-<footer class="text-center text-gray-500 dark:text-gray-400 text-sm mt-8">
-    <div class="flex justify-center flex-col items-center space-y-2">
-        <span id="local-time" class="text-lg font-semibold text-gray-700 dark:text-gray-300"></span>
-        <div class="flex justify-center space-x-4">
-            <a href="https://www.instagram.com/your_instagram_id" target="_blank" rel="noopener noreferrer" class="hover:underline text-blue-500 dark:text-blue-400">
-                Made by topo
-            </a>
-            <button id="privacy-policy" class="hover:underline">Privacy Policy</button>
-            <button id="terms-of-service" class="hover:underline">Terms of Service</button>
+<footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
+    <div class="container mx-auto px-4 py-8 text-center">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
+            <div class="text-center">
+                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Work Time Tracker</h3>
+                <p class="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
+                    Made with
+                    <span class="inline-block">
+                        <i class="fas fa-heart text-red-500 animate-beat"></i>
+                    </span>
+                    by
+                    <a href="https://www.instagram.com/otpo/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                        Topo
+                    </a>
+                </p>
+            </div>
+            <div class="text-center">
+                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Your Local Time</h3>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                    <li class="flex items-center justify-center gap-2">
+                        <i class="fas fa-clock"></i>
+                        <span id="user-time-zone"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+            <p>© 2025 Work Time Tracker. All rights reserved.</p>
+            <p class="mt-2">
+                <button id="privacy-policy" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Privacy Policy</button>
+                <span class="mx-2">•</span>
+                <button id="terms-of-service" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Terms of Service</button>
+            </p>
         </div>
     </div>
 </footer>
@@ -981,6 +1013,10 @@
     const cycleEndDateInput = document.getElementById('cycle-end-date-input');
     const cyclePayDateInput = document.getElementById('cycle-pay-date-input');
 
+    const filterTodayBtn = document.getElementById('filter-today');
+    const filterWeekBtn = document.getElementById('filter-week');
+    const filterMonthBtn = document.getElementById('filter-month');
+    
     // Bug Fix: Add try-catch for local storage parsing to prevent app crash on corrupted data
     let rates, calls, dailyGoal, paymentCyclesEnabled, paymentCycles;
     try {
@@ -1007,6 +1043,7 @@
     let editingCallIndex = null;
     let isEditingCycle = false;
     let editingCycleIndex = null;
+    let callLogFilter = 'today'; // New state for filtering
 
     // Helper Functions
     function formatTime(milliseconds) {
@@ -1236,12 +1273,28 @@
     // Call Log Management
     function displayCalls() {
         callLogTableBody.innerHTML = '';
-        if (calls.length === 0) {
-            callLogTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls logged yet.</td></tr>`;
+        
+        let filteredCalls = [];
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        if (callLogFilter === 'today') {
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= todayStart);
+        } else if (callLogFilter === 'week') {
+            const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= weekStart);
+        } else if (callLogFilter === 'month') {
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= monthStart);
+        }
+
+        const sortedCalls = [...filteredCalls].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        
+        if (sortedCalls.length === 0) {
+            callLogTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls logged for this period.</td></tr>`;
             return;
         }
 
-        const sortedCalls = [...calls].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
         sortedCalls.forEach((call, index) => {
             const originalIndex = calls.findIndex(c => c.startTime === call.startTime && c.duration === call.duration);
             const row = document.createElement('tr');
@@ -1568,6 +1621,29 @@
         closeEditCycleModal();
         showToast('Payment cycle saved!');
     }
+    
+    // UI function to handle active filter button styling
+    function updateCallLogFilterButtons() {
+        filterTodayBtn.classList.remove('bg-blue-500', 'text-white', 'dark:bg-blue-600');
+        filterWeekBtn.classList.remove('bg-blue-500', 'text-white', 'dark:bg-blue-600');
+        filterMonthBtn.classList.remove('bg-blue-500', 'text-white', 'dark:bg-blue-600');
+        
+        filterTodayBtn.classList.add('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        filterWeekBtn.classList.add('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        filterMonthBtn.classList.add('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+
+        if (callLogFilter === 'today') {
+            filterTodayBtn.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-600');
+            filterTodayBtn.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        } else if (callLogFilter === 'week') {
+            filterWeekBtn.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-600');
+            filterWeekBtn.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        } else if (callLogFilter === 'month') {
+            filterMonthBtn.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-600');
+            filterMonthBtn.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
+        }
+    }
+
 
     // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
@@ -1657,7 +1733,8 @@
         // Stats Date Picker
         statsDatePicker.addEventListener('change', updateStatistics);
         currentDateBtn.addEventListener('click', () => {
-            statsDatePicker.value = '';
+            const today = new Date().toISOString().split('T')[0];
+            statsDatePicker.value = today;
             updateStatistics();
         });
         
@@ -1821,6 +1898,28 @@
         renderPaymentCycles();
         updateLocalTime();
         setInterval(updateLocalTime, 1000);
+
+        // Set default date for stats date picker
+        const today = new Date().toISOString().split('T')[0];
+        statsDatePicker.value = today;
+        
+        // Call log filter button event listeners
+        filterTodayBtn.addEventListener('click', () => {
+            callLogFilter = 'today';
+            displayCalls();
+            updateCallLogFilterButtons();
+        });
+        filterWeekBtn.addEventListener('click', () => {
+            callLogFilter = 'week';
+            displayCalls();
+            updateCallLogFilterButtons();
+        });
+        filterMonthBtn.addEventListener('click', () => {
+            callLogFilter = 'month';
+            displayCalls();
+            updateCallLogFilterButtons();
+        });
+        updateCallLogFilterButtons(); // Initial call to set active button styling
     });
 </script>
 </body>
