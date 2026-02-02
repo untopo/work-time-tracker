@@ -797,7 +797,7 @@
 
 <div id="call-modal" style="display: none;"
      role="dialog" aria-labelledby="modal-title" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md" style="max-height:80vh; overflow:auto;">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">Add Call</h3>
             <button id="close-modal" aria-label="Close modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
@@ -1152,6 +1152,8 @@
 
     function populateTimeZones() {
         if (!tzSelect) return;
+        // reset options (idempotent) and keep the browser-default option
+        tzSelect.innerHTML = '<option value="">(Use browser default)</option>';
         const zones = getTimeZones();
         zones.forEach(tz => {
             const opt = document.createElement('option');
@@ -1468,6 +1470,14 @@
 
     function openSettingsModal() {
         settingsModal.style.display = 'flex';
+        // ensure selector and payment-cycle UI are up-to-date and visible
+        populateTimeZones();
+        renderPaymentCycles();
+        // bring attention to timezone selector if present
+        if (document.getElementById('timezone-select')) {
+            // timeout ensures modal layout is applied before focus/scroll
+            setTimeout(() => document.getElementById('timezone-select').scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+        }
     }
 
     function closeSettingsModal() {
@@ -1482,7 +1492,7 @@
         editCycleModal.style.display = 'none';
         isEditingCycle = false;
         editingCycleIndex = null;
-        editCycleForm.reset();
+               editCycleForm.reset();
     }
 
     // Payment Cycle Management
