@@ -864,37 +864,19 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Time Zone Selector -->
             <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <div class="flex justify-between items-center mb-3">
-                    <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100">Payment Cycles</h4>
-                    <label class="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="payment-cycles-toggle" class="sr-only peer">
-                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                        <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Payment Cycles</span>
-                    </label>
+                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Time Zone</h4>
+                <div class="flex items-center gap-2">
+                    <select id="timezone-select" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
+                        <option value="">(Use browser default)</option>
+                    </select>
+                    <button id="reset-timezone" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded">Reset</button>
                 </div>
-                <div id="payment-cycles-config" class="hidden">
-                    <div class="mb-3">
-                        <button id="show-add-cycle-btn" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                            <i class="fas fa-plus"></i> Add Payment Cycle
-                        </button>
-                    </div>
-                    <div class="max-h-48 overflow-y-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-800">
-                            <tr>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Start Date</th>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">End Date</th>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Pay Date</th>
-                                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody id="payment-cycles-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Choose preferred time zone for displaying call dates/times.</p>
             </div>
+
             <div>
                 <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Reset & Erase</h4>
                 <div class="flex flex-col gap-2">
@@ -1028,7 +1010,7 @@
     const todayEarningsDisplay = document.getElementById('today-earnings');
     const goalEstimateDisplay = document.getElementById('goal-estimate');
     const firstHalfEarningsDisplay = document.getElementById('first-half-earnings');
-    const secondHalfEarningsDisplay = document = document.getElementById('second-half-earnings');
+    const secondHalfEarningsDisplay = document.getElementById('second-half-earnings');
     const monthlyTotalEarningsDisplay = document.getElementById('monthly-total-earnings');
     const goalForm = document.getElementById('goal-form');
     const goalAmountInput = document.getElementById('goal-amount');
@@ -1051,6 +1033,9 @@
     const storageBar = document.getElementById('storage-bar');
     const localTimeDisplay = document.getElementById('local-time');
     const userTimeZoneDisplay = document.getElementById('user-time-zone');
+    // timezone DOM refs
+    const tzSelect = document.getElementById('timezone-select');
+    const resetTzBtn = document.getElementById('reset-timezone');
     const editCycleModal = document.getElementById('edit-cycle-modal');
     const closeEditCycleModalBtn = document.getElementById('close-edit-cycle-modal');
     const cancelEditCycleBtn = document.getElementById('cancel-edit-cycle');
@@ -1102,164 +1087,81 @@
         return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    function formatDate(date) {
-        if (!date) return 'N/A';
-        // Fix for time zone issue - use UTC methods
-        const d = new Date(date);
-        const year = d.getUTCFullYear();
-        const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(d.getUTCDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    function formatDateTime(date) {
-        const d = new Date(date);
-        return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    }
-
     function formatEarnings(amount) {
         return `$${amount.toFixed(2)}`;
     }
     
+    // Time zone helpers
+    function getUserTimeZone() {
+        const tz = localStorage.getItem('timeZone');
+        return tz && tz.length > 0 ? tz : undefined; // undefined → browser default
+    }
+
+    function formatDate(date) {
+        if (!date) return 'N/A';
+        const d = new Date(date);
+        const tz = getUserTimeZone();
+        return d.toLocaleDateString(undefined, { timeZone: tz });
+    }
+
+    function formatDateTime(date) {
+        if (!date) return 'N/A';
+        const d = new Date(date);
+        const tz = getUserTimeZone();
+        return `${d.toLocaleDateString(undefined, { timeZone: tz })} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: tz })}`;
+    }
+
     function updateLocalTime() {
         const now = new Date();
-        const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        const timeString = now.toLocaleTimeString();
+        const tz = getUserTimeZone();
+        const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: tz });
+        const timeString = now.toLocaleTimeString(undefined, { timeZone: tz });
         localTimeDisplay.textContent = `${dateString}, ${timeString}`;
-        userTimeZoneDisplay.textContent = now.toLocaleDateString(undefined, { day: '2-digit', timeZoneName: 'short' }).slice(4);
+        userTimeZoneDisplay.textContent = tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
-    function updateStorageInfo() {
-        const totalBytes = new Blob([JSON.stringify(localStorage)]).size;
-        const totalKB = totalBytes / 1024;
-        const maxStorageKB = 5000;
-        const usagePercentage = (totalKB / maxStorageKB) * 100;
-        storageUsedDisplay.textContent = `${totalKB.toFixed(2)} KB`;
-        storageBar.style.width = `${Math.min(usagePercentage, 100)}%`;
-        storageBar.style.backgroundColor = usagePercentage > 80 ? '#ef4444' : '#3b82f6';
-    }
-
-    function updateStatistics() {
-        const selectedDate = statsDatePicker.value || new Date().toISOString().split('T')[0];
-        const todayCalls = calls.filter(call => new Date(call.startTime).toISOString().split('T')[0] === selectedDate);
-        const todayTotalDuration = todayCalls.reduce((sum, call) => sum + call.duration, 0);
-        const todayTotalEarnings = todayCalls.reduce((sum, call) => sum + call.earned, 0);
-        const averageDuration = todayCalls.length > 0 ? todayTotalDuration / todayCalls.length : 0;
-        avgDurationDisplay.textContent = formatTime(averageDuration);
-        todayEarningsDisplay.textContent = formatEarnings(todayTotalEarnings);
-
-        const progress = dailyGoal.amount > 0 ? (todayTotalEarnings / dailyGoal.amount) * 100 : 0;
-        goalProgressText.textContent = `${Math.min(progress.toFixed(0), 100)}%`;
-        goalAmountDisplay.textContent = `${formatEarnings(todayTotalEarnings)} / ${formatEarnings(dailyGoal.amount)}`;
-        goalProgressBar.style.width = `${Math.min(progress, 100)}%`;
-        goalProgressBar.style.backgroundColor = progress >= 100 ? '#22c55e' : '#3b82f6';
-
-        if (todayTotalEarnings < dailyGoal.amount && todayCalls.length > 0) {
-            const currentAvgRate = todayCalls.reduce((sum, call) => sum + call.rate, 0) / todayCalls.length;
-            if (currentAvgRate > 0) {
-                const remainingToGoal = dailyGoal.amount - todayTotalEarnings;
-                const estimatedMinutes = remainingToGoal / currentAvgRate;
-                goalEstimateDisplay.textContent = `${estimatedMinutes.toFixed(1)} mins to goal`;
-            } else {
-                goalEstimateDisplay.textContent = 'N/A';
+    // Populate time zone options (uses Intl.supportedValuesOf when available)
+    function getTimeZones() {
+        try {
+            if (typeof Intl !== 'undefined' && Intl.supportedValuesOf) {
+                return Intl.supportedValuesOf('timeZone');
             }
-        } else {
-            goalEstimateDisplay.textContent = todayTotalEarnings >= dailyGoal.amount ? 'Goal met!' : '-- mins to goal';
-        }
+        } catch (e) { /* ignore */ }
+        return ['UTC','America/New_York','America/Los_Angeles','Europe/London','Europe/Madrid','Asia/Tokyo','Australia/Sydney'];
+    }
 
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const midOfMonth = new Date(now.getFullYear(), now.getMonth(), 16);
-        const firstHalfEarnings = calls.filter(call => {
-            const callDate = new Date(call.startTime);
-            return callDate >= startOfMonth && callDate < midOfMonth;
-        }).reduce((sum, call) => sum + call.earned, 0);
-
-        const secondHalfEarnings = calls.filter(call => {
-            const callDate = new Date(call.startTime);
-            return callDate >= midOfMonth && callDate <= now;
-        }).reduce((sum, call) => sum + call.earned, 0);
-
-        firstHalfEarningsDisplay.textContent = formatEarnings(firstHalfEarnings);
-        secondHalfEarningsDisplay.textContent = formatEarnings(secondHalfEarnings);
-        monthlyTotalEarningsDisplay.textContent = formatEarnings(firstHalfEarnings + secondHalfEarnings);
-
-        const currentCycle = paymentCycles.find(cycle => {
-            const now = new Date();
-            const start = new Date(cycle.startDate);
-            const end = new Date(cycle.endDate);
-            return now >= start && now <= end;
+    function populateTimeZones() {
+        if (!tzSelect) return;
+        const zones = getTimeZones();
+        zones.forEach(tz => {
+            const opt = document.createElement('option');
+            opt.value = tz;
+            opt.textContent = tz;
+            tzSelect.appendChild(opt);
         });
-
-        if (currentCycle) {
-            const cycleCalls = calls.filter(call => {
-                const callDate = new Date(call.startTime);
-                return callDate >= new Date(currentCycle.startDate) && callDate <= new Date(currentCycle.endDate);
-            });
-            const cycleEarnings = cycleCalls.reduce((sum, call) => sum + call.earned, 0);
-            cycleEarningsDisplay.textContent = formatEarnings(cycleEarnings);
-            // Fix for date display
-            const cycleStartLocal = new Date(currentCycle.startDate);
-            const cycleEndLocal = new Date(currentCycle.endDate);
-            const cyclePayLocal = new Date(currentCycle.payDate);
-
-            cycleStartDateDisplay.textContent = cycleStartLocal.toLocaleDateString();
-            cycleEndDateDisplay.textContent = cycleEndLocal.toLocaleDateString();
-            payDateDisplay.textContent = cyclePayLocal.toLocaleDateString();
-            
-            const daysLeft = Math.ceil((new Date(currentCycle.endDate) - now) / (1000 * 60 * 60 * 24));
-            daysUntilEndDisplay.textContent = daysLeft > 0 ? `${daysLeft} day${daysLeft > 1 ? 's' : ''}` : 'Today!';
-            const daysToPay = Math.ceil((new Date(currentCycle.payDate) - now) / (1000 * 60 * 60 * 24));
-            daysUntilPayDisplay.textContent = daysToPay > 0 ? `${daysToPay} day${daysToPay > 1 ? 's' : ''}` : 'Today!';
-        } else {
-            cycleEarningsDisplay.textContent = '$0.00';
-            cycleStartDateDisplay.textContent = 'N/A';
-            cycleEndDateDisplay.textContent = 'N/A';
-            payDateDisplay.textContent = 'N/A';
-            daysUntilEndDisplay.textContent = 'N/A';
-            daysUntilPayDisplay.textContent = 'N/A';
-        }
+        const saved = localStorage.getItem('timeZone') || '';
+        if (saved) tzSelect.value = saved;
     }
 
-    function saveRates() {
-        localStorage.setItem('rates', JSON.stringify(rates));
-        displayRates();
-        populateRateSelects();
-        updateStorageInfo();
-    }
-
-    function saveCalls() {
-        localStorage.setItem('calls', JSON.stringify(calls));
-        // displayCalls();
-        updateStatistics();
-        updateStorageInfo();
-        // Re-render the call log based on the current filter
-        if (callLogFilter === 'date') {
-            displayCallsByDate(statsDatePicker.value);
-        } else {
+    if (tzSelect) {
+        tzSelect.addEventListener('change', () => {
+            const tz = tzSelect.value || '';
+            if (tz) localStorage.setItem('timeZone', tz);
+            else localStorage.removeItem('timeZone');
+            updateStatistics();
             displayCalls();
-        }
+            updateLocalTime();
+        });
     }
 
-    function saveDailyGoal() {
-        localStorage.setItem('dailyGoal', JSON.stringify(dailyGoal));
-        updateStatistics();
-        updateStorageInfo();
-    }
-
-    function savePaymentCycles() {
-        localStorage.setItem('paymentCyclesEnabled', JSON.stringify(paymentCyclesEnabled));
-        localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
-        renderPaymentCycles();
-        updateStatistics();
-        updateStorageInfo();
-    }
-    
-    function saveLastSelectedRate() {
-        const selectedRate = rateSelect.value;
-        if (selectedRate) {
-            localStorage.setItem('lastSelectedRate', selectedRate);
-        }
+    if (resetTzBtn) {
+        resetTzBtn.addEventListener('click', () => {
+            if (tzSelect) tzSelect.value = '';
+            localStorage.removeItem('timeZone');
+            updateStatistics();
+            displayCalls();
+            updateLocalTime();
+        });
     }
 
     // Rate Management
@@ -1964,15 +1866,13 @@
         // Initialize displays and add event listeners
         displayRates();
         populateRateSelects(); // Call before setting the value
-        if (rates.length > 0 && lastSelectedRate) {
-            rateSelect.value = lastSelectedRate;
-        }
-
+        populateTimeZones(); // populate timezone selector
+        // apply saved timezone immediately
+        updateLocalTime();
         displayCalls();
         updateStatistics();
         updateStorageInfo();
         renderPaymentCycles();
-        updateLocalTime();
         setInterval(updateLocalTime, 1000);
 
         // Set default date for stats date picker
