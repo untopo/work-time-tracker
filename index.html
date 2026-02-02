@@ -183,6 +183,8 @@
             gap: 0.25rem;
             transition: background-color 0.2s;
             margin: 0 0.25rem;
+            border: none;
+            cursor: pointer;
         }
 
         .edit-rate-btn:hover,
@@ -491,6 +493,20 @@
         #live-call-info .flex {
             width: 100%;
         }
+
+        .delete-cycle-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .edit-cycle-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
@@ -779,6 +795,7 @@
                 <th class="font-semibold">Date</th>
                 <th class="font-semibold">Duration</th>
                 <th class="font-semibold">Rate</th>
+                <th class="font-semibold">Earnings</th>
                 <th class="font-semibold pl-4">Actions</th>
             </tr>
             </thead>
@@ -838,7 +855,7 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="space-y-4">
+        <div class="space-y-4 max-h-96 overflow-y-auto">
             <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
                 <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Management</h4>
                 <div class="flex flex-col gap-2">
@@ -1109,6 +1126,150 @@
 
     function formatEarnings(amount) {
         return `$${amount.toFixed(2)}`;
+    }
+    
+    // Storage functions
+    function saveRates() {
+        localStorage.setItem('rates', JSON.stringify(rates));
+        displayRates();
+        populateRateSelects();
+        updateStatistics();
+    }
+
+    function saveCalls() {
+        localStorage.setItem('calls', JSON.stringify(calls));
+        displayCalls();
+        updateStatistics();
+    }
+
+    function saveDailyGoal() {
+        localStorage.setItem('dailyGoal', JSON.stringify(dailyGoal));
+        updateStatistics();
+    }
+
+    function savePaymentCycles() {
+        localStorage.setItem('paymentCyclesEnabled', JSON.stringify(paymentCyclesEnabled));
+        localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+        renderPaymentCycles();
+        updateStatistics();
+    }
+
+    function saveLastSelectedRate() {
+        lastSelectedRate = rateSelect.value;
+        localStorage.setItem('lastSelectedRate', lastSelectedRate);
+    }
+
+    function updateStorageInfo() {
+        const data = {
+            rates,
+            calls,
+            dailyGoal,
+            paymentCyclesEnabled,
+            paymentCycles,
+            theme: localStorage.getItem('theme'),
+            timeZone: localStorage.getItem('timeZone')
+        };
+        const dataStr = JSON.stringify(data);
+        const bytes = new Blob([dataStr]).size;
+        const kb = (bytes / 1024).toFixed(2);
+        const maxKb = 5120; // 5MB limit for typical localStorage
+        const percentage = Math.min((bytes / (maxKb * 1024)) * 100, 100);
+        
+        storageUsedDisplay.textContent = `${kb} KB / ${(maxKb / 1024).toFixed(1)} MB`;
+        storageBar.style.width = `${percentage}%`;
+    }
+
+    function updateStatistics() {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        // Calculate today's stats
+        const todaysCalls = calls.filter(call => new Date(call.startTime) >= todayStart);
+        const todaysEarnings = todaysCalls.reduce((sum, call) => sum + call.earned, 0);
+        const todaysDuration = todaysCalls.reduce((sum, call) => sum + call.duration, 0);
+        
+        todayEarningsDisplay.textContent = formatEarnings(todaysEarnings);
+        
+        // Calculate average duration
+        if (todaysCalls.length > 0) {
+            const avgDuration = todaysDuration / todaysCalls.length;
+            avgDurationDisplay.textContent = formatTime(avgDuration);
+        } else {
+            avgDurationDisplay.textContent = '00:00:00';
+        }
+        
+        // Calculate goal progress
+        if (dailyGoal.amount > 0) {
+            const minutesToGoal = dailyGoal.amount - (todaysEarnings / dailyGoal.amount * 100);
+            if (todaysEarnings >= dailyGoal.amount) {
+                goalEstimateDisplay.textContent = 'Goal reached!';
+                goalProgressBar.style.width = '100%';
+            } else {
+                const remaining = dailyGoal.amount - todaysEarnings;
+                const rate = todaysCalls.length > 0 ? todaysEarnings / (todaysDuration / (1000 * 60)) : 0;
+                const minutesNeeded = rate > 0 ? (remaining / rate).toFixed(0) : '--';
+                goalEstimateDisplay.textContent = `${minutesNeeded} mins to goal`;
+                const progress = Math.min((todaysEarnings / dailyGoal.amount) * 100, 100);
+                goalProgressBar.style.width = `${progress}%`;
+                goalProgressText.textContent = `${progress.toFixed(0)}%`;
+            }
+            goalAmountDisplay.textContent = `$${todaysEarnings.toFixed(2)} / $${dailyGoal.amount.toFixed(2)}`;
+        } else {
+            goalEstimateDisplay.textContent = 'No goal set';
+            goalProgressBar.style.width = '0%';
+            goalProgressText.textContent = '0%';
+            goalAmountDisplay.textContent = '$0.00 / $0.00';
+        }
+        
+        // Calculate monthly earnings
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const monthCalls = calls.filter(call => new Date(call.startTime) >= monthStart);
+        
+        const firstHalfCalls = monthCalls.filter(call => new Date(call.startTime).getDate() <= 15);
+        const secondHalfCalls = monthCalls.filter(call => new Date(call.startTime).getDate() > 15);
+        
+        const firstHalfEarnings = firstHalfCalls.reduce((sum, call) => sum + call.earned, 0);
+        const secondHalfEarnings = secondHalfCalls.reduce((sum, call) => sum + call.earned, 0);
+        const monthlyEarnings = firstHalfEarnings + secondHalfEarnings;
+        
+        firstHalfEarningsDisplay.textContent = formatEarnings(firstHalfEarnings);
+        secondHalfEarningsDisplay.textContent = formatEarnings(secondHalfEarnings);
+        monthlyTotalEarningsDisplay.textContent = formatEarnings(monthlyEarnings);
+        
+        // Calculate payment cycle earnings
+        if (paymentCyclesEnabled && paymentCycles.length > 0) {
+            const currentCycle = paymentCycles.find(cycle => {
+                const start = new Date(cycle.startDate);
+                const end = new Date(cycle.endDate);
+                return now >= start && now <= end;
+            });
+            
+            if (currentCycle) {
+                const cycleStart = new Date(currentCycle.startDate);
+                const cycleEnd = new Date(currentCycle.endDate);
+                const cycleCalls = calls.filter(call => {
+                    const callDate = new Date(call.startTime);
+                    return callDate >= cycleStart && callDate <= cycleEnd;
+                });
+                
+                const cycleEarnings = cycleCalls.reduce((sum, call) => sum + call.earned, 0);
+                cycleEarningsDisplay.textContent = formatEarnings(cycleEarnings);
+                
+                cycleStartDateDisplay.textContent = formatDate(currentCycle.startDate);
+                cycleEndDateDisplay.textContent = formatDate(currentCycle.endDate);
+                
+                const daysLeft = Math.ceil((cycleEnd - now) / (1000 * 60 * 60 * 24));
+                daysUntilEndDisplay.textContent = `${daysLeft} days`;
+                
+                const payDate = new Date(currentCycle.payDate);
+                payDateDisplay.textContent = formatDate(currentCycle.payDate);
+                
+                const daysUntilPay = Math.ceil((payDate - now) / (1000 * 60 * 60 * 24));
+                daysUntilPayDisplay.textContent = `${daysUntilPay} days`;
+            }
+        }
+        
+        updateStorageInfo();
     }
     
     // Time zone helpers
@@ -1492,7 +1653,7 @@
         editCycleModal.style.display = 'none';
         isEditingCycle = false;
         editingCycleIndex = null;
-               editCycleForm.reset();
+        editCycleForm.reset();
     }
 
     // Payment Cycle Management
@@ -1554,9 +1715,6 @@
             });
         });
 
-        const statsContainer = document.getElementById('stats-date-picker').closest('.bg-white');
-        const monthlyContainer = document.getElementById('monthly-earnings-cards').closest('.grid');
-        const cycleContainer = document.getElementById('payment-cycle-earnings-cards').closest('.grid');
         if (paymentCyclesEnabled) {
             monthlyEarningsCards.classList.add('hidden');
             paymentCycleEarningsCards.classList.remove('hidden');
