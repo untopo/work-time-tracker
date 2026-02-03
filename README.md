@@ -179,4 +179,3 @@ Made by [Topo](https://www.instagram.com/otpo/)
 ---
 
 **Last Updated:** February 2026  
-**Version:** 2.0 (Contact Us Feature + Formspree Integration)
