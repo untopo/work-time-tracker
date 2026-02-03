@@ -1002,7 +1002,7 @@
      role="dialog" aria-labelledby="feedback-modal-title" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="feedback-modal-title">Send Feedback</h3>
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="feedback-modal-title">Contact Us</h3>
             <button id="close-feedback-modal" aria-label="Close feedback modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 <i class="fas fa-times text-lg"></i>
             </button>
@@ -1015,6 +1015,7 @@
                     <option value="Bug Report">Bug Report</option>
                     <option value="Feedback">Feedback</option>
                     <option value="Suggestion">Suggestion</option>
+                    <option value="Other">Other</option>
                 </select>
             </div>
             <div class="mb-4">
@@ -1035,7 +1036,7 @@
 
 <footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
     <div class="container mx-auto px-4 py-8 text-center">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
             <div class="text-center">
                 <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Work Time Tracker</h3>
                 <p class="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
@@ -1068,6 +1069,12 @@
                 <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Your Local Time</h3>
                 <p id="local-time" class="text-lg font-semibold text-gray-700 dark:text-gray-300"></p>
                 <p class="text-sm text-gray-600 dark:text-gray-400" id="user-time-zone"></p>
+            </div>
+            <div class="text-center">
+                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Support</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    <button id="contact-us-btn" class="text-blue-600 dark:text-blue-400 hover:underline font-medium transition">Contact Us</button>
+                </p>
             </div>
         </div>
         <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
@@ -1870,6 +1877,91 @@
         }
     }
 
+    // Toast Notification
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            font-family: sans-serif;
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translate(-50%, -10px)';
+        }, 10);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translate(-50%, 0)';
+        }, 2500);
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 3000);
+    }
+
+    // Feedback Modal Functions
+    const feedbackModal = document.getElementById('feedback-modal');
+    const closeFeedbackModalBtn = document.getElementById('close-feedback-modal');
+    const cancelFeedbackBtn = document.getElementById('cancel-feedback');
+    const feedbackForm = document.getElementById('feedback-form');
+    const contactUsBtn = document.getElementById('contact-us-btn');
+
+    function openFeedbackModal() {
+        feedbackModal.style.display = 'flex';
+    }
+
+    function closeFeedbackModal() {
+        feedbackModal.style.display = 'none';
+        feedbackForm.reset();
+    }
+
+    if (contactUsBtn) {
+        contactUsBtn.addEventListener('click', openFeedbackModal);
+    }
+
+    if (closeFeedbackModalBtn) {
+        closeFeedbackModalBtn.addEventListener('click', closeFeedbackModal);
+    }
+
+    if (cancelFeedbackBtn) {
+        cancelFeedbackBtn.addEventListener('click', closeFeedbackModal);
+    }
+
+    // Feedback form submission with fetch API
+    if (feedbackForm) {
+        feedbackForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(feedbackForm);
+            try {
+                const response = await fetch(feedbackForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    showToast('Thank you for contacting us!');
+                    closeFeedbackModal();
+                } else {
+                    showToast('Error sending message. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error sending message. Please try again.');
+            }
+        });
+    }
 
     // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
@@ -2062,38 +2154,6 @@
             paymentCyclesEnabled = e.target.checked;
             savePaymentCycles();
         });
-        
-        // Toast Notification
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background-color: #333;
-                color: white;
-                padding: 10px 20px;
-                border-radius: 5px;
-                z-index: 1000;
-                opacity: 0;
-                transition: opacity 0.5s, transform 0.5s;
-                font-family: sans-serif;
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translate(-50%, -10px)';
-            }, 10);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translate(-50%, 0)';
-            }, 2500);
-            setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 3000);
-        }
 
         // Global Event Listeners
         function handleModalKeyboard(e) {
@@ -2163,57 +2223,6 @@
             updateCallLogFilterButtons();
         });
         updateCallLogFilterButtons(); // Initial call to set active button styling
-    });
-
-    // Feedback Modal
-    const feedbackModal = document.getElementById('feedback-modal');
-    const closeFeedbackModalBtn = document.getElementById('close-feedback-modal');
-    const cancelFeedbackBtn = document.getElementById('cancel-feedback');
-    const feedbackForm = document.getElementById('feedback-form');
-
-    function openFeedbackModal() {
-        feedbackModal.style.display = 'flex';
-    }
-
-    function closeFeedbackModal() {
-        feedbackModal.style.display = 'none';
-        feedbackForm.reset();
-    }
-
-    // Create and add feedback button to footer (or link to existing one)
-    const feedbackBtn = document.createElement('button');
-    feedbackBtn.id = 'send-feedback-btn';
-    feedbackBtn.className = 'text-blue-600 dark:text-blue-400 hover:underline font-medium transition';
-    feedbackBtn.textContent = 'Send Feedback';
-    feedbackBtn.addEventListener('click', openFeedbackModal);
-
-    // Add to footer (find footer and append)
-    const footerLinks = document.querySelector('footer .grid');
-    if (footerLinks) {
-        const feedbackDiv = document.createElement('div');
-        feedbackDiv.className = 'text-center';
-        feedbackDiv.appendChild(feedbackBtn);
-        footerLinks.appendChild(feedbackDiv);
-    }
-
-    closeFeedbackModalBtn.addEventListener('click', closeFeedbackModal);
-    cancelFeedbackBtn.addEventListener('click', closeFeedbackModal);
-
-    // Close on outside click
-    window.addEventListener('click', (e) => {
-        if (e.target === feedbackModal) closeFeedbackModal();
-    });
-
-    // Form submission feedback
-    feedbackForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        // Formspree handles submission automatically; show confirmation
-        showToast('Thank you for your feedback!');
-        closeFeedbackModal();
-        // Optional: actually submit after a delay
-        setTimeout(() => {
-            feedbackForm.submit();
-        }, 500);
     });
 </script>
 </body>
