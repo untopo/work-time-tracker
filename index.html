@@ -507,6 +507,44 @@
             cursor: pointer;
             padding: 0;
         }
+
+        /* Feedback Modal Styles */
+        #feedback-modal {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+
+        html.dark #feedback-modal {
+            background-color: #1e293b;
+            border-color: #475569;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        #feedback-modal input,
+        #feedback-modal select,
+        #feedback-modal textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 4px 0 12px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        html.dark #feedback-modal input,
+        html.dark #feedback-modal select,
+        html.dark #feedback-modal textarea {
+            background-color: #334155;
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        #feedback-modal textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
@@ -959,6 +997,41 @@
     </div>
 </div>
 
+<!-- Feedback Modal -->
+<div id="feedback-modal" style="display: none;"
+     role="dialog" aria-labelledby="feedback-modal-title" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="feedback-modal-title">Send Feedback</h3>
+            <button id="close-feedback-modal" aria-label="Close feedback modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+        </div>
+        <form id="feedback-form" action="https://formspree.io/f/xwvqagvg" method="POST">
+            <div class="mb-4">
+                <label for="feedback-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+                <select id="feedback-type" name="type" required class="w-full px-3 py-2 border rounded-lg">
+                    <option value="">-- Select --</option>
+                    <option value="Bug Report">Bug Report</option>
+                    <option value="Feedback">Feedback</option>
+                    <option value="Suggestion">Suggestion</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="feedback-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email (optional)</label>
+                <input type="email" id="feedback-email" name="email" placeholder="your@email.com" class="w-full px-3 py-2 border rounded-lg">
+            </div>
+            <div class="mb-6">
+                <label for="feedback-message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
+                <textarea id="feedback-message" name="message" placeholder="Describe your feedback..." required class="w-full px-3 py-2 border rounded-lg"></textarea>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" id="cancel-feedback" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Send</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
     <div class="container mx-auto px-4 py-8 text-center">
@@ -1819,6 +1892,9 @@
             if (e.target === editCycleModal) {
                 closeEditCycleModal();
             }
+            if (e.target === feedbackModal) {
+                closeFeedbackModal();
+            }
         });
         
         // New Payment Cycle Modal
@@ -2031,6 +2107,9 @@
                 if (editCycleModal.style.display === 'flex') {
                     closeEditCycleModal();
                 }
+                if (feedbackModal.style.display === 'flex') {
+                    closeFeedbackModal();
+                }
             }
         }
         
@@ -2084,6 +2163,57 @@
             updateCallLogFilterButtons();
         });
         updateCallLogFilterButtons(); // Initial call to set active button styling
+    });
+
+    // Feedback Modal
+    const feedbackModal = document.getElementById('feedback-modal');
+    const closeFeedbackModalBtn = document.getElementById('close-feedback-modal');
+    const cancelFeedbackBtn = document.getElementById('cancel-feedback');
+    const feedbackForm = document.getElementById('feedback-form');
+
+    function openFeedbackModal() {
+        feedbackModal.style.display = 'flex';
+    }
+
+    function closeFeedbackModal() {
+        feedbackModal.style.display = 'none';
+        feedbackForm.reset();
+    }
+
+    // Create and add feedback button to footer (or link to existing one)
+    const feedbackBtn = document.createElement('button');
+    feedbackBtn.id = 'send-feedback-btn';
+    feedbackBtn.className = 'text-blue-600 dark:text-blue-400 hover:underline font-medium transition';
+    feedbackBtn.textContent = 'Send Feedback';
+    feedbackBtn.addEventListener('click', openFeedbackModal);
+
+    // Add to footer (find footer and append)
+    const footerLinks = document.querySelector('footer .grid');
+    if (footerLinks) {
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'text-center';
+        feedbackDiv.appendChild(feedbackBtn);
+        footerLinks.appendChild(feedbackDiv);
+    }
+
+    closeFeedbackModalBtn.addEventListener('click', closeFeedbackModal);
+    cancelFeedbackBtn.addEventListener('click', closeFeedbackModal);
+
+    // Close on outside click
+    window.addEventListener('click', (e) => {
+        if (e.target === feedbackModal) closeFeedbackModal();
+    });
+
+    // Form submission feedback
+    feedbackForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Formspree handles submission automatically; show confirmation
+        showToast('Thank you for your feedback!');
+        closeFeedbackModal();
+        // Optional: actually submit after a delay
+        setTimeout(() => {
+            feedbackForm.submit();
+        }, 500);
     });
 </script>
 </body>
