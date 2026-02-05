@@ -610,86 +610,95 @@
             <div class="flex flex-col items-center bg-green-50 dark:bg-green-900/40 rounded-lg p-4 w-full">
                 <span class="text-green-700 dark:text-green-300 font-semibold text-lg mb-2">Ongoing Call</span>
                 <span id="live-call-timer" class="font-mono text-3xl text-green-900 dark:text-green-200 font-bold mb-2">00:00:00</span>
-                <span id="live-call-earnings" class="font-mono text-2xl text-green-800 dark:text-green-100 font-bold">$0.00 earned</span>
+                <span id="live-call-earnings" class="font-mono text-2xl text-green-800 dark:text-green-100 font-bold">$0.00</span>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-8">
-        <div class="dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full">
-            <div class="flex flex-col items-center mb-4">
-                <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                    <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
-                </div>
-                <h2 class="text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Rates</h2>
+    <div class="dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full">
+        <div class="flex flex-col items-center mb-4">
+            <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
             </div>
-            <div id="rates-list" class="mb-4">
-            </div>
-            <button id="show-rate-add" class="w-full flex items-center justify-center gap-2 py-1">
-                <i class="fas fa-plus"></i> Add Rate
-            </button>
-            <form id="rate-form" class="rate-edit-form" style="display: none;">
-                <input type="text" id="rate-name" placeholder="Rate Name" maxlength="50"
-                    class="w-full mb-2 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                <div class="flex items-center mb-2">
-                    <span class="text-gray-600 dark:text-gray-300 mr-2 text-xl font-bold">$</span>
-                    <input type="number" id="rate-amount" placeholder="Amount" step="0.01" min="0.01" max="999999"
-                        class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                    <span class="text-gray-600 dark:text-gray-300 ml-2">/min</span>
-                </div>
-                <div class="flex gap-2">
-                    <button type="submit"
-                        class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                        Save
-                    </button>
-                    <button type="button" id="cancel-rate-add"
-                        class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
-                        Cancel
-                    </button>
-                </div>
-            </form>
+            <h2 class="text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Rates</h2>
         </div>
-
-        <div class="dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full">
-            <div class="flex flex-col items-center mb-4">
-                <div class="bg-green-100 dark:bg-green-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                    <i class="fas fa-bullseye text-3xl text-green-500 dark:text-green-300"></i>
-                </div>
-                <h2 class="text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Daily Goal</h2>
+        <div id="rates-list" class="mb-4">
+        </div>
+        <button id="show-rate-add" class="w-full flex items-center justify-center gap-2 py-1">
+            <i class="fas fa-plus"></i> Add Rate
+        </button>
+        <form id="rate-form" class="rate-edit-form" style="display: none;">
+            <input type="text" id="rate-name" placeholder="Rate Name" maxlength="50"
+                class="w-full mb-2 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            <div class="flex items-center mb-2">
+                <span class="text-gray-600 dark:text-gray-300 mr-2 text-xl font-bold">$</span>
+                <input type="number" id="rate-amount" placeholder="Amount" step="0.01" min="0.01" max="999999"
+                    class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                <span class="text-gray-600 dark:text-gray-300 ml-2">/min</span>
             </div>
-            <form id="goal-form" class="flex items-center gap-2">
-                <div class="flex-1">
-                    <div class="flex items-center">
-                        <span class="text-gray-600 dark:text-gray-300 mr-2 text-xl font-bold">$</span>
-                        <input type="number" id="goal-amount" placeholder="Amount" step="0.01" min="0" max="999999"
-                            class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                    </div>
+            <div class="flex gap-2">
+                <button type="submit"
+                    class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                    Save
+                </button>
+                <button type="button" id="cancel-rate-add"
+                    class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full">
+        <div class="flex flex-col items-center mb-4">
+            <div class="bg-green-100 dark:bg-green-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                <i class="fas fa-bullseye text-3xl text-green-500 dark:text-green-300"></i>
+            </div>
+            <h2 class="text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Daily Goal</h2>
+        </div>
+        <form id="goal-form" class="flex flex-col gap-3">
+            <div class="flex items-center">
+                <span class="text-gray-600 dark:text-gray-300 mr-2 text-xl font-bold w-6 inline-flex justify-center">$</span>
+                <input type="number" id="goal-amount" placeholder="Amount" step="0.01" min="0" max="999999"
+                    class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="flex items-center flex-1">
+                    <span class="text-gray-600 dark:text-gray-300 mr-2 text-xl font-bold w-6 inline-flex justify-center">
+                        <i class="fas fa-clock"></i>
+                    </span>
+                    <input type="number" id="goal-minutes" placeholder="Goal Minutes" step="1" min="0" max="999999"
+                        class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                 </div>
                 <button type="submit" class="px-4 py-2 rounded transition-colors duration-200">
                     <i class="fas fa-save"></i>
                 </button>
-            </form>
-            <div class="mt-4">
-                <div class="relative pt-1">
-                    <div class="flex mb-2 items-center justify-between">
-                        <div>
-                            <span id="goal-progress-text"
-                                class="text-xs font-semibold inline-block text-green-600 dark:text-green-400">
-                                0%
-                            </span>
-                        </div>
-                        <div class="text-right">
-                            <span id="goal-amount-display"
-                                class="text-xs font-semibold inline-block text-green-600 dark:text-green-400">
-                                $0 / $0
-                            </span>
-                        </div>
+            </div>
+        </form>
+        <div class="mt-4">
+            <div class="relative pt-1">
+                <div class="flex mb-2 items-center justify-between">
+                    <div>
+                        <span id="goal-progress-text"
+                            class="text-xs font-semibold inline-block text-green-600 dark:text-green-400">
+                            0%
+                        </span>
                     </div>
-                    <div class="flex h-2 mb-4 overflow-hidden bg-green-200 rounded dark:bg-green-900">
-                        <div id="goal-progress-bar"
-                            class="flex flex-col justify-center overflow-hidden bg-green-500"
-                            role="progressbar" style="width: 0%"></div>
+                    <div class="text-right">
+                        <span id="goal-amount-display"
+                            class="text-xs font-semibold block text-green-600 dark:text-green-400">
+                            $0 / $0
+                        </span>
+                        <span id="goal-minutes-display"
+                            class="text-xs font-semibold block text-green-600 dark:text-green-400">
+                            0 / 0 Min
+                        </span>
                     </div>
+                </div>
+                <div class="flex h-2 mb-4 overflow-hidden bg-green-200 rounded dark:bg-green-900 ml-8">
+                    <div id="goal-progress-bar"
+                        class="flex flex-col justify-center overflow-hidden bg-green-500"
+                        role="progressbar" style="width: 0%"></div>
                 </div>
             </div>
         </div>
@@ -759,287 +768,277 @@
             </p>
         </div>
     </div>
-
     <div id="payment-cycle-earnings-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6 hidden">
         <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
-                <i class="fas fa-money-bill-wave mr-2"></i>Current Cycle Earnings
+                <i class="fas fa-calendar-alt mr-2"></i>Current Cycle
             </h3>
-            <p id="cycle-earnings" class="text-2xl font-bold text-purple-800 dark:text-purple-200">
-                $0.00
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                <span class="font-semibold">Start:</span> <span id="cycle-start-date">--</span>
+            </p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                <span class="font-semibold">End:</span> <span id="cycle-end-date">--</span>
+            </p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                <span class="font-semibold">Days Left:</span> <span id="days-until-end">--</span>
             </p>
         </div>
         <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
-                <i class="fas fa-calendar-check mr-2"></i>Cycle Progress
+                <i class="fas fa-dollar-sign mr-2"></i>Cycle Earnings
             </h3>
-            <div class="text-sm text-gray-900 dark:text-gray-100">
-                <p class="mb-1">
-                    <i class="fas fa-calendar-day mr-2"></i>
-                    Start: <span id="cycle-start-date" class="font-semibold">N/A</span>
-                </p>
-                <p class="mb-1">
-                    <i class="fas fa-calendar-day mr-2"></i>
-                    End: <span id="cycle-end-date" class="font-semibold">N/A</span>
-                </p>
-                <p>
-                    <i class="fas fa-calendar-check mr-2"></i>
-                    Days Left: <span id="days-until-end" class="font-semibold">N/A</span>
-                </p>
-            </div>
+            <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+                <span id="cycle-earnings">$0.00</span>
+            </p>
         </div>
         <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
-                <i class="fas fa-clock mr-2"></i>Pay Day Countdown
+                <i class="fas fa-money-check-alt mr-2"></i>Next Pay Date
             </h3>
-            <div class="text-sm text-gray-900 dark:text-gray-100">
-                <p class="mb-1">
-                    <i class="fas fa-calendar-dollar mr-2"></i>
-                    Pay Date: <span id="pay-date" class="font-semibold">N/A</span>
-                </p>
-                <p>
-                    <i class="fas fa-clock mr-2"></i>
-                    Days to Pay: <span id="days-until-pay" class="font-semibold">N/A</span>
-                </p>
-            </div>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                <span class="font-semibold">Pay Date:</span> <span id="pay-date">--</span>
+            </p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+                <span class="font-semibold">Days Until Pay:</span> <span id="days-until-pay">--</span>
+            </p>
         </div>
     </div>
+</div>
 
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8 p-6">
-    <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100">
-            <i class="fas fa-history text-blue-500 mr-2"></i>Call Log
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+    <div class="p-6">
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <i class="fas fa-list text-blue-500 mr-2"></i>Call Log
         </h2>
-        <div class="flex flex-wrap items-center gap-4">
-            <button id="filter-today" class="px-3 py-1 text-sm rounded-full bg-blue-500 text-white dark:bg-blue-600 dark:text-white">Today</button>
-            <button id="filter-week" class="px-3 py-1 text-sm rounded-full bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Past Week</button>
-            <button id="filter-month" class="px-3 py-1 text-sm rounded-full bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Past Month</button>
+        <div class="flex items-center gap-2 mb-4">
+            <button id="filter-today" class="px-3 py-1 rounded-lg bg-blue-500 text-white text-sm">Today</button>
+            <button id="filter-week" class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 text-sm dark:bg-gray-700 dark:text-gray-200">Week</button>
+            <button id="filter-month" class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 text-sm dark:bg-gray-700 dark:text-gray-200">Month</button>
         </div>
-        <div class="flex flex-wrap items-center gap-4">
-            <div class="flex items-center gap-2">
-                <span class="text-gray-600 dark:text-gray-400">Total Time:</span>
-                <span id="total-minutes" class="font-mono text-lg">00:00:00</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-gray-600 dark:text-gray-400">Total Earnings:</span>
-                <span id="total-earnings" class="font-mono text-lg">$0.00</span>
+        <div class="scrollable-table">
+            <table class="call-log-table">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Rate</th>
+                    <th>Duration</th>
+                    <th>Earnings</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="call-log">
+                </tbody>
+            </table>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
+            <div class="flex justify-between">
+                <span class="font-medium text-gray-700 dark:text-gray-300">Total:</span>
+                <span class="text-gray-900 dark:text-gray-100 font-semibold">
+                    <span id="total-minutes">0 min</span> •
+                    <span id="total-earnings">$0.00</span>
+                </span>
             </div>
         </div>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="call-log-table w-full">
-            <thead>
-            <tr class="text-left">
-                <th class="font-semibold">Date</th>
-                <th class="font-semibold">Duration</th>
-                <th class="font-semibold">Rate</th>
-                <th class="font-semibold">Earnings</th>
-                <th class="font-semibold pl-4">Actions</th>
-            </tr>
-            </thead>
-            <tbody id="call-log">
-            </tbody>
-            <tfoot>
-            <tr class="bg-gray-50 dark:bg-gray-800">
-                <td colspan="5" class="py-4 text-center text-gray-500 dark:text-gray-400">
-                    End of call log
-                </td>
-            </tr>
-            </tfoot>
-        </table>
     </div>
 </div>
 
-<div id="call-modal" style="display: none;"
-     role="dialog" aria-labelledby="modal-title" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md" style="max-height:80vh; overflow:auto;">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">Add Call</h3>
-            <button id="close-modal" aria-label="Close modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                <i class="fas fa-times"></i>
-            </button>
+<div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal p-6 max-w-lg w-full relative">
+        <button id="close-settings-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <i class="fas fa-cog text-blue-500 mr-2"></i>Settings
+        </h2>
+        
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Payment Cycles</h3>
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-gray-700 dark:text-gray-300">Enable Payment Cycles</span>
+                <label class="switch">
+                    <input type="checkbox" id="payment-cycles-toggle">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            
+            <div id="payment-cycles-config" class="hidden">
+                <table class="w-full mb-4">
+                    <thead>
+                    <tr>
+                        <th class="text-left py-2">Cycle Start</th>
+                        <th class="text-left py-2">Cycle End</th>
+                        <th class="text-left py-2">Pay Date</th>
+                        <th class="text-right py-2">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="payment-cycles-list">
+                    </tbody>
+                </table>
+                <button id="show-add-cycle-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                    <i class="fas fa-plus"></i> Add Payment Cycle
+                </button>
+            </div>
         </div>
-        <form id="call-form">
-            <div class="mb-4">
-                <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
-                <input type="datetime-local" id="call-date" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-            </div>
-            <div class="mb-4">
-                <label for="call-duration-hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (HH:MM:SS)</label>
-                <div class="flex gap-2">
-                    <input type="number" id="call-duration-hours" min="0" max="24" placeholder="HH" aria-label="Hours" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                    <input type="number" id="call-duration-minutes" min="0" max="59" placeholder="MM" aria-label="Minutes" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                    <input type="number" id="call-duration-seconds" min="0" max="59" placeholder="SS" aria-label="Seconds" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                </div>
-            </div>
-            <div class="mb-6">
-                <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
-                <select id="call-rate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                </select>
-            </div>
-            <div class="flex justify-end gap-3">
-                <button type="button" id="cancel-call" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"> Cancel </button>
-                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"> Save </button>
-            </div>
-        </form>
-    </div>
-</div>
-<div id="settings-modal" style="display: none;"
-     role="dialog" aria-labelledby="settings-modal-title" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 pb-2">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="settings-modal-title">Settings</h3>
-            <button id="close-settings-modal" aria-label="Close settings" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="space-y-4">
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Data Management</h4>
-                <div class="flex flex-col gap-2">
-                    <button id="export-data" class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors">
-                        <i class="fas fa-download"></i> Export Data
-                    </button>
-                    <label for="import-file" class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors cursor-pointer">
-                        <i class="fas fa-upload"></i> Import Data
-                    </label>
+        
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Data Management</h3>
+            <div class="flex flex-col gap-2">
+                <button id="export-data" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+                <label class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition cursor-pointer text-center">
+                    <i class="fas fa-upload"></i> Import Data
                     <input type="file" id="import-file" accept=".json" class="hidden">
-                </div>
-            </div>
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Storage</h4>
-                <div class="mb-2">
-                    <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        <span>Storage Used</span>
-                        <span id="storage-used">Calculating...</span>
-                    </div>
-                    <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded">
-                        <div id="storage-bar" class="h-2 bg-blue-500 rounded" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Payment Cycles Selector (toggle OFF by default; user choice is persisted) -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Payment Cycles</h4>
-                <div class="flex items-center justify-between mb-3 gap-2">
-                    <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                        <input id="payment-cycles-toggle" type="checkbox" class="h-4 w-4 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600" />
-                        <span>Enable payment cycles</span>
-                    </label>
-                    <button id="show-add-cycle-btn" class="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">Add Cycle</button>
-                </div>
-                <div id="payment-cycles-config" class="mt-2 hidden">
-                    <table class="w-full text-sm" id="payment-cycles-list">
-                        <thead class="sr-only"><tr><th>Start</th><th>End</th><th>Pay</th><th></th></tr></thead>
-                        <tbody class="text-gray-700 dark:text-gray-300">
-                            <!-- JS will populate cycles here -->
-                        </tbody>
-                    </table>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Configure recurring payment cycles used to calculate cycle-specific earnings.</p>
-                </div>
-            </div>
-
-            <!-- Time Zone Selector -->
-            <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Time Zone</h4>
-                <div class="flex items-center gap-2">
-                    <select id="timezone-select" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-                        <option value="">(Use browser default)</option>
-                    </select>
-                    <button id="reset-timezone" class="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded">Reset</button>
-                </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Choose preferred time zone for displaying call dates/times.</p>
-            </div>
-
-            <div>
-                <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Reset & Erase</h4>
-                <div class="flex flex-col gap-2">
-                    <button id="reset-calls" class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors">
-                        <i class="fas fa-trash-alt"></i> Erase All Calls
-                    </button>
-                    <button id="reset-all" class="flex items-center gap-2 px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800 transition-colors">
-                        <i class="fas fa-exclamation-triangle"></i> Reset All Data
-                    </button>
-                </div>
+                </label>
+                <button id="reset-calls" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">
+                    <i class="fas fa-trash-alt"></i> Reset Calls Only
+                </button>
+                <button id="reset-all" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+                    <i class="fas fa-exclamation-triangle"></i> Reset All Data
+                </button>
             </div>
         </div>
-    </div>
-</div>
-
-<div id="edit-cycle-modal" style="display: none;"
-     role="dialog" aria-labelledby="edit-cycle-modal-title" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="edit-cycle-modal-title">Edit Payment Cycle</h3>
-            <button id="close-edit-cycle-modal" aria-label="Close modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                <i class="fas fa-times"></i>
-            </button>
+        
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Storage Usage</h3>
+            <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                <span>Storage used:</span>
+                <span id="storage-used">0 KB / 5.0 MB</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div id="storage-bar" class="bg-blue-500 h-2 rounded-full" style="width:0%"></div>
+            </div>
         </div>
-        <form id="edit-cycle-form">
-            <div class="mb-4">
-                <label for="cycle-start-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
-                <input type="date" id="cycle-start-date-input" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-            </div>
-            <div class="mb-4">
-                <label for="cycle-end-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
-                <input type="date" id="cycle-end-date-input" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-            </div>
-            <div class="mb-6">
-                <label for="cycle-pay-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pay Date</label>
-                <input type="date" id="cycle-pay-date-input" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200">
-            </div>
-            <div class="flex justify-end gap-3">
-                <button type="button" id="cancel-edit-cycle" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"> Cancel </button>
-                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"> Save </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Feedback Modal -->
-<div id="feedback-modal" style="display: none;"
-     role="dialog" aria-labelledby="feedback-modal-title" aria-modal="true" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100" id="feedback-modal-title">Contact Us</h3>
-            <button id="close-feedback-modal" aria-label="Close feedback modal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                <i class="fas fa-times text-lg"></i>
-            </button>
-        </div>
-        <form id="feedback-form" action="https://formspree.io/f/xwvqagvg" method="POST">
-            <div class="mb-4">
-                <label for="feedback-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
-                <select id="feedback-type" name="type" required class="w-full px-3 py-2 border rounded-lg">
-                    <option value="">-- Select --</option>
-                    <option value="Bug Report">Bug Report</option>
-                    <option value="Feedback">Feedback</option>
-                    <option value="Suggestion">Suggestion</option>
-                    <option value="Other">Other</option>
+        
+        <div>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Time Zone</h3>
+            <div class="flex items-center gap-2">
+                <select id="timezone-select" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                    <!-- Options populated by JS -->
                 </select>
+                <button id="reset-timezone" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                    Reset
+                </button>
             </div>
-            <div class="mb-4">
-                <label for="feedback-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email (optional)</label>
-                <input type="email" id="feedback-email" name="email" placeholder="your@email.com" class="w-full px-3 py-2 border rounded-lg">
+        </div>
+    </div>
+</div>
+
+<div id="call-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal p-6 max-w-lg w-full relative">
+        <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <i class="fas fa-plus text-blue-500 mr-2"></i>Add Call
+        </h2>
+        <form id="call-form">
+            <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
+            <input type="datetime-local" id="call-date" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+            
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration</label>
+            <div class="flex gap-2 mb-4">
+                <input type="number" id="call-duration-hours" placeholder="HH" min="0"
+                    class="w-1/3 px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                <input type="number" id="call-duration-minutes" placeholder="MM" min="0" max="59"
+                    class="w-1/3 px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                <input type="number" id="call-duration-seconds" placeholder="SS" min="0" max="59"
+                    class="w-1/3 px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
             </div>
-            <div class="mb-6">
-                <label for="feedback-message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
-                <textarea id="feedback-message" name="message" placeholder="Describe your feedback..." required class="w-full px-3 py-2 border rounded-lg"></textarea>
-            </div>
-            <div class="flex justify-end gap-3">
-                <button type="button" id="cancel-feedback" class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Send</button>
+            
+            <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
+            <select id="call-rate" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+            </select>
+            
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 btn-primary text-white px-4 py-2 rounded transition">
+                    Save
+                </button>
+                <button type="button" id="cancel-call"
+                    class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </button>
             </div>
         </form>
     </div>
 </div>
 
-<footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
-    <div class="container mx-auto px-4 py-8 text-center">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 justify-items-center">
+<div id="edit-cycle-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal p-6 max-w-lg w-full relative">
+        <button id="close-edit-cycle-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 id="edit-cycle-modal-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <i class="fas fa-calendar-alt text-blue-500 mr-2"></i>Payment Cycle
+        </h2>
+        <form id="edit-cycle-form">
+            <label for="cycle-start-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cycle Start Date</label>
+            <input type="date" id="cycle-start-date-input" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+            
+            <label for="cycle-end-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cycle End Date</label>
+            <input type="date" id="cycle-end-date-input" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+            
+            <label for="cycle-pay-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pay Date</label>
+            <input type="date" id="cycle-pay-date-input" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+            
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 btn-primary text-white px-4 py-2 rounded transition">
+                    Save
+                </button>
+                <button type="button" id="cancel-edit-cycle"
+                    class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="feedback-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal p-6 max-w-lg w-full relative">
+        <button id="close-feedback-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <i class="fas fa-envelope text-blue-500 mr-2"></i>Contact Us
+        </h2>
+        <form id="feedback-form" action="https://formspree.io/f/xjvnbqgy" method="POST">
+            <label for="feedback-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+            <input type="text" id="feedback-name" name="name" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+            
+            <label for="feedback-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (optional)</label>
+            <input type="email" id="feedback-email" name="email" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+            
+            <label for="feedback-message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message</label>
+            <textarea id="feedback-message" name="message" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4"></textarea>
+            
+            <div class="flex gap-2">
+                <button type="submit" class="flex-1 btn-primary text-white px-4 py-2 rounded transition">
+                    Send
+                </button>
+                <button type="button" id="cancel-feedback"
+                    class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer class="mt-10 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+    <div class="container mx-auto px-6 py-8 text-center">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-start">
             <div class="text-center">
-                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Work Time Tracker</h3>
-                <p class="text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Work Time Tracker</h3>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
                     Made with
                     <span class="inline-block">
                         <i class="fas fa-heart text-red-500 animate-beat"></i>
@@ -1052,38 +1051,26 @@
                         Topo
                     </a>
                 </p>
-
-                <!-- Donation section -->
-                <div class="mt-3">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Any help would be appreciated — thank you!</p>
-                    <div class="flex justify-center">
-                        <form action="https://www.paypal.com/donate" method="post" target="_top">
-                            <input type="hidden" name="hosted_button_id" value="3YPGH7MTRMFTJ" />
-                            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-                            <img alt="" border="0" src="https://www.paypal.com/en_PE/i/scr/pixel.gif" width="1" height="1" />
-                        </form>
-                    </div>
-                </div>
+                <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">Any help would be appreciated — thank you!</p>
+                <form action="https://www.paypal.com/donate" method="post" target="_top" class="mt-4">
+                    <input type="hidden" name="hosted_button_id" value="3YPGH7MTRMFTJ" />
+                    <button type="submit" class="px-6 py-1.5 rounded-full bg-yellow-400 text-gray-900 font-semibold hover:bg-yellow-300 transition">
+                        Donate
+                    </button>
+                    <img alt="" border="0" src="https://www.paypal.com/en_PE/i/scr/pixel.gif" width="1" height="1" />
+                </form>
             </div>
             <div class="text-center">
-                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Your Local Time</h3>
-                <p id="local-time" class="text-lg font-semibold text-gray-700 dark:text-gray-300"></p>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Your Local Time</h3>
+                <p id="local-time" class="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100"></p>
                 <p class="text-sm text-gray-600 dark:text-gray-400" id="user-time-zone"></p>
             </div>
             <div class="text-center">
-                <h3 class="text-gray-700 dark:text-gray-300 font-semibold mb-3">Support</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                    <button id="contact-us-btn" class="text-blue-600 dark:text-blue-400 hover:underline font-medium transition">Contact Us</button>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Support</h3>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                    <button id="contact-us-btn" class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition">Contact Us</button>
                 </p>
             </div>
-        </div>
-        <div class="border-t border-gray-200 dark:border-gray-700 mt-8 pt-4 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>© 2025 Work Time Tracker. All rights reserved.</p>
-            <p class="mt-2">
-                <button id="privacy-policy" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Privacy Policy</button>
-                <span class="mx-2">•</span>
-                <button id="terms-of-service" class="hover:text-blue-500 dark:hover:text-blue-400 transition-colors">Terms of Service</button>
-            </p>
         </div>
     </div>
 </footer>
@@ -1131,8 +1118,10 @@
     const monthlyTotalEarningsDisplay = document.getElementById('monthly-total-earnings');
     const goalForm = document.getElementById('goal-form');
     const goalAmountInput = document.getElementById('goal-amount');
+    const goalMinutesInput = document.getElementById('goal-minutes');
     const goalProgressText = document.getElementById('goal-progress-text');
     const goalAmountDisplay = document.getElementById('goal-amount-display');
+    const goalMinutesDisplay = document.getElementById('goal-minutes-display');
     const goalProgressBar = document.getElementById('goal-progress-bar');
     const paymentCyclesToggle = document.getElementById('payment-cycles-toggle');
     const paymentCyclesConfig = document.getElementById('payment-cycles-config');
@@ -1170,7 +1159,7 @@
     try {
         rates = JSON.parse(localStorage.getItem('rates')) || [];
         calls = JSON.parse(localStorage.getItem('calls')) || [];
-        dailyGoal = JSON.parse(localStorage.getItem('dailyGoal')) || { amount: 0 };
+        dailyGoal = JSON.parse(localStorage.getItem('dailyGoal')) || { amount: 0, minutes: 0 };
         paymentCyclesEnabled = JSON.parse(localStorage.getItem('paymentCyclesEnabled')) || false;
         paymentCycles = JSON.parse(localStorage.getItem('paymentCycles')) || [];
         lastSelectedRate = localStorage.getItem('lastSelectedRate') || null;
@@ -1179,11 +1168,12 @@
         localStorage.clear();
         rates = [];
         calls = [];
-        dailyGoal = { amount: 0 };
+        dailyGoal = { amount: 0, minutes: 0 };
         paymentCyclesEnabled = false;
         paymentCycles = [];
         lastSelectedRate = null;
     }
+    dailyGoal = normalizeDailyGoal(dailyGoal);
 
     let activeTimers = new Set();
     let liveCallTimerId = null;
@@ -1207,6 +1197,29 @@
     function formatEarnings(amount) {
         return `$${amount.toFixed(2)}`;
     }
+
+    function getSelectedRateAmount() {
+        const selectedName = rateSelect.value;
+        const selectedRate = rates.find(rate => rate.name === selectedName);
+        return selectedRate ? selectedRate.amount : 0;
+    }
+
+    function normalizeDailyGoal(goal) {
+        const normalizedGoal = goal && typeof goal === 'object' ? goal : {};
+        return {
+            amount: Math.max(Number(normalizedGoal.amount) || 0, 0),
+            minutes: Math.max(Number(normalizedGoal.minutes) || 0, 0)
+        };
+    }
+
+    function syncDailyGoalInputs() {
+        const selectedRateAmount = getSelectedRateAmount();
+        const derivedMinutes = dailyGoal.amount > 0 && selectedRateAmount > 0
+            ? Math.ceil(dailyGoal.amount / selectedRateAmount)
+            : dailyGoal.minutes;
+        goalAmountInput.value = dailyGoal.amount > 0 ? dailyGoal.amount : '';
+        goalMinutesInput.value = derivedMinutes > 0 ? derivedMinutes : '';
+    }
     
     // Storage functions
     function saveRates() {
@@ -1223,6 +1236,7 @@
     }
 
     function saveDailyGoal() {
+        dailyGoal = normalizeDailyGoal(dailyGoal);
         localStorage.setItem('dailyGoal', JSON.stringify(dailyGoal));
         updateStatistics();
     }
@@ -1237,6 +1251,8 @@
     function saveLastSelectedRate() {
         lastSelectedRate = rateSelect.value;
         localStorage.setItem('lastSelectedRate', lastSelectedRate);
+        syncDailyGoalInputs();
+        updateStatistics();
     }
 
     function updateStorageInfo() {
@@ -1267,6 +1283,7 @@
         const todaysCalls = calls.filter(call => new Date(call.startTime) >= todayStart);
         const todaysEarnings = todaysCalls.reduce((sum, call) => sum + call.earned, 0);
         const todaysDuration = todaysCalls.reduce((sum, call) => sum + call.duration, 0);
+        const todaysMinutes = todaysDuration / (1000 * 60);
         
         todayEarningsDisplay.textContent = formatEarnings(todaysEarnings);
         
@@ -1279,26 +1296,60 @@
         }
         
         // Calculate goal progress
-        if (dailyGoal.amount > 0) {
-            const minutesToGoal = dailyGoal.amount - (todaysEarnings / dailyGoal.amount * 100);
-            if (todaysEarnings >= dailyGoal.amount) {
-                goalEstimateDisplay.textContent = 'Goal reached!';
-                goalProgressBar.style.width = '100%';
+        const hasAmountGoal = dailyGoal.amount > 0;
+        const hasMinutesGoal = dailyGoal.minutes > 0;
+        const selectedRateAmount = getSelectedRateAmount();
+        const derivedGoalMinutes = hasAmountGoal && selectedRateAmount > 0
+            ? Math.ceil(dailyGoal.amount / selectedRateAmount)
+            : dailyGoal.minutes;
+        if (hasAmountGoal || hasMinutesGoal) {
+            const goalSummary = [];
+            const ratePerMinute = todaysMinutes > 0 ? todaysEarnings / todaysMinutes : 0;
+            const targetMinutes = derivedGoalMinutes;
+
+            if (hasAmountGoal) {
+                const remainingAmount = dailyGoal.amount - todaysEarnings;
+                if (remainingAmount <= 0) {
+                    goalEstimateDisplay.textContent = 'Goal reached!';
+                } else {
+                    const minutesNeeded = ratePerMinute > 0 ? (remainingAmount / ratePerMinute).toFixed(0) : '--';
+                    goalEstimateDisplay.textContent = `${minutesNeeded} mins to goal`;
+                }
+                goalSummary.push(`$${todaysEarnings.toFixed(2)} / $${dailyGoal.amount.toFixed(2)}`);
             } else {
-                const remaining = dailyGoal.amount - todaysEarnings;
-                const rate = todaysCalls.length > 0 ? todaysEarnings / (todaysDuration / (1000 * 60)) : 0;
-                const minutesNeeded = rate > 0 ? (remaining / rate).toFixed(0) : '--';
-                goalEstimateDisplay.textContent = `${minutesNeeded} mins to goal`;
-                const progress = Math.min((todaysEarnings / dailyGoal.amount) * 100, 100);
-                goalProgressBar.style.width = `${progress}%`;
-                goalProgressText.textContent = `${progress.toFixed(0)}%`;
+                const remainingMinutes = targetMinutes - todaysMinutes;
+                if (remainingMinutes <= 0) {
+                    goalEstimateDisplay.textContent = 'Goal reached!';
+                } else {
+                    goalEstimateDisplay.textContent = `${Math.ceil(remainingMinutes)} mins to goal`;
+                }
             }
-            goalAmountDisplay.textContent = `$${todaysEarnings.toFixed(2)} / $${dailyGoal.amount.toFixed(2)}`;
+
+            if (hasMinutesGoal || targetMinutes > 0) {
+                goalSummary.push(`${Math.round(todaysMinutes)} / ${targetMinutes} Min`);
+            }
+
+            const primaryGoal = hasAmountGoal ? {
+                earned: todaysEarnings,
+                target: dailyGoal.amount
+            } : {
+                earned: todaysMinutes,
+                target: derivedGoalMinutes
+            };
+            const progress = primaryGoal.target > 0
+                ? Math.min((primaryGoal.earned / primaryGoal.target) * 100, 100)
+                : 0;
+
+            goalAmountDisplay.textContent = goalSummary[0] || '$0.00 / $0.00';
+            goalMinutesDisplay.textContent = goalSummary[1] || '0 / 0 Min';
+            goalProgressBar.style.width = `${progress}%`;
+            goalProgressText.textContent = `${progress.toFixed(0)}%`;
         } else {
             goalEstimateDisplay.textContent = 'No goal set';
             goalProgressBar.style.width = '0%';
             goalProgressText.textContent = '0%';
             goalAmountDisplay.textContent = '$0.00 / $0.00';
+            goalMinutesDisplay.textContent = '0 / 0 Min';
         }
         
         // Calculate monthly earnings
@@ -1358,192 +1409,176 @@
         return tz && tz.length > 0 ? tz : undefined; // undefined → browser default
     }
 
-    function formatDate(date) {
-        if (!date) return 'N/A';
-        const d = new Date(date);
-        const tz = getUserTimeZone();
-        return d.toLocaleDateString(undefined, { timeZone: tz });
-    }
-
-    function formatDateTime(date) {
-        if (!date) return 'N/A';
-        const d = new Date(date);
-        const tz = getUserTimeZone();
-        return `${d.toLocaleDateString(undefined, { timeZone: tz })} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: tz })}`;
-    }
-
-    function updateLocalTime() {
-        const now = new Date();
-        const tz = getUserTimeZone();
-        const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: tz });
-        const timeString = now.toLocaleTimeString(undefined, { timeZone: tz });
-        localTimeDisplay.textContent = `${dateString}, ${timeString}`;
-        userTimeZoneDisplay.textContent = tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
-    }
-
-    // Populate time zone options (uses Intl.supportedValuesOf when available)
-    function getTimeZones() {
-        try {
-            if (typeof Intl !== 'undefined' && Intl.supportedValuesOf) {
-                return Intl.supportedValuesOf('timeZone');
-            }
-        } catch (e) { /* ignore */ }
-        return ['UTC','America/New_York','America/Los_Angeles','Europe/London','Europe/Madrid','Asia/Tokyo','Australia/Sydney'];
+    function setUserTimeZone(tz) {
+        if (!tz) {
+            localStorage.removeItem('timeZone');
+        } else {
+            localStorage.setItem('timeZone', tz);
+        }
     }
 
     function populateTimeZones() {
         if (!tzSelect) return;
-        // reset options (idempotent) and keep the browser-default option
-        tzSelect.innerHTML = '<option value="">(Use browser default)</option>';
-        const zones = getTimeZones();
-        zones.forEach(tz => {
-            const opt = document.createElement('option');
-            opt.value = tz;
-            opt.textContent = tz;
-            tzSelect.appendChild(opt);
+        tzSelect.innerHTML = '';
+        const userTz = getUserTimeZone();
+        const options = Intl.supportedValuesOf ? Intl.supportedValuesOf('timeZone') : [];
+        options.forEach(tz => {
+            const option = document.createElement('option');
+            option.value = tz;
+            option.textContent = tz;
+            if (tz === userTz) option.selected = true;
+            tzSelect.appendChild(option);
         });
-        const saved = localStorage.getItem('timeZone') || '';
-        if (saved) tzSelect.value = saved;
+        if (!userTz && tzSelect.options.length > 0) {
+            const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const match = [...tzSelect.options].find(opt => opt.value === browserTz);
+            if (match) match.selected = true;
+        }
     }
 
-    if (tzSelect) {
-        tzSelect.addEventListener('change', () => {
-            const tz = tzSelect.value || '';
-            if (tz) localStorage.setItem('timeZone', tz);
-            else localStorage.removeItem('timeZone');
-            updateStatistics();
-            displayCalls();
-            updateLocalTime();
-        });
+    function updateLocalTime() {
+        const tz = getUserTimeZone();
+        const now = new Date();
+        const options = {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: tz
+        };
+        const dateOptions = {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            timeZone: tz
+        };
+        const timeString = new Intl.DateTimeFormat('en-US', options).format(now);
+        const dateString = new Intl.DateTimeFormat('en-US', dateOptions).format(now);
+        localTimeDisplay.textContent = `${dateString} ${timeString}`;
+        userTimeZoneDisplay.textContent = tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
-    if (resetTzBtn) {
-        resetTzBtn.addEventListener('click', () => {
-            if (tzSelect) tzSelect.value = '';
-            localStorage.removeItem('timeZone');
-            updateStatistics();
-            displayCalls();
-            updateLocalTime();
-        });
+    // Helper Functions
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString();
     }
 
-    // Rate Management
+    function calculateEarnings(durationMs, ratePerMin) {
+        const minutes = durationMs / (1000 * 60);
+        return minutes * ratePerMin;
+    }
+
+    // Display functions
     function displayRates() {
         ratesList.innerHTML = '';
         if (rates.length === 0) {
-            ratesList.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400 text-center">No rates added yet.</p>`;
+            ratesList.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400">No rates added yet.</p>`;
             return;
         }
         rates.forEach((rate, index) => {
-            const div = document.createElement('div');
-            div.className = 'rates-list-item bg-gray-50 dark:bg-gray-700 p-3 rounded-lg flex items-center justify-between mb-2';
-            div.innerHTML = `
+            const rateItem = document.createElement('div');
+            rateItem.className = 'rates-list-item';
+            rateItem.innerHTML = `
                 <div class="flex-1">
-                    <span class="font-medium text-gray-900 dark:text-gray-100">${rate.name}</span>
-                    <span class="text-gray-600 dark:text-gray-400 text-sm ml-2">$${rate.amount.toFixed(2)}/min</span>
+                    <p class="font-semibold">${rate.name}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">$${rate.amount.toFixed(2)}/min</p>
                 </div>
-                <div>
-                    <button class="edit-rate-btn text-blue-500 hover:text-blue-700 mr-2" data-index="${index}">
-                        <i class="fas fa-edit"></i>
+                <div class="flex items-center">
+                    <button class="edit-rate-btn" data-index="${index}">
+                        <i class="fas fa-edit"></i> Edit
                     </button>
                     <button class="delete-rate-btn text-red-500 hover:text-red-700" data-index="${index}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
             `;
-            ratesList.appendChild(div);
+            ratesList.appendChild(rateItem);
         });
 
         document.querySelectorAll('.edit-rate-btn').forEach(button => {
             button.addEventListener('click', (e) => {
-                const index = e.currentTarget.dataset.index;
-                const rateToEdit = rates[index];
-                document.getElementById('rate-name').value = rateToEdit.name;
-                document.getElementById('rate-amount').value = rateToEdit.amount;
-                rateForm.dataset.editingIndex = index;
-                rateForm.style.display = 'block';
-                showRateAddBtn.style.display = 'none';
-                document.getElementById('rate-form').scrollIntoView({ behavior: 'smooth' });
+                const index = parseInt(e.currentTarget.dataset.index);
+                editRate(index);
             });
         });
 
         document.querySelectorAll('.delete-rate-btn').forEach(button => {
             button.addEventListener('click', (e) => {
-                const index = e.currentTarget.dataset.index;
-                if (confirm('Are you sure you want to delete this rate?')) {
-                    rates.splice(index, 1);
-                    saveRates();
-                }
+                const index = parseInt(e.currentTarget.dataset.index);
+                deleteRate(index);
             });
         });
     }
 
     function populateRateSelects() {
-        rateSelect.innerHTML = '';
-        callRateSelect.innerHTML = '';
-        rates.forEach(rate => {
-            const option = document.createElement('option');
-            option.value = rate.amount;
-            option.textContent = `${rate.name} ($${rate.amount.toFixed(2)}/min)`;
-            rateSelect.appendChild(option);
-            const option2 = option.cloneNode(true);
-            callRateSelect.appendChild(option2);
-        });
+        const rateOptions = rates.map(rate => `<option value="${rate.name}">${rate.name} - $${rate.amount.toFixed(2)}/min</option>`).join('');
+        rateSelect.innerHTML = rateOptions;
+        callRateSelect.innerHTML = rateOptions;
+        
+        if (lastSelectedRate && rates.some(rate => rate.name === lastSelectedRate)) {
+            rateSelect.value = lastSelectedRate;
+        }
     }
 
-    // Call Log Management
     function displayCalls() {
         callLogTableBody.innerHTML = '';
-        
         let filteredCalls = [];
         const now = new Date();
-        
+
         if (callLogFilter === 'today') {
-            const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= startDate);
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= todayStart);
         } else if (callLogFilter === 'week') {
-            const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= startDate);
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - now.getDay());
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= weekStart);
         } else if (callLogFilter === 'month') {
-            const startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= startDate);
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= monthStart);
         } else if (callLogFilter === 'date') {
-            const selectedDate = statsDatePicker.value;
-            filteredCalls = calls.filter(call => new Date(call.startTime).toISOString().split('T')[0] === selectedDate);
+            const selectedDate = new Date(statsDatePicker.value);
+            const dateStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+            const dateEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
+            filteredCalls = calls.filter(call => new Date(call.startTime) >= dateStart && new Date(call.startTime) < dateEnd);
         }
 
-        const sortedCalls = [...filteredCalls].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-        
-        const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
-        const totalEarnings = filteredCalls.reduce((sum, call) => sum + call.earned, 0);
-        totalMinutesDisplay.textContent = formatTime(totalDuration);
-        totalEarningsDisplay.textContent = formatEarnings(totalEarnings);
-        
-        if (sortedCalls.length === 0) {
-            callLogTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls logged for this period.</td></tr>`;
+        if (filteredCalls.length === 0) {
+            callLogTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls recorded.</td></tr>`;
+            totalMinutesDisplay.textContent = '0 min';
+            totalEarningsDisplay.textContent = '$0.00';
             return;
         }
 
-        sortedCalls.forEach((call, index) => {
-            const originalIndex = calls.findIndex(c => c.startTime === call.startTime && c.duration === call.duration);
+        filteredCalls.forEach((call, index) => {
+            const callDate = new Date(call.startTime);
+            const dateStr = callDate.toLocaleDateString();
+            const durationStr = formatTime(call.duration);
+            const earningsStr = formatEarnings(call.earned);
+
             const row = document.createElement('tr');
-            row.className = 'hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150';
-            const rateName = rates.find(r => r.amount === call.rate)?.name || 'N/A';
             row.innerHTML = `
-                <td class="px-4 py-2">${formatDateTime(call.startTime)}</td>
-                <td class="px-4 py-2">${formatTime(call.duration)}</td>
-                <td class="px-4 py-2"><span class="tag">$${call.rate.toFixed(2)}/min</span></td>
-                <td class="px-4 py-2 font-bold">${formatEarnings(call.earned)}</td>
-                <td class="px-4 py-2 text-right w-36">
-                    <button class="edit-call-btn text-blue-500 hover:text-blue-700 mr-2" data-index="${originalIndex}">
-                        <i class="fas fa-edit"></i>
+                <td>${dateStr}</td>
+                <td>${call.rateName}</td>
+                <td>${durationStr}</td>
+                <td>${earningsStr}</td>
+                <td>
+                    <button class="edit-call-btn" data-index="${index}">
+                        <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="delete-call-btn text-red-500 hover:text-red-700" data-index="${originalIndex}">
+                    <button class="delete-call-btn text-red-500 hover:text-red-700" data-index="${index}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
             `;
             callLogTableBody.appendChild(row);
+        });
+
+        document.querySelectorAll('.edit-call-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const index = parseInt(e.currentTarget.dataset.index);
+                editCall(index);
+            });
         });
 
         document.querySelectorAll('.delete-call-btn').forEach(button => {
@@ -1552,173 +1587,158 @@
                 deleteCall(index);
             });
         });
-        
-        document.querySelectorAll('.edit-call-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                editCall(index);
-            });
-        });
+
+        const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
+        const totalMinutes = totalDuration / (1000 * 60);
+        const totalEarnings = filteredCalls.reduce((sum, call) => sum + call.earned, 0);
+
+        totalMinutesDisplay.textContent = `${Math.round(totalMinutes)} min`;
+        totalEarningsDisplay.textContent = formatEarnings(totalEarnings);
+    }
+
+    // Rate functions
+    function editRate(index) {
+        const rate = rates[index];
+        rateForm.style.display = 'block';
+        showRateAddBtn.style.display = 'none';
+        document.getElementById('rate-name').value = rate.name;
+        document.getElementById('rate-amount').value = rate.amount;
+        rateForm.dataset.editingIndex = index;
+    }
+
+    function deleteRate(index) {
+        if (confirm('Are you sure you want to delete this rate?')) {
+            rates.splice(index, 1);
+            saveRates();
+        }
+    }
+
+    // Call functions
+    function handleCallFormSubmit(e) {
+        e.preventDefault();
+        const startTime = new Date(callDateInput.value);
+        const hours = parseInt(callDurationHoursInput.value) || 0;
+        const minutes = parseInt(callDurationMinutesInput.value) || 0;
+        const seconds = parseInt(callDurationSecondsInput.value) || 0;
+        const durationMs = ((hours * 60 + minutes) * 60 + seconds) * 1000;
+        const rateName = callRateSelect.value;
+        const rate = rates.find(r => r.name === rateName);
+
+        if (!rate) {
+            alert('Please select a valid rate.');
+            return;
+        }
+
+        const earned = calculateEarnings(durationMs, rate.amount);
+        const callData = {
+            startTime: startTime.toISOString(),
+            duration: durationMs,
+            rateName: rateName,
+            earned: earned
+        };
+
+        if (isEditingCall) {
+            calls[editingCallIndex] = callData;
+            isEditingCall = false;
+            editingCallIndex = null;
+        } else {
+            calls.push(callData);
+        }
+
+        saveCalls();
+        closeCallModal();
+        callForm.reset();
+        showToast('Call saved!');
+    }
+
+    function editCall(index) {
+        const call = calls[index];
+        isEditingCall = true;
+        editingCallIndex = index;
+        callDateInput.value = call.startTime.slice(0, 16);
+        const duration = call.duration / 1000;
+        callDurationHoursInput.value = Math.floor(duration / 3600);
+        callDurationMinutesInput.value = Math.floor((duration % 3600) / 60);
+        callDurationSecondsInput.value = Math.floor(duration % 60);
+        callRateSelect.value = call.rateName;
+        openCallModal();
     }
 
     function deleteCall(index) {
-        if (confirm("Are you sure you want to delete this call entry?")) {
+        if (confirm('Are you sure you want to delete this call?')) {
             calls.splice(index, 1);
             saveCalls();
         }
     }
 
-    function editCall(index) {
-        const callToEdit = calls[index];
-        isEditingCall = true;
-        editingCallIndex = index;
-        document.getElementById('modal-title').textContent = 'Edit Call';
-        callForm.dataset.editingIndex = index;
-
-        const date = new Date(callToEdit.startTime);
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        const hh = String(date.getHours()).padStart(2, '0');
-        const min = String(date.getMinutes()).padStart(2, '0');
-        callDateInput.value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
-        
-        const durationSeconds = Math.floor(callToEdit.duration / 1000);
-        callDurationHoursInput.value = Math.floor(durationSeconds / 3600);
-        callDurationMinutesInput.value = Math.floor((durationSeconds % 3600) / 60);
-        callDurationSecondsInput.value = durationSeconds % 60;
-        
-        callRateSelect.value = callToEdit.rate;
-
-        callModal.style.display = 'flex';
-    }
-
-    function handleCallFormSubmit(e) {
-        e.preventDefault();
-        
-        const durationHours = parseInt(callDurationHoursInput.value) || 0;
-        const durationMinutes = parseInt(callDurationMinutesInput.value) || 0;
-        const durationSeconds = parseInt(callDurationSecondsInput.value) || 0;
-        const totalDuration = (durationHours * 3600 + durationMinutes * 60 + durationSeconds) * 1000;
-        const rate = parseFloat(callRateSelect.value);
-        const earnings = (totalDuration / (1000 * 60)) * rate;
-
-        // Bug Fix 2: Manually parse datetime-local to handle timezone correctly
-        const dateTimeLocalStr = callDateInput.value;
-        const parts = dateTimeLocalStr.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
-        const callDate = new Date(parts[1], parts[2] - 1, parts[3], parts[4], parts[5]);
-
-        const newCall = {
-            startTime: callDate.toISOString(),
-            duration: totalDuration,
-            rate: rate,
-            earned: earnings
-        };
-
-        if (isEditingCall) {
-            calls[editingCallIndex] = newCall;
-        } else {
-            // Bug Fix 3: Ensure new call is pushed to the global calls array
-            calls.push(newCall);
-        }
-
-        saveCalls();
-        closeCallModal();
-    }
-    
-    // Live Call Logic
-    function startLiveCall() {
-        if (liveCallTimerId) {
-            alert('A call is already in progress.');
-            return;
-        }
-        if (rates.length === 0) {
-            alert('Please add a rate before starting a call.');
-            return;
-        }
-        startCallBtn.style.display = 'none';
-        endCallBtn.style.display = 'block';
-        liveCallInfo.style.display = 'flex';
-        // UI Improvement: Add pulse effect to live call info box
-        liveCallInfo.classList.add('active-call-pulse');
-
-        liveCallStart = Date.now();
-        currentCallRate = parseFloat(rateSelect.value);
-
-        liveCallTimerId = setInterval(() => {
-            const elapsed = Date.now() - liveCallStart;
-            liveCallTimerDisplay.textContent = formatTime(elapsed);
-            const earnings = (elapsed / (1000 * 60)) * currentCallRate;
-            liveCallEarningsDisplay.textContent = formatEarnings(earnings);
-        }, 1000);
-        activeTimers.add(liveCallTimerId);
-    }
-
-    function endLiveCall() {
-        if (!liveCallTimerId) return;
-
-        clearInterval(liveCallTimerId);
-        activeTimers.delete(liveCallTimerId);
-        liveCallTimerId = null;
-
-        const endTime = Date.now();
-        const duration = endTime - liveCallStart;
-        const earned = (duration / (1000 * 60)) * currentCallRate;
-
-        const newCall = {
-            startTime: new Date(liveCallStart).toISOString(),
-            duration: duration,
-            rate: currentCallRate,
-            earned: earned
-        };
-
-        calls.push(newCall);
-        saveCalls();
-
-        startCallBtn.style.display = 'block';
-        endCallBtn.style.display = 'none';
-        liveCallInfo.style.display = 'none';
-        // UI Improvement: Remove pulse effect
-        liveCallInfo.classList.remove('active-call-pulse');
-        liveCallTimerDisplay.textContent = '00:00:00';
-        liveCallEarningsDisplay.textContent = '$0.00 earned';
-    }
-
-    // Modal Functions
+    // Call modal functions
     function openCallModal() {
-        isEditingCall = false;
-        editingCallIndex = null;
-        document.getElementById('modal-title').textContent = 'Add Call';
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hour = String(now.getHours()).padStart(2, '0');
-        const minute = String(now.getMinutes()).padStart(2, '0');
-        callDateInput.value = `${year}-${month}-${day}T${hour}:${minute}`;
-        callDurationHoursInput.value = 0;
-        callDurationMinutesInput.value = 0;
-        callDurationSecondsInput.value = 0;
-        if (rates.length > 0) {
-            callRateSelect.value = rateSelect.value;
-        }
         callModal.style.display = 'flex';
     }
 
     function closeCallModal() {
         callModal.style.display = 'none';
+        isEditingCall = false;
+        editingCallIndex = null;
+        callForm.reset();
     }
 
+    // Live call functions
+    function startLiveCall() {
+        if (!rateSelect.value) {
+            alert('Please select a rate before starting the call.');
+            return;
+        }
+        if (liveCallTimerId) {
+            clearInterval(liveCallTimerId);
+        }
+        liveCallStart = Date.now();
+        const selectedRate = rates.find(rate => rate.name === rateSelect.value);
+        currentCallRate = selectedRate ? selectedRate.amount : 0;
+        liveCallInfo.style.display = 'block';
+        startCallBtn.style.display = 'none';
+        endCallBtn.style.display = 'block';
+        liveCallInfo.classList.add('active-call-pulse');
+
+        liveCallTimerId = setInterval(() => {
+            const elapsed = Date.now() - liveCallStart;
+            liveCallTimerDisplay.textContent = formatTime(elapsed);
+            const earned = calculateEarnings(elapsed, currentCallRate);
+            liveCallEarningsDisplay.textContent = formatEarnings(earned);
+        }, 1000);
+    }
+
+    function endLiveCall() {
+        if (liveCallTimerId) {
+            clearInterval(liveCallTimerId);
+        }
+        const elapsed = Date.now() - liveCallStart;
+        const earned = calculateEarnings(elapsed, currentCallRate);
+        const callData = {
+            startTime: new Date(liveCallStart).toISOString(),
+            duration: elapsed,
+            rateName: rateSelect.value,
+            earned: earned
+        };
+        calls.push(callData);
+        saveCalls();
+        liveCallInfo.style.display = 'none';
+        startCallBtn.style.display = 'block';
+        endCallBtn.style.display = 'none';
+        liveCallInfo.classList.remove('active-call-pulse');
+        liveCallTimerDisplay.textContent = '00:00:00';
+        liveCallEarningsDisplay.textContent = '$0.00';
+        liveCallStart = null;
+        currentCallRate = null;
+        showToast('Live call saved!');
+    }
+
+    // Settings modal functions
     function openSettingsModal() {
         settingsModal.style.display = 'flex';
-        // ensure selector and payment-cycle UI are up-to-date and visible
-        populateTimeZones();
-        renderPaymentCycles();
-        // bring attention to timezone selector if present
-        if (document.getElementById('timezone-select')) {
-            // timeout ensures modal layout is applied before focus/scroll
-            setTimeout(() => document.getElementById('timezone-select').scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
-        }
+        updateStorageInfo();
+        // ensure timezone dropdown is in view applied before focus/scroll
+        setTimeout(() => document.getElementById('timezone-select').scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
     }
 
     function closeSettingsModal() {
@@ -2045,9 +2065,18 @@
         goalForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const amount = parseFloat(goalAmountInput.value) || 0;
+            const minutes = parseInt(goalMinutesInput.value, 10) || 0;
+            const selectedRateAmount = getSelectedRateAmount();
             dailyGoal.amount = amount;
+            if (amount > 0 && selectedRateAmount > 0) {
+                dailyGoal.minutes = Math.ceil(amount / selectedRateAmount);
+            } else {
+                dailyGoal.minutes = minutes;
+            }
             saveDailyGoal();
             goalAmountInput.blur();
+            goalMinutesInput.blur();
+            syncDailyGoalInputs();
             showToast('Daily goal saved!');
         });
         
@@ -2104,13 +2133,14 @@
                     if (confirm('Importing data will overwrite your current data. Are you sure?')) {
                         calls = importedData.calls || [];
                         rates = importedData.rates || [];
-                        dailyGoal = importedData.dailyGoal || { amount: 0 };
+                        dailyGoal = normalizeDailyGoal(importedData.dailyGoal);
                         paymentCyclesEnabled = importedData.paymentCyclesEnabled || false;
                         paymentCycles = importedData.paymentCycles || [];
                         saveRates();
                         saveCalls();
                         saveDailyGoal();
                         savePaymentCycles();
+                        syncDailyGoalInputs();
                         populateRateSelects();
                         showToast('Data imported successfully!');
                         closeSettingsModal();
@@ -2136,13 +2166,14 @@
                 localStorage.clear();
                 calls = [];
                 rates = [];
-                dailyGoal = { amount: 0 };
+                dailyGoal = { amount: 0, minutes: 0 };
                 paymentCyclesEnabled = false;
                 paymentCycles = [];
                 saveRates();
                 saveCalls();
                 saveDailyGoal();
                 savePaymentCycles();
+                syncDailyGoalInputs();
                 populateRateSelects();
                 showToast('All data reset.');
                 closeSettingsModal();
@@ -2197,6 +2228,7 @@
         // apply saved timezone immediately
         updateLocalTime();
         displayCalls();
+        syncDailyGoalInputs();
         updateStatistics();
         updateStorageInfo();
         renderPaymentCycles();
