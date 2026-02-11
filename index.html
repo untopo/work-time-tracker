@@ -458,27 +458,27 @@
 
         /* Slogan Text Color Fix */
         .slogan-text-color {
-            color: #4b5563; /* Default light mode color */
+            color: #4b5563;
         }
         html.dark .slogan-text-color {
-            color: #cbd5e1; /* Visible dark mode color */
+            color: #cbd5e1;
         }
         
         /* Specific fix for text visibility within the payment cycle card */
         #payment-cycle-earnings-cards p {
-            color: #4b5563; /* A medium gray for light mode */
+            color: #4b5563;
         }
         
         html.dark #payment-cycle-earnings-cards p {
-            color: #cbd5e1; /* A light gray for dark mode */
+            color: #cbd5e1;
         }
         
         #payment-cycle-earnings-cards p .font-semibold {
-            color: #1f2937; /* Very dark gray for contrast in light mode */
+            color: #1f2937;
         }
         
         html.dark #payment-cycle-earnings-cards p .font-semibold {
-            color: #f1f5f9; /* Very light gray for contrast in dark mode */
+            color: #f1f5f9;
         }
 
         /* Fix for live call info alignment */
@@ -544,6 +544,11 @@
         #feedback-modal textarea {
             resize: vertical;
             min-height: 120px;
+        }
+
+        /* Version display in footer */
+        #app-version {
+            font-family: 'Courier New', monospace;
         }
     </style>
 </head>
@@ -819,9 +824,10 @@
             <table class="call-log-table">
                 <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Rate</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
                     <th>Duration</th>
+                    <th>Rate</th>
                     <th>Earnings</th>
                     <th>Actions</th>
                 </tr>
@@ -914,7 +920,6 @@
             <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Time Zone</h3>
             <div class="flex items-center gap-2">
                 <select id="timezone-select" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                    <!-- Options populated by JS -->
                 </select>
                 <button id="reset-timezone" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
                     Reset
@@ -929,23 +934,17 @@
         <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
             <i class="fas fa-times"></i>
         </button>
-        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h2 id="modal-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
             <i class="fas fa-plus text-blue-500 mr-2"></i>Add Call
         </h2>
         <form id="call-form">
-            <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date & Time</label>
-            <input type="datetime-local" id="call-date" required
+            <label for="call-start-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
+            <input type="datetime-local" id="call-start-time" required
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
             
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration</label>
-            <div class="flex gap-2 mb-4">
-                <input type="number" id="call-duration-hours" placeholder="HH" min="0"
-                    class="w-1/3 px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                <input type="number" id="call-duration-minutes" placeholder="MM" min="0" max="59"
-                    class="w-1/3 px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                <input type="number" id="call-duration-seconds" placeholder="SS" min="0" max="59"
-                    class="w-1/3 px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-            </div>
+            <label for="call-end-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
+            <input type="datetime-local" id="call-end-time" required
+                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
             
             <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
             <select id="call-rate" required
@@ -1035,7 +1034,7 @@
 
 <footer class="mt-10 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200">
     <div class="container mx-auto px-6 py-8 text-center">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 items-start">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 items-start">
             <div class="text-center">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Work Time Tracker</h3>
                 <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
@@ -1071,11 +1070,37 @@
                     <button id="contact-us-btn" class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition">Contact Us</button>
                 </p>
             </div>
+            <div class="text-center">
+                <h3 class="text-sm text-gray-600 dark:text-gray-500">Version</h3>
+                <p class="mt-2 text-sm font-mono text-gray-700 dark:text-gray-400">v<span id="app-version">1.0.3</span></p>
+            </div>
         </div>
     </div>
 </footer>
 
 <script>
+    // ============================================
+    // VERSION & CHANGELOG
+    // ============================================
+    const APP_VERSION = '1.0.3';
+    const CHANGELOG = [
+        { version: '1.0.3', date: '2025-02-11', changes: ['Fixed: Call edit form now displays exact stored startTime and endTime', 'Fixed: Call Log displays Start Time and End Time columns', 'Fixed: Daily Goal minutes now correctly calculates and updates equivalent earnings', 'Changed: Duration is now calculated from startTime and endTime instead of manual entry'] },
+        { version: '1.0.2', date: '2025-02-11', changes: ['Fixed: Call editing now always edits the correct call regardless of filter view', 'Fixed: Edit form no longer creates duplicate calls', 'Added: Unique ID to each call for reliable tracking', 'Added: Version tracking in footer'] },
+        { version: '1.0.1', date: '2025-01-15', changes: ['Added timezone selector', 'Added Contact Us button', 'Added donate button', 'Performance optimizations'] },
+        { version: '1.0.0', date: '2025-01-01', changes: ['Initial release'] }
+    ];
+
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     // Global variables
     const startCallBtn = document.getElementById('start-call-btn');
     const endCallBtn = document.getElementById('end-call-btn');
@@ -1092,10 +1117,8 @@
     const closeModalBtn = document.getElementById('close-modal');
     const callForm = document.getElementById('call-form');
     const cancelCallBtn = document.getElementById('cancel-call');
-    const callDateInput = document.getElementById('call-date');
-    const callDurationHoursInput = document.getElementById('call-duration-hours');
-    const callDurationMinutesInput = document.getElementById('call-duration-minutes');
-    const callDurationSecondsInput = document.getElementById('call-duration-seconds');
+    const callStartTimeInput = document.getElementById('call-start-time');
+    const callEndTimeInput = document.getElementById('call-end-time');
     const callRateSelect = document.getElementById('call-rate');
     const darkToggleBtn = document.getElementById('dark-toggle');
     const showRateAddBtn = document.getElementById('show-rate-add');
@@ -1139,7 +1162,6 @@
     const storageBar = document.getElementById('storage-bar');
     const localTimeDisplay = document.getElementById('local-time');
     const userTimeZoneDisplay = document.getElementById('user-time-zone');
-    // timezone DOM refs
     const tzSelect = document.getElementById('timezone-select');
     const resetTzBtn = document.getElementById('reset-timezone');
     const editCycleModal = document.getElementById('edit-cycle-modal');
@@ -1154,7 +1176,7 @@
     const filterWeekBtn = document.getElementById('filter-week');
     const filterMonthBtn = document.getElementById('filter-month');
     
-    // Bug Fix: Add try-catch for local storage parsing to prevent app crash on corrupted data
+    // Load from localStorage
     let rates, calls, dailyGoal, paymentCyclesEnabled, paymentCycles, lastSelectedRate;
     try {
         rates = JSON.parse(localStorage.getItem('rates')) || [];
@@ -1163,8 +1185,14 @@
         paymentCyclesEnabled = JSON.parse(localStorage.getItem('paymentCyclesEnabled')) || false;
         paymentCycles = JSON.parse(localStorage.getItem('paymentCycles')) || [];
         lastSelectedRate = localStorage.getItem('lastSelectedRate') || null;
+
+        // Migration: Add IDs to existing calls that don't have them
+        calls = calls.map(call => ({
+            ...call,
+            id: call.id || generateUUID()
+        }));
     } catch (e) {
-        console.error("Failed to parse local storage data. Resetting app data.", e);
+        console.error('Failed to parse local storage data. Resetting app data.', e);
         localStorage.clear();
         rates = [];
         calls = [];
@@ -1180,10 +1208,10 @@
     let liveCallStart = null;
     let currentCallRate = null;
     let isEditingCall = false;
-    let editingCallIndex = null;
+    let editingCallId = null;
     let isEditingCycle = false;
     let editingCycleIndex = null;
-    let callLogFilter = 'today'; // New state for filtering
+    let callLogFilter = 'today';
 
     // Helper Functions
     function formatTime(milliseconds) {
@@ -1268,7 +1296,7 @@
         const dataStr = JSON.stringify(data);
         const bytes = new Blob([dataStr]).size;
         const kb = (bytes / 1024).toFixed(2);
-        const maxKb = 5120; // 5MB limit for typical localStorage
+        const maxKb = 5120;
         const percentage = Math.min((bytes / (maxKb * 1024)) * 100, 100);
         
         storageUsedDisplay.textContent = `${kb} KB / ${(maxKb / 1024).toFixed(1)} MB`;
@@ -1279,7 +1307,6 @@
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         
-        // Calculate today's stats
         const todaysCalls = calls.filter(call => new Date(call.startTime) >= todayStart);
         const todaysEarnings = todaysCalls.reduce((sum, call) => sum + call.earned, 0);
         const todaysDuration = todaysCalls.reduce((sum, call) => sum + call.duration, 0);
@@ -1287,7 +1314,6 @@
         
         todayEarningsDisplay.textContent = formatEarnings(todaysEarnings);
         
-        // Calculate average duration
         if (todaysCalls.length > 0) {
             const avgDuration = todaysDuration / todaysCalls.length;
             avgDurationDisplay.textContent = formatTime(avgDuration);
@@ -1295,13 +1321,13 @@
             avgDurationDisplay.textContent = '00:00:00';
         }
         
-        // Calculate goal progress
         const hasAmountGoal = dailyGoal.amount > 0;
         const hasMinutesGoal = dailyGoal.minutes > 0;
         const selectedRateAmount = getSelectedRateAmount();
         const derivedGoalMinutes = hasAmountGoal && selectedRateAmount > 0
             ? Math.ceil(dailyGoal.amount / selectedRateAmount)
             : dailyGoal.minutes;
+        
         if (hasAmountGoal || hasMinutesGoal) {
             const goalSummary = [];
             const ratePerMinute = todaysMinutes > 0 ? todaysEarnings / todaysMinutes : 0;
@@ -1352,7 +1378,6 @@
             goalMinutesDisplay.textContent = '0 / 0 Min';
         }
         
-        // Calculate monthly earnings
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthCalls = calls.filter(call => new Date(call.startTime) >= monthStart);
         
@@ -1367,7 +1392,6 @@
         secondHalfEarningsDisplay.textContent = formatEarnings(secondHalfEarnings);
         monthlyTotalEarningsDisplay.textContent = formatEarnings(monthlyEarnings);
         
-        // Calculate payment cycle earnings
         if (paymentCyclesEnabled && paymentCycles.length > 0) {
             const currentCycle = paymentCycles.find(cycle => {
                 const start = new Date(cycle.startDate);
@@ -1406,7 +1430,7 @@
     // Time zone helpers
     function getUserTimeZone() {
         const tz = localStorage.getItem('timeZone');
-        return tz && tz.length > 0 ? tz : undefined; // undefined → browser default
+        return tz && tz.length > 0 ? tz : undefined;
     }
 
     function setUserTimeZone(tz) {
@@ -1458,7 +1482,6 @@
         userTimeZoneDisplay.textContent = tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
-    // Helper Functions
     function formatDate(dateStr) {
         const date = new Date(dateStr);
         return date.toLocaleDateString();
@@ -1521,6 +1544,16 @@
         }
     }
 
+    function formatLocalDateTime(isoString) {
+        const date = new Date(isoString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
     function displayCalls() {
         callLogTableBody.innerHTML = '';
         let filteredCalls = [];
@@ -1544,29 +1577,34 @@
         }
 
         if (filteredCalls.length === 0) {
-            callLogTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls recorded.</td></tr>`;
+            callLogTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls recorded.</td></tr>`;
             totalMinutesDisplay.textContent = '0 min';
             totalEarningsDisplay.textContent = '$0.00';
             return;
         }
 
-        filteredCalls.forEach((call, index) => {
-            const callDate = new Date(call.startTime);
-            const dateStr = callDate.toLocaleDateString();
+        filteredCalls.forEach((call) => {
+            const startDate = new Date(call.startTime);
+            const endDate = new Date(call.endTime);
+            
+            const startDisplay = startDate.toLocaleString(undefined, { timeZone: getUserTimeZone() });
+            const endDisplay = endDate.toLocaleString(undefined, { timeZone: getUserTimeZone() });
+            
             const durationStr = formatTime(call.duration);
             const earningsStr = formatEarnings(call.earned);
 
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${dateStr}</td>
-                <td>${call.rateName}</td>
+                <td>${startDisplay}</td>
+                <td>${endDisplay}</td>
                 <td>${durationStr}</td>
+                <td>${call.rateName}</td>
                 <td>${earningsStr}</td>
                 <td>
-                    <button class="edit-call-btn" data-index="${index}">
+                    <button class="edit-call-btn" data-call-id="${call.id}">
                         <i class="fas fa-edit"></i> Edit
                     </button>
-                    <button class="delete-call-btn text-red-500 hover:text-red-700" data-index="${index}">
+                    <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${call.id}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -1576,15 +1614,15 @@
 
         document.querySelectorAll('.edit-call-btn').forEach(button => {
             button.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                editCall(index);
+                const callId = e.currentTarget.dataset.callId;
+                editCallById(callId);
             });
         });
 
         document.querySelectorAll('.delete-call-btn').forEach(button => {
             button.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                deleteCall(index);
+                const callId = e.currentTarget.dataset.callId;
+                deleteCallById(callId);
             });
         });
 
@@ -1616,11 +1654,8 @@
     // Call functions
     function handleCallFormSubmit(e) {
         e.preventDefault();
-        const startTime = new Date(callDateInput.value);
-        const hours = parseInt(callDurationHoursInput.value) || 0;
-        const minutes = parseInt(callDurationMinutesInput.value) || 0;
-        const seconds = parseInt(callDurationSecondsInput.value) || 0;
-        const durationMs = ((hours * 60 + minutes) * 60 + seconds) * 1000;
+        const startTime = new Date(callStartTimeInput.value);
+        const endTime = new Date(callEndTimeInput.value);
         const rateName = callRateSelect.value;
         const rate = rates.find(r => r.name === rateName);
 
@@ -1629,20 +1664,37 @@
             return;
         }
 
+        if (endTime <= startTime) {
+            alert('End time must be after start time.');
+            return;
+        }
+
+        const durationMs = endTime - startTime;
         const earned = calculateEarnings(durationMs, rate.amount);
-        const callData = {
-            startTime: startTime.toISOString(),
-            duration: durationMs,
-            rateName: rateName,
-            earned: earned
-        };
 
         if (isEditingCall) {
-            calls[editingCallIndex] = callData;
+            const callIndex = calls.findIndex(c => c.id === editingCallId);
+            if (callIndex > -1) {
+                calls[callIndex] = {
+                    id: calls[callIndex].id,
+                    startTime: startTime.toISOString(),
+                    endTime: endTime.toISOString(),
+                    duration: durationMs,
+                    rateName: rateName,
+                    earned: earned
+                };
+            }
             isEditingCall = false;
-            editingCallIndex = null;
+            editingCallId = null;
         } else {
-            calls.push(callData);
+            calls.push({
+                id: generateUUID(),
+                startTime: startTime.toISOString(),
+                endTime: endTime.toISOString(),
+                duration: durationMs,
+                rateName: rateName,
+                earned: earned
+            });
         }
 
         saveCalls();
@@ -1651,23 +1703,28 @@
         showToast('Call saved!');
     }
 
-    function editCall(index) {
-        const call = calls[index];
+    function editCallById(callId) {
+        const call = calls.find(c => c.id === callId);
+        if (!call) {
+            console.error('Call not found with ID:', callId);
+            return;
+        }
         isEditingCall = true;
-        editingCallIndex = index;
-        callDateInput.value = call.startTime.slice(0, 16);
-        const duration = call.duration / 1000;
-        callDurationHoursInput.value = Math.floor(duration / 3600);
-        callDurationMinutesInput.value = Math.floor((duration % 3600) / 60);
-        callDurationSecondsInput.value = Math.floor(duration % 60);
+        editingCallId = callId;
+        document.getElementById('modal-title').textContent = 'Edit Call';
+        callStartTimeInput.value = formatLocalDateTime(call.startTime);
+        callEndTimeInput.value = formatLocalDateTime(call.endTime);
         callRateSelect.value = call.rateName;
         openCallModal();
     }
 
-    function deleteCall(index) {
-        if (confirm('Are you sure you want to delete this call?')) {
-            calls.splice(index, 1);
-            saveCalls();
+    function deleteCallById(callId) {
+        if (confirm('Are you sure you want to delete this call entry?')) {
+            const index = calls.findIndex(c => c.id === callId);
+            if (index > -1) {
+                calls.splice(index, 1);
+                saveCalls();
+            }
         }
     }
 
@@ -1679,7 +1736,7 @@
     function closeCallModal() {
         callModal.style.display = 'none';
         isEditingCall = false;
-        editingCallIndex = null;
+        editingCallId = null;
         callForm.reset();
     }
 
@@ -1712,10 +1769,13 @@
         if (liveCallTimerId) {
             clearInterval(liveCallTimerId);
         }
-        const elapsed = Date.now() - liveCallStart;
+        const endTime = Date.now();
+        const elapsed = endTime - liveCallStart;
         const earned = calculateEarnings(elapsed, currentCallRate);
         const callData = {
+            id: generateUUID(),
             startTime: new Date(liveCallStart).toISOString(),
+            endTime: new Date(endTime).toISOString(),
             duration: elapsed,
             rateName: rateSelect.value,
             earned: earned
@@ -1737,7 +1797,6 @@
     function openSettingsModal() {
         settingsModal.style.display = 'flex';
         updateStorageInfo();
-        // ensure timezone dropdown is in view applied before focus/scroll
         setTimeout(() => document.getElementById('timezone-select').scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
     }
 
@@ -1845,7 +1904,6 @@
     function handleEditCycleFormSubmit(e) {
         e.preventDefault();
 
-        // Fix for timezone bug: use UTC dates
         const startDate = new Date(cycleStartDateInput.value);
         const endDate = new Date(cycleEndDateInput.value);
         const payDate = new Date(cyclePayDateInput.value);
@@ -1855,7 +1913,6 @@
             return;
         }
 
-        // Normalize to start of day in UTC
         const start = new Date(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate());
         const end = new Date(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate());
         const pay = new Date(payDate.getUTCFullYear(), payDate.getUTCMonth(), payDate.getUTCDate());
@@ -1882,7 +1939,6 @@
         showToast('Payment cycle saved!');
     }
     
-    // UI function to handle active filter button styling
     function updateCallLogFilterButtons() {
         const buttons = [filterTodayBtn, filterWeekBtn, filterMonthBtn];
         buttons.forEach(btn => {
@@ -1897,7 +1953,6 @@
         }
     }
 
-    // Toast Notification
     function showToast(message) {
         const toast = document.createElement('div');
         toast.textContent = message;
@@ -1957,7 +2012,6 @@
         cancelFeedbackBtn.addEventListener('click', closeFeedbackModal);
     }
 
-    // Feedback form submission with fetch API
     if (feedbackForm) {
         feedbackForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1985,12 +2039,10 @@
 
     // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
-        // Tracker buttons
         startCallBtn.addEventListener('click', startLiveCall);
         endCallBtn.addEventListener('click', endLiveCall);
         addCallBtn.addEventListener('click', openCallModal);
         
-        // Modals
         closeModalBtn.addEventListener('click', closeCallModal);
         cancelCallBtn.addEventListener('click', closeCallModal);
         callForm.addEventListener('submit', handleCallFormSubmit);
@@ -2009,13 +2061,11 @@
             }
         });
         
-        // New Payment Cycle Modal
         showAddCycleBtn.addEventListener('click', addPaymentCycle);
         closeEditCycleModalBtn.addEventListener('click', closeEditCycleModal);
         cancelEditCycleBtn.addEventListener('click', closeEditCycleModal);
         editCycleForm.addEventListener('submit', handleEditCycleFormSubmit);
 
-        // Dark Mode
         darkToggleBtn.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
             const isDark = document.documentElement.classList.contains('dark');
@@ -2026,7 +2076,6 @@
             document.documentElement.classList.add('dark');
         }
 
-        // Rates
         rateSelect.addEventListener('change', saveLastSelectedRate);
         showRateAddBtn.addEventListener('click', () => {
             rateForm.style.display = 'block';
@@ -2061,18 +2110,25 @@
             showRateAddBtn.style.display = 'block';
         });
 
-        // Daily Goal
         goalForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const amount = parseFloat(goalAmountInput.value) || 0;
             const minutes = parseInt(goalMinutesInput.value, 10) || 0;
             const selectedRateAmount = getSelectedRateAmount();
-            dailyGoal.amount = amount;
-            if (amount > 0 && selectedRateAmount > 0) {
+            
+            // If minutes goal is set, calculate equivalent earnings
+            if (minutes > 0 && selectedRateAmount > 0) {
+                dailyGoal.minutes = minutes;
+                dailyGoal.amount = minutes * selectedRateAmount;
+            } else if (amount > 0 && selectedRateAmount > 0) {
+                // If amount goal is set, calculate equivalent minutes
+                dailyGoal.amount = amount;
                 dailyGoal.minutes = Math.ceil(amount / selectedRateAmount);
             } else {
+                dailyGoal.amount = amount;
                 dailyGoal.minutes = minutes;
             }
+            
             saveDailyGoal();
             goalAmountInput.blur();
             goalMinutesInput.blur();
@@ -2080,7 +2136,6 @@
             showToast('Daily goal saved!');
         });
         
-        // Stats Date Picker
         statsDatePicker.addEventListener('change', () => {
             callLogFilter = 'date';
             updateStatistics();
@@ -2096,11 +2151,29 @@
             updateCallLogFilterButtons();
         });
         
-        // Settings
         settingsToggleBtn.addEventListener('click', openSettingsModal);
         closeSettingsModalBtn.addEventListener('click', closeSettingsModal);
         
-        // Data Management
+        if (tzSelect) {
+            tzSelect.addEventListener('change', () => {
+                const tz = tzSelect.value;
+                setUserTimeZone(tz);
+                updateStatistics();
+                displayCalls();
+                updateLocalTime();
+            });
+        }
+
+        if (resetTzBtn) {
+            resetTzBtn.addEventListener('click', () => {
+                if (tzSelect) tzSelect.value = '';
+                setUserTimeZone('');
+                updateStatistics();
+                displayCalls();
+                updateLocalTime();
+            });
+        }
+        
         exportDataBtn.addEventListener('click', () => {
             const data = {
                 calls: calls,
@@ -2132,6 +2205,10 @@
                     const importedData = JSON.parse(event.target.result);
                     if (confirm('Importing data will overwrite your current data. Are you sure?')) {
                         calls = importedData.calls || [];
+                        calls = calls.map(call => ({
+                            ...call,
+                            id: call.id || generateUUID()
+                        }));
                         rates = importedData.rates || [];
                         dailyGoal = normalizeDailyGoal(importedData.dailyGoal);
                         paymentCyclesEnabled = importedData.paymentCyclesEnabled || false;
@@ -2180,13 +2257,11 @@
             }
         });
         
-        // Payment Cycles
         paymentCyclesToggle.addEventListener('change', (e) => {
             paymentCyclesEnabled = e.target.checked;
             savePaymentCycles();
         });
 
-        // Global Event Listeners
         function handleModalKeyboard(e) {
             if (e.key === 'Escape') {
                 if (callModal.style.display === 'flex') {
@@ -2206,13 +2281,11 @@
         
         document.addEventListener('keydown', handleModalKeyboard);
         
-        // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
             activeTimers.forEach(timerId => clearInterval(timerId));
             activeTimers.clear();
         });
 
-        // Footer button handlers
         document.getElementById('privacy-policy')?.addEventListener('click', () => {
             alert('Privacy Policy: This app stores all data locally in your browser. No data is sent to external servers.');
         });
@@ -2221,11 +2294,10 @@
             alert('Terms of Service: This app is provided "as is" without any warranties. Use at your own discretion.');
         });
         
-        // Initialize displays and add event listeners
+        document.getElementById('app-version').textContent = APP_VERSION;
         displayRates();
-        populateRateSelects(); // Call before setting the value
-        populateTimeZones(); // populate timezone selector
-        // apply saved timezone immediately
+        populateRateSelects();
+        populateTimeZones();
         updateLocalTime();
         displayCalls();
         syncDailyGoalInputs();
@@ -2234,11 +2306,9 @@
         renderPaymentCycles();
         setInterval(updateLocalTime, 1000);
 
-        // Set default date for stats date picker
         const today = new Date().toISOString().split('T')[0];
         statsDatePicker.value = today;
         
-        // Call log filter button event listeners
         filterTodayBtn.addEventListener('click', () => {
             callLogFilter = 'today';
             displayCalls();
@@ -2254,7 +2324,7 @@
             displayCalls();
             updateCallLogFilterButtons();
         });
-        updateCallLogFilterButtons(); // Initial call to set active button styling
+        updateCallLogFilterButtons();
     });
 </script>
 </body>
