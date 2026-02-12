@@ -929,39 +929,85 @@
     </div>
 </div>
 
-<div id="call-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
-    <div class="modal p-6 max-w-lg w-full relative">
-        <button id="close-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-            <i class="fas fa-times"></i>
-        </button>
-        <h2 id="modal-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
-            <i class="fas fa-plus text-blue-500 mr-2"></i>Add Call
-        </h2>
-        <form id="call-form">
-            <label for="call-start-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
-            <input type="datetime-local" id="call-start-time" required
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
-            
-            <label for="call-end-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
-            <input type="datetime-local" id="call-end-time" required
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
-            
-            <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
-            <select id="call-rate" required
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
-            </select>
-            
-            <div class="flex gap-2">
-                <button type="submit" class="flex-1 btn-primary text-white px-4 py-2 rounded transition">
-                    Save
-                </button>
-                <button type="button" id="cancel-call"
-                    class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
-                    Cancel
-                </button>
-            </div>
-        </form>
+<!-- Unfinished Live Call Recovery Modal (v1.0.5) -->
+<div id="recovery-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+  <div class="modal p-6 max-w-lg w-full relative">
+    <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      <i class="fas fa-triangle-exclamation text-yellow-500 mr-2"></i>Unfinished Call Detected
+    </h2>
+
+    <p class="text-sm text-gray-700 dark:text-gray-300 mb-4">
+      We detected an unfinished live call.
+      <br>
+      <span class="font-semibold">Rate:</span> <span id="recovery-rate-name">--</span>
+      <br>
+      <span class="font-semibold">Elapsed:</span> <span id="recovery-elapsed">--</span>
+    </p>
+
+    <div class="flex gap-2">
+      <button id="recovery-resume-btn" type="button" class="flex-1 btn-primary text-white px-4 py-2 rounded transition">
+        Resume
+      </button>
+      <button id="recovery-summarize-btn" type="button" class="flex-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+        Summarize
+      </button>
+      <button id="recovery-discard-btn" type="button" class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+        Discard
+      </button>
     </div>
+  </div>
+</div>
+
+<div id="call-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+  <div class="modal p-6 max-w-lg w-full relative">
+    <button id="close-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+  <i class="fas fa-times"></i>
+</button>
+    <h2 id="modal-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
+      <i class="fas fa-plus text-blue-500 mr-2"></i>Add Call
+    </h2>
+
+    <form id="call-form">
+      <label for="call-start-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
+      <input type="datetime-local" id="call-start-time"
+             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+
+      <label for="call-end-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
+      <input type="datetime-local" id="call-end-time"
+             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+
+      <label for="call-duration-minutes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        Duration (minutes)
+      </label>
+      <input
+        type="number"
+        id="call-duration-minutes"
+        min="1"
+        step="1"
+        placeholder="e.g. 15"
+        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4"
+      />
+
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+        Tip: You can fill Start + Minutes (End auto-fills), or End + Minutes (Start auto-fills), or just Minutes.
+      </p>
+
+      <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
+      <select id="call-rate" required
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+      </select>
+
+      <div class="flex gap-2">
+        <button type="submit" class="flex-1 btn-primary text-white px-4 py-2 rounded transition">
+          Save
+        </button>
+        <button type="button" id="cancel-call"
+                class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <div id="edit-cycle-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
@@ -1012,7 +1058,7 @@
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
             
             <label for="feedback-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (optional)</label>
-            <input type="email" id="feedback-email" name="email" required
+            <input type="email" id="feedback-email" name="email" 
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
             
             <label for="feedback-message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message</label>
@@ -1072,7 +1118,7 @@
             </div>
             <div class="text-center">
                 <h3 class="text-sm text-gray-600 dark:text-gray-500">Version</h3>
-                <p class="mt-2 text-sm font-mono text-gray-700 dark:text-gray-400">v<span id="app-version">1.0.3</span></p>
+                <p class="mt-2 text-sm font-mono text-gray-700 dark:text-gray-400">v<span id="app-version"></span></p>
             </div>
         </div>
     </div>
@@ -1082,12 +1128,14 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.0.3';
+    const APP_VERSION = '1.0.5';
     const CHANGELOG = [
-        { version: '1.0.3', date: '2025-02-11', changes: ['Fixed: Call edit form now displays exact stored startTime and endTime', 'Fixed: Call Log displays Start Time and End Time columns', 'Fixed: Daily Goal minutes now correctly calculates and updates equivalent earnings', 'Changed: Duration is now calculated from startTime and endTime instead of manual entry'] },
-        { version: '1.0.2', date: '2025-02-11', changes: ['Fixed: Call editing now always edits the correct call regardless of filter view', 'Fixed: Edit form no longer creates duplicate calls', 'Added: Unique ID to each call for reliable tracking', 'Added: Version tracking in footer'] },
-        { version: '1.0.1', date: '2025-01-15', changes: ['Added timezone selector', 'Added Contact Us button', 'Added donate button', 'Performance optimizations'] },
-        { version: '1.0.0', date: '2025-01-01', changes: ['Initial release'] }
+        { version: '1.0.5', date: '2026-02-12', changes: ['Fixed: Footer version now always matches APP_VERSION', 'Fixed: Contact form email is now optional (no longer required)','Chore: Simplified dailyGoal storage to a single source of truth', 'Chore: Added legacy fallback read for old dailyGoal keys', 'Fixed: Call modal can now be closed via X and Cancel (no longer stuck)','Fixed: Saving a call no longer refreshes the page (form submit prevented)', 'Improved: Call edits/additions now update UI instantly without full page reload','Improved: Add Call now always opens in clean “Add” mode (resets editing state)'] },
+        { version: '1.0.4', date: '2026-02-12', changes: [ 'Fixed: Daily Goal now syncs bidirectionally between USD and Minutes', 'Fixed: Daily Goal persistence stores both USD and Minutes correctly', 'Improved: Goal calculation now updates instantly on input change' ] },
+        { version: '1.0.3', date: '2026-02-11', changes: ['Fixed: Call edit form now displays exact stored startTime and endTime', 'Fixed: Call Log displays Start Time and End Time columns', 'Fixed: Daily Goal minutes now correctly calculates and updates equivalent earnings', 'Changed: Duration is now calculated from startTime and endTime instead of manual entry'] },
+        { version: '1.0.2', date: '2026-02-11', changes: ['Fixed: Call editing now always edits the correct call regardless of filter view', 'Fixed: Edit form no longer creates duplicate calls', 'Added: Unique ID to each call for reliable tracking', 'Added: Version tracking in footer'] },
+        { version: '1.0.1', date: '2026-01-15', changes: ['Added timezone selector', 'Added Contact Us button', 'Added donate button', 'Performance optimizations'] },
+        { version: '1.0.0', date: '2026-01-01', changes: ['Initial release'] }
     ];
 
     // ============================================
@@ -1100,6 +1148,18 @@
             return v.toString(16);
         });
     }
+
+    function parseOptionalDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isFinite(d.getTime()) ? d : null;
+}
+
+function minutesToMs(mins) {
+  const n = Number(mins);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.round(n * 60 * 1000);
+}
 
     // Global variables
     const startCallBtn = document.getElementById('start-call-btn');
@@ -1120,6 +1180,7 @@
     const callStartTimeInput = document.getElementById('call-start-time');
     const callEndTimeInput = document.getElementById('call-end-time');
     const callRateSelect = document.getElementById('call-rate');
+    const callDurationMinutesInput = document.getElementById('call-duration-minutes');
     const darkToggleBtn = document.getElementById('dark-toggle');
     const showRateAddBtn = document.getElementById('show-rate-add');
     const rateForm = document.getElementById('rate-form');
@@ -1172,16 +1233,33 @@
     const cycleEndDateInput = document.getElementById('cycle-end-date-input');
     const cyclePayDateInput = document.getElementById('cycle-pay-date-input');
     
+    
     const filterTodayBtn = document.getElementById('filter-today');
     const filterWeekBtn = document.getElementById('filter-week');
     const filterMonthBtn = document.getElementById('filter-month');
+
+    // Recovery modal (v1.0.5)
+const recoveryModal = document.getElementById('recovery-modal');
+const recoveryRateName = document.getElementById('recovery-rate-name');
+const recoveryElapsed = document.getElementById('recovery-elapsed');
+const recoveryResumeBtn = document.getElementById('recovery-resume-btn');
+const recoverySummarizeBtn = document.getElementById('recovery-summarize-btn');
+const recoveryDiscardBtn = document.getElementById('recovery-discard-btn');
     
     // Load from localStorage
     let rates, calls, dailyGoal, paymentCyclesEnabled, paymentCycles, lastSelectedRate;
     try {
         rates = JSON.parse(localStorage.getItem('rates')) || [];
         calls = JSON.parse(localStorage.getItem('calls')) || [];
-        dailyGoal = JSON.parse(localStorage.getItem('dailyGoal')) || { amount: 0, minutes: 0 };
+        // Daily goal: primary source is 'dailyGoal'. Fallback to legacy keys if needed.
+const storedDailyGoal = localStorage.getItem('dailyGoal');
+if (storedDailyGoal) {
+  dailyGoal = JSON.parse(storedDailyGoal);
+} else {
+  const legacyAmount = Number(localStorage.getItem('dailyGoalUSD')) || 0;
+  const legacyMinutes = Number(localStorage.getItem('dailyGoalMinutes')) || 0;
+  dailyGoal = { amount: legacyAmount, minutes: legacyMinutes };
+}
         paymentCyclesEnabled = JSON.parse(localStorage.getItem('paymentCyclesEnabled')) || false;
         paymentCycles = JSON.parse(localStorage.getItem('paymentCycles')) || [];
         lastSelectedRate = localStorage.getItem('lastSelectedRate') || null;
@@ -1240,6 +1318,104 @@
         };
     }
 
+
+
+
+function getCallDurationSeconds(call) {
+    const raw = Number(call.duration ?? 0);
+    if (!Number.isFinite(raw) || raw <= 0) return 0;
+    return raw > 24 * 60 * 60 ? Math.round(raw / 1000) : Math.round(raw);
+}
+
+function getCallEarnings(call) {
+    const fromEarnings = Number(call.earnings);
+    if (Number.isFinite(fromEarnings)) return fromEarnings;
+
+    const fromEarned = Number(call.earned);
+    if (Number.isFinite(fromEarned)) return fromEarned;
+
+    const rate = Number(call.rate) || 0;
+    return (getCallDurationSeconds(call) / 60) * rate;
+}
+
+// v1.0.5 Active live call state (for crash/close recovery)
+const ACTIVE_CALL_KEY = 'activeLiveCallState';
+
+function saveActiveCallState() {
+  if (!liveCallStart) return;
+  const state = {
+    start: liveCallStart,
+    rate: currentCallRate,
+    rateName: rateSelect.value || null,
+    lastPing: Date.now()
+  };
+  localStorage.setItem(ACTIVE_CALL_KEY, JSON.stringify(state));
+}
+
+function readActiveCallState() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(ACTIVE_CALL_KEY));
+    if (!raw || !raw.start) return null;
+    return raw;
+  } catch {
+    return null;
+  }
+}
+
+function clearActiveCallState() {
+  localStorage.removeItem(ACTIVE_CALL_KEY);
+}
+
+function msToHMS(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function normalizeCall(call) {
+  const start = call.startTime ? new Date(call.startTime) : new Date();
+
+  
+
+  // Si duration viene en ms (común) o en segundos, lo normalizamos a ms
+  const rawDuration = Number(call.duration ?? 0);
+  const durationMs = Number.isFinite(rawDuration)
+    ? (rawDuration > 24 * 60 * 60 ? Math.round(rawDuration) : Math.round(rawDuration * 1000))
+    : 0;
+
+  const end = call.endTime
+    ? new Date(call.endTime)
+    : new Date(start.getTime() + durationMs);
+
+  const rate = Number(call.rate) || 0;
+  const earnings = Number((((end - start) / (1000 * 60)) * rate).toFixed(2));
+
+  const normalized = {
+    ...call,
+    id: call.id || generateUUID(),
+    startTime: start.toISOString(),
+    endTime: end.toISOString(),
+    duration: Math.max(0, end - start), // ms
+    rate,
+    earnings
+  };
+
+  normalized.earned = normalized.earnings; // compat
+  return normalized;
+}
+
+function readCallsFromStorage() {
+    try {
+        const raw = JSON.parse(localStorage.getItem('calls')) || [];
+        if (!Array.isArray(raw)) return [];
+        return raw.map(normalizeCall);
+    } catch {
+        return [];
+    }
+}
+
     function syncDailyGoalInputs() {
         const selectedRateAmount = getSelectedRateAmount();
         const derivedMinutes = dailyGoal.amount > 0 && selectedRateAmount > 0
@@ -1258,16 +1434,17 @@
     }
 
     function saveCalls() {
-        localStorage.setItem('calls', JSON.stringify(calls));
-        displayCalls();
-        updateStatistics();
-    }
+  calls = calls.map(normalizeCall);
+  localStorage.setItem('calls', JSON.stringify(calls));
+  displayCalls();
+  updateStatistics();
+}
 
     function saveDailyGoal() {
-        dailyGoal = normalizeDailyGoal(dailyGoal);
-        localStorage.setItem('dailyGoal', JSON.stringify(dailyGoal));
-        updateStatistics();
-    }
+  dailyGoal = normalizeDailyGoal(dailyGoal);
+  localStorage.setItem('dailyGoal', JSON.stringify(dailyGoal));
+  updateStatistics();
+}
 
     function savePaymentCycles() {
         localStorage.setItem('paymentCyclesEnabled', JSON.stringify(paymentCyclesEnabled));
@@ -1602,8 +1779,8 @@
                 <td>${earningsStr}</td>
                 <td>
                     <button class="edit-call-btn" data-call-id="${call.id}">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
+  <i class="fas fa-edit"></i> Edit
+</button>
                     <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${call.id}">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -1613,18 +1790,19 @@
         });
 
         document.querySelectorAll('.edit-call-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const callId = e.currentTarget.dataset.callId;
-                editCallById(callId);
-            });
-        });
+  button.addEventListener('click', (e) => {
+    const callId = e.currentTarget.dataset.callId;
+    editCall(callId);
+    openCallModal();
+  });
+});
 
-        document.querySelectorAll('.delete-call-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const callId = e.currentTarget.dataset.callId;
-                deleteCallById(callId);
-            });
-        });
+document.querySelectorAll('.delete-call-btn').forEach(button => {
+  button.addEventListener('click', (e) => {
+    const callId = e.currentTarget.dataset.callId;
+    deleteCall(callId);
+  });
+});
 
         const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
         const totalMinutes = totalDuration / (1000 * 60);
@@ -1653,80 +1831,115 @@
 
     // Call functions
     function handleCallFormSubmit(e) {
-        e.preventDefault();
-        const startTime = new Date(callStartTimeInput.value);
-        const endTime = new Date(callEndTimeInput.value);
-        const rateName = callRateSelect.value;
-        const rate = rates.find(r => r.name === rateName);
+  e.preventDefault();
+  e.stopPropagation();
 
-        if (!rate) {
-            alert('Please select a valid rate.');
-            return;
-        }
+  calls = readCallsFromStorage();
 
-        if (endTime <= startTime) {
-            alert('End time must be after start time.');
-            return;
-        }
+  const start = parseOptionalDate(callStartTimeInput.value);
+  const end = parseOptionalDate(callEndTimeInput.value);
+  const durationMsFromMinutes = minutesToMs(callDurationMinutesInput.value);
 
-        const durationMs = endTime - startTime;
-        const earned = calculateEarnings(durationMs, rate.amount);
+  // Validación mínima: al menos (start+end) o minutes
+  if ((!start || !end) && !durationMsFromMinutes) {
+    alert('Please enter Start & End time, or a Duration in minutes.');
+    return;
+  }
 
-        if (isEditingCall) {
-            const callIndex = calls.findIndex(c => c.id === editingCallId);
-            if (callIndex > -1) {
-                calls[callIndex] = {
-                    id: calls[callIndex].id,
-                    startTime: startTime.toISOString(),
-                    endTime: endTime.toISOString(),
-                    duration: durationMs,
-                    rateName: rateName,
-                    earned: earned
-                };
-            }
-            isEditingCall = false;
-            editingCallId = null;
-        } else {
-            calls.push({
-                id: generateUUID(),
-                startTime: startTime.toISOString(),
-                endTime: endTime.toISOString(),
-                duration: durationMs,
-                rateName: rateName,
-                earned: earned
-            });
-        }
+  let finalStart = start;
+  let finalEnd = end;
 
+  // Completar lo que falte usando minutes
+  if (durationMsFromMinutes) {
+    if (finalStart && !finalEnd) {
+      finalEnd = new Date(finalStart.getTime() + durationMsFromMinutes);
+    } else if (!finalStart && finalEnd) {
+      finalStart = new Date(finalEnd.getTime() - durationMsFromMinutes);
+    } else if (!finalStart && !finalEnd) {
+      // minutes-only: anclamos a "ahora" para mantener consistencia interna
+      finalStart = new Date();
+      finalEnd = new Date(finalStart.getTime() + durationMsFromMinutes);
+    }
+  }
+
+  // Si al final no hay ambos, algo falló
+  if (!finalStart || !finalEnd || finalEnd <= finalStart) {
+    alert('Please enter valid values (End must be after Start).');
+    return;
+  }
+
+  const selectedRateName = callRateSelect.value;
+  const selectedRate = rates.find(r => r.name === selectedRateName);
+  const ratePerMin = selectedRate ? selectedRate.amount : 0;
+
+  const durationMs = finalEnd - finalStart;
+  const earnings = Number(((durationMs / (1000 * 60)) * ratePerMin).toFixed(2));
+
+  if (isEditingCall) {
+    const idx = calls.findIndex(c => c.id === editingCallId);
+    if (idx === -1) return;
+
+    const updated = normalizeCall({
+      ...calls[idx],
+      startTime: finalStart.toISOString(),
+      endTime: finalEnd.toISOString(),
+      duration: durationMs,
+      rate: ratePerMin,
+      rateName: selectedRateName,
+      earnings
+    });
+
+    calls[idx] = updated;
+  } else {
+    calls.push(normalizeCall({
+      id: generateUUID(),
+      startTime: finalStart.toISOString(),
+      endTime: finalEnd.toISOString(),
+      duration: durationMs,
+      rate: ratePerMin,
+      rateName: selectedRateName,
+      earnings
+    }));
+  }
+
+  saveCalls();
+  closeCallModal();
+}
+
+    function editCall(callId) {
+  calls = readCallsFromStorage();
+  const callToEdit = calls.find(call => call.id === callId);
+  if (!callToEdit) return;
+
+  isEditingCall = true;
+  editingCallId = callId;
+
+  // Llenar inputs del modal con los valores guardados
+  callStartTimeInput.value = formatLocalDateTime(callToEdit.startTime);
+  callEndTimeInput.value = formatLocalDateTime(callToEdit.endTime);
+  const mins = Math.ceil((new Date(callToEdit.endTime) - new Date(callToEdit.startTime)) / (1000 * 60));
+callDurationMinutesInput.value = mins > 0 ? mins : '';
+
+  // Seleccionar la rate correcta
+  if (callToEdit.rateName) {
+    callRateSelect.value = callToEdit.rateName;
+  } else {
+    // fallback si no guardaste rateName antes
+    callRateSelect.value = rateSelect.value || callRateSelect.value;
+  }
+
+  // Cambiar título del modal (opcional)
+  document.getElementById('modal-title').innerHTML =
+    `<i class="fas fa-edit text-blue-500 mr-2"></i>Edit Call`;
+}
+
+    function deleteCall(callId) {
+    if (confirm("Are you sure you want to delete this call entry?")) {
+        calls = readCallsFromStorage();
+        calls = calls.filter(call => call.id !== callId);
         saveCalls();
-        closeCallModal();
-        callForm.reset();
-        showToast('Call saved!');
     }
-
-    function editCallById(callId) {
-        const call = calls.find(c => c.id === callId);
-        if (!call) {
-            console.error('Call not found with ID:', callId);
-            return;
-        }
-        isEditingCall = true;
-        editingCallId = callId;
-        document.getElementById('modal-title').textContent = 'Edit Call';
-        callStartTimeInput.value = formatLocalDateTime(call.startTime);
-        callEndTimeInput.value = formatLocalDateTime(call.endTime);
-        callRateSelect.value = call.rateName;
-        openCallModal();
-    }
-
-    function deleteCallById(callId) {
-        if (confirm('Are you sure you want to delete this call entry?')) {
-            const index = calls.findIndex(c => c.id === callId);
-            if (index > -1) {
-                calls.splice(index, 1);
-                saveCalls();
-            }
-        }
-    }
+}
 
     // Call modal functions
     function openCallModal() {
@@ -1738,6 +1951,7 @@
         isEditingCall = false;
         editingCallId = null;
         callForm.reset();
+        callDurationMinutesInput.value = '';
     }
 
     // Live call functions
@@ -1757,12 +1971,16 @@
         endCallBtn.style.display = 'block';
         liveCallInfo.classList.add('active-call-pulse');
 
+        saveActiveCallState();
+
         liveCallTimerId = setInterval(() => {
             const elapsed = Date.now() - liveCallStart;
             liveCallTimerDisplay.textContent = formatTime(elapsed);
             const earned = calculateEarnings(elapsed, currentCallRate);
             liveCallEarningsDisplay.textContent = formatEarnings(earned);
         }, 1000);
+
+        saveActiveCallState();
     }
 
     function endLiveCall() {
@@ -1772,15 +1990,16 @@
         const endTime = Date.now();
         const elapsed = endTime - liveCallStart;
         const earned = calculateEarnings(elapsed, currentCallRate);
-        const callData = {
-            id: generateUUID(),
-            startTime: new Date(liveCallStart).toISOString(),
-            endTime: new Date(endTime).toISOString(),
-            duration: elapsed,
-            rateName: rateSelect.value,
-            earned: earned
-        };
-        calls.push(callData);
+        const callData = normalizeCall({
+  id: generateUUID(),
+  startTime: new Date(liveCallStart).toISOString(),
+  endTime: new Date(endTime).toISOString(),
+  duration: elapsed,
+  rate: currentCallRate,
+  rateName: rateSelect.value,
+  earnings: Number(earned.toFixed(2))
+});
+calls.push(callData);
         saveCalls();
         liveCallInfo.style.display = 'none';
         startCallBtn.style.display = 'block';
@@ -1791,6 +2010,7 @@
         liveCallStart = null;
         currentCallRate = null;
         showToast('Live call saved!');
+        clearActiveCallState();
     }
 
     // Settings modal functions
@@ -2041,25 +2261,143 @@
     document.addEventListener('DOMContentLoaded', () => {
         startCallBtn.addEventListener('click', startLiveCall);
         endCallBtn.addEventListener('click', endLiveCall);
-        addCallBtn.addEventListener('click', openCallModal);
-        
-        closeModalBtn.addEventListener('click', closeCallModal);
-        cancelCallBtn.addEventListener('click', closeCallModal);
-        callForm.addEventListener('submit', handleCallFormSubmit);
-        window.addEventListener('click', (e) => {
-            if (e.target === callModal) {
-                closeCallModal();
-            }
-            if (e.target === settingsModal) {
-                closeSettingsModal();
-            }
-            if (e.target === editCycleModal) {
-                closeEditCycleModal();
-            }
-            if (e.target === feedbackModal) {
-                closeFeedbackModal();
-            }
-        });
+        addCallBtn.addEventListener('click', () => {
+        callModal.addEventListener('click', (e) => {
+  if (e.target === callModal) closeCallModal();
+});
+  // modo "Add"
+  isEditingCall = false;
+  editingCallId = null;
+
+  document.getElementById('modal-title').innerHTML =
+    `<i class="fas fa-plus text-blue-500 mr-2"></i>Add Call`;
+
+  openCallModal();
+});
+
+// ✅ X (cerrar)
+closeModalBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  closeCallModal();
+});
+
+// ✅ Cancel (cerrar)
+cancelCallBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  closeCallModal();
+});
+
+// ✅ Save (evita refresh + actualiza en vivo porque tu handleCallFormSubmit ya llama saveCalls())
+callForm.addEventListener('submit', handleCallFormSubmit);
+
+        // v1.0.5 Prevent accidental close when a live call is active
+window.addEventListener('beforeunload', (e) => {
+  if (liveCallStart) {
+    saveActiveCallState();
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+// v1.0.5: Recover unfinished live call (if any)
+(function handleActiveCallRecovery() {
+  const state = readActiveCallState();
+  if (!state) return;
+
+  const elapsed = Math.max(0, Date.now() - state.start);
+
+  recoveryRateName.textContent = state.rateName || '(unknown)';
+  recoveryElapsed.textContent = msToHMS(elapsed);
+
+  recoveryModal.style.display = 'flex';
+
+  function closeRecovery() {
+    recoveryModal.style.display = 'none';
+  }
+
+  recoveryResumeBtn.onclick = () => {
+    if (state.rateName && rates.some(r => r.name === state.rateName)) {
+      rateSelect.value = state.rateName;
+      saveLastSelectedRate();
+    }
+
+    liveCallStart = state.start;
+    currentCallRate = Number(state.rate) || getSelectedRateAmount();
+
+    liveCallInfo.style.display = 'block';
+    startCallBtn.style.display = 'none';
+    endCallBtn.style.display = 'block';
+    liveCallInfo.classList.add('active-call-pulse');
+
+    if (liveCallTimerId) clearInterval(liveCallTimerId);
+
+    liveCallTimerId = setInterval(() => {
+      const elapsedNow = Date.now() - liveCallStart;
+      liveCallTimerDisplay.textContent = formatTime(elapsedNow);
+      const earned = calculateEarnings(elapsedNow, currentCallRate);
+      liveCallEarningsDisplay.textContent = formatEarnings(earned);
+      saveActiveCallState();
+    }, 1000);
+
+    saveActiveCallState();
+    closeRecovery();
+    showToast('Live call resumed.');
+  };
+
+  recoverySummarizeBtn.onclick = () => {
+    const endTime = Date.now();
+    const elapsedMs = Math.max(0, endTime - state.start);
+
+    const rateName = state.rateName || rateSelect.value || null;
+    const ratePerMin = Number(state.rate) ||
+      (rateName ? (rates.find(r => r.name === rateName)?.amount || 0) : 0);
+
+    const earned = calculateEarnings(elapsedMs, ratePerMin);
+
+    const callData = normalizeCall({
+      id: generateUUID(),
+      startTime: new Date(state.start).toISOString(),
+      endTime: new Date(endTime).toISOString(),
+      duration: elapsedMs,
+      rate: ratePerMin,
+      rateName: rateName,
+      earnings: Number(earned.toFixed(2))
+    });
+
+    calls = readCallsFromStorage();
+    calls.push(callData);
+    saveCalls();
+
+    clearActiveCallState();
+    closeRecovery();
+    showToast('Unfinished call summarized and saved.');
+  };
+
+  recoveryDiscardBtn.onclick = () => {
+    clearActiveCallState();
+    closeRecovery();
+    showToast('Unfinished call discarded.');
+  };
+})();
+
+        function syncTimesFromMinutes() {
+  const minsMs = minutesToMs(callDurationMinutesInput.value);
+  if (!minsMs) return;
+
+  const start = parseOptionalDate(callStartTimeInput.value);
+  const end = parseOptionalDate(callEndTimeInput.value);
+
+  if (start && !end) {
+    const computedEnd = new Date(start.getTime() + minsMs);
+    callEndTimeInput.value = formatLocalDateTime(computedEnd.toISOString());
+  } else if (!start && end) {
+    const computedStart = new Date(end.getTime() - minsMs);
+    callStartTimeInput.value = formatLocalDateTime(computedStart.toISOString());
+  }
+}
+
+callDurationMinutesInput.addEventListener('input', syncTimesFromMinutes);
+callStartTimeInput.addEventListener('input', syncTimesFromMinutes);
+callEndTimeInput.addEventListener('input', syncTimesFromMinutes);
         
         showAddCycleBtn.addEventListener('click', addPaymentCycle);
         closeEditCycleModalBtn.addEventListener('click', closeEditCycleModal);
@@ -2111,30 +2449,64 @@
         });
 
         goalForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const amount = parseFloat(goalAmountInput.value) || 0;
-            const minutes = parseInt(goalMinutesInput.value, 10) || 0;
-            const selectedRateAmount = getSelectedRateAmount();
-            
-            // If minutes goal is set, calculate equivalent earnings
-            if (minutes > 0 && selectedRateAmount > 0) {
-                dailyGoal.minutes = minutes;
-                dailyGoal.amount = minutes * selectedRateAmount;
-            } else if (amount > 0 && selectedRateAmount > 0) {
-                // If amount goal is set, calculate equivalent minutes
-                dailyGoal.amount = amount;
-                dailyGoal.minutes = Math.ceil(amount / selectedRateAmount);
-            } else {
-                dailyGoal.amount = amount;
-                dailyGoal.minutes = minutes;
-            }
-            
-            saveDailyGoal();
-            goalAmountInput.blur();
-            goalMinutesInput.blur();
-            syncDailyGoalInputs();
-            showToast('Daily goal saved!');
-        });
+
+    e.preventDefault();
+
+    syncGoalFields(lastGoalEditedField);
+
+    saveDailyGoal();
+
+    syncDailyGoalInputs();
+
+    showToast('Daily goal saved!');
+
+});
+
+function syncGoalFields(fromField) {
+  const selectedRateAmount = getSelectedRateAmount();
+
+  let amount = parseFloat(goalAmountInput.value) || 0;
+  let minutes = parseInt(goalMinutesInput.value, 10) || 0;
+
+  if (selectedRateAmount > 0) {
+    if (fromField === 'amount' && amount > 0) {
+      minutes = Math.ceil(amount / selectedRateAmount);
+      goalMinutesInput.value = minutes;
+    } else if (fromField === 'minutes' && minutes > 0) {
+      amount = Number((minutes * selectedRateAmount).toFixed(2));
+      goalAmountInput.value = amount;
+    }
+  }
+
+  dailyGoal.amount = amount;
+  dailyGoal.minutes = minutes;
+}
+
+let lastGoalEditedField = 'amount';
+
+goalAmountInput.addEventListener('input', () => {
+
+    lastGoalEditedField = 'amount';
+
+    syncGoalFields('amount');
+
+    saveDailyGoal();
+
+    syncDailyGoalInputs();
+
+});
+
+goalMinutesInput.addEventListener('input', () => {
+
+    lastGoalEditedField = 'minutes';
+
+    syncGoalFields('minutes');
+
+    saveDailyGoal();
+
+    syncDailyGoalInputs();
+
+});
         
         statsDatePicker.addEventListener('change', () => {
             callLogFilter = 'date';
@@ -2206,9 +2578,9 @@
                     if (confirm('Importing data will overwrite your current data. Are you sure?')) {
                         calls = importedData.calls || [];
                         calls = calls.map(call => ({
-                            ...call,
-                            id: call.id || generateUUID()
-                        }));
+  ...call,
+  id: call.id || generateUUID()
+}));
                         rates = importedData.rates || [];
                         dailyGoal = normalizeDailyGoal(importedData.dailyGoal);
                         paymentCyclesEnabled = importedData.paymentCyclesEnabled || false;
