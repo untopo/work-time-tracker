@@ -28,7 +28,7 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 ## 📸 Screenshots
 
 
-> Replace the image paths below after adding screenshots to `/assets/images/`
+> Add screenshots inside `/assets/images/` to display here.
 
 
 ### Dashboard
@@ -85,7 +85,7 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 
 ### 🆕 Versioning & Updates
 - Semantic Versioning (MAJOR.MINOR.PATCH)
-- Built-in **What’s New (Changelog) modal**
+- Built-in **What’s New (Changelog)** modal
 - Recovery for unfinished live calls
 
 
@@ -103,11 +103,12 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/untopo/work-time-tracker.git
-
+```
 Open index.html in your browser.
 
 No build process required.
 
+```
 📦 Project Structure
 /
 ├── index.html
@@ -119,6 +120,8 @@ No build process required.
 │   └── images/
 ├── README.md
 └── .nojekyll
+```
+
 🔁 Backup & Restore
 
 Export:
