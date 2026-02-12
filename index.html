@@ -1078,6 +1078,31 @@
     </div>
 </div>
 
+<!-- What's New (Changelog) Modal -->
+<div id="changelog-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+  <div class="modal p-6 max-w-2xl w-full relative">
+    <button id="close-changelog-modal" type="button"
+      class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+      <i class="fas fa-times"></i>
+    </button>
+
+    <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
+      <i class="fas fa-bullhorn text-purple-500 mr-2"></i>What’s New (Changelog)
+    </h2>
+
+    <div id="changelog-content" class="max-h-[60vh] overflow-y-auto pr-2">
+      <!-- render aquí -->
+    </div>
+
+    <div class="mt-5 flex justify-end">
+      <button id="close-changelog-btn" type="button"
+        class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-4 py-2 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
 <footer class="mt-10 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200">
     <div class="container mx-auto px-6 py-8 text-center">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-10 items-start">
@@ -1118,7 +1143,10 @@
             </div>
             <div class="text-center">
                 <h3 class="text-sm text-gray-600 dark:text-gray-500">Version</h3>
-                <p class="mt-2 text-sm font-mono text-gray-700 dark:text-gray-400">v<span id="app-version"></span></p>
+                <button id="open-changelog"
+  class="mt-2 text-sm font-mono text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition underline underline-offset-4">
+  v<span id="app-version"></span>
+</button>
             </div>
         </div>
     </div>
@@ -1137,6 +1165,73 @@
         { version: '1.0.1', date: '2026-01-15', changes: ['Added timezone selector', 'Added Contact Us button', 'Added donate button', 'Performance optimizations'] },
         { version: '1.0.0', date: '2026-01-01', changes: ['Initial release'] }
     ];
+
+// ============================================
+// WHAT'S NEW (CHANGELOG) MODAL
+// ============================================
+const changelogModal = document.getElementById('changelog-modal');
+const changelogContent = document.getElementById('changelog-content');
+const closeChangelogModalBtn = document.getElementById('close-changelog-modal');
+const closeChangelogBtn = document.getElementById('close-changelog-btn');
+
+function escapeHTML(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function renderChangelog() {
+  if (!Array.isArray(CHANGELOG) || CHANGELOG.length === 0) {
+    changelogContent.innerHTML = `<p class="text-sm text-gray-600 dark:text-gray-300">No changelog available.</p>`;
+    return;
+  }
+
+  // Más nuevo arriba (ya lo tienes así, pero lo reforzamos)
+  const sorted = [...CHANGELOG].sort((a, b) => {
+    // Si hay fecha válida, ordena por fecha, si no por versión
+    const da = Date.parse(a.date || '');
+    const db = Date.parse(b.date || '');
+    if (Number.isFinite(da) && Number.isFinite(db)) return db - da;
+    return String(b.version).localeCompare(String(a.version), undefined, { numeric: true });
+  });
+
+  changelogContent.innerHTML = sorted.map(entry => {
+    const version = escapeHTML(entry.version || '');
+    const date = escapeHTML(entry.date || '');
+    const changes = Array.isArray(entry.changes) ? entry.changes : [];
+
+    const changesHTML = changes.length
+      ? `<ul class="list-disc pl-6 mt-2 space-y-1 text-sm text-gray-700 dark:text-gray-200">
+          ${changes.map(c => `<li>${escapeHTML(c)}</li>`).join('')}
+        </ul>`
+      : `<p class="text-sm text-gray-600 dark:text-gray-300 mt-2">No notes.</p>`;
+
+    return `
+      <div class="mb-5 pb-5 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-baseline justify-between gap-3 flex-wrap">
+          <div class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            v${version}
+            ${version === APP_VERSION ? `<span class="ml-2 text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">Current</span>` : ''}
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">${date}</div>
+        </div>
+        ${changesHTML}
+      </div>
+    `;
+  }).join('');
+}
+
+function openChangelogModal() {
+  renderChangelog();
+  changelogModal.style.display = 'flex';
+}
+
+function closeChangelogModal() {
+  changelogModal.style.display = 'none';
+}
 
     // ============================================
     // UTILITY FUNCTIONS
@@ -2290,6 +2385,26 @@ cancelCallBtn.addEventListener('click', (e) => {
 // ✅ Save (evita refresh + actualiza en vivo porque tu handleCallFormSubmit ya llama saveCalls())
 callForm.addEventListener('submit', handleCallFormSubmit);
 
+// Open/Close What's New (Changelog)
+const openChangelogBtn = document.getElementById('open-changelog');
+
+if (openChangelogBtn) {
+  openChangelogBtn.addEventListener('click', openChangelogModal);
+}
+
+if (closeChangelogModalBtn) {
+  closeChangelogModalBtn.addEventListener('click', closeChangelogModal);
+}
+
+if (closeChangelogBtn) {
+  closeChangelogBtn.addEventListener('click', closeChangelogModal);
+}
+
+// Click outside to close
+window.addEventListener('click', (e) => {
+  if (e.target === changelogModal) closeChangelogModal();
+});
+
         // v1.0.5 Prevent accidental close when a live call is active
 window.addEventListener('beforeunload', (e) => {
   if (liveCallStart) {
@@ -2648,6 +2763,9 @@ goalMinutesInput.addEventListener('input', () => {
                 if (feedbackModal.style.display === 'flex') {
                     closeFeedbackModal();
                 }
+                if (changelogModal && changelogModal.style.display === 'flex') {
+  closeChangelogModal();
+}
             }
         }
         
