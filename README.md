@@ -1,7 +1,7 @@
 # Work Time Tracker
 
 
-![Version](https://img.shields.io/badge/version-1.0.5-blue)
+![Version](https://img.shields.io/badge/version-1.0.8-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![No Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Vanilla JS](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -28,9 +28,6 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 ## 📸 Screenshots
 
 
-> Add screenshots inside `/assets/images/` to display here.
-
-
 ### Dashboard
 ![Dashboard Screenshot](assets/images/dashboard.png)
 
@@ -39,7 +36,7 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 ![Call Log Screenshot](assets/images/call-log.png)
 
 
-### What’s New Modal
+### What's New Modal
 ![Changelog Screenshot](assets/images/changelog.png)
 
 
@@ -55,13 +52,14 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 - Editable call log
 - Multiple billing rates
 - Smart filtering (Today / Week / Month / Custom)
+- Optional call notes (volatile, never stored)
 
 
 ### 📊 Earnings & Stats
 - Daily earnings overview
 - Average call duration
 - Monthly split (1st / 2nd half)
-- Optional Payment Cycles
+- Optional Payment Cycles with cycle tracking
 
 
 ### 🎯 Goal System
@@ -77,15 +75,16 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 - Full reset options
 
 
-### 🎨 Customization
+### ⚙️ Customization & Settings
 - Dark / Light mode
 - Time zone selection
+- Feature toggles (Notes, Payment Cycles)
 - Fully responsive design
 
 
 ### 🆕 Versioning & Updates
 - Semantic Versioning (MAJOR.MINOR.PATCH)
-- Built-in **What’s New (Changelog)** modal
+- Built-in **What's New (Changelog)** modal
 - Recovery for unfinished live calls
 
 
@@ -125,10 +124,10 @@ No build process required.
 🔁 Backup & Restore
 
 Export:
-Settings → Export Data
+Settings → Data Management → Export Data
 
 Import:
-Settings → Import Data
+Settings → Data Management → Import Data
 
 All data stays in your browser.
 
@@ -139,6 +138,7 @@ All data stays in your browser.
 ✅ No analytics
 ✅ No cloud storage
 ✅ No external database
+✅ Call notes are volatile (never persisted)
 
 Data is stored locally using browser localStorage.
 
@@ -154,6 +154,8 @@ GitHub Pages compatible
 
 Modular structure ready for scaling
 
+Feature flags system for progressive feature rollout
+
 💡 Pro Tips
 
 Use emojis in rate names for quick visual grouping
@@ -161,6 +163,8 @@ Use emojis in rate names for quick visual grouping
 Backup weekly if income tracking is critical
 
 Use payment cycles if paid bi-weekly/monthly
+
+Enable call notes from Settings → Features for quick reference (notes are not saved)
 
 Click the version badge in the footer to see patch notes
 
@@ -182,5 +186,5 @@ Built for interpreters by interpreters.
 
 Made by [Topo](https://www.instagram.com/otpo/)
 
-Current Version: v1.0.5
+Current Version: v1.0.8
 Last Updated: February 2026
