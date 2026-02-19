@@ -2,8 +2,10 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.0.6';
+    const APP_VERSION = '1.0.8';
     const CHANGELOG = [
+        { version: '1.0.8', date: '2026-02-19', changes: ['Fix: Initialization ordering and DOM null-checks to prevent startup errors', 'Fix: Preserve and backup Payment Cycles to avoid accidental data loss', 'Fix: Prevent overwriting stored payment cycles with empty arrays', 'Fix: Various syntax and runtime errors found during debugging', 'Privacy: Notes UI is now volatile (not persisted) and removed from exports by default'] },
+        { version: '1.0.7', date: '2026-02-19', changes: ['Added: Notes UI when starting a live call and in call form (no persistent storage)', 'Added: Notes column to Call Log (UI-only)', 'Improved: Date filtering ranges now use explicit end bounds'] },
         { version: '1.0.6', date: '2026-02-12', changes: ['Added: Previous/Next day arrows next to stats date picker', 'Added: Arrow navigation now switches to Custom Date view automatically', 'Added: Next-day navigation is blocked for future dates'] },
         { version: '1.0.5', date: '2026-02-12', changes: ['Fixed: Footer version now always matches APP_VERSION', 'Fixed: Contact form email is now optional (no longer required)','Chore: Simplified dailyGoal storage to a single source of truth', 'Chore: Added legacy fallback read for old dailyGoal keys', 'Fixed: Call modal can now be closed via X and Cancel (no longer stuck)','Fixed: Saving a call no longer refreshes the page (form submit prevented)', 'Improved: Call edits/additions now update UI instantly without full page reload','Improved: Add Call now always opens in clean “Add” mode (resets editing state)'] },
         { version: '1.0.4', date: '2026-02-12', changes: [ 'Fixed: Daily Goal now syncs bidirectionally between USD and Minutes', 'Fixed: Daily Goal persistence stores both USD and Minutes correctly', 'Improved: Goal calculation now updates instantly on input change' ] },
@@ -109,6 +111,7 @@ function minutesToMs(mins) {
     const liveCallInfo = document.getElementById('live-call-info');
     const liveCallTimerDisplay = document.getElementById('live-call-timer');
     const liveCallEarningsDisplay = document.getElementById('live-call-earnings');
+    const liveCallNotesInput = document.getElementById('live-call-notes');
     const callLogTableBody = document.getElementById('call-log');
     const totalMinutesDisplay = document.getElementById('total-minutes');
     const totalEarningsDisplay = document.getElementById('total-earnings');
@@ -123,6 +126,7 @@ function minutesToMs(mins) {
     const callEndTimeInput = document.getElementById('call-end-time');
     const callRateSelect = document.getElementById('call-rate');
     const callDurationMinutesInput = document.getElementById('call-duration-minutes');
+    const callNotesInput = document.getElementById('call-notes');
     const darkToggleBtn = document.getElementById('dark-toggle');
     const showRateAddBtn = document.getElementById('show-rate-add');
     const rateForm = document.getElementById('rate-form');
@@ -154,6 +158,7 @@ function minutesToMs(mins) {
     const paymentCyclesToggle = document.getElementById('payment-cycles-toggle');
     const paymentCyclesConfig = document.getElementById('payment-cycles-config');
     const paymentCyclesList = document.getElementById('payment-cycles-list');
+    const paymentCyclesSection = document.getElementById('payment-cycles-section');
     const showAddCycleBtn = document.getElementById('show-add-cycle-btn');
     const cycleEarningsDisplay = document.getElementById('cycle-earnings');
     const cycleStartDateDisplay = document.getElementById('cycle-start-date');
@@ -182,10 +187,71 @@ function minutesToMs(mins) {
     const filterWeekBtn = document.getElementById('filter-week');
     const filterMonthBtn = document.getElementById('filter-month');
 
+// Feature toggles (optional features section)
+const featureNotesToggle = document.getElementById('feature-notes-toggle');
+const featurePaymentCyclesToggle = document.getElementById('feature-payment-cycles-toggle');
+
+function loadFeatureFlags() {
+    try {
+        const raw = localStorage.getItem('featureFlags');
+        if (!raw) return { notes: true, paymentCycles: paymentCyclesEnabled };
+        const parsed = JSON.parse(raw);
+        return {
+            notes: typeof parsed.notes === 'boolean' ? parsed.notes : true,
+            paymentCycles: typeof parsed.paymentCycles === 'boolean' ? parsed.paymentCycles : paymentCyclesEnabled
+        };
+    } catch (e) {
+        return { notes: true, paymentCycles: paymentCyclesEnabled };
+    }
+}
+
+function saveFeatureFlags(flags) {
+    try {
+        localStorage.setItem('featureFlags', JSON.stringify(flags));
+    } catch (e) {
+        console.warn('Could not save feature flags', e);
+    }
+}
+
+function applyFeatureFlags(flags) {
+    // Notes feature
+    const notesEnabled = !!flags.notes;
+    if (liveCallNotesInput) liveCallNotesInput.style.display = notesEnabled ? '' : 'none';
+    if (callNotesInput) callNotesInput.style.display = notesEnabled ? '' : 'none';
+    // hide associated label for modal notes
+    const callNotesLabel = document.querySelector('label[for="call-notes"]');
+    if (callNotesLabel) callNotesLabel.style.display = notesEnabled ? '' : 'none';
+    // toggle notes column cells and header
+    document.querySelectorAll('.notes-column').forEach(el => el.style.display = notesEnabled ? '' : 'none');
+
+    // Payment cycles feature
+    const pcEnabled = !!flags.paymentCycles;
+    // update runtime flag
+    paymentCyclesEnabled = pcEnabled;
+    // show/hide entire section (header + config)
+    if (paymentCyclesSection) {
+        paymentCyclesSection.style.display = pcEnabled ? '' : 'none';
+    }
+    // show/hide config (kept for backward compatibility)
+    if (paymentCyclesConfig) {
+        if (pcEnabled) paymentCyclesConfig.classList.remove('hidden'); else paymentCyclesConfig.classList.add('hidden');
+    }
+    // keep main paymentCyclesToggle in sync if it exists
+    if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
+        paymentCyclesToggle.checked = pcEnabled;
+    }
+}
+
+// initialize feature flags (will be applied on DOMContentLoaded too)
+// don't call loadFeatureFlags() at module-eval time because it may
+// reference `paymentCyclesEnabled` which is initialized later.
+let featureFlags = { notes: true, paymentCycles: false };
+
     // Recovery modal (v1.0.5)
 const recoveryModal = document.getElementById('recovery-modal');
 const recoveryRateName = document.getElementById('recovery-rate-name');
 const recoveryElapsed = document.getElementById('recovery-elapsed');
+const recoveryNotes = document.getElementById('recovery-notes');
 const recoveryResumeBtn = document.getElementById('recovery-resume-btn');
 const recoverySummarizeBtn = document.getElementById('recovery-summarize-btn');
 const recoveryDiscardBtn = document.getElementById('recovery-discard-btn');
@@ -205,7 +271,36 @@ if (storedDailyGoal) {
   dailyGoal = { amount: legacyAmount, minutes: legacyMinutes };
 }
         paymentCyclesEnabled = JSON.parse(localStorage.getItem('paymentCyclesEnabled')) || false;
-        paymentCycles = JSON.parse(localStorage.getItem('paymentCycles')) || [];
+        // Load payment cycles safely, prefer primary key but fallback to backup if primary is missing or corrupt
+        (function() {
+            try {
+                const raw = localStorage.getItem('paymentCycles');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed)) {
+                        paymentCycles = parsed;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to parse paymentCycles from storage, will try backup.', e);
+            }
+            // try backup key
+            try {
+                const bak = localStorage.getItem('paymentCycles_backup');
+                if (bak) {
+                    const parsedBak = JSON.parse(bak);
+                    if (Array.isArray(parsedBak)) {
+                        paymentCycles = parsedBak;
+                        console.info('Restored paymentCycles from backup.');
+                        return;
+                    }
+                }
+            } catch (e2) {
+                console.warn('Failed to parse paymentCycles backup.', e2);
+            }
+            paymentCycles = [];
+        })();
         lastSelectedRate = localStorage.getItem('lastSelectedRate') || null;
 
         // Migration: Add IDs to existing calls that don't have them
@@ -321,13 +416,22 @@ function msToHMS(ms) {
 function normalizeCall(call) {
   const start = call.startTime ? new Date(call.startTime) : new Date();
 
-  
-
-  // Si duration viene en ms (común) o en segundos, lo normalizamos a ms
+  // Si duration viene de usuario puede ser segundos (menor a 24h) o milisegundos.
+  // Tratamos cualquier número finito; asumimos que valores menores a un día están en segundos,
+  // los demás ya están en ms. Esta heurística evita resultados incorrectos cuando
+  // alguien guarda una sesión muy larga (>24h).
   const rawDuration = Number(call.duration ?? 0);
-  const durationMs = Number.isFinite(rawDuration)
-    ? (rawDuration > 24 * 60 * 60 ? Math.round(rawDuration) : Math.round(rawDuration * 1000))
-    : 0;
+  let durationMs = 0;
+  if (Number.isFinite(rawDuration) && rawDuration > 0) {
+    const oneDaySeconds = 24 * 60 * 60;
+    // si es menor que un día en segundos, lo convertimos a ms
+    if (rawDuration < oneDaySeconds) {
+      durationMs = Math.round(rawDuration * 1000);
+    } else {
+      // de lo contrario asumimos que ya viene en ms
+      durationMs = Math.round(rawDuration);
+    }
+  }
 
   const end = call.endTime
     ? new Date(call.endTime)
@@ -343,7 +447,7 @@ function normalizeCall(call) {
     endTime: end.toISOString(),
     duration: Math.max(0, end - start), // ms
     rate,
-    earnings
+    earnings,
   };
 
   normalized.earned = normalized.earnings; // compat
@@ -392,7 +496,25 @@ function readCallsFromStorage() {
 
     function savePaymentCycles() {
         localStorage.setItem('paymentCyclesEnabled', JSON.stringify(paymentCyclesEnabled));
-        localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+        try {
+            const prevRaw = localStorage.getItem('paymentCycles');
+            if (prevRaw !== null) {
+                // keep a backup before overwriting
+                localStorage.setItem('paymentCycles_backup', prevRaw);
+            }
+            let prevParsed = null;
+            try { prevParsed = prevRaw ? JSON.parse(prevRaw) : null; } catch {}
+            // If we're about to save an empty array but a non-empty array exists in storage,
+            // avoid overwriting it unintentionally. This preserves existing user data.
+            if (Array.isArray(prevParsed) && prevParsed.length > 0 && (!Array.isArray(paymentCycles) || paymentCycles.length === 0)) {
+                console.info('Preserving existing stored paymentCycles (not overwriting with empty).');
+            } else {
+                localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+            }
+        } catch (e) {
+            console.warn('Failed to safely save paymentCycles, attempting direct write.', e);
+            try { localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles)); } catch (e2) { console.error(e2); }
+        }
         renderPaymentCycles();
         updateStatistics();
     }
@@ -551,7 +673,9 @@ function readCallsFromStorage() {
     // Time zone helpers
     function getUserTimeZone() {
         const tz = localStorage.getItem('timeZone');
-        return tz && tz.length > 0 ? tz : undefined;
+        if (tz && tz.length > 0) return tz;
+        // fallback explícito al valor del navegador para evitar pasar undefined a Intl
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
     function setUserTimeZone(tz) {
@@ -741,20 +865,39 @@ function readCallsFromStorage() {
 
         if (callLogFilter === 'today') {
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= todayStart);
+            const tomorrowStart = new Date(todayStart);
+            tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+            filteredCalls = calls.filter(call => {
+                const t = new Date(call.startTime);
+                return t >= todayStart && t < tomorrowStart;
+            });
         } else if (callLogFilter === 'week') {
             const weekStart = new Date(now);
             weekStart.setDate(now.getDate() - now.getDay());
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= weekStart);
+            const nextWeek = new Date(weekStart);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            filteredCalls = calls.filter(call => {
+                const t = new Date(call.startTime);
+                return t >= weekStart && t < nextWeek;
+            });
         } else if (callLogFilter === 'month') {
             const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= monthStart);
+            const nextMonth = new Date(monthStart);
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            filteredCalls = calls.filter(call => {
+                const t = new Date(call.startTime);
+                return t >= monthStart && t < nextMonth;
+            });
         } else if (callLogFilter === 'date') {
             // Use parseDateInput to build a local-midnight Date (avoids UTC parsing issues)
             const selectedDate = parseDateInput(statsDatePicker.value) || new Date(statsDatePicker.value);
             const dateStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-            const dateEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
-            filteredCalls = calls.filter(call => new Date(call.startTime) >= dateStart && new Date(call.startTime) < dateEnd);
+            const dateEnd = new Date(dateStart);
+            dateEnd.setDate(dateEnd.getDate() + 1);
+            filteredCalls = calls.filter(call => {
+                const t = new Date(call.startTime);
+                return t >= dateStart && t < dateEnd;
+            });
         }
 
         if (filteredCalls.length === 0) {
@@ -774,18 +917,22 @@ function readCallsFromStorage() {
             const durationStr = formatTime(call.duration);
             const earningsStr = formatEarnings(call.earned);
 
+            const safeRateName = escapeHTML(call.rateName || '');
+            const safeId = escapeHTML(call.id || '');
+
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${startDisplay}</td>
-                <td>${endDisplay}</td>
+                <td>${escapeHTML(startDisplay)}</td>
+                <td>${escapeHTML(endDisplay)}</td>
                 <td>${durationStr}</td>
-                <td>${call.rateName}</td>
+                <td>${safeRateName}</td>
+                <td class="notes-column"></td>
                 <td>${earningsStr}</td>
                 <td>
-                    <button class="edit-call-btn" data-call-id="${call.id}">
+                    <button class="edit-call-btn" data-call-id="${safeId}">
   <i class="fas fa-edit"></i> Edit
 </button>
-                    <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${call.id}">
+                    <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -890,7 +1037,7 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
       duration: durationMs,
       rate: ratePerMin,
       rateName: selectedRateName,
-      earnings
+            earnings
     });
 
     calls[idx] = updated;
@@ -902,7 +1049,7 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
       duration: durationMs,
       rate: ratePerMin,
       rateName: selectedRateName,
-      earnings
+            earnings
     }));
   }
 
@@ -922,7 +1069,9 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
   callStartTimeInput.value = formatLocalDateTime(callToEdit.startTime);
   callEndTimeInput.value = formatLocalDateTime(callToEdit.endTime);
   const mins = Math.ceil((new Date(callToEdit.endTime) - new Date(callToEdit.startTime)) / (1000 * 60));
-callDurationMinutesInput.value = mins > 0 ? mins : '';
+    callDurationMinutesInput.value = mins > 0 ? mins : '';
+    // For privacy, saved calls do not contain notes. Clear notes input when editing.
+    if (callNotesInput) callNotesInput.value = '';
 
   // Seleccionar la rate correcta
   if (callToEdit.rateName) {
@@ -968,6 +1117,7 @@ callDurationMinutesInput.value = mins > 0 ? mins : '';
             clearInterval(liveCallTimerId);
         }
         liveCallStart = Date.now();
+        if (liveCallNotesInput) liveCallNotesInput.value = '';
         const selectedRate = rates.find(rate => rate.name === rateSelect.value);
         currentCallRate = selectedRate ? selectedRate.amount : 0;
         liveCallInfo.style.display = 'block';
@@ -1011,6 +1161,7 @@ calls.push(callData);
         liveCallInfo.classList.remove('active-call-pulse');
         liveCallTimerDisplay.textContent = '00:00:00';
         liveCallEarningsDisplay.textContent = '$0.00';
+        if (liveCallNotesInput) liveCallNotesInput.value = '';
         liveCallStart = null;
         currentCallRate = null;
         showToast('Live call saved!');
@@ -1041,15 +1192,33 @@ calls.push(callData);
 
     // Payment Cycle Management
     function renderPaymentCycles() {
-        paymentCyclesToggle.checked = paymentCyclesEnabled;
-        if (paymentCyclesEnabled) {
-            paymentCyclesConfig.classList.remove('hidden');
-        } else {
-            paymentCyclesConfig.classList.add('hidden');
+        if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
+            try { paymentCyclesToggle.checked = paymentCyclesEnabled; } catch (e) { /* ignore */ }
+        }
+        if (paymentCyclesConfig) {
+            if (paymentCyclesEnabled) {
+                paymentCyclesConfig.classList.remove('hidden');
+            } else {
+                paymentCyclesConfig.classList.add('hidden');
+            }
         }
 
+        if (!paymentCyclesList) return;
         paymentCyclesList.innerHTML = '';
-        if (paymentCycles.length === 0) {
+        // If paymentCycles array is empty in memory, try to read stored value (in case it wasn't loaded into memory)
+        if ((!Array.isArray(paymentCycles) || paymentCycles.length === 0)) {
+            try {
+                const raw = localStorage.getItem('paymentCycles');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length > 0) paymentCycles = parsed;
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        if (!Array.isArray(paymentCycles) || paymentCycles.length === 0) {
             paymentCyclesList.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">No cycles configured.</td></tr>`;
             return;
         }
@@ -1265,6 +1434,7 @@ calls.push(callData);
 
     // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
+        try {
         startCallBtn.addEventListener('click', startLiveCall);
         endCallBtn.addEventListener('click', endLiveCall);
         addCallBtn.addEventListener('click', () => {
@@ -1296,36 +1466,129 @@ cancelCallBtn.addEventListener('click', (e) => {
 // ✅ Save (evita refresh + actualiza en vivo porque tu handleCallFormSubmit ya llama saveCalls())
 callForm.addEventListener('submit', handleCallFormSubmit);
 
-// Open/Close What's New (Changelog)
-const openChangelogBtn = document.getElementById('open-changelog');
+        // Restore saved textarea heights for notes (persist across refreshes)
+        try {
+            const savedHeightLive = localStorage.getItem('liveCallNotesHeight');
+            if (savedHeightLive && liveCallNotesInput) {
+                liveCallNotesInput.style.height = savedHeightLive;
+            }
 
-if (openChangelogBtn) {
-  openChangelogBtn.addEventListener('click', openChangelogModal);
-}
+            const savedHeightModal = localStorage.getItem('callNotesHeight');
+            if (savedHeightModal && callNotesInput) {
+                callNotesInput.style.height = savedHeightModal;
+            }
 
-if (closeChangelogModalBtn) {
-  closeChangelogModalBtn.addEventListener('click', closeChangelogModal);
-}
+            // Use ResizeObserver when available to detect manual resize and persist
+            if (window.ResizeObserver) {
+                const ro = new ResizeObserver(entries => {
+                    for (const entry of entries) {
+                        if (!entry.target) continue;
+                        const el = entry.target;
+                        try {
+                            if (el.id === 'live-call-notes') localStorage.setItem('liveCallNotesHeight', el.style.height || (el.clientHeight + 'px'));
+                            if (el.id === 'call-notes') localStorage.setItem('callNotesHeight', el.style.height || (el.clientHeight + 'px'));
+                        } catch (e) {
+                            // ignore storage errors
+                        }
+                    }
+                });
+                if (liveCallNotesInput) ro.observe(liveCallNotesInput);
+                if (callNotesInput) ro.observe(callNotesInput);
+            } else {
+                // Fallback: save height on blur
+                if (liveCallNotesInput) liveCallNotesInput.addEventListener('blur', () => {
+                    try { localStorage.setItem('liveCallNotesHeight', liveCallNotesInput.style.height || (liveCallNotesInput.clientHeight + 'px')); } catch {}
+                });
+                if (callNotesInput) callNotesInput.addEventListener('blur', () => {
+                    try { localStorage.setItem('callNotesHeight', callNotesInput.style.height || (callNotesInput.clientHeight + 'px')); } catch {}
+                });
+            }
+        } catch (e) {
+            // ignore textarea height restoration
+        }
 
-if (closeChangelogBtn) {
-  closeChangelogBtn.addEventListener('click', closeChangelogModal);
-}
+        // Apply feature flags to show/hide optional UI
+        featureFlags = loadFeatureFlags();
+            // set toggle states in settings modal if present
+            if (featureNotesToggle) featureNotesToggle.checked = !!featureFlags.notes;
+            if (featurePaymentCyclesToggle) featurePaymentCyclesToggle.checked = !!featureFlags.paymentCycles;
+            // apply the flags immediately
+            applyFeatureFlags(featureFlags);
 
-// Click outside to close
-window.addEventListener('click', (e) => {
-  if (e.target === changelogModal) closeChangelogModal();
-});
+            // Wire toggle changes
+            if (featureNotesToggle) {
+                featureNotesToggle.addEventListener('change', (e) => {
+                    featureFlags.notes = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (featurePaymentCyclesToggle) {
+                featurePaymentCyclesToggle.addEventListener('change', (e) => {
+                    featureFlags.paymentCycles = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    // ensure the runtime flag follows this feature toggle
+                    paymentCyclesEnabled = !!e.target.checked;
+                    // Make sure we don't accidentally overwrite existing cycles data
+                    if (!Array.isArray(paymentCycles)) {
+                        try {
+                            const stored = JSON.parse(localStorage.getItem('paymentCycles'));
+                            paymentCycles = Array.isArray(stored) ? stored : [];
+                        } catch (ex) {
+                            paymentCycles = [];
+                        }
+                    }
+                    try { savePaymentCycles(); } catch (e2) {}
+                    // if the original paymentCyclesToggle exists keep it in sync and trigger its handler
+                    if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
+                        paymentCyclesToggle.checked = !!e.target.checked;
+                        paymentCyclesToggle.dispatchEvent(new Event('change'));
+                    }
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            // Keep feature flag in sync when user toggles the original paymentCyclesToggle
+            if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
+                paymentCyclesToggle.addEventListener('change', (e) => {
+                    featureFlags.paymentCycles = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    if (featurePaymentCyclesToggle) featurePaymentCyclesToggle.checked = !!e.target.checked;
+                });
+            }
+
+        // Open/Close What's New (Changelog)
+        const openChangelogBtn = document.getElementById('open-changelog');
+
+        if (openChangelogBtn) {
+            openChangelogBtn.addEventListener('click', openChangelogModal);
+        }
+
+        if (closeChangelogModalBtn) {
+            closeChangelogModalBtn.addEventListener('click', closeChangelogModal);
+        }
+
+        if (closeChangelogBtn) {
+            closeChangelogBtn.addEventListener('click', closeChangelogModal);
+        }
+
+        // Click outside to close
+        window.addEventListener('click', (e) => {
+            if (e.target === changelogModal) closeChangelogModal();
+        });
 
         // v1.0.5 Prevent accidental close when a live call is active
-window.addEventListener('beforeunload', (e) => {
-  if (liveCallStart) {
-    saveActiveCallState();
-    e.preventDefault();
-    e.returnValue = '';
-  }
-});
-// v1.0.5: Recover unfinished live call (if any)
-(function handleActiveCallRecovery() {
+        window.addEventListener('beforeunload', (e) => {
+            if (liveCallStart) {
+                saveActiveCallState();
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // v1.0.5: Recover unfinished live call (if any)
+        (function handleActiveCallRecovery() {
   const state = readActiveCallState();
   if (!state) return;
 
@@ -1333,6 +1596,7 @@ window.addEventListener('beforeunload', (e) => {
 
   recoveryRateName.textContent = state.rateName || '(unknown)';
   recoveryElapsed.textContent = msToHMS(elapsed);
+    if (typeof recoveryNotes !== 'undefined' && recoveryNotes) recoveryNotes.value = '';
 
   recoveryModal.style.display = 'flex';
 
@@ -1341,32 +1605,42 @@ window.addEventListener('beforeunload', (e) => {
   }
 
   recoveryResumeBtn.onclick = () => {
-    if (state.rateName && rates.some(r => r.name === state.rateName)) {
-      rateSelect.value = state.rateName;
-      saveLastSelectedRate();
-    }
+        // restore selected rate if available
+        if (state.rateName && rates.some(r => r.name === state.rateName)) {
+            rateSelect.value = state.rateName;
+            saveLastSelectedRate();
+        }
 
-    liveCallStart = state.start;
-    currentCallRate = Number(state.rate) || getSelectedRateAmount();
+        // restore runtime state
+        liveCallStart = state.start;
+        // restore notes: only use text entered in the recovery modal (do not persist previous notes)
+        const restoredNotes = (typeof recoveryNotes !== 'undefined' && recoveryNotes && recoveryNotes.value) ? recoveryNotes.value : '';
+        if (liveCallNotesInput) liveCallNotesInput.value = restoredNotes;
+        currentCallRate = Number(state.rate) || getSelectedRateAmount();
 
-    liveCallInfo.style.display = 'block';
-    startCallBtn.style.display = 'none';
-    endCallBtn.style.display = 'block';
-    liveCallInfo.classList.add('active-call-pulse');
+        // show live UI immediately
+        liveCallInfo.style.display = 'block';
+        startCallBtn.style.display = 'none';
+        endCallBtn.style.display = 'block';
+        liveCallInfo.classList.add('active-call-pulse');
 
-    if (liveCallTimerId) clearInterval(liveCallTimerId);
+        // update displays immediately (don't wait 1s)
+        const initialElapsed = Math.max(0, Date.now() - liveCallStart);
+        liveCallTimerDisplay.textContent = formatTime(initialElapsed);
+        liveCallEarningsDisplay.textContent = formatEarnings(calculateEarnings(initialElapsed, currentCallRate));
 
-    liveCallTimerId = setInterval(() => {
-      const elapsedNow = Date.now() - liveCallStart;
-      liveCallTimerDisplay.textContent = formatTime(elapsedNow);
-      const earned = calculateEarnings(elapsedNow, currentCallRate);
-      liveCallEarningsDisplay.textContent = formatEarnings(earned);
-      saveActiveCallState();
-    }, 1000);
+        if (liveCallTimerId) clearInterval(liveCallTimerId);
+        liveCallTimerId = setInterval(() => {
+            const elapsedNow = Date.now() - liveCallStart;
+            liveCallTimerDisplay.textContent = formatTime(elapsedNow);
+            const earned = calculateEarnings(elapsedNow, currentCallRate);
+            liveCallEarningsDisplay.textContent = formatEarnings(earned);
+            saveActiveCallState();
+        }, 1000);
 
-    saveActiveCallState();
-    closeRecovery();
-    showToast('Live call resumed.');
+        saveActiveCallState();
+        closeRecovery();
+        showToast('Live call resumed.');
   };
 
   recoverySummarizeBtn.onclick = () => {
@@ -1581,8 +1855,21 @@ goalMinutesInput.addEventListener('input', () => {
         }
         
         exportDataBtn.addEventListener('click', () => {
+            // Respect feature flags when exporting (e.g. strip notes if feature disabled)
+            const exportCalls = calls.map(c => ({ ...c }));
+            try {
+                const flags = loadFeatureFlags();
+                if (!flags.notes) {
+                    exportCalls.forEach(ec => { delete ec.notes; });
+                }
+                if (!flags.paymentCycles) {
+                    // hide payment cycle details when feature disabled
+                    // we'll still include the keys but mark disabled
+                }
+            } catch (e) {}
+
             const data = {
-                calls: calls,
+                calls: exportCalls,
                 rates: rates,
                 dailyGoal: dailyGoal,
                 paymentCyclesEnabled: paymentCyclesEnabled,
@@ -1663,10 +1950,12 @@ goalMinutesInput.addEventListener('input', () => {
             }
         });
         
-        paymentCyclesToggle.addEventListener('change', (e) => {
-            paymentCyclesEnabled = e.target.checked;
-            savePaymentCycles();
-        });
+        if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
+            paymentCyclesToggle.addEventListener('change', (e) => {
+                paymentCyclesEnabled = e.target.checked;
+                savePaymentCycles();
+            });
+        }
 
         function handleModalKeyboard(e) {
             if (e.key === 'Escape') {
@@ -1735,4 +2024,26 @@ goalMinutesInput.addEventListener('input', () => {
             updateCallLogFilterButtons();
         });
         updateCallLogFilterButtons();
+        } catch (err) {
+            console.error('Initialization error', err);
+            try {
+                // show a visible alert in the page so it's obvious
+                const div = document.createElement('div');
+                div.style.position = 'fixed';
+                div.style.left = '8px';
+                div.style.right = '8px';
+                div.style.top = '8px';
+                div.style.zIndex = 99999;
+                div.style.background = '#fee2e2';
+                div.style.color = '#7f1d1d';
+                div.style.padding = '12px';
+                div.style.border = '1px solid #fca5a5';
+                div.style.borderRadius = '6px';
+                div.textContent = 'App initialization error: ' + (err && err.message ? err.message : String(err));
+                document.body.appendChild(div);
+            } catch (e2) {
+                // fallback to alert if DOM update fails
+                alert('App initialization error: ' + (err && err.message ? err.message : String(err)));
+            }
+        }
     });
