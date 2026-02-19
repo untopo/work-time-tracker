@@ -2,8 +2,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.0.5';
+    const APP_VERSION = '1.0.6';
     const CHANGELOG = [
+        { version: '1.0.6', date: '2026-02-12', changes: ['Added: Previous/Next day arrows next to stats date picker', 'Added: Arrow navigation now switches to Custom Date view automatically', 'Added: Next-day navigation is blocked for future dates'] },
         { version: '1.0.5', date: '2026-02-12', changes: ['Fixed: Footer version now always matches APP_VERSION', 'Fixed: Contact form email is now optional (no longer required)','Chore: Simplified dailyGoal storage to a single source of truth', 'Chore: Added legacy fallback read for old dailyGoal keys', 'Fixed: Call modal can now be closed via X and Cancel (no longer stuck)','Fixed: Saving a call no longer refreshes the page (form submit prevented)', 'Improved: Call edits/additions now update UI instantly without full page reload','Improved: Add Call now always opens in clean “Add” mode (resets editing state)'] },
         { version: '1.0.4', date: '2026-02-12', changes: [ 'Fixed: Daily Goal now syncs bidirectionally between USD and Minutes', 'Fixed: Daily Goal persistence stores both USD and Minutes correctly', 'Improved: Goal calculation now updates instantly on input change' ] },
         { version: '1.0.3', date: '2026-02-11', changes: ['Fixed: Call edit form now displays exact stored startTime and endTime', 'Fixed: Call Log displays Start Time and End Time columns', 'Fixed: Daily Goal minutes now correctly calculates and updates equivalent earnings', 'Changed: Duration is now calculated from startTime and endTime instead of manual entry'] },
@@ -134,6 +135,8 @@ function minutesToMs(mins) {
     const resetCallsBtn = document.getElementById('reset-calls');
     const resetAllBtn = document.getElementById('reset-all');
     const statsDatePicker = document.getElementById('stats-date-picker');
+    const statsPrevDayBtn = document.getElementById('stats-prev-day-btn');
+    const statsNextDayBtn = document.getElementById('stats-next-day-btn');
     const currentDateBtn = document.getElementById('current-date-btn');
     const avgDurationDisplay = document.getElementById('avg-duration');
     const todayEarningsDisplay = document.getElementById('today-earnings');
@@ -672,6 +675,65 @@ function readCallsFromStorage() {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
+    function formatDateForInput(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function parseDateInput(dateString) {
+        if (!dateString) return null;
+        const [year, month, day] = dateString.split('-').map(Number);
+        if (!year || !month || !day) return null;
+        return new Date(year, month - 1, day);
+    }
+
+    function getTodayDateString() {
+        const now = new Date();
+        return formatDateForInput(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+    }
+
+    function addDays(baseDate, days) {
+        const nextDate = new Date(baseDate);
+        nextDate.setDate(nextDate.getDate() + days);
+        return nextDate;
+    }
+
+    function updateDatePickerBounds() {
+        const today = getTodayDateString();
+        statsDatePicker.max = today;
+        if (statsDatePicker.value && statsDatePicker.value > today) {
+            statsDatePicker.value = today;
+        }
+    }
+
+    function updateDateNavigationButtons() {
+        const today = parseDateInput(getTodayDateString());
+        const selectedDate = parseDateInput(statsDatePicker.value) || today;
+        const disableNext = selectedDate.getTime() >= today.getTime();
+
+        statsNextDayBtn.disabled = disableNext;
+        statsNextDayBtn.classList.toggle('opacity-50', disableNext);
+        statsNextDayBtn.classList.toggle('cursor-not-allowed', disableNext);
+    }
+
+    function shiftStatsDate(days) {
+        updateDatePickerBounds();
+        const today = parseDateInput(getTodayDateString());
+        const currentDate = callLogFilter === 'date'
+            ? (parseDateInput(statsDatePicker.value) || today)
+            : today;
+        const shiftedDate = addDays(currentDate, days);
+        const targetDate = shiftedDate > today ? today : shiftedDate;
+
+        statsDatePicker.value = formatDateForInput(targetDate);
+        callLogFilter = 'date';
+        updateStatistics();
+        displayCalls();
+        updateCallLogFilterButtons();
+    }
+
     function displayCalls() {
         callLogTableBody.innerHTML = '';
         let filteredCalls = [];
@@ -688,7 +750,8 @@ function readCallsFromStorage() {
             const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
             filteredCalls = calls.filter(call => new Date(call.startTime) >= monthStart);
         } else if (callLogFilter === 'date') {
-            const selectedDate = new Date(statsDatePicker.value);
+            // Use parseDateInput to build a local-midnight Date (avoids UTC parsing issues)
+            const selectedDate = parseDateInput(statsDatePicker.value) || new Date(statsDatePicker.value);
             const dateStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
             const dateEnd = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
             filteredCalls = calls.filter(call => new Date(call.startTime) >= dateStart && new Date(call.startTime) < dateEnd);
@@ -1112,6 +1175,8 @@ calls.push(callData);
             activeBtn.classList.remove('bg-gray-200', 'text-gray-700', 'dark:bg-gray-700', 'dark:text-gray-200');
             activeBtn.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-600', 'dark:text-white');
         }
+
+        updateDateNavigationButtons();
     }
 
     function showToast(message) {
@@ -1470,13 +1535,21 @@ goalMinutesInput.addEventListener('input', () => {
 });
         
         statsDatePicker.addEventListener('change', () => {
+            updateDatePickerBounds();
             callLogFilter = 'date';
             updateStatistics();
             displayCalls();
             updateCallLogFilterButtons();
         });
+        statsPrevDayBtn.addEventListener('click', () => {
+            shiftStatsDate(-1);
+        });
+        statsNextDayBtn.addEventListener('click', () => {
+            if (statsNextDayBtn.disabled) return;
+            shiftStatsDate(1);
+        });
         currentDateBtn.addEventListener('click', () => {
-            const today = new Date().toISOString().split('T')[0];
+            const today = getTodayDateString();
             statsDatePicker.value = today;
             callLogFilter = 'today';
             updateStatistics();
@@ -1642,8 +1715,9 @@ goalMinutesInput.addEventListener('input', () => {
         renderPaymentCycles();
         setInterval(updateLocalTime, 1000);
 
-        const today = new Date().toISOString().split('T')[0];
+        const today = getTodayDateString();
         statsDatePicker.value = today;
+        updateDatePickerBounds();
         
         filterTodayBtn.addEventListener('click', () => {
             callLogFilter = 'today';
