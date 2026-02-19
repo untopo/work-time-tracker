@@ -365,6 +365,12 @@
             opacity: 1 !important;
             visibility: visible !important;
         }
+        /* notes column should wrap and not overflow */
+        .call-log-table td:nth-child(5) {
+            white-space: pre-wrap;
+            max-width: 200px;
+            word-break: break-word;
+        }
 
         /* Make goal save button always visible */
         #goal-form button[type="submit"] {
