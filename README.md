@@ -1,7 +1,7 @@
 # Work Time Tracker
 
 
-![Version](https://img.shields.io/badge/version-1.0.8-blue)
+![Version](https://img.shields.io/badge/version-1.0.9-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![No Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Vanilla JS](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -26,6 +26,7 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 
 
 ## 📸 Screenshots
+
 
 
 ### Dashboard
@@ -186,5 +187,5 @@ Built for interpreters by interpreters.
 
 Made by [Topo](https://www.instagram.com/otpo/)
 
-Current Version: v1.0.8
+Current Version: v1.0.9
 Last Updated: February 2026
