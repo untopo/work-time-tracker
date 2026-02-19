@@ -2,8 +2,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.0.8';
+    const APP_VERSION = '1.0.9';
     const CHANGELOG = [
+        { version: '1.0.9', date: '2026-02-19', changes: ['Added: Confirmation modal for deleting calls instead of browser confirm()', 'Added: ESC key closes any open modal', 'Added: Fallback display when rate no longer exists (shows "Rate removed")', 'Added: Privacy notice next to Notes toggle ("never saved or exported")', 'Added: Restore Payment Cycles from backup button in Settings', 'Improved: Data integrity when deleting calls with confirmation'] },
         { version: '1.0.8', date: '2026-02-19', changes: ['Fix: Initialization ordering and DOM null-checks to prevent startup errors', 'Fix: Preserve and backup Payment Cycles to avoid accidental data loss', 'Fix: Prevent overwriting stored payment cycles with empty arrays', 'Fix: Various syntax and runtime errors found during debugging', 'Privacy: Notes UI is now volatile (not persisted) and removed from exports by default'] },
         { version: '1.0.7', date: '2026-02-19', changes: ['Added: Notes UI when starting a live call and in call form (no persistent storage)', 'Added: Notes column to Call Log (UI-only)', 'Improved: Date filtering ranges now use explicit end bounds'] },
         { version: '1.0.6', date: '2026-02-12', changes: ['Added: Previous/Next day arrows next to stats date picker', 'Added: Arrow navigation now switches to Custom Date view automatically', 'Added: Next-day navigation is blocked for future dates'] },
@@ -255,6 +256,14 @@ const recoveryNotes = document.getElementById('recovery-notes');
 const recoveryResumeBtn = document.getElementById('recovery-resume-btn');
 const recoverySummarizeBtn = document.getElementById('recovery-summarize-btn');
 const recoveryDiscardBtn = document.getElementById('recovery-discard-btn');
+    
+    // Confirmation modal (v1.0.9)
+const confirmationModal = document.getElementById('confirmation-modal');
+const confirmationModalTitle = document.getElementById('confirmation-modal-title');
+const confirmationModalMessage = document.getElementById('confirmation-modal-message');
+const confirmationConfirmBtn = document.getElementById('confirmation-confirm-btn');
+const confirmationCancelBtn = document.getElementById('confirmation-cancel-btn');
+let pendingConfirmAction = null; // callback to execute if user confirms
     
     // Load from localStorage
     let rates, calls, dailyGoal, paymentCyclesEnabled, paymentCycles, lastSelectedRate;
@@ -917,7 +926,17 @@ function readCallsFromStorage() {
             const durationStr = formatTime(call.duration);
             const earningsStr = formatEarnings(call.earned);
 
-            const safeRateName = escapeHTML(call.rateName || '');
+            // Fallback: if rate doesn't exist, show "Rate removed" (v1.0.9)
+            let safeRateName = escapeHTML(call.rateName || '');
+            if (!safeRateName) {
+                safeRateName = '<span class="text-gray-400 italic">Rate removed</span>';
+            } else {
+                const rateExists = rates.some(r => r.name === call.rateName);
+                if (!rateExists) {
+                    safeRateName = `<span title="Original rate: ${escapeHTML(call.rateName)}" class="text-yellow-600 dark:text-yellow-400 line-through">${escapeHTML(call.rateName)}</span>`;
+                }
+            }
+
             const safeId = escapeHTML(call.id || '');
 
             const row = document.createElement('tr');
@@ -1086,13 +1105,34 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
     `<i class="fas fa-edit text-blue-500 mr-2"></i>Edit Call`;
 }
 
-    function deleteCall(callId) {
-    if (confirm("Are you sure you want to delete this call entry?")) {
-        calls = readCallsFromStorage();
-        calls = calls.filter(call => call.id !== callId);
-        saveCalls();
+    // Confirmation modal function (v1.0.9)
+    function showConfirmation(title, message, confirmText = 'Delete', callback) {
+        confirmationModalTitle.innerHTML = `<i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>${title}`;
+        confirmationModalMessage.textContent = message;
+        confirmationConfirmBtn.textContent = confirmText;
+        pendingConfirmAction = callback;
+        confirmationModal.style.display = 'flex';
+        confirmationConfirmBtn.focus();
     }
-}
+
+    function closeConfirmationModal() {
+        confirmationModal.style.display = 'none';
+        pendingConfirmAction = null;
+    }
+
+    function deleteCall(callId) {
+        showConfirmation(
+            'Delete Call',
+            'Are you sure you want to delete this call entry? This action cannot be undone.',
+            'Delete',
+            () => {
+                calls = readCallsFromStorage();
+                calls = calls.filter(call => call.id !== callId);
+                saveCalls();
+                closeConfirmationModal();
+            }
+        );
+    }
 
     // Call modal functions
     function openCallModal() {
@@ -1203,6 +1243,13 @@ calls.push(callData);
             }
         }
 
+        // Show restore backup button only if backup exists (v1.0.9)
+        const restoreBackupBtn = document.getElementById('restore-backup-cycles-btn');
+        if (restoreBackupBtn) {
+            const hasBackup = !!localStorage.getItem('paymentCycles_backup');
+            restoreBackupBtn.style.display = hasBackup ? 'block' : 'none';
+        }
+
         if (!paymentCyclesList) return;
         paymentCyclesList.innerHTML = '';
         // If paymentCycles array is empty in memory, try to read stored value (in case it wasn't loaded into memory)
@@ -1280,6 +1327,38 @@ calls.push(callData);
         isEditingCycle = false;
         document.getElementById('edit-cycle-modal-title').textContent = 'Add Payment Cycle';
         openEditCycleModal();
+    }
+
+    // Restore payment cycles from backup (v1.0.9)
+    function restorePaymentCyclesFromBackup() {
+        const backup = localStorage.getItem('paymentCycles_backup');
+        if (!backup) {
+            showToast('No backup available to restore.');
+            return;
+        }
+
+        showConfirmation(
+            'Restore Payment Cycles',
+            'Restore payment cycles from backup? This will overwrite current cycles.',
+            'Restore',
+            () => {
+                try {
+                    const restored = JSON.parse(backup);
+                    if (Array.isArray(restored)) {
+                        paymentCycles = restored;
+                        localStorage.setItem('paymentCycles', JSON.stringify(paymentCycles));
+                        renderPaymentCycles();
+                        showToast('Payment cycles restored from backup.');
+                    } else {
+                        showToast('Backup data is invalid.');
+                    }
+                } catch (e) {
+                    console.error('Error restoring backup:', e);
+                    showToast('Error restoring backup. See console for details.');
+                }
+                closeConfirmationModal();
+            }
+        );
     }
 
     function editPaymentCycle(index) {
@@ -1700,6 +1779,10 @@ callStartTimeInput.addEventListener('input', syncTimesFromMinutes);
 callEndTimeInput.addEventListener('input', syncTimesFromMinutes);
         
         showAddCycleBtn.addEventListener('click', addPaymentCycle);
+        const restoreBackupBtn = document.getElementById('restore-backup-cycles-btn');
+        if (restoreBackupBtn) {
+            restoreBackupBtn.addEventListener('click', restorePaymentCyclesFromBackup);
+        }
         closeEditCycleModalBtn.addEventListener('click', closeEditCycleModal);
         cancelEditCycleBtn.addEventListener('click', closeEditCycleModal);
         editCycleForm.addEventListener('submit', handleEditCycleFormSubmit);
@@ -2024,6 +2107,61 @@ goalMinutesInput.addEventListener('input', () => {
             updateCallLogFilterButtons();
         });
         updateCallLogFilterButtons();
+
+        // Confirmation modal listeners (v1.0.9)
+        if (confirmationConfirmBtn) {
+            confirmationConfirmBtn.addEventListener('click', () => {
+                if (typeof pendingConfirmAction === 'function') {
+                    pendingConfirmAction();
+                }
+                closeConfirmationModal();
+            });
+        }
+        if (confirmationCancelBtn) {
+            confirmationCancelBtn.addEventListener('click', closeConfirmationModal);
+        }
+
+        // ESC to close modals (v1.0.9)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                // Close confirmation modal
+                if (confirmationModal && confirmationModal.style.display === 'flex') {
+                    closeConfirmationModal();
+                    return;
+                }
+                // Close settings modal
+                if (settingsModal && settingsModal.style.display === 'flex') {
+                    closeSettingsModal();
+                    return;
+                }
+                // Close call modal
+                if (callModal && callModal.style.display === 'flex') {
+                    closeCallModal();
+                    return;
+                }
+                // Close edit cycle modal
+                if (editCycleModal && editCycleModal.style.display === 'flex') {
+                    closeEditCycleModal();
+                    return;
+                }
+                // Close recovery modal
+                if (recoveryModal && recoveryModal.style.display === 'flex') {
+                    closeRecovery();
+                    return;
+                }
+                // Close feedback modal
+                if (feedbackModal && feedbackModal.style.display === 'flex') {
+                    closeFeedbackModal();
+                    return;
+                }
+                // Close changelog modal
+                if (changelogModal && changelogModal.style.display === 'flex') {
+                    closeChangelogModal();
+                    return;
+                }
+            }
+        });
+
         } catch (err) {
             console.error('Initialization error', err);
             try {
