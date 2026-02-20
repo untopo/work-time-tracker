@@ -2,8 +2,12 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.0.11';
+    const APP_VERSION = '1.1.3';
     const CHANGELOG = [
+        { version: '1.1.3', date: '2026-02-20', changes: ['Added: Floating controls customization panel in Settings (visible only when feature is enabled)', 'Added: Floating controls size modes (Auto, Full, Compact, Icon Only)', 'Added: Floating controls side positioning (Left/Right)', 'Improved: Auto mode now adapts to split-screen widths and switches to icon-only in ultra-compact windows'] },
+        { version: '1.1.2', date: '2026-02-20', changes: ['Added: Optional floating Start/End Call controls that appear when Call Controls section is out of view', 'Added: Settings feature toggle for Floating Call Controls', 'Improved: Floating controls follow active call state and hide when modals are open', 'Improved: Floating controls share the same visual style and behavior as primary Start/End buttons'] },
+        { version: '1.1.1', date: '2026-02-20', changes: ['Added: Confirmation modal optional typed guard (e.g., requires typing RESET for destructive actions)', 'Added: Confirmation modal loading/success status states with action lock to prevent accidental double submits', 'Added: Body scroll lock while modals are open for better mobile UX', 'Improved: Confirmation copy clarity and status feedback for keyboard/screen-reader users', 'Docs: Added 1.1.x modal QA checklist and progress updates in roadmap/readme'] },
+        { version: '1.1.0', date: '2026-02-20', changes: ['Added: ModalManager for consistent open/close behavior across all app modals', 'Added: Focus trap + focus restore for keyboard accessibility in modals', 'Added: Click-outside policy by modal type (non-destructive only)', 'Added: ARIA dialog semantics wiring for modal accessibility', 'Added: Severity-based confirmation/alert presentation templates (info/warning/error/danger)', 'Added: Confirm-action lock to prevent accidental double submits', 'Added: Consistent modal transition animations and focus-visible states'] },
         { version: '1.0.11', date: '2026-02-20', changes: ['Fixed: Add Rate now always opens in clean create mode (no stale edit state)', 'Fixed: Cancel/Add flow now clears rate form editingIndex to prevent accidental overwrites', 'Improved: Rate save path now checks explicit edit-mode state before updating existing rates'] },
         { version: '1.0.10', date: '2026-02-20', changes: ['Added: Unified in-app modal UX for confirmations and validation/errors (replaces browser alert/confirm in core flows)', 'Improved: Add/Edit Call validation now uses internal modal messaging', 'Improved: Import/Reset/Delete actions now use the same confirmation modal style'] },
         { version: '1.0.9', date: '2026-02-19', changes: ['Added: Confirmation modal for deleting calls instead of browser confirm()', 'Added: ESC key closes any open modal', 'Added: Fallback display when rate no longer exists (shows "Rate removed")', 'Added: Privacy notice next to Notes toggle ("never saved or exported")', 'Added: Restore Payment Cycles from backup button in Settings', 'Improved: Data integrity when deleting calls with confirmation'] },
@@ -78,11 +82,11 @@ function renderChangelog() {
 
 function openChangelogModal() {
   renderChangelog();
-  changelogModal.style.display = 'flex';
+  ModalManager.open(changelogModal);
 }
 
 function closeChangelogModal() {
-  changelogModal.style.display = 'none';
+  ModalManager.close(changelogModal);
 }
 
     // ============================================
@@ -111,6 +115,10 @@ function minutesToMs(mins) {
     // Global variables
     const startCallBtn = document.getElementById('start-call-btn');
     const endCallBtn = document.getElementById('end-call-btn');
+    const floatingCallControls = document.getElementById('floating-call-controls');
+    const floatingStartCallBtn = document.getElementById('floating-start-call-btn');
+    const floatingEndCallBtn = document.getElementById('floating-end-call-btn');
+    const callControlsCard = document.getElementById('call-controls-card');
     const liveCallInfo = document.getElementById('live-call-info');
     const liveCallTimerDisplay = document.getElementById('live-call-timer');
     const liveCallEarningsDisplay = document.getElementById('live-call-earnings');
@@ -193,18 +201,25 @@ function minutesToMs(mins) {
 // Feature toggles (optional features section)
 const featureNotesToggle = document.getElementById('feature-notes-toggle');
 const featurePaymentCyclesToggle = document.getElementById('feature-payment-cycles-toggle');
+const featureFloatingControlsToggle = document.getElementById('feature-floating-controls-toggle');
+const floatingControlsCustomization = document.getElementById('floating-controls-customization');
+const floatingControlsSizeModeSelect = document.getElementById('floating-controls-size-mode');
+const floatingControlsSideSelect = document.getElementById('floating-controls-side');
 
 function loadFeatureFlags() {
     try {
         const raw = localStorage.getItem('featureFlags');
-        if (!raw) return { notes: true, paymentCycles: paymentCyclesEnabled };
+        if (!raw) return { notes: true, paymentCycles: paymentCyclesEnabled, floatingCallControls: true, floatingControlsSizeMode: 'auto', floatingControlsSide: 'right' };
         const parsed = JSON.parse(raw);
         return {
             notes: typeof parsed.notes === 'boolean' ? parsed.notes : true,
-            paymentCycles: typeof parsed.paymentCycles === 'boolean' ? parsed.paymentCycles : paymentCyclesEnabled
+            paymentCycles: typeof parsed.paymentCycles === 'boolean' ? parsed.paymentCycles : paymentCyclesEnabled,
+            floatingCallControls: typeof parsed.floatingCallControls === 'boolean' ? parsed.floatingCallControls : true,
+            floatingControlsSizeMode: ['auto', 'full', 'compact', 'icon'].includes(parsed.floatingControlsSizeMode) ? parsed.floatingControlsSizeMode : 'auto',
+            floatingControlsSide: parsed.floatingControlsSide === 'left' ? 'left' : 'right'
         };
     } catch (e) {
-        return { notes: true, paymentCycles: paymentCyclesEnabled };
+        return { notes: true, paymentCycles: paymentCyclesEnabled, floatingCallControls: true, floatingControlsSizeMode: 'auto', floatingControlsSide: 'right' };
     }
 }
 
@@ -243,12 +258,24 @@ function applyFeatureFlags(flags) {
     if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
         paymentCyclesToggle.checked = pcEnabled;
     }
+
+    // Floating call controls feature
+    if (floatingControlsCustomization) {
+        floatingControlsCustomization.style.display = flags.floatingCallControls ? '' : 'none';
+    }
+    if (floatingControlsSizeModeSelect) {
+        floatingControlsSizeModeSelect.value = flags.floatingControlsSizeMode || 'auto';
+    }
+    if (floatingControlsSideSelect) {
+        floatingControlsSideSelect.value = flags.floatingControlsSide || 'right';
+    }
+    updateFloatingCallControls(flags);
 }
 
 // initialize feature flags (will be applied on DOMContentLoaded too)
 // don't call loadFeatureFlags() at module-eval time because it may
 // reference `paymentCyclesEnabled` which is initialized later.
-let featureFlags = { notes: true, paymentCycles: false };
+let featureFlags = { notes: true, paymentCycles: false, floatingCallControls: true, floatingControlsSizeMode: 'auto', floatingControlsSide: 'right' };
 
     // Recovery modal (v1.0.5)
 const recoveryModal = document.getElementById('recovery-modal');
@@ -258,14 +285,283 @@ const recoveryNotes = document.getElementById('recovery-notes');
 const recoveryResumeBtn = document.getElementById('recovery-resume-btn');
 const recoverySummarizeBtn = document.getElementById('recovery-summarize-btn');
 const recoveryDiscardBtn = document.getElementById('recovery-discard-btn');
+
+function closeRecoveryModal() {
+    ModalManager.close(recoveryModal);
+}
     
-    // Confirmation modal (v1.0.9)
+    // Confirmation modal (v1.1.x)
 const confirmationModal = document.getElementById('confirmation-modal');
 const confirmationModalTitle = document.getElementById('confirmation-modal-title');
 const confirmationModalMessage = document.getElementById('confirmation-modal-message');
 const confirmationConfirmBtn = document.getElementById('confirmation-confirm-btn');
 const confirmationCancelBtn = document.getElementById('confirmation-cancel-btn');
+const confirmationCloseBtn = document.getElementById('confirmation-close-btn');
+const confirmationVerifyGroup = document.getElementById('confirmation-verify-group');
+const confirmationVerifyLabel = document.getElementById('confirmation-verify-label');
+const confirmationVerifyInput = document.getElementById('confirmation-verify-input');
+const confirmationModalStatus = document.getElementById('confirmation-modal-status');
 let pendingConfirmAction = null; // callback to execute if user confirms
+let isConfirmActionRunning = false;
+let pendingConfirmOptions = {};
+
+    // Season 1.1.x: centralized modal behavior manager
+    const ModalManager = (() => {
+        const modalConfigs = new Map();
+        const focusState = new Map();
+        let activeModalId = null;
+        let openModalCount = 0;
+
+        function isOpen(modalEl) {
+            return !!modalEl && modalEl.style.display === 'flex';
+        }
+
+        function applyBodyScrollLock() {
+            if (openModalCount > 0) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function getFocusableElements(modalEl) {
+            if (!modalEl) return [];
+            const selector = [
+                'button:not([disabled])',
+                '[href]',
+                'input:not([disabled])',
+                'select:not([disabled])',
+                'textarea:not([disabled])',
+                '[tabindex]:not([tabindex="-1"])'
+            ].join(', ');
+
+            return Array.from(modalEl.querySelectorAll(selector))
+                .filter(el => !el.hasAttribute('hidden') && getComputedStyle(el).display !== 'none');
+        }
+
+        function inferAria(modalEl) {
+            const dialogPanel = modalEl.querySelector('.modal');
+            const heading = dialogPanel?.querySelector('h1, h2, h3');
+            const desc = dialogPanel?.querySelector('p');
+            if (!dialogPanel) return;
+
+            dialogPanel.setAttribute('role', 'dialog');
+            dialogPanel.setAttribute('aria-modal', 'true');
+
+            if (heading) {
+                if (!heading.id) heading.id = `${modalEl.id}-title`;
+                dialogPanel.setAttribute('aria-labelledby', heading.id);
+            }
+
+            if (desc) {
+                if (!desc.id) desc.id = `${modalEl.id}-description`;
+                dialogPanel.setAttribute('aria-describedby', desc.id);
+            }
+
+            dialogPanel.setAttribute('tabindex', '-1');
+        }
+
+        function register(modalEl, config = {}) {
+            if (!modalEl || !modalEl.id) return;
+            modalEl.classList.add('app-modal');
+            modalEl.setAttribute('aria-hidden', isOpen(modalEl) ? 'false' : 'true');
+            inferAria(modalEl);
+
+            const mergedConfig = {
+                dismissOnOverlay: true,
+                escClosable: true,
+                focusSelector: null,
+                ...config
+            };
+
+            modalConfigs.set(modalEl.id, mergedConfig);
+
+            modalEl.addEventListener('click', (e) => {
+                const modalConfig = modalConfigs.get(modalEl.id);
+                if (!modalConfig?.dismissOnOverlay) return;
+                if (e.target !== modalEl) return;
+                close(modalEl);
+            });
+        }
+
+        function updateConfig(modalEl, partialConfig = {}) {
+            if (!modalEl || !modalEl.id) return;
+            const existing = modalConfigs.get(modalEl.id) || {};
+            modalConfigs.set(modalEl.id, { ...existing, ...partialConfig });
+        }
+
+        function open(modalEl, options = {}) {
+            if (!modalEl || !modalEl.id) return;
+            const config = modalConfigs.get(modalEl.id) || {};
+            const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            focusState.set(modalEl.id, previousFocus);
+            activeModalId = modalEl.id;
+
+            if (!isOpen(modalEl)) {
+                openModalCount += 1;
+                applyBodyScrollLock();
+            }
+            modalEl.style.display = 'flex';
+            modalEl.setAttribute('aria-hidden', 'false');
+            modalEl.classList.add('is-open');
+
+            const targetSelector = options.focusSelector || config.focusSelector;
+            const explicitTarget = targetSelector ? modalEl.querySelector(targetSelector) : null;
+            const focusables = getFocusableElements(modalEl);
+            const fallbackTarget = modalEl.querySelector('.modal') || modalEl;
+            const target = explicitTarget || focusables[0] || fallbackTarget;
+            if (target && typeof target.focus === 'function') target.focus();
+            updateFloatingCallControls(featureFlags);
+        }
+
+        function close(modalEl, options = {}) {
+            if (!modalEl || !modalEl.id || !isOpen(modalEl)) return;
+            modalEl.style.display = 'none';
+            modalEl.setAttribute('aria-hidden', 'true');
+            modalEl.classList.remove('is-open');
+            openModalCount = Math.max(0, openModalCount - 1);
+            applyBodyScrollLock();
+
+            if (activeModalId === modalEl.id) activeModalId = null;
+
+            if (options.restoreFocus === false) return;
+            const previousFocus = focusState.get(modalEl.id);
+            if (previousFocus && document.contains(previousFocus) && typeof previousFocus.focus === 'function') {
+                previousFocus.focus();
+            }
+            updateFloatingCallControls(featureFlags);
+        }
+
+        function getActiveModal() {
+            if (activeModalId) {
+                const direct = document.getElementById(activeModalId);
+                if (isOpen(direct)) return direct;
+            }
+            const openModals = Array.from(modalConfigs.keys())
+                .map(id => document.getElementById(id))
+                .filter(el => isOpen(el));
+            return openModals[openModals.length - 1] || null;
+        }
+
+        function setupGlobalKeyboard() {
+            document.addEventListener('keydown', (e) => {
+                const activeModal = getActiveModal();
+                if (!activeModal) return;
+                const config = modalConfigs.get(activeModal.id) || {};
+
+                if (e.key === 'Escape' && config.escClosable !== false) {
+                    e.preventDefault();
+                    close(activeModal);
+                    return;
+                }
+
+                if (e.key === 'Enter' && activeModal.id === 'confirmation-modal') {
+                    const activeElement = document.activeElement;
+                    const tagName = activeElement?.tagName?.toLowerCase?.() || '';
+                    if (tagName !== 'textarea') {
+                        const confirm = document.getElementById('confirmation-confirm-btn');
+                        if (confirm && !confirm.disabled) {
+                            e.preventDefault();
+                            confirm.click();
+                            return;
+                        }
+                    }
+                }
+
+                if (e.key === 'Tab') {
+                    const focusables = getFocusableElements(activeModal);
+                    if (!focusables.length) {
+                        e.preventDefault();
+                        const panel = activeModal.querySelector('.modal');
+                        if (panel) panel.focus();
+                        return;
+                    }
+
+                    const first = focusables[0];
+                    const last = focusables[focusables.length - 1];
+                    const current = document.activeElement;
+
+                    if (e.shiftKey && current === first) {
+                        e.preventDefault();
+                        last.focus();
+                    } else if (!e.shiftKey && current === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            });
+        }
+
+        return {
+            register,
+            updateConfig,
+            open,
+            close,
+            isOpen,
+            setupGlobalKeyboard
+        };
+    })();
+
+function isAnyAppModalOpen() {
+    return Array.from(document.querySelectorAll('.app-modal')).some(el => el.style.display === 'flex');
+}
+
+function updateFloatingCallControls(flags = featureFlags) {
+    if (!floatingCallControls || !floatingStartCallBtn || !floatingEndCallBtn || !callControlsCard) return;
+
+    const enabled = !!flags?.floatingCallControls;
+    if (!enabled) {
+        floatingCallControls.style.display = 'none';
+        return;
+    }
+
+    if (isAnyAppModalOpen()) {
+        floatingCallControls.style.display = 'none';
+        return;
+    }
+
+    const cardRect = callControlsCard.getBoundingClientRect();
+    const passedControls = cardRect.bottom < 0;
+
+    const activeMainButton = endCallBtn.style.display === 'none' ? startCallBtn : endCallBtn;
+    const btnRect = activeMainButton.getBoundingClientRect();
+    const mainButtonVisible = btnRect.bottom > 0 && btnRect.top < window.innerHeight;
+
+    if (!passedControls || mainButtonVisible) {
+        floatingCallControls.style.display = 'none';
+        return;
+    }
+
+    const modePreference = flags?.floatingControlsSizeMode || 'auto';
+    let effectiveMode = modePreference;
+    if (modePreference === 'auto') {
+        if (window.innerWidth <= 700) {
+            effectiveMode = 'icon';
+        } else if (window.innerWidth <= 1150) {
+            effectiveMode = 'compact';
+        } else {
+            effectiveMode = 'full';
+        }
+    }
+
+    floatingCallControls.classList.remove('floating-compact', 'floating-icon');
+    if (effectiveMode === 'compact') floatingCallControls.classList.add('floating-compact');
+    if (effectiveMode === 'icon') floatingCallControls.classList.add('floating-icon');
+
+    const side = flags?.floatingControlsSide === 'left' ? 'left' : 'right';
+    if (side === 'left') {
+        floatingCallControls.style.left = '1rem';
+        floatingCallControls.style.right = 'auto';
+    } else {
+        floatingCallControls.style.right = '1rem';
+        floatingCallControls.style.left = 'auto';
+    }
+
+    const liveCallActive = !!liveCallStart || endCallBtn.style.display !== 'none';
+    floatingStartCallBtn.style.display = liveCallActive ? 'none' : 'flex';
+    floatingEndCallBtn.style.display = liveCallActive ? 'flex' : 'none';
+    floatingCallControls.style.display = 'flex';
+}
     
     // Load from localStorage
     let rates, calls, dailyGoal, paymentCyclesEnabled, paymentCycles, lastSelectedRate;
@@ -1121,12 +1417,18 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
         if (!confirmationConfirmBtn) return;
         confirmationConfirmBtn.classList.remove(
             'bg-red-500', 'hover:bg-red-600',
+            'bg-yellow-500', 'hover:bg-yellow-600',
             'bg-blue-500', 'hover:bg-blue-600',
             'bg-green-600', 'hover:bg-green-700'
         );
 
         if (tone === 'primary') {
             confirmationConfirmBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            return;
+        }
+
+        if (tone === 'warning') {
+            confirmationConfirmBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
             return;
         }
 
@@ -1138,14 +1440,37 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
         confirmationConfirmBtn.classList.add('bg-red-500', 'hover:bg-red-600');
     }
 
-    // Confirmation modal function (v1.0.10)
+    function setConfirmationStatus(text = '', isError = false) {
+        if (!confirmationModalStatus) return;
+        confirmationModalStatus.textContent = text;
+        confirmationModalStatus.classList.remove('text-red-600', 'dark:text-red-400');
+        confirmationModalStatus.classList.add('text-gray-600', 'dark:text-gray-300');
+        if (isError) {
+            confirmationModalStatus.classList.remove('text-gray-600', 'dark:text-gray-300');
+            confirmationModalStatus.classList.add('text-red-600', 'dark:text-red-400');
+        }
+    }
+
+    function setConfirmationActionEnabled(enabled) {
+        if (!confirmationConfirmBtn) return;
+        confirmationConfirmBtn.disabled = !enabled;
+        confirmationConfirmBtn.classList.toggle('opacity-60', !enabled);
+        confirmationConfirmBtn.classList.toggle('cursor-not-allowed', !enabled);
+    }
+
+    // Confirmation modal function (v1.1.0)
     function showConfirmation(title, message, confirmText = 'Delete', callback, options = {}) {
         const {
             icon = 'fa-exclamation-triangle',
             iconColor = 'text-yellow-500',
             tone = 'danger',
             showCancel = true,
-            cancelText = 'Cancel'
+            cancelText = 'Cancel',
+            showClose = tone !== 'danger',
+            requireText = '',
+            requireTextLabel = '',
+            loadingText = 'Working...',
+            successText = 'Done.'
         } = options;
 
         confirmationModalTitle.innerHTML = `<i class="fas ${icon} ${iconColor} mr-2"></i>${title}`;
@@ -1154,32 +1479,78 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
         setConfirmationConfirmTone(tone);
         confirmationCancelBtn.textContent = cancelText;
         confirmationCancelBtn.style.display = showCancel ? '' : 'none';
+        setConfirmationActionEnabled(true);
+        setConfirmationStatus('');
+
+        const normalizedRequire = String(requireText || '').trim();
+        if (confirmationVerifyGroup && confirmationVerifyInput && confirmationVerifyLabel) {
+            if (normalizedRequire) {
+                confirmationVerifyGroup.style.display = '';
+                confirmationVerifyInput.value = '';
+                confirmationVerifyInput.placeholder = normalizedRequire;
+                confirmationVerifyInput.setAttribute('data-required', normalizedRequire);
+                confirmationVerifyLabel.textContent = requireTextLabel || `Type "${normalizedRequire}" to confirm`;
+                setConfirmationActionEnabled(false);
+                setConfirmationStatus(`Type "${normalizedRequire}" to enable confirmation.`);
+            } else {
+                confirmationVerifyGroup.style.display = 'none';
+                confirmationVerifyInput.value = '';
+                confirmationVerifyInput.removeAttribute('data-required');
+                confirmationVerifyLabel.textContent = 'Type value to confirm';
+            }
+        }
+
+        if (confirmationCloseBtn) {
+            confirmationCloseBtn.style.display = showClose ? '' : 'none';
+        }
+        const isDestructive = tone === 'danger' && showCancel;
+        ModalManager.updateConfig(confirmationModal, { dismissOnOverlay: !isDestructive });
         pendingConfirmAction = callback;
-        confirmationModal.style.display = 'flex';
-        confirmationConfirmBtn.focus();
+        pendingConfirmOptions = { loadingText, successText, requireText: normalizedRequire };
+        ModalManager.open(confirmationModal, {
+            focusSelector: normalizedRequire ? '#confirmation-verify-input' : '#confirmation-confirm-btn'
+        });
     }
 
     function closeConfirmationModal() {
-        confirmationModal.style.display = 'none';
+        ModalManager.close(confirmationModal);
         pendingConfirmAction = null;
         confirmationCancelBtn.style.display = '';
         confirmationCancelBtn.textContent = 'Cancel';
+        if (confirmationCloseBtn) {
+            confirmationCloseBtn.style.display = 'none';
+        }
         setConfirmationConfirmTone('danger');
+        setConfirmationActionEnabled(true);
+        if (confirmationVerifyGroup && confirmationVerifyInput) {
+            confirmationVerifyGroup.style.display = 'none';
+            confirmationVerifyInput.value = '';
+            confirmationVerifyInput.removeAttribute('data-required');
+        }
+        setConfirmationStatus('');
+        isConfirmActionRunning = false;
+        pendingConfirmOptions = {};
     }
 
     function showAlertModal(title, message, options = {}) {
         const {
-            icon = 'fa-circle-exclamation',
-            iconColor = 'text-red-500',
-            tone = 'primary',
+            severity = 'error',
             buttonText = 'OK'
         } = options;
 
+        const severityTemplates = {
+            info: { icon: 'fa-circle-info', iconColor: 'text-blue-500', tone: 'primary' },
+            warning: { icon: 'fa-triangle-exclamation', iconColor: 'text-yellow-500', tone: 'warning' },
+            error: { icon: 'fa-circle-exclamation', iconColor: 'text-red-500', tone: 'danger' },
+            danger: { icon: 'fa-octagon-exclamation', iconColor: 'text-red-500', tone: 'danger' }
+        };
+
+        const template = severityTemplates[severity] || severityTemplates.error;
+
         showConfirmation(title, message, buttonText, null, {
-            icon,
-            iconColor,
-            tone,
-            showCancel: false
+            ...template,
+            showCancel: false,
+            showClose: true
         });
     }
 
@@ -1198,11 +1569,11 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
 
     // Call modal functions
     function openCallModal() {
-        callModal.style.display = 'flex';
+        ModalManager.open(callModal, { focusSelector: '#call-start-time' });
     }
 
     function closeCallModal() {
-        callModal.style.display = 'none';
+        ModalManager.close(callModal);
         isEditingCall = false;
         editingCallId = null;
         callForm.reset();
@@ -1213,8 +1584,7 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
     function startLiveCall() {
         if (!rateSelect.value) {
             showAlertModal('Rate Required', 'Please select a rate before starting the call.', {
-                icon: 'fa-circle-info',
-                iconColor: 'text-yellow-500'
+                severity: 'warning'
             });
             return;
         }
@@ -1240,6 +1610,7 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
         }, 1000);
 
         saveActiveCallState();
+        updateFloatingCallControls(featureFlags);
     }
 
     function endLiveCall() {
@@ -1271,25 +1642,26 @@ calls.push(callData);
         currentCallRate = null;
         showToast('Live call saved!');
         clearActiveCallState();
+        updateFloatingCallControls(featureFlags);
     }
 
     // Settings modal functions
     function openSettingsModal() {
-        settingsModal.style.display = 'flex';
+        ModalManager.open(settingsModal, { focusSelector: '#feature-notes-toggle' });
         updateStorageInfo();
         setTimeout(() => document.getElementById('timezone-select').scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
     }
 
     function closeSettingsModal() {
-        settingsModal.style.display = 'none';
+        ModalManager.close(settingsModal);
     }
 
     function openEditCycleModal() {
-        editCycleModal.style.display = 'flex';
+        ModalManager.open(editCycleModal, { focusSelector: '#cycle-start-date-input' });
     }
 
     function closeEditCycleModal() {
-        editCycleModal.style.display = 'none';
+        ModalManager.close(editCycleModal);
         isEditingCycle = false;
         editingCycleIndex = null;
         editCycleForm.reset();
@@ -1426,7 +1798,6 @@ calls.push(callData);
                     console.error('Error restoring backup:', e);
                     showToast('Error restoring backup. See console for details.');
                 }
-                closeConfirmationModal();
             }
         );
     }
@@ -1536,11 +1907,11 @@ calls.push(callData);
     const contactUsBtn = document.getElementById('contact-us-btn');
 
     function openFeedbackModal() {
-        feedbackModal.style.display = 'flex';
+        ModalManager.open(feedbackModal, { focusSelector: '#feedback-name' });
     }
 
     function closeFeedbackModal() {
-        feedbackModal.style.display = 'none';
+        ModalManager.close(feedbackModal);
         feedbackForm.reset();
     }
 
@@ -1584,36 +1955,48 @@ calls.push(callData);
     // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
         try {
+        ModalManager.setupGlobalKeyboard();
+        ModalManager.register(callModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#call-start-time' });
+        ModalManager.register(settingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feature-notes-toggle' });
+        ModalManager.register(editCycleModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#cycle-start-date-input' });
+        ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
+        ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
+        ModalManager.register(confirmationModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#confirmation-confirm-btn' });
+        ModalManager.register(recoveryModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#recovery-resume-btn' });
+
         startCallBtn.addEventListener('click', startLiveCall);
         endCallBtn.addEventListener('click', endLiveCall);
+        if (floatingStartCallBtn) {
+            floatingStartCallBtn.addEventListener('click', startLiveCall);
+        }
+        if (floatingEndCallBtn) {
+            floatingEndCallBtn.addEventListener('click', endLiveCall);
+        }
         addCallBtn.addEventListener('click', () => {
-        callModal.addEventListener('click', (e) => {
-  if (e.target === callModal) closeCallModal();
-});
-  // modo "Add"
-  isEditingCall = false;
-  editingCallId = null;
+        // mode: Add
+        isEditingCall = false;
+        editingCallId = null;
 
-  document.getElementById('modal-title').innerHTML =
-    `<i class="fas fa-plus text-blue-500 mr-2"></i>Add Call`;
+        document.getElementById('modal-title').innerHTML =
+            `<i class="fas fa-plus text-blue-500 mr-2"></i>Add Call`;
 
-  openCallModal();
+        openCallModal();
 });
 
 // ✅ X (cerrar)
-closeModalBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  closeCallModal();
-});
+        closeModalBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeCallModal();
+        });
 
 // ✅ Cancel (cerrar)
-cancelCallBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  closeCallModal();
-});
+        cancelCallBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeCallModal();
+        });
 
 // ✅ Save (evita refresh + actualiza en vivo porque tu handleCallFormSubmit ya llama saveCalls())
-callForm.addEventListener('submit', handleCallFormSubmit);
+        callForm.addEventListener('submit', handleCallFormSubmit);
 
         // Restore saved textarea heights for notes (persist across refreshes)
         try {
@@ -1661,6 +2044,7 @@ callForm.addEventListener('submit', handleCallFormSubmit);
             // set toggle states in settings modal if present
             if (featureNotesToggle) featureNotesToggle.checked = !!featureFlags.notes;
             if (featurePaymentCyclesToggle) featurePaymentCyclesToggle.checked = !!featureFlags.paymentCycles;
+            if (featureFloatingControlsToggle) featureFloatingControlsToggle.checked = !!featureFlags.floatingCallControls;
             // apply the flags immediately
             applyFeatureFlags(featureFlags);
 
@@ -1698,6 +2082,30 @@ callForm.addEventListener('submit', handleCallFormSubmit);
                 });
             }
 
+            if (featureFloatingControlsToggle) {
+                featureFloatingControlsToggle.addEventListener('change', (e) => {
+                    featureFlags.floatingCallControls = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingControlsSizeModeSelect) {
+                floatingControlsSizeModeSelect.addEventListener('change', (e) => {
+                    featureFlags.floatingControlsSizeMode = e.target.value;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingControlsSideSelect) {
+                floatingControlsSideSelect.addEventListener('change', (e) => {
+                    featureFlags.floatingControlsSide = e.target.value === 'left' ? 'left' : 'right';
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
             // Keep feature flag in sync when user toggles the original paymentCyclesToggle
             if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
                 paymentCyclesToggle.addEventListener('change', (e) => {
@@ -1722,11 +2130,6 @@ callForm.addEventListener('submit', handleCallFormSubmit);
             closeChangelogBtn.addEventListener('click', closeChangelogModal);
         }
 
-        // Click outside to close
-        window.addEventListener('click', (e) => {
-            if (e.target === changelogModal) closeChangelogModal();
-        });
-
         // v1.0.5 Prevent accidental close when a live call is active
         window.addEventListener('beforeunload', (e) => {
             if (liveCallStart) {
@@ -1747,11 +2150,8 @@ callForm.addEventListener('submit', handleCallFormSubmit);
   recoveryElapsed.textContent = msToHMS(elapsed);
     if (typeof recoveryNotes !== 'undefined' && recoveryNotes) recoveryNotes.value = '';
 
-  recoveryModal.style.display = 'flex';
-
-  function closeRecovery() {
-    recoveryModal.style.display = 'none';
-  }
+  ModalManager.open(recoveryModal, { focusSelector: '#recovery-resume-btn' });
+  updateFloatingCallControls(featureFlags);
 
   recoveryResumeBtn.onclick = () => {
         // restore selected rate if available
@@ -1788,8 +2188,9 @@ callForm.addEventListener('submit', handleCallFormSubmit);
         }, 1000);
 
         saveActiveCallState();
-        closeRecovery();
+        closeRecoveryModal();
         showToast('Live call resumed.');
+        updateFloatingCallControls(featureFlags);
   };
 
   recoverySummarizeBtn.onclick = () => {
@@ -1817,14 +2218,16 @@ callForm.addEventListener('submit', handleCallFormSubmit);
     saveCalls();
 
     clearActiveCallState();
-    closeRecovery();
+    closeRecoveryModal();
     showToast('Unfinished call summarized and saved.');
+    updateFloatingCallControls(featureFlags);
   };
 
   recoveryDiscardBtn.onclick = () => {
     clearActiveCallState();
-    closeRecovery();
+    closeRecoveryModal();
     showToast('Unfinished call discarded.');
+    updateFloatingCallControls(featureFlags);
   };
 })();
 
@@ -2053,7 +2456,7 @@ goalMinutesInput.addEventListener('input', () => {
                     const importedData = JSON.parse(event.target.result);
                     showConfirmation(
                         'Import Data',
-                        'Importing data will overwrite your current data. Are you sure?',
+                        'This will replace your current local data with the selected backup file.',
                         'Import',
                         () => {
                         calls = importedData.calls || [];
@@ -2077,7 +2480,9 @@ goalMinutesInput.addEventListener('input', () => {
                         {
                             icon: 'fa-upload',
                             iconColor: 'text-blue-500',
-                            tone: 'primary'
+                            tone: 'primary',
+                            loadingText: 'Importing backup...',
+                            successText: 'Backup imported successfully.'
                         }
                     );
                 } catch (error) {
@@ -2091,12 +2496,16 @@ goalMinutesInput.addEventListener('input', () => {
         resetCallsBtn.addEventListener('click', () => {
             showConfirmation(
                 'Reset Calls',
-                'Are you sure you want to erase all call history? This cannot be undone.',
+                'This will permanently delete all call history. Rates and settings will be kept.',
                 'Erase',
                 () => {
                 calls = [];
                 saveCalls();
                 showToast('All call history erased.');
+                },
+                {
+                    loadingText: 'Erasing call history...',
+                    successText: 'Call history erased.'
                 }
             );
         });
@@ -2104,7 +2513,7 @@ goalMinutesInput.addEventListener('input', () => {
         resetAllBtn.addEventListener('click', () => {
             showConfirmation(
                 'Reset All Data',
-                'Are you sure you want to reset all data, including rates, goals, and call history? This cannot be undone.',
+                'This will permanently delete all local data (calls, rates, goals, and settings).',
                 'Reset All',
                 () => {
                 localStorage.clear();
@@ -2121,6 +2530,12 @@ goalMinutesInput.addEventListener('input', () => {
                 populateRateSelects();
                 showToast('All data reset.');
                 closeSettingsModal();
+                },
+                {
+                    requireText: 'RESET',
+                    requireTextLabel: 'Type "RESET" to confirm permanent deletion',
+                    loadingText: 'Resetting all local data...',
+                    successText: 'All data reset.'
                 }
             );
         });
@@ -2132,28 +2547,6 @@ goalMinutesInput.addEventListener('input', () => {
             });
         }
 
-        function handleModalKeyboard(e) {
-            if (e.key === 'Escape') {
-                if (callModal.style.display === 'flex') {
-                    closeCallModal();
-                }
-                if (settingsModal.style.display === 'flex') {
-                    closeSettingsModal();
-                }
-                if (editCycleModal.style.display === 'flex') {
-                    closeEditCycleModal();
-                }
-                if (feedbackModal.style.display === 'flex') {
-                    closeFeedbackModal();
-                }
-                if (changelogModal && changelogModal.style.display === 'flex') {
-  closeChangelogModal();
-}
-            }
-        }
-        
-        document.addEventListener('keydown', handleModalKeyboard);
-        
         window.addEventListener('beforeunload', () => {
             activeTimers.forEach(timerId => clearInterval(timerId));
             activeTimers.clear();
@@ -2161,15 +2554,13 @@ goalMinutesInput.addEventListener('input', () => {
 
         document.getElementById('privacy-policy')?.addEventListener('click', () => {
             showAlertModal('Privacy Policy', 'This app stores all data locally in your browser. No data is sent to external servers.', {
-                icon: 'fa-shield-halved',
-                iconColor: 'text-blue-500'
+                severity: 'info'
             });
         });
 
         document.getElementById('terms-of-service')?.addEventListener('click', () => {
             showAlertModal('Terms of Service', 'This app is provided "as is" without any warranties. Use at your own discretion.', {
-                icon: 'fa-file-contract',
-                iconColor: 'text-blue-500'
+                severity: 'info'
             });
         });
         
@@ -2184,6 +2575,8 @@ goalMinutesInput.addEventListener('input', () => {
         updateStorageInfo();
         renderPaymentCycles();
         setInterval(updateLocalTime, 1000);
+        window.addEventListener('scroll', () => updateFloatingCallControls(featureFlags), { passive: true });
+        window.addEventListener('resize', () => updateFloatingCallControls(featureFlags));
 
         const today = getTodayDateString();
         statsDatePicker.value = today;
@@ -2205,60 +2598,53 @@ goalMinutesInput.addEventListener('input', () => {
             updateCallLogFilterButtons();
         });
         updateCallLogFilterButtons();
+        updateFloatingCallControls(featureFlags);
 
-        // Confirmation modal listeners (v1.0.9)
+        // Confirmation modal listeners (v1.1.0)
         if (confirmationConfirmBtn) {
-            confirmationConfirmBtn.addEventListener('click', () => {
-                if (typeof pendingConfirmAction === 'function') {
-                    pendingConfirmAction();
+            confirmationConfirmBtn.addEventListener('click', async () => {
+                if (isConfirmActionRunning) return;
+                const requiredText = String(pendingConfirmOptions?.requireText || '');
+                if (requiredText && confirmationVerifyInput) {
+                    const typed = String(confirmationVerifyInput.value || '').trim();
+                    if (typed !== requiredText) {
+                        setConfirmationStatus(`Please type "${requiredText}" exactly to continue.`, true);
+                        confirmationVerifyInput.focus();
+                        return;
+                    }
                 }
-                closeConfirmationModal();
+                isConfirmActionRunning = true;
+                setConfirmationActionEnabled(false);
+                setConfirmationStatus(pendingConfirmOptions?.loadingText || 'Working...');
+                try {
+                    if (typeof pendingConfirmAction === 'function') {
+                        await Promise.resolve(pendingConfirmAction());
+                    }
+                    setConfirmationStatus(pendingConfirmOptions?.successText || 'Done.');
+                    await new Promise(resolve => setTimeout(resolve, 220));
+                } finally {
+                    closeConfirmationModal();
+                }
             });
         }
         if (confirmationCancelBtn) {
             confirmationCancelBtn.addEventListener('click', closeConfirmationModal);
         }
-
-        // ESC to close modals (v1.0.9)
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                // Close confirmation modal
-                if (confirmationModal && confirmationModal.style.display === 'flex') {
-                    closeConfirmationModal();
-                    return;
+        if (confirmationCloseBtn) {
+            confirmationCloseBtn.addEventListener('click', closeConfirmationModal);
+        }
+        if (confirmationVerifyInput) {
+            confirmationVerifyInput.addEventListener('input', () => {
+                const requiredText = String(pendingConfirmOptions?.requireText || '');
+                if (!requiredText) return;
+                const typed = String(confirmationVerifyInput.value || '').trim();
+                const matches = typed === requiredText;
+                setConfirmationActionEnabled(matches && !isConfirmActionRunning);
+                if (matches) {
+                    setConfirmationStatus('');
                 }
-                // Close settings modal
-                if (settingsModal && settingsModal.style.display === 'flex') {
-                    closeSettingsModal();
-                    return;
-                }
-                // Close call modal
-                if (callModal && callModal.style.display === 'flex') {
-                    closeCallModal();
-                    return;
-                }
-                // Close edit cycle modal
-                if (editCycleModal && editCycleModal.style.display === 'flex') {
-                    closeEditCycleModal();
-                    return;
-                }
-                // Close recovery modal
-                if (recoveryModal && recoveryModal.style.display === 'flex') {
-                    closeRecovery();
-                    return;
-                }
-                // Close feedback modal
-                if (feedbackModal && feedbackModal.style.display === 'flex') {
-                    closeFeedbackModal();
-                    return;
-                }
-                // Close changelog modal
-                if (changelogModal && changelogModal.style.display === 'flex') {
-                    closeChangelogModal();
-                    return;
-                }
-            }
-        });
+            });
+        }
 
         } catch (err) {
             console.error('Initialization error', err);
