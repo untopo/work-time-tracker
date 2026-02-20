@@ -2,8 +2,10 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.0.9';
+    const APP_VERSION = '1.0.11';
     const CHANGELOG = [
+        { version: '1.0.11', date: '2026-02-20', changes: ['Fixed: Add Rate now always opens in clean create mode (no stale edit state)', 'Fixed: Cancel/Add flow now clears rate form editingIndex to prevent accidental overwrites', 'Improved: Rate save path now checks explicit edit-mode state before updating existing rates'] },
+        { version: '1.0.10', date: '2026-02-20', changes: ['Added: Unified in-app modal UX for confirmations and validation/errors (replaces browser alert/confirm in core flows)', 'Improved: Add/Edit Call validation now uses internal modal messaging', 'Improved: Import/Reset/Delete actions now use the same confirmation modal style'] },
         { version: '1.0.9', date: '2026-02-19', changes: ['Added: Confirmation modal for deleting calls instead of browser confirm()', 'Added: ESC key closes any open modal', 'Added: Fallback display when rate no longer exists (shows "Rate removed")', 'Added: Privacy notice next to Notes toggle ("never saved or exported")', 'Added: Restore Payment Cycles from backup button in Settings', 'Improved: Data integrity when deleting calls with confirmation'] },
         { version: '1.0.8', date: '2026-02-19', changes: ['Fix: Initialization ordering and DOM null-checks to prevent startup errors', 'Fix: Preserve and backup Payment Cycles to avoid accidental data loss', 'Fix: Prevent overwriting stored payment cycles with empty arrays', 'Fix: Various syntax and runtime errors found during debugging', 'Privacy: Notes UI is now volatile (not persisted) and removed from exports by default'] },
         { version: '1.0.7', date: '2026-02-19', changes: ['Added: Notes UI when starting a live call and in call form (no persistent storage)', 'Added: Notes column to Call Log (UI-only)', 'Improved: Date filtering ranges now use explicit end bounds'] },
@@ -992,11 +994,21 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
         rateForm.dataset.editingIndex = index;
     }
 
+    function resetRateFormMode() {
+        rateForm.reset();
+        delete rateForm.dataset.editingIndex;
+    }
+
     function deleteRate(index) {
-        if (confirm('Are you sure you want to delete this rate?')) {
-            rates.splice(index, 1);
-            saveRates();
-        }
+        showConfirmation(
+            'Delete Rate',
+            'Are you sure you want to delete this rate?',
+            'Delete',
+            () => {
+                rates.splice(index, 1);
+                saveRates();
+            }
+        );
     }
 
     // Call functions
@@ -1012,7 +1024,7 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
 
   // Validación mínima: al menos (start+end) o minutes
   if ((!start || !end) && !durationMsFromMinutes) {
-    alert('Please enter Start & End time, or a Duration in minutes.');
+    showAlertModal('Invalid Call Data', 'Please enter Start & End time, or a Duration in minutes.');
     return;
   }
 
@@ -1034,7 +1046,7 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
 
   // Si al final no hay ambos, algo falló
   if (!finalStart || !finalEnd || finalEnd <= finalStart) {
-    alert('Please enter valid values (End must be after Start).');
+    showAlertModal('Invalid Call Data', 'Please enter valid values (End must be after Start).');
     return;
   }
 
@@ -1105,11 +1117,43 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
     `<i class="fas fa-edit text-blue-500 mr-2"></i>Edit Call`;
 }
 
-    // Confirmation modal function (v1.0.9)
-    function showConfirmation(title, message, confirmText = 'Delete', callback) {
-        confirmationModalTitle.innerHTML = `<i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>${title}`;
+    function setConfirmationConfirmTone(tone = 'danger') {
+        if (!confirmationConfirmBtn) return;
+        confirmationConfirmBtn.classList.remove(
+            'bg-red-500', 'hover:bg-red-600',
+            'bg-blue-500', 'hover:bg-blue-600',
+            'bg-green-600', 'hover:bg-green-700'
+        );
+
+        if (tone === 'primary') {
+            confirmationConfirmBtn.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            return;
+        }
+
+        if (tone === 'success') {
+            confirmationConfirmBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+            return;
+        }
+
+        confirmationConfirmBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+    }
+
+    // Confirmation modal function (v1.0.10)
+    function showConfirmation(title, message, confirmText = 'Delete', callback, options = {}) {
+        const {
+            icon = 'fa-exclamation-triangle',
+            iconColor = 'text-yellow-500',
+            tone = 'danger',
+            showCancel = true,
+            cancelText = 'Cancel'
+        } = options;
+
+        confirmationModalTitle.innerHTML = `<i class="fas ${icon} ${iconColor} mr-2"></i>${title}`;
         confirmationModalMessage.textContent = message;
         confirmationConfirmBtn.textContent = confirmText;
+        setConfirmationConfirmTone(tone);
+        confirmationCancelBtn.textContent = cancelText;
+        confirmationCancelBtn.style.display = showCancel ? '' : 'none';
         pendingConfirmAction = callback;
         confirmationModal.style.display = 'flex';
         confirmationConfirmBtn.focus();
@@ -1118,6 +1162,25 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
     function closeConfirmationModal() {
         confirmationModal.style.display = 'none';
         pendingConfirmAction = null;
+        confirmationCancelBtn.style.display = '';
+        confirmationCancelBtn.textContent = 'Cancel';
+        setConfirmationConfirmTone('danger');
+    }
+
+    function showAlertModal(title, message, options = {}) {
+        const {
+            icon = 'fa-circle-exclamation',
+            iconColor = 'text-red-500',
+            tone = 'primary',
+            buttonText = 'OK'
+        } = options;
+
+        showConfirmation(title, message, buttonText, null, {
+            icon,
+            iconColor,
+            tone,
+            showCancel: false
+        });
     }
 
     function deleteCall(callId) {
@@ -1129,7 +1192,6 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
                 calls = readCallsFromStorage();
                 calls = calls.filter(call => call.id !== callId);
                 saveCalls();
-                closeConfirmationModal();
             }
         );
     }
@@ -1150,7 +1212,10 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
     // Live call functions
     function startLiveCall() {
         if (!rateSelect.value) {
-            alert('Please select a rate before starting the call.');
+            showAlertModal('Rate Required', 'Please select a rate before starting the call.', {
+                icon: 'fa-circle-info',
+                iconColor: 'text-yellow-500'
+            });
             return;
         }
         if (liveCallTimerId) {
@@ -1307,10 +1372,15 @@ calls.push(callData);
         document.querySelectorAll('.delete-cycle-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 const index = parseInt(e.currentTarget.dataset.index);
-                if (confirm('Are you sure you want to delete this payment cycle?')) {
-                    paymentCycles.splice(index, 1);
-                    savePaymentCycles();
-                }
+                showConfirmation(
+                    'Delete Payment Cycle',
+                    'Are you sure you want to delete this payment cycle?',
+                    'Delete',
+                    () => {
+                        paymentCycles.splice(index, 1);
+                        savePaymentCycles();
+                    }
+                );
             });
         });
 
@@ -1381,7 +1451,7 @@ calls.push(callData);
         const payDate = new Date(cyclePayDateInput.value);
 
         if (!startDate || !endDate || !payDate) {
-            alert('Please fill in all dates.');
+            showAlertModal('Missing Dates', 'Please fill in all dates.');
             return;
         }
 
@@ -1390,7 +1460,7 @@ calls.push(callData);
         const pay = new Date(payDate.getUTCFullYear(), payDate.getUTCMonth(), payDate.getUTCDate());
 
         if (end < start) {
-            alert('End date cannot be before start date.');
+            showAlertModal('Invalid Date Range', 'End date cannot be before start date.');
             return;
         }
 
@@ -1799,11 +1869,13 @@ callEndTimeInput.addEventListener('input', syncTimesFromMinutes);
 
         rateSelect.addEventListener('change', saveLastSelectedRate);
         showRateAddBtn.addEventListener('click', () => {
+            resetRateFormMode();
             rateForm.style.display = 'block';
             showRateAddBtn.style.display = 'none';
             document.getElementById('rate-name').focus();
         });
         cancelRateAddBtn.addEventListener('click', () => {
+            resetRateFormMode();
             rateForm.style.display = 'none';
             showRateAddBtn.style.display = 'block';
         });
@@ -1813,11 +1885,11 @@ callEndTimeInput.addEventListener('input', syncTimesFromMinutes);
             const amount = parseFloat(document.getElementById('rate-amount').value);
 
             if (!name || isNaN(amount) || amount <= 0) {
-                alert('Please enter a valid rate name and amount.');
+                showAlertModal('Invalid Rate', 'Please enter a valid rate name and amount.');
                 return;
             }
 
-            if (rateForm.dataset.editingIndex) {
+            if (typeof rateForm.dataset.editingIndex !== 'undefined') {
                 const index = parseInt(rateForm.dataset.editingIndex);
                 rates[index] = { name, amount };
                 delete rateForm.dataset.editingIndex;
@@ -1826,7 +1898,7 @@ callEndTimeInput.addEventListener('input', syncTimesFromMinutes);
             }
 
             saveRates();
-            rateForm.reset();
+            resetRateFormMode();
             rateForm.style.display = 'none';
             showRateAddBtn.style.display = 'block';
         });
@@ -1979,7 +2051,11 @@ goalMinutesInput.addEventListener('input', () => {
             reader.onload = (event) => {
                 try {
                     const importedData = JSON.parse(event.target.result);
-                    if (confirm('Importing data will overwrite your current data. Are you sure?')) {
+                    showConfirmation(
+                        'Import Data',
+                        'Importing data will overwrite your current data. Are you sure?',
+                        'Import',
+                        () => {
                         calls = importedData.calls || [];
                         calls = calls.map(call => ({
   ...call,
@@ -1997,9 +2073,15 @@ goalMinutesInput.addEventListener('input', () => {
                         populateRateSelects();
                         showToast('Data imported successfully!');
                         closeSettingsModal();
-                    }
+                        },
+                        {
+                            icon: 'fa-upload',
+                            iconColor: 'text-blue-500',
+                            tone: 'primary'
+                        }
+                    );
                 } catch (error) {
-                    alert('Failed to import file. Please ensure it is a valid JSON file from this app.');
+                    showAlertModal('Import Failed', 'Failed to import file. Please ensure it is a valid JSON file from this app.');
                     console.error('Import error:', error);
                 }
             };
@@ -2007,15 +2089,24 @@ goalMinutesInput.addEventListener('input', () => {
         });
 
         resetCallsBtn.addEventListener('click', () => {
-            if (confirm("Are you sure you want to erase all call history? This cannot be undone.")) {
+            showConfirmation(
+                'Reset Calls',
+                'Are you sure you want to erase all call history? This cannot be undone.',
+                'Erase',
+                () => {
                 calls = [];
                 saveCalls();
                 showToast('All call history erased.');
-            }
+                }
+            );
         });
         
         resetAllBtn.addEventListener('click', () => {
-            if (confirm("Are you sure you want to reset all data, including rates, goals, and call history? This cannot be undone.")) {
+            showConfirmation(
+                'Reset All Data',
+                'Are you sure you want to reset all data, including rates, goals, and call history? This cannot be undone.',
+                'Reset All',
+                () => {
                 localStorage.clear();
                 calls = [];
                 rates = [];
@@ -2030,7 +2121,8 @@ goalMinutesInput.addEventListener('input', () => {
                 populateRateSelects();
                 showToast('All data reset.');
                 closeSettingsModal();
-            }
+                }
+            );
         });
         
         if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
@@ -2068,11 +2160,17 @@ goalMinutesInput.addEventListener('input', () => {
         });
 
         document.getElementById('privacy-policy')?.addEventListener('click', () => {
-            alert('Privacy Policy: This app stores all data locally in your browser. No data is sent to external servers.');
+            showAlertModal('Privacy Policy', 'This app stores all data locally in your browser. No data is sent to external servers.', {
+                icon: 'fa-shield-halved',
+                iconColor: 'text-blue-500'
+            });
         });
 
         document.getElementById('terms-of-service')?.addEventListener('click', () => {
-            alert('Terms of Service: This app is provided "as is" without any warranties. Use at your own discretion.');
+            showAlertModal('Terms of Service', 'This app is provided "as is" without any warranties. Use at your own discretion.', {
+                icon: 'fa-file-contract',
+                iconColor: 'text-blue-500'
+            });
         });
         
         document.getElementById('app-version').textContent = APP_VERSION;
