@@ -544,4 +544,85 @@
         #app-version {
             font-family: 'Courier New', monospace;
         }
+
+        /* Season 1.1.x: unified modal behavior */
+        .app-modal {
+            backdrop-filter: blur(1px);
+        }
+
+        .app-modal.is-open {
+            animation: modal-overlay-in 0.16s ease-out;
+        }
+
+        .app-modal .modal {
+            animation: modal-panel-in 0.18s ease-out;
+            transform-origin: top center;
+        }
+
+        .app-modal button:focus-visible,
+        .app-modal input:focus-visible,
+        .app-modal select:focus-visible,
+        .app-modal textarea:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+        #confirmation-modal-status {
+            min-height: 1rem;
+        }
+
+        #floating-call-controls {
+            display: none;
+            align-items: flex-end;
+        }
+
+        #floating-call-controls button {
+            min-width: 180px;
+        }
+
+        #floating-call-controls.floating-compact button {
+            min-width: 132px;
+            font-size: 0.95rem;
+            padding: 0.6rem 0.85rem;
+        }
+
+        #floating-call-controls.floating-icon button {
+            min-width: 48px;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border-radius: 9999px;
+            font-size: 1rem;
+        }
+
+        #floating-call-controls.floating-icon .floating-call-label {
+            display: none;
+        }
+
+        #floating-call-controls.floating-icon button i {
+            margin: 0;
+        }
+
+        @media (max-width: 640px) {
+            #floating-call-controls {
+                right: 0.75rem;
+                bottom: 0.75rem;
+            }
+
+            #floating-call-controls button {
+                min-width: 150px;
+                font-size: 0.95rem;
+                padding: 0.65rem 0.9rem;
+            }
+        }
+
+        @keyframes modal-overlay-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modal-panel-in {
+            from { opacity: 0; transform: translateY(-8px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
     
