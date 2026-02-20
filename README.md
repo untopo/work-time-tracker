@@ -1,7 +1,7 @@
 # Work Time Tracker
 
 
-![Version](https://img.shields.io/badge/version-1.0.9-blue)
+![Version](https://img.shields.io/badge/version-1.0.11-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![No Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Vanilla JS](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -87,6 +87,17 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 - Semantic Versioning (MAJOR.MINOR.PATCH)
 - Built-in **What's New (Changelog)** modal
 - Recovery for unfinished live calls
+- Unified internal modal UX for confirmations, warnings, and validation errors (no browser popups in core flows)
+
+### v1.0.10 Notes
+- Replaced browser `alert()`/`confirm()` with the internal confirmation modal style across add/edit/delete/import/reset flows
+- Added reusable modal helper behavior for severity/icon/tone consistency
+- Kept a single `alert()` only as last-resort fallback for catastrophic initialization failure
+
+### v1.0.11 Notes
+- Fixed `Add Rate` opening in stale edit mode after editing/canceling an existing rate
+- Added explicit rate-form mode reset so add/cancel flows always clear `editingIndex`
+- Prevented accidental overwrite of existing rates when user intended to create a new rate
 
 
 ---
@@ -187,5 +198,5 @@ Built for interpreters by interpreters.
 
 Made by [Topo](https://www.instagram.com/otpo/)
 
-Current Version: v1.0.9
+Current Version: v1.0.11
 Last Updated: February 2026
