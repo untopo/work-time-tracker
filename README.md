@@ -1,7 +1,7 @@
 # Work Time Tracker
 
 
-![Version](https://img.shields.io/badge/version-1.0.11-blue)
+![Version](https://img.shields.io/badge/version-1.1.3-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![No Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Vanilla JS](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -79,7 +79,7 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 ### ⚙️ Customization & Settings
 - Dark / Light mode
 - Time zone selection
-- Feature toggles (Notes, Payment Cycles)
+- Feature toggles (Notes, Payment Cycles, Floating Call Controls)
 - Fully responsive design
 
 
@@ -93,6 +93,33 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 - Replaced browser `alert()`/`confirm()` with the internal confirmation modal style across add/edit/delete/import/reset flows
 - Added reusable modal helper behavior for severity/icon/tone consistency
 - Kept a single `alert()` only as last-resort fallback for catastrophic initialization failure
+
+### v1.1.3 Notes
+- Added floating-controls customization panel in Settings (visible only when Floating Call Controls is enabled)
+- Added floating size modes: `Auto`, `Full`, `Compact`, `Icon Only`
+- Added floating position options: `Left` or `Right`
+- Improved `Auto` mode behavior for split-screen windows, including icon-only mode in ultra-compact widths
+
+### v1.1.2 Notes
+- Added optional floating `Start Call` / `End Call` controls when the main Call Controls card is out of view
+- Added `Enable Floating Call Controls` toggle in Settings > Features
+- Floating controls now follow live-call state and hide automatically while modals are open
+- Floating controls use the same visual style/colors as the primary Start/End buttons
+
+### v1.1.1 Notes
+- Added typed confirmation guard for destructive actions (e.g. requires typing `RESET` in Reset All)
+- Added confirmation modal status flow (`loading` and `success`) with explicit action lock
+- Added body scroll lock while any modal is open (better mobile interaction)
+- Improved destructive-action microcopy for clarity on what data is affected
+- Added 1.1.x manual modal QA checklist guidance in roadmap
+
+### v1.1.0 Notes
+- Added a centralized `ModalManager` for consistent modal lifecycle behavior
+- Added keyboard accessibility improvements: focus trap, Escape handling, focus restore, and Enter-to-confirm for confirmation dialogs
+- Added ARIA dialog semantics wiring for all app modals
+- Added click-outside policy by modal type (enabled for non-destructive, blocked for destructive confirms)
+- Added confirmation action lock to prevent accidental double-submit on destructive actions
+- Added consistent modal animations and focus-visible styling
 
 ### v1.0.11 Notes
 - Fixed `Add Rate` opening in stale edit mode after editing/canceling an existing rate
@@ -198,5 +225,5 @@ Built for interpreters by interpreters.
 
 Made by [Topo](https://www.instagram.com/otpo/)
 
-Current Version: v1.0.11
+Current Version: v1.1.3
 Last Updated: February 2026
