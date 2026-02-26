@@ -2,8 +2,31 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.3';
+    const APP_VERSION = '1.1.26';
     const CHANGELOG = [
+        { version: '1.1.26', date: '2026-02-26', changes: ['Added: Modal stack/layer manager with deterministic z-index ordering and front-of-stack resolution', 'Added: Viewport-fit constraints for open modals to reduce clipping on small/short windows', 'Improved: Interaction stability via rapid open/close guards and deduplicated keyboard handling', 'Improved: Accessibility/status feedback (toast live region + confirmation busy/aria-live handling)', 'Improved: Floating settings UX consistency (detail entry guard + auto-close when feature disabled)'] },
+        { version: '1.1.25', date: '2026-02-26', changes: ['Fixed: Feature detail panels now open directly next to General Settings using deterministic split geometry', 'Fixed: Floating Controls Settings button now hides when Floating Call Controls feature toggle is off', 'Improved: Split-panel positioning no longer depends on transition-timing-sensitive measurements'] },
+        { version: '1.1.24', date: '2026-02-26', changes: ['Changed: Removed Notes Settings sub-modal to simplify Settings UX (Notes keeps a single feature toggle)', 'Refactor: Cleaned Notes Settings modal/event wiring from split-settings flow', 'Roadmap: Added advanced Notes customization ideas to future backlog'] },
+        { version: '1.1.23', date: '2026-02-26', changes: ['Fixed: Side settings panels now align vertically with the General Settings panel instead of using a fixed top offset', 'Improved: Detail panel layout now derives left/top/width from the actual General panel geometry for more stable split positioning', 'Improved: Split modal positioning fallback remains safe on small/edge layouts'] },
+        { version: '1.1.22', date: '2026-02-26', changes: ['Fixed: Side feature modals now anchor to viewport top with max-height so they never open cut off at the bottom', 'Fixed: Side modal content remains scrollable within viewport in split settings mode', 'Improved: Side modal open animation updated to match top-anchored layout without vertical jump'] },
+        { version: '1.1.21', date: '2026-02-26', changes: ['Polish: Modals now open from the click origin for smoother visual context', 'Polish: Side settings panels are pre-positioned before opening to remove first-open overlap/jump', 'Polish: Unified motion easing/timings for modal and floating-dock interactions to feel less abrupt'] },
+        { version: '1.1.20', date: '2026-02-26', changes: ['Performance: Reduced UI jitter by scheduling floating-dock/side-panel updates with requestAnimationFrame', 'Performance: Replaced repeated per-row click bindings with delegated handlers for calls/rates/payment cycles', 'Performance: Cached local-time formatters and throttled live-call persistence writes to reduce main-thread pressure'] },
+        { version: '1.1.19', date: '2026-02-26', changes: ['Fixed: First-open detail panel overlap by switching to deterministic split geometry (no animation-dependent placement)', 'Improved: Detail settings now animate from the clicked trigger area for smoother context-aware opening', 'Improved: Split mode now pre-activates before opening detail panels to prevent center-jump behavior'] },
+        { version: '1.1.18', date: '2026-02-26', changes: ['Fixed: Split-state activation now happens after detail modal opens, so General panel consistently shifts out of center', 'Fixed: Side detail modals no longer apply blur over the General Settings panel', 'Improved: Split-state detection now accepts opening transition state for smoother panel handoff'] },
+        { version: '1.1.17', date: '2026-02-26', changes: ['Fixed: Settings split-view now uses geometry-based anchoring so detail panel opens exactly to the right of General', 'Improved: Right-panel placement recalculates after open and on resize for stable side-by-side visibility', 'Improved: Split-view class handling now relies on active anchored detail panels for consistency'] },
+        { version: '1.1.16', date: '2026-02-26', changes: ['Fixed: Split settings now uses strict left/right docking instead of overlap-style positioning', 'Improved: Detail settings panels open adjacent to General Settings with consistent centered vertical alignment', 'Fixed: Side-panel animation now preserves vertical centering while sliding in'] },
+        { version: '1.1.15', date: '2026-02-26', changes: ['Fixed: Preview in icon mode now mirrors the real dock detail-card behavior (when active fields are enabled)', 'Fixed: Removed old preview meta-row rendering so preview matches actual layout exactly', 'Improved: Split-view positioning now anchors detail panels directly to the right of General Settings'] },
+        { version: '1.1.14', date: '2026-02-26', changes: ['Fixed: In icon mode, real floating dock can now display active-call details (rate/timer/earnings) when enabled', 'Improved: General Settings now shifts left and keeps visible while detail settings open on the right (split-view layout)', 'Improved: Split-view spacing and panel sizing to reduce overlap and improve readability'] },
+        { version: '1.1.13', date: '2026-02-26', changes: ['Fixed: Preview now always shows live-call sample values (rate/timer/earnings) even in icon mode via sample info rows', 'Improved: Floating preview now auto-randomizes while open, no manual click required', 'Improved: Opening feature settings from General now supports smooth split-view (General shifts left, selected panel on right) on large screens', 'Improved: Floating Controls panel open feels faster with deferred preview rendering'] },
+        { version: '1.1.12', date: '2026-02-26', changes: ['Changed: Removed Floating density preset control to keep customization fully manual', 'Improved: Floating mini preview now randomizes realistic live-call sample data (rate/timer/earnings)', 'Improved: Preview alignment and icon-mode button centering for closer visual parity with real dock', 'Improved: Floating settings labels now include clearer helper text for easier understanding'] },
+        { version: '1.1.11', date: '2026-02-26', changes: ['Fixed: Floating Controls Settings modal now opens above the main Settings modal', 'Improved: Floating Controls Settings layout is more compact and visually refined', 'Improved: Mini preview now renders Idle and On-Call states together with preference-aware detail hints', 'Changed: User-facing text in Settings was standardized to English'] },
+        { version: '1.1.10', date: '2026-02-25', changes: ['Changed: Data Management + Storage Usage moved to main Settings under Time Zone', 'Fixed: Floating Controls Settings button now opens reliably (even if feature is currently off)', 'Improved: Floating dock now scales correctly in compact/icon modes', 'Improved: Floating preview now shows both idle and active-call states with detailed rate/timer/earnings visibility'] },
+        { version: '1.1.9', date: '2026-02-25', changes: ['Changed: Restored classic always-visible footer on main page (removed footer info floating modal)', 'Fixed: Footer content is now permanently visible at page bottom as requested', 'Refactor: Removed temporary footer-modal wiring from settings flow'] },
+        { version: '1.1.8', date: '2026-02-24', changes: ['Fixed: Restored main-page layout by correcting modal/footer structure boundaries', 'Changed: Footer content moved into centered floating info modal while preserving existing style/content', 'Changed: Settings simplified to General-first flow (no tab segmentation for current scope)', 'Added: Per-feature customization entry points from General (Notes, Payment Cycles, Floating)', 'Improved: Payment Cycles modal now groups cycles + data management + storage in one dedicated place'] },
+        { version: '1.1.7', date: '2026-02-23', changes: ['Added: Settings Control Center tabs + quick search for lower-clutter navigation', 'Added: Floating density presets (Minimal, Balanced, Data-rich, Custom)', 'Added: Testing-focused mini live preview inside Floating Controls modal (easy to disable/remove independently)', 'Improved: Sticky modal header/footer behavior for frictionless split-screen usage'] },
+        { version: '1.1.6', date: '2026-02-22', changes: ['Improved: Settings modal reorganized into clearer section cards with wider centered layout', 'Fixed: Removed forced auto-scroll to Time Zone that caused jumpy/cluttered behavior in compact windows', 'Improved: Settings and floating-customization modals now use cleaner internal scrolling with sticky action area'] },
+        { version: '1.1.5', date: '2026-02-20', changes: ['Fixed: Settings modal now supports reliable internal scrolling on constrained/split-screen layouts', 'Added: Floating controls customization moved into a dedicated centered modal for better organization', 'Fixed: Floating mini button no longer inherits icon-mode sizing rules incorrectly (prevents deformed mini state)', 'Improved: Floating dock now adapts action density by size mode (icon mode hides secondary/active card automatically)', 'Improved: Settings customization section spacing/readability for dense feature controls'] },
+        { version: '1.1.4', date: '2026-02-20', changes: ['Added: Smart floating dock with contextual primary/secondary actions', 'Added: Auto-hide idle dock with mini-button reactivation animation', 'Added: Mini active-call card with per-field customization (timer/earnings/rate)', 'Added: One-handed mode option for larger mobile touch targets', 'Added: Go to Controls secondary action with smooth scroll', 'Improved: Dock overlap-avoidance engine (footer/toasts/focused input) and adaptive split-screen behavior'] },
         { version: '1.1.3', date: '2026-02-20', changes: ['Added: Floating controls customization panel in Settings (visible only when feature is enabled)', 'Added: Floating controls size modes (Auto, Full, Compact, Icon Only)', 'Added: Floating controls side positioning (Left/Right)', 'Improved: Auto mode now adapts to split-screen widths and switches to icon-only in ultra-compact windows'] },
         { version: '1.1.2', date: '2026-02-20', changes: ['Added: Optional floating Start/End Call controls that appear when Call Controls section is out of view', 'Added: Settings feature toggle for Floating Call Controls', 'Improved: Floating controls follow active call state and hide when modals are open', 'Improved: Floating controls share the same visual style and behavior as primary Start/End buttons'] },
         { version: '1.1.1', date: '2026-02-20', changes: ['Added: Confirmation modal optional typed guard (e.g., requires typing RESET for destructive actions)', 'Added: Confirmation modal loading/success status states with action lock to prevent accidental double submits', 'Added: Body scroll lock while modals are open for better mobile UX', 'Improved: Confirmation copy clarity and status feedback for keyboard/screen-reader users', 'Docs: Added 1.1.x modal QA checklist and progress updates in roadmap/readme'] },
@@ -85,6 +108,17 @@ function openChangelogModal() {
   ModalManager.open(changelogModal);
 }
 
+function createRafScheduler(fn) {
+  let rafId = null;
+  return () => {
+    if (rafId !== null) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      fn();
+    });
+  };
+}
+
 function closeChangelogModal() {
   ModalManager.close(changelogModal);
 }
@@ -116,8 +150,18 @@ function minutesToMs(mins) {
     const startCallBtn = document.getElementById('start-call-btn');
     const endCallBtn = document.getElementById('end-call-btn');
     const floatingCallControls = document.getElementById('floating-call-controls');
+    const floatingCallDock = document.getElementById('floating-call-dock');
+    const floatingDockMiniBtn = document.getElementById('floating-dock-mini-btn');
+    const floatingDockMiniIcon = document.getElementById('floating-dock-mini-icon');
     const floatingStartCallBtn = document.getElementById('floating-start-call-btn');
     const floatingEndCallBtn = document.getElementById('floating-end-call-btn');
+    const floatingSecondaryActionBtn = document.getElementById('floating-secondary-action-btn');
+    const floatingSecondaryActionIcon = document.getElementById('floating-secondary-action-icon');
+    const floatingSecondaryActionLabel = document.getElementById('floating-secondary-action-label');
+    const floatingActiveCard = document.getElementById('floating-active-card');
+    const floatingActiveRate = document.getElementById('floating-active-rate');
+    const floatingActiveTimer = document.getElementById('floating-active-timer');
+    const floatingActiveEarnings = document.getElementById('floating-active-earnings');
     const callControlsCard = document.getElementById('call-controls-card');
     const liveCallInfo = document.getElementById('live-call-info');
     const liveCallTimerDisplay = document.getElementById('live-call-timer');
@@ -202,24 +246,82 @@ function minutesToMs(mins) {
 const featureNotesToggle = document.getElementById('feature-notes-toggle');
 const featurePaymentCyclesToggle = document.getElementById('feature-payment-cycles-toggle');
 const featureFloatingControlsToggle = document.getElementById('feature-floating-controls-toggle');
+const openFloatingControlsSettingsBtn = document.getElementById('open-floating-controls-settings-btn');
+const openPaymentCyclesSettingsBtn = document.getElementById('open-payment-cycles-settings-btn');
+const floatingControlsSettingsModal = document.getElementById('floating-controls-settings-modal');
+const closeFloatingControlsSettingsBtn = document.getElementById('close-floating-controls-settings-modal');
+const doneFloatingControlsSettingsBtn = document.getElementById('done-floating-controls-settings-btn');
+const paymentCyclesSettingsModal = document.getElementById('payment-cycles-settings-modal');
+const closePaymentCyclesSettingsModalBtn = document.getElementById('close-payment-cycles-settings-modal');
+const donePaymentCyclesSettingsBtn = document.getElementById('done-payment-cycles-settings-btn');
 const floatingControlsCustomization = document.getElementById('floating-controls-customization');
 const floatingControlsSizeModeSelect = document.getElementById('floating-controls-size-mode');
 const floatingControlsSideSelect = document.getElementById('floating-controls-side');
+const floatingSecondaryActionSelect = document.getElementById('floating-secondary-action-select');
+const floatingShowActiveCardToggle = document.getElementById('floating-show-active-card-toggle');
+const floatingActiveCardCustomization = document.getElementById('floating-active-card-customization');
+const floatingActiveShowTimerToggle = document.getElementById('floating-active-show-timer-toggle');
+const floatingActiveShowEarningsToggle = document.getElementById('floating-active-show-earnings-toggle');
+const floatingActiveShowRateToggle = document.getElementById('floating-active-show-rate-toggle');
+const floatingOneHandedToggle = document.getElementById('floating-one-handed-toggle');
+const floatingPreviewEnabledToggle = document.getElementById('floating-preview-enabled-toggle');
+const floatingPreviewRandomizeBtn = document.getElementById('floating-preview-randomize-btn');
+const floatingPreviewContainer = document.getElementById('floating-preview-lab');
+const floatingPreviewHint = document.getElementById('floating-preview-hint');
+const floatingFeatureStateNote = document.getElementById('floating-feature-state-note');
+const previewFloatingDocks = Array.from(document.querySelectorAll('[data-preview-state]'));
+
+const ENABLE_FLOATING_PREVIEW_TESTING = true;
+let floatingPreviewSample = null;
+let floatingPreviewAutoRefreshTimer = null;
 
 function loadFeatureFlags() {
     try {
         const raw = localStorage.getItem('featureFlags');
-        if (!raw) return { notes: true, paymentCycles: paymentCyclesEnabled, floatingCallControls: true, floatingControlsSizeMode: 'auto', floatingControlsSide: 'right' };
+        if (!raw) return {
+            notes: true,
+            paymentCycles: paymentCyclesEnabled,
+            floatingCallControls: true,
+            floatingControlsSizeMode: 'auto',
+            floatingControlsSide: 'right',
+            floatingSecondaryAction: 'add',
+            floatingShowActiveCard: true,
+            floatingActiveShowTimer: true,
+            floatingActiveShowEarnings: true,
+            floatingActiveShowRate: false,
+            floatingOneHanded: false,
+            floatingPreviewEnabled: true
+        };
         const parsed = JSON.parse(raw);
         return {
             notes: typeof parsed.notes === 'boolean' ? parsed.notes : true,
             paymentCycles: typeof parsed.paymentCycles === 'boolean' ? parsed.paymentCycles : paymentCyclesEnabled,
             floatingCallControls: typeof parsed.floatingCallControls === 'boolean' ? parsed.floatingCallControls : true,
             floatingControlsSizeMode: ['auto', 'full', 'compact', 'icon'].includes(parsed.floatingControlsSizeMode) ? parsed.floatingControlsSizeMode : 'auto',
-            floatingControlsSide: parsed.floatingControlsSide === 'left' ? 'left' : 'right'
+            floatingControlsSide: parsed.floatingControlsSide === 'left' ? 'left' : 'right',
+            floatingSecondaryAction: ['add', 'goto', 'none'].includes(parsed.floatingSecondaryAction) ? parsed.floatingSecondaryAction : 'add',
+            floatingShowActiveCard: typeof parsed.floatingShowActiveCard === 'boolean' ? parsed.floatingShowActiveCard : true,
+            floatingActiveShowTimer: typeof parsed.floatingActiveShowTimer === 'boolean' ? parsed.floatingActiveShowTimer : true,
+            floatingActiveShowEarnings: typeof parsed.floatingActiveShowEarnings === 'boolean' ? parsed.floatingActiveShowEarnings : true,
+            floatingActiveShowRate: typeof parsed.floatingActiveShowRate === 'boolean' ? parsed.floatingActiveShowRate : false,
+            floatingOneHanded: typeof parsed.floatingOneHanded === 'boolean' ? parsed.floatingOneHanded : false,
+            floatingPreviewEnabled: typeof parsed.floatingPreviewEnabled === 'boolean' ? parsed.floatingPreviewEnabled : true
         };
     } catch (e) {
-        return { notes: true, paymentCycles: paymentCyclesEnabled, floatingCallControls: true, floatingControlsSizeMode: 'auto', floatingControlsSide: 'right' };
+        return {
+            notes: true,
+            paymentCycles: paymentCyclesEnabled,
+            floatingCallControls: true,
+            floatingControlsSizeMode: 'auto',
+            floatingControlsSide: 'right',
+            floatingSecondaryAction: 'add',
+            floatingShowActiveCard: true,
+            floatingActiveShowTimer: true,
+            floatingActiveShowEarnings: true,
+            floatingActiveShowRate: false,
+            floatingOneHanded: false,
+            floatingPreviewEnabled: true
+        };
     }
 }
 
@@ -229,6 +331,239 @@ function saveFeatureFlags(flags) {
     } catch (e) {
         console.warn('Could not save feature flags', e);
     }
+}
+
+function getFloatingPreviewSecondaryMeta(action) {
+    if (action === 'goto') return { icon: 'fas fa-arrow-up', label: 'Go to Controls' };
+    if (action === 'none') return { icon: 'fas fa-minus', label: 'Disabled' };
+    return { icon: 'fas fa-plus', label: 'Add Call' };
+}
+
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomChoice(arr) {
+    return arr[randomInt(0, arr.length - 1)];
+}
+
+function formatPreviewElapsed(totalSeconds) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return [hours, minutes, seconds].map((n) => String(n).padStart(2, '0')).join(':');
+}
+
+function generateFloatingPreviewSample() {
+    const labelPool = ['Medical EN-ES', 'Legal EN-PT', 'Insurance EN-ES', 'Support EN-FR', 'Telehealth EN-ES'];
+    const rate = Number((Math.random() * 0.22 + 0.06).toFixed(2));
+    const seconds = randomInt(95, 4400);
+    const earnings = Number((((seconds / 60) * rate) + Math.random() * 0.22).toFixed(2));
+    return {
+        rateLabel: randomChoice(labelPool),
+        ratePerMin: rate,
+        elapsedSeconds: seconds,
+        earnings
+    };
+}
+
+function updatePreviewDockElement(dockEl, flags, mode) {
+    if (!dockEl) return;
+
+    const state = dockEl.dataset.previewState === 'active' ? 'active' : 'idle';
+    const onCall = state === 'active';
+
+    dockEl.classList.remove('preview-mode-full', 'preview-mode-compact', 'preview-mode-icon');
+    dockEl.classList.add(mode === 'icon' ? 'preview-mode-icon' : mode === 'compact' ? 'preview-mode-compact' : 'preview-mode-full');
+    dockEl.classList.toggle('preview-left', (flags.floatingControlsSide || 'right') === 'left');
+    dockEl.classList.toggle('preview-right', (flags.floatingControlsSide || 'right') !== 'left');
+    dockEl.classList.toggle('preview-one-handed', !!flags.floatingOneHanded);
+
+    const primaryBtn = dockEl.querySelector('.preview-primary-btn');
+    const primaryIcon = dockEl.querySelector('.preview-primary-icon');
+    const primaryLabel = dockEl.querySelector('.preview-primary-label');
+    if (primaryIcon) primaryIcon.className = onCall ? 'preview-primary-icon fas fa-stop' : 'preview-primary-icon fas fa-play';
+    if (primaryLabel) primaryLabel.textContent = onCall ? 'End Call' : 'Start Call';
+    if (primaryBtn) {
+        primaryBtn.classList.toggle('bg-green-500', !onCall);
+        primaryBtn.classList.toggle('hover:bg-green-600', !onCall);
+        primaryBtn.classList.toggle('bg-red-500', onCall);
+        primaryBtn.classList.toggle('hover:bg-red-600', onCall);
+    }
+
+    const secondaryAction = flags.floatingSecondaryAction || 'add';
+    const secondaryMeta = getFloatingPreviewSecondaryMeta(secondaryAction);
+    const secondaryBtn = dockEl.querySelector('.preview-secondary-btn');
+    const secondaryIcon = dockEl.querySelector('.preview-secondary-icon');
+    const secondaryLabel = dockEl.querySelector('.preview-secondary-label');
+    const showSecondary = secondaryAction !== 'none' && mode !== 'icon';
+    if (secondaryBtn) secondaryBtn.style.display = showSecondary ? 'flex' : 'none';
+    if (secondaryIcon) secondaryIcon.className = `preview-secondary-icon ${secondaryMeta.icon}`;
+    if (secondaryLabel) secondaryLabel.textContent = secondaryMeta.label;
+
+    const activeCard = dockEl.querySelector('.preview-active-card');
+    const iconDetailsEnabled = mode === 'icon'
+        && onCall
+        && !!flags.floatingShowActiveCard
+        && (!!flags.floatingActiveShowTimer || !!flags.floatingActiveShowEarnings || !!flags.floatingActiveShowRate);
+    dockEl.classList.toggle('preview-show-icon-details', iconDetailsEnabled);
+    const showCard = !!flags.floatingShowActiveCard && onCall && mode !== 'icon';
+    if (activeCard) activeCard.style.display = (showCard || iconDetailsEnabled) ? '' : 'none';
+
+    const activeTimer = dockEl.querySelector('.preview-active-timer');
+    const activeEarnings = dockEl.querySelector('.preview-active-earnings');
+    const activeRate = dockEl.querySelector('.preview-active-rate');
+    if (activeTimer) activeTimer.style.display = flags.floatingActiveShowTimer ? '' : 'none';
+    if (activeEarnings) activeEarnings.style.display = flags.floatingActiveShowEarnings ? '' : 'none';
+    if (activeRate) activeRate.style.display = flags.floatingActiveShowRate ? '' : 'none';
+
+    const sample = floatingPreviewSample || generateFloatingPreviewSample();
+    if (activeRate) activeRate.textContent = `Rate: ${sample.rateLabel} - $${sample.ratePerMin.toFixed(2)}/min`;
+    if (activeTimer) activeTimer.textContent = onCall ? formatPreviewElapsed(sample.elapsedSeconds) : '00:00:00';
+    if (activeEarnings) activeEarnings.textContent = onCall ? `$${sample.earnings.toFixed(2)}` : '$0.00';
+}
+
+function updateFloatingPreview(flags = featureFlags, options = {}) {
+    if (!ENABLE_FLOATING_PREVIEW_TESTING || !floatingPreviewContainer || !previewFloatingDocks.length) return;
+    const shouldRandomize = options.randomize !== false;
+
+    const previewEnabled = !!flags.floatingPreviewEnabled;
+    floatingPreviewContainer.style.display = previewEnabled ? '' : 'none';
+    if (!previewEnabled) return;
+
+    if (shouldRandomize || !floatingPreviewSample) {
+        floatingPreviewSample = generateFloatingPreviewSample();
+    }
+
+    const mode = resolveDockMode(flags.floatingControlsSizeMode || 'auto');
+    previewFloatingDocks.forEach((dockEl) => updatePreviewDockElement(dockEl, flags, mode));
+
+    if (floatingPreviewHint) {
+        const visibleFields = [];
+        if (flags.floatingActiveShowRate) visibleFields.push('rate');
+        if (flags.floatingActiveShowTimer) visibleFields.push('timer');
+        if (flags.floatingActiveShowEarnings) visibleFields.push('earnings');
+        const fieldsText = visibleFields.length ? visibleFields.join(', ') : 'none';
+        const secondaryText = (flags.floatingSecondaryAction || 'add') === 'none' ? 'hidden' : (flags.floatingSecondaryAction || 'add');
+        floatingPreviewHint.textContent = `Preview: size ${mode} | secondary ${secondaryText} | active fields ${fieldsText}`;
+    }
+}
+
+function stopFloatingPreviewAutoRefresh() {
+    if (floatingPreviewAutoRefreshTimer) {
+        clearInterval(floatingPreviewAutoRefreshTimer);
+        floatingPreviewAutoRefreshTimer = null;
+    }
+}
+
+function startFloatingPreviewAutoRefresh(flags = featureFlags) {
+    stopFloatingPreviewAutoRefresh();
+    if (!ENABLE_FLOATING_PREVIEW_TESTING || !flags.floatingPreviewEnabled) return;
+    floatingPreviewAutoRefreshTimer = setInterval(() => {
+        if (!floatingControlsSettingsModal || !ModalManager.isOpen(floatingControlsSettingsModal)) {
+            stopFloatingPreviewAutoRefresh();
+            return;
+        }
+        updateFloatingPreview(flags, { randomize: true });
+    }, 5000);
+}
+
+function detailModals() {
+    return [floatingControlsSettingsModal, paymentCyclesSettingsModal].filter(Boolean);
+}
+
+function getSettingsMainPanel() {
+    return settingsModal?.querySelector('.settings-main-modal-panel') || null;
+}
+
+function computeDetailPanelLayout() {
+    const gap = 16;
+    const margin = 16;
+    const minWidth = 360;
+    const maxWidth = 860;
+    const leftPanelWidth = Math.min(window.innerWidth * 0.40, 560);
+    const left = Math.max(margin, Math.round(margin + leftPanelWidth + gap));
+    const width = Math.max(minWidth, Math.min(maxWidth, window.innerWidth - left - margin));
+
+    const mainPanel = getSettingsMainPanel();
+    const mainRect = mainPanel ? mainPanel.getBoundingClientRect() : null;
+    const top = (mainRect && Number.isFinite(mainRect.top))
+        ? Math.max(margin, Math.round(mainRect.top))
+        : margin;
+
+    return { left, top, width };
+}
+
+function positionDetailModal(modalEl) {
+    if (!modalEl) return;
+    const layout = computeDetailPanelLayout();
+    if (!layout) return;
+    modalEl.style.setProperty('--settings-detail-left', `${layout.left}px`);
+    modalEl.style.setProperty('--settings-detail-top', `${layout.top}px`);
+    modalEl.style.setProperty('--settings-detail-width', `${layout.width}px`);
+}
+
+function setDetailPanelOrigin(modalEl, triggerEl) {
+    if (!modalEl || !triggerEl) return;
+    const panel = modalEl.querySelector('.modal');
+    if (!panel) return;
+    const panelRect = panel.getBoundingClientRect();
+    const triggerRect = triggerEl.getBoundingClientRect();
+    const originX = Math.max(20, Math.min(panelRect.width - 20, (triggerRect.left + triggerRect.width / 2) - panelRect.left));
+    const originY = Math.max(20, Math.min(panelRect.height - 20, (triggerRect.top + triggerRect.height / 2) - panelRect.top));
+    panel.style.setProperty('--settings-origin-x', `${originX}px`);
+    panel.style.setProperty('--settings-origin-y', `${originY}px`);
+}
+
+function closeOtherDetailModals(exceptModal = null) {
+    detailModals().forEach((modalEl) => {
+        if (!modalEl || modalEl === exceptModal) return;
+        if (ModalManager.isOpen(modalEl)) {
+            ModalManager.close(modalEl);
+            if (modalEl === floatingControlsSettingsModal && openFloatingControlsSettingsBtn) {
+                openFloatingControlsSettingsBtn.setAttribute('aria-expanded', 'false');
+            }
+            if (modalEl === paymentCyclesSettingsModal && openPaymentCyclesSettingsBtn) {
+                openPaymentCyclesSettingsBtn.setAttribute('aria-expanded', 'false');
+            }
+        }
+    });
+}
+
+function updateSettingsSplitState() {
+    if (!settingsModal) return;
+    const anySideOpen = detailModals().some((modalEl) => modalEl
+        && modalEl.classList.contains('settings-side-modal-anchored')
+        && (ModalManager.isOpen(modalEl) || modalEl.classList.contains('is-open')));
+    settingsModal.classList.toggle('settings-split-active', anySideOpen);
+}
+
+function applyDetailModalPresentation(modalEl) {
+    if (!modalEl || !settingsModal) return;
+    const canSplit = ModalManager.isOpen(settingsModal) && window.innerWidth > 1100;
+    modalEl.classList.toggle('settings-side-modal', canSplit);
+    modalEl.classList.toggle('settings-side-modal-anchored', canSplit);
+    if (!canSplit) {
+        modalEl.style.removeProperty('--settings-detail-left');
+        modalEl.style.removeProperty('--settings-detail-top');
+        modalEl.style.removeProperty('--settings-detail-width');
+    }
+    updateSettingsSplitState();
+}
+
+function clearDetailModalPresentation(modalEl) {
+    if (!modalEl) return;
+    modalEl.classList.remove('settings-side-modal');
+    modalEl.classList.remove('settings-side-modal-anchored');
+    modalEl.style.removeProperty('--settings-detail-left');
+    modalEl.style.removeProperty('--settings-detail-top');
+    modalEl.style.removeProperty('--settings-detail-width');
+    const panel = modalEl.querySelector('.modal');
+    if (panel) {
+        panel.style.removeProperty('--settings-origin-x');
+        panel.style.removeProperty('--settings-origin-y');
+    }
+    updateSettingsSplitState();
 }
 
 function applyFeatureFlags(flags) {
@@ -260,8 +595,23 @@ function applyFeatureFlags(flags) {
     }
 
     // Floating call controls feature
-    if (floatingControlsCustomization) {
-        floatingControlsCustomization.style.display = flags.floatingCallControls ? '' : 'none';
+    if (openFloatingControlsSettingsBtn) {
+        openFloatingControlsSettingsBtn.style.display = flags.floatingCallControls ? '' : 'none';
+        openFloatingControlsSettingsBtn.setAttribute('aria-expanded', (floatingControlsSettingsModal && ModalManager.isOpen(floatingControlsSettingsModal)) ? 'true' : 'false');
+    }
+    if (openPaymentCyclesSettingsBtn) {
+        openPaymentCyclesSettingsBtn.style.display = flags.paymentCycles ? '' : 'none';
+        openPaymentCyclesSettingsBtn.setAttribute('aria-expanded', (paymentCyclesSettingsModal && ModalManager.isOpen(paymentCyclesSettingsModal)) ? 'true' : 'false');
+    }
+    if (!flags.paymentCycles && paymentCyclesSettingsModal && ModalManager.isOpen(paymentCyclesSettingsModal)) {
+        ModalManager.close(paymentCyclesSettingsModal);
+        clearDetailModalPresentation(paymentCyclesSettingsModal);
+    }
+    if (!flags.floatingCallControls && floatingControlsSettingsModal && ModalManager.isOpen(floatingControlsSettingsModal)) {
+        closeFloatingControlsSettingsModal();
+    }
+    if (floatingActiveCardCustomization) {
+        floatingActiveCardCustomization.style.display = flags.floatingShowActiveCard ? '' : 'none';
     }
     if (floatingControlsSizeModeSelect) {
         floatingControlsSizeModeSelect.value = flags.floatingControlsSizeMode || 'auto';
@@ -269,13 +619,55 @@ function applyFeatureFlags(flags) {
     if (floatingControlsSideSelect) {
         floatingControlsSideSelect.value = flags.floatingControlsSide || 'right';
     }
+    if (floatingSecondaryActionSelect) {
+        floatingSecondaryActionSelect.value = flags.floatingSecondaryAction || 'add';
+    }
+    if (floatingShowActiveCardToggle) {
+        floatingShowActiveCardToggle.checked = !!flags.floatingShowActiveCard;
+    }
+    if (floatingActiveShowTimerToggle) {
+        floatingActiveShowTimerToggle.checked = !!flags.floatingActiveShowTimer;
+    }
+    if (floatingActiveShowEarningsToggle) {
+        floatingActiveShowEarningsToggle.checked = !!flags.floatingActiveShowEarnings;
+    }
+    if (floatingActiveShowRateToggle) {
+        floatingActiveShowRateToggle.checked = !!flags.floatingActiveShowRate;
+    }
+    if (floatingOneHandedToggle) {
+        floatingOneHandedToggle.checked = !!flags.floatingOneHanded;
+    }
+    if (floatingPreviewEnabledToggle) {
+        floatingPreviewEnabledToggle.checked = ENABLE_FLOATING_PREVIEW_TESTING && !!flags.floatingPreviewEnabled;
+        floatingPreviewEnabledToggle.disabled = !ENABLE_FLOATING_PREVIEW_TESTING;
+    }
+    if (floatingFeatureStateNote) {
+        floatingFeatureStateNote.style.display = flags.floatingCallControls ? 'none' : '';
+    }
+    if (!ENABLE_FLOATING_PREVIEW_TESTING && floatingPreviewContainer) {
+        floatingPreviewContainer.style.display = 'none';
+    }
+    updateFloatingPreview(flags);
     updateFloatingCallControls(flags);
 }
 
 // initialize feature flags (will be applied on DOMContentLoaded too)
 // don't call loadFeatureFlags() at module-eval time because it may
 // reference `paymentCyclesEnabled` which is initialized later.
-let featureFlags = { notes: true, paymentCycles: false, floatingCallControls: true, floatingControlsSizeMode: 'auto', floatingControlsSide: 'right' };
+let featureFlags = {
+    notes: true,
+    paymentCycles: false,
+    floatingCallControls: true,
+    floatingControlsSizeMode: 'auto',
+    floatingControlsSide: 'right',
+    floatingSecondaryAction: 'add',
+    floatingShowActiveCard: true,
+    floatingActiveShowTimer: true,
+    floatingActiveShowEarnings: true,
+    floatingActiveShowRate: false,
+    floatingOneHanded: false,
+    floatingPreviewEnabled: true
+};
 
     // Recovery modal (v1.0.5)
 const recoveryModal = document.getElementById('recovery-modal');
@@ -309,18 +701,35 @@ let pendingConfirmOptions = {};
     const ModalManager = (() => {
         const modalConfigs = new Map();
         const focusState = new Map();
-        let activeModalId = null;
-        let openModalCount = 0;
+        const modalStack = [];
+        const transitionGuard = new Map();
+        let keydownBound = false;
+        let lastBodyPaddingRight = '';
 
         function isOpen(modalEl) {
             return !!modalEl && modalEl.style.display === 'flex';
         }
 
+        function getOpenModals() {
+            return Array.from(modalConfigs.keys())
+                .map(id => document.getElementById(id))
+                .filter(el => isOpen(el));
+        }
+
         function applyBodyScrollLock() {
-            if (openModalCount > 0) {
+            const hasOpen = getOpenModals().length > 0;
+            if (hasOpen) {
+                const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+                if (document.body.style.overflow !== 'hidden') {
+                    lastBodyPaddingRight = document.body.style.paddingRight || '';
+                }
                 document.body.style.overflow = 'hidden';
+                if (scrollbarWidth > 0) {
+                    document.body.style.paddingRight = `${scrollbarWidth}px`;
+                }
             } else {
                 document.body.style.overflow = '';
+                document.body.style.paddingRight = lastBodyPaddingRight;
             }
         }
 
@@ -361,6 +770,57 @@ let pendingConfirmOptions = {};
             dialogPanel.setAttribute('tabindex', '-1');
         }
 
+        function syncModalStack() {
+            const openIds = new Set(getOpenModals().map(m => m.id));
+            for (let i = modalStack.length - 1; i >= 0; i -= 1) {
+                if (!openIds.has(modalStack[i])) modalStack.splice(i, 1);
+            }
+
+            const baseZ = 60;
+            modalStack.forEach((id, idx) => {
+                const modalEl = document.getElementById(id);
+                if (!modalEl) return;
+                modalEl.style.zIndex = String(baseZ + (idx * 2));
+                const panel = modalEl.querySelector('.modal');
+                if (panel) panel.style.zIndex = String(baseZ + (idx * 2) + 1);
+            });
+        }
+
+        function bringToFront(modalEl) {
+            const idx = modalStack.indexOf(modalEl.id);
+            if (idx >= 0) {
+                modalStack.splice(idx, 1);
+                modalStack.push(modalEl.id);
+                syncModalStack();
+            }
+        }
+
+        function markTransition(modalEl) {
+            transitionGuard.set(modalEl.id, performance.now());
+        }
+
+        function isTransitionGuarded(modalEl) {
+            const at = transitionGuard.get(modalEl.id);
+            return Number.isFinite(at) && (performance.now() - at) < 120;
+        }
+
+        function fitModalToViewport(modalEl) {
+            if (!modalEl) return;
+            const panel = modalEl.querySelector('.modal');
+            if (!panel) return;
+            const safeMargin = 16;
+            const maxHeight = Math.max(220, window.innerHeight - (safeMargin * 2));
+            panel.style.maxHeight = `${maxHeight}px`;
+            if (modalEl.classList.contains('settings-side-modal-anchored')) return;
+
+            const rect = panel.getBoundingClientRect();
+            if (rect.top < safeMargin) {
+                panel.style.marginTop = `${safeMargin - rect.top}px`;
+            } else {
+                panel.style.marginTop = '';
+            }
+        }
+
         function register(modalEl, config = {}) {
             if (!modalEl || !modalEl.id) return;
             modalEl.classList.add('app-modal');
@@ -392,18 +852,43 @@ let pendingConfirmOptions = {};
 
         function open(modalEl, options = {}) {
             if (!modalEl || !modalEl.id) return;
+            if (isTransitionGuarded(modalEl)) return;
+            const alreadyOpen = isOpen(modalEl);
             const config = modalConfigs.get(modalEl.id) || {};
             const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
             focusState.set(modalEl.id, previousFocus);
-            activeModalId = modalEl.id;
 
-            if (!isOpen(modalEl)) {
-                openModalCount += 1;
-                applyBodyScrollLock();
+            if (!alreadyOpen) {
+                modalEl.style.display = 'flex';
+                modalEl.setAttribute('aria-hidden', 'false');
+            } else {
+                bringToFront(modalEl);
             }
-            modalEl.style.display = 'flex';
-            modalEl.setAttribute('aria-hidden', 'false');
-            modalEl.classList.add('is-open');
+
+            const panel = modalEl.querySelector('.modal');
+            const sourceEl = options.sourceEl instanceof HTMLElement ? options.sourceEl : null;
+            if (panel && sourceEl) {
+                const panelRect = panel.getBoundingClientRect();
+                const triggerRect = sourceEl.getBoundingClientRect();
+                const originX = Math.max(20, Math.min(panelRect.width - 20, (triggerRect.left + triggerRect.width / 2) - panelRect.left));
+                const originY = Math.max(20, Math.min(panelRect.height - 20, (triggerRect.top + triggerRect.height / 2) - panelRect.top));
+                panel.style.setProperty('--modal-origin-x', `${originX}px`);
+                panel.style.setProperty('--modal-origin-y', `${originY}px`);
+            } else if (panel) {
+                panel.style.removeProperty('--modal-origin-x');
+                panel.style.removeProperty('--modal-origin-y');
+            }
+
+            if (!modalStack.includes(modalEl.id)) modalStack.push(modalEl.id);
+            syncModalStack();
+            fitModalToViewport(modalEl);
+            markTransition(modalEl);
+
+            requestAnimationFrame(() => {
+                if (modalEl.style.display === 'flex') {
+                    modalEl.classList.add('is-open');
+                }
+            });
 
             const targetSelector = options.focusSelector || config.focusSelector;
             const explicitTarget = targetSelector ? modalEl.querySelector(targetSelector) : null;
@@ -411,39 +896,59 @@ let pendingConfirmOptions = {};
             const fallbackTarget = modalEl.querySelector('.modal') || modalEl;
             const target = explicitTarget || focusables[0] || fallbackTarget;
             if (target && typeof target.focus === 'function') target.focus();
-            updateFloatingCallControls(featureFlags);
+
+            applyBodyScrollLock();
+            scheduleFloatingControlsRefresh();
         }
 
         function close(modalEl, options = {}) {
             if (!modalEl || !modalEl.id || !isOpen(modalEl)) return;
+            if (isTransitionGuarded(modalEl)) return;
+            markTransition(modalEl);
+
             modalEl.style.display = 'none';
             modalEl.setAttribute('aria-hidden', 'true');
             modalEl.classList.remove('is-open');
-            openModalCount = Math.max(0, openModalCount - 1);
-            applyBodyScrollLock();
+            modalEl.style.removeProperty('z-index');
+            const panel = modalEl.querySelector('.modal');
+            if (panel) {
+                panel.style.removeProperty('--modal-origin-x');
+                panel.style.removeProperty('--modal-origin-y');
+                panel.style.removeProperty('z-index');
+                panel.style.marginTop = '';
+            }
 
-            if (activeModalId === modalEl.id) activeModalId = null;
+            const idx = modalStack.indexOf(modalEl.id);
+            if (idx >= 0) modalStack.splice(idx, 1);
+            syncModalStack();
+            applyBodyScrollLock();
 
             if (options.restoreFocus === false) return;
             const previousFocus = focusState.get(modalEl.id);
             if (previousFocus && document.contains(previousFocus) && typeof previousFocus.focus === 'function') {
                 previousFocus.focus();
             }
-            updateFloatingCallControls(featureFlags);
+            scheduleFloatingControlsRefresh();
         }
 
         function getActiveModal() {
-            if (activeModalId) {
-                const direct = document.getElementById(activeModalId);
-                if (isOpen(direct)) return direct;
+            if (modalStack.length) {
+                const id = modalStack[modalStack.length - 1];
+                const top = document.getElementById(id);
+                if (isOpen(top)) return top;
             }
-            const openModals = Array.from(modalConfigs.keys())
-                .map(id => document.getElementById(id))
-                .filter(el => isOpen(el));
+            const openModals = getOpenModals();
             return openModals[openModals.length - 1] || null;
         }
 
+        function refreshLayout() {
+            getOpenModals().forEach((modalEl) => fitModalToViewport(modalEl));
+            syncModalStack();
+        }
+
         function setupGlobalKeyboard() {
+            if (keydownBound) return;
+            keydownBound = true;
             document.addEventListener('keydown', (e) => {
                 const activeModal = getActiveModal();
                 if (!activeModal) return;
@@ -498,12 +1003,149 @@ let pendingConfirmOptions = {};
             open,
             close,
             isOpen,
-            setupGlobalKeyboard
+            setupGlobalKeyboard,
+            refreshLayout
         };
     })();
 
 function isAnyAppModalOpen() {
     return Array.from(document.querySelectorAll('.app-modal')).some(el => el.style.display === 'flex');
+}
+
+function getModalQaSnapshot() {
+    const modals = Array.from(document.querySelectorAll('.app-modal'));
+    return modals.map((modalEl) => {
+        const panel = modalEl.querySelector('.modal');
+        const titleId = panel?.getAttribute('aria-labelledby') || '';
+        const descId = panel?.getAttribute('aria-describedby') || '';
+        return {
+            id: modalEl.id,
+            open: modalEl.style.display === 'flex',
+            ariaHidden: modalEl.getAttribute('aria-hidden'),
+            hasDialogRole: panel?.getAttribute('role') === 'dialog',
+            hasAriaModal: panel?.getAttribute('aria-modal') === 'true',
+            hasTitleRef: !!titleId,
+            hasDescRef: !!descId
+        };
+    });
+}
+
+function isDockActuallyVisible() {
+    return !!floatingCallControls && floatingCallControls.style.display === 'flex';
+}
+
+function setFloatingDockCollapsed(collapsed) {
+    floatingDockCollapsed = !!collapsed;
+    if (!floatingCallControls) return;
+    floatingCallControls.classList.toggle('dock-collapsed', floatingDockCollapsed);
+    if (floatingDockMiniBtn) floatingDockMiniBtn.style.display = floatingDockCollapsed ? 'inline-flex' : 'none';
+}
+
+function scheduleFloatingDockAutoHide() {
+    if (floatingDockIdleTimer) clearTimeout(floatingDockIdleTimer);
+    if (!isDockActuallyVisible()) return;
+    floatingDockIdleTimer = setTimeout(() => {
+        if (isDockActuallyVisible() && !isAnyAppModalOpen()) {
+            setFloatingDockCollapsed(true);
+        }
+    }, 4500);
+}
+
+function expandFloatingDockWithAnimation() {
+    if (!floatingCallControls) return;
+    if (floatingDockExpandTimer) clearTimeout(floatingDockExpandTimer);
+    setFloatingDockCollapsed(false);
+    floatingCallControls.classList.add('dock-animate-expand');
+    floatingDockExpandTimer = setTimeout(() => {
+        floatingCallControls.classList.remove('dock-animate-expand');
+    }, 220);
+    scheduleFloatingDockAutoHide();
+}
+
+function resolveDockMode(modePreference) {
+    if (modePreference !== 'auto') return modePreference;
+    if (window.innerWidth <= 700) return 'icon';
+    if (window.innerWidth <= 1150) return 'compact';
+    return 'full';
+}
+
+function updateFloatingActiveCard(flags, liveCallActive) {
+    if (!floatingActiveCard || !floatingActiveTimer || !floatingActiveEarnings || !floatingActiveRate) return;
+    const showCard = !!flags.floatingShowActiveCard && liveCallActive;
+    floatingActiveCard.style.display = showCard ? '' : 'none';
+    if (!showCard) return;
+
+    const elapsed = liveCallStart ? Math.max(0, Date.now() - liveCallStart) : 0;
+    floatingActiveTimer.textContent = formatTime(elapsed);
+    floatingActiveEarnings.textContent = formatEarnings(calculateEarnings(elapsed, currentCallRate || getSelectedRateAmount()));
+    floatingActiveRate.textContent = `Rate: ${rateSelect.value || '--'}`;
+
+    floatingActiveTimer.style.display = flags.floatingActiveShowTimer ? '' : 'none';
+    floatingActiveEarnings.style.display = flags.floatingActiveShowEarnings ? '' : 'none';
+    floatingActiveRate.style.display = flags.floatingActiveShowRate ? '' : 'none';
+}
+
+function animateFloatingPrimaryTransition() {
+    if (!floatingCallControls) return;
+    floatingCallControls.classList.add('dock-animate-expand');
+    if (floatingDockExpandTimer) clearTimeout(floatingDockExpandTimer);
+    floatingDockExpandTimer = setTimeout(() => {
+        floatingCallControls.classList.remove('dock-animate-expand');
+    }, 220);
+}
+
+function updateFloatingSecondaryAction(flags) {
+    if (!floatingSecondaryActionBtn || !floatingSecondaryActionIcon || !floatingSecondaryActionLabel) return;
+    const action = flags.floatingSecondaryAction || 'add';
+    if (action === 'none') {
+        floatingSecondaryActionBtn.style.display = 'none';
+        return;
+    }
+    floatingSecondaryActionBtn.style.display = 'flex';
+    if (action === 'goto') {
+        floatingSecondaryActionIcon.className = 'fas fa-arrow-up';
+        floatingSecondaryActionLabel.textContent = 'Go to Controls';
+        floatingSecondaryActionBtn.setAttribute('aria-label', 'Go to Call Controls');
+    } else {
+        floatingSecondaryActionIcon.className = 'fas fa-plus';
+        floatingSecondaryActionLabel.textContent = 'Add Call';
+        floatingSecondaryActionBtn.setAttribute('aria-label', 'Add Call');
+    }
+}
+
+function computeFloatingDockOffset() {
+    let bottomOffset = window.innerWidth <= 640 ? 12 : 16;
+
+    const footer = document.querySelector('footer');
+    if (footer) {
+        const r = footer.getBoundingClientRect();
+        if (r.top < window.innerHeight) {
+            bottomOffset += Math.max(0, window.innerHeight - r.top) + 8;
+        }
+    }
+
+    const toast = document.querySelector('.app-toast');
+    if (toast && getComputedStyle(toast).opacity !== '0') {
+        const r = toast.getBoundingClientRect();
+        if (r.top < window.innerHeight) {
+            bottomOffset += Math.max(0, window.innerHeight - r.top) + 8;
+        }
+    }
+
+    return bottomOffset;
+}
+
+function avoidFocusedInputOverlap(flags) {
+    const activeEl = document.activeElement;
+    if (!activeEl || !(activeEl instanceof HTMLElement)) return flags.floatingControlsSide;
+    const tag = activeEl.tagName.toLowerCase();
+    if (!['input', 'textarea', 'select'].includes(tag)) return flags.floatingControlsSide;
+    const rect = activeEl.getBoundingClientRect();
+    const nearRight = rect.right > window.innerWidth * 0.62;
+    const nearLeft = rect.left < window.innerWidth * 0.38;
+    if (flags.floatingControlsSide === 'right' && nearRight) return 'left';
+    if (flags.floatingControlsSide === 'left' && nearLeft) return 'right';
+    return flags.floatingControlsSide;
 }
 
 function updateFloatingCallControls(flags = featureFlags) {
@@ -512,11 +1154,15 @@ function updateFloatingCallControls(flags = featureFlags) {
     const enabled = !!flags?.floatingCallControls;
     if (!enabled) {
         floatingCallControls.style.display = 'none';
+        floatingCallControls.classList.remove('dock-visible');
+        floatingCallControls.classList.remove('show-icon-details');
         return;
     }
 
     if (isAnyAppModalOpen()) {
         floatingCallControls.style.display = 'none';
+        floatingCallControls.classList.remove('dock-visible');
+        floatingCallControls.classList.remove('show-icon-details');
         return;
     }
 
@@ -529,26 +1175,22 @@ function updateFloatingCallControls(flags = featureFlags) {
 
     if (!passedControls || mainButtonVisible) {
         floatingCallControls.style.display = 'none';
+        floatingCallControls.classList.remove('dock-visible');
+        floatingCallControls.classList.remove('show-icon-details');
         return;
     }
 
-    const modePreference = flags?.floatingControlsSizeMode || 'auto';
-    let effectiveMode = modePreference;
-    if (modePreference === 'auto') {
-        if (window.innerWidth <= 700) {
-            effectiveMode = 'icon';
-        } else if (window.innerWidth <= 1150) {
-            effectiveMode = 'compact';
-        } else {
-            effectiveMode = 'full';
-        }
-    }
+    const effectiveMode = resolveDockMode(flags?.floatingControlsSizeMode || 'auto');
 
     floatingCallControls.classList.remove('floating-compact', 'floating-icon');
     if (effectiveMode === 'compact') floatingCallControls.classList.add('floating-compact');
     if (effectiveMode === 'icon') floatingCallControls.classList.add('floating-icon');
+    floatingCallControls.classList.toggle('one-handed', !!flags.floatingOneHanded && window.innerWidth <= 900);
 
-    const side = flags?.floatingControlsSide === 'left' ? 'left' : 'right';
+    const preferredSide = flags?.floatingControlsSide === 'left' ? 'left' : 'right';
+    const side = avoidFocusedInputOverlap({ ...flags, floatingControlsSide: preferredSide });
+    const bottomOffset = computeFloatingDockOffset();
+    floatingCallControls.style.bottom = `${bottomOffset}px`;
     if (side === 'left') {
         floatingCallControls.style.left = '1rem';
         floatingCallControls.style.right = 'auto';
@@ -560,8 +1202,58 @@ function updateFloatingCallControls(flags = featureFlags) {
     const liveCallActive = !!liveCallStart || endCallBtn.style.display !== 'none';
     floatingStartCallBtn.style.display = liveCallActive ? 'none' : 'flex';
     floatingEndCallBtn.style.display = liveCallActive ? 'flex' : 'none';
+    if (floatingDockMiniIcon) {
+        floatingDockMiniIcon.className = liveCallActive ? 'fas fa-stop' : 'fas fa-play';
+    }
+
+    const showDenseExtras = effectiveMode !== 'icon';
+    const iconDetailsEnabled = effectiveMode === 'icon'
+        && liveCallActive
+        && !!flags.floatingShowActiveCard
+        && (!!flags.floatingActiveShowTimer || !!flags.floatingActiveShowEarnings || !!flags.floatingActiveShowRate);
+    if (floatingSecondaryActionBtn) {
+        floatingSecondaryActionBtn.style.display = showDenseExtras ? '' : 'none';
+    }
+    if (showDenseExtras) {
+        updateFloatingSecondaryAction(flags);
+    }
+    updateFloatingActiveCard(flags, liveCallActive);
+
+    if (floatingCallControls) {
+        floatingCallControls.classList.toggle('show-icon-details', iconDetailsEnabled);
+    }
+    if (!showDenseExtras && !iconDetailsEnabled && floatingActiveCard) {
+        floatingActiveCard.style.display = 'none';
+    }
+
+    const firstShow = floatingCallControls.style.display !== 'flex';
     floatingCallControls.style.display = 'flex';
+    floatingCallControls.classList.add('dock-visible');
+    if (firstShow) {
+        setFloatingDockCollapsed(false);
+        scheduleFloatingDockAutoHide();
+    }
 }
+
+const scheduleFloatingControlsRefresh = createRafScheduler(() => {
+    updateFloatingCallControls(featureFlags);
+});
+
+const scheduleDetailPanelsReflow = createRafScheduler(() => {
+    detailModals().forEach((modalEl) => {
+        if (modalEl && ModalManager.isOpen(modalEl)) {
+            applyDetailModalPresentation(modalEl);
+            positionDetailModal(modalEl);
+        } else if (modalEl) {
+            clearDetailModalPresentation(modalEl);
+        }
+    });
+    ModalManager.refreshLayout();
+});
+
+const scheduleModalLayoutRefresh = createRafScheduler(() => {
+    ModalManager.refreshLayout();
+});
     
     // Load from localStorage
     let rates, calls, dailyGoal, paymentCyclesEnabled, paymentCycles, lastSelectedRate;
@@ -636,6 +1328,11 @@ if (storedDailyGoal) {
     let isEditingCycle = false;
     let editingCycleIndex = null;
     let callLogFilter = 'today';
+    let floatingDockCollapsed = false;
+    let floatingDockIdleTimer = null;
+    let floatingDockExpandTimer = null;
+    let lastActiveCallPersistAt = 0;
+    let cachedTimeZoneFormatters = { tz: null, date: null, time: null };
 
     // Helper Functions
     function formatTime(milliseconds) {
@@ -687,15 +1384,18 @@ function getCallEarnings(call) {
 // v1.0.5 Active live call state (for crash/close recovery)
 const ACTIVE_CALL_KEY = 'activeLiveCallState';
 
-function saveActiveCallState() {
+function saveActiveCallState(force = false) {
   if (!liveCallStart) return;
+  const now = Date.now();
+  if (!force && now - lastActiveCallPersistAt < 5000) return;
   const state = {
     start: liveCallStart,
     rate: currentCallRate,
     rateName: rateSelect.value || null,
-    lastPing: Date.now()
+    lastPing: now
   };
   localStorage.setItem(ACTIVE_CALL_KEY, JSON.stringify(state));
+  lastActiveCallPersistAt = now;
 }
 
 function readActiveCallState() {
@@ -1014,22 +1714,27 @@ function readCallsFromStorage() {
 
     function updateLocalTime() {
         const tz = getUserTimeZone();
+        if (cachedTimeZoneFormatters.tz !== tz) {
+            cachedTimeZoneFormatters = {
+                tz,
+                time: new Intl.DateTimeFormat('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    timeZone: tz
+                }),
+                date: new Intl.DateTimeFormat('en-US', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    timeZone: tz
+                })
+            };
+        }
         const now = new Date();
-        const options = {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            timeZone: tz
-        };
-        const dateOptions = {
-            weekday: 'short',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            timeZone: tz
-        };
-        const timeString = new Intl.DateTimeFormat('en-US', options).format(now);
-        const dateString = new Intl.DateTimeFormat('en-US', dateOptions).format(now);
+        const timeString = cachedTimeZoneFormatters.time.format(now);
+        const dateString = cachedTimeZoneFormatters.date.format(now);
         localTimeDisplay.textContent = `${dateString} ${timeString}`;
         userTimeZoneDisplay.textContent = tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
@@ -1069,20 +1774,6 @@ function readCallsFromStorage() {
                 </div>
             `;
             ratesList.appendChild(rateItem);
-        });
-
-        document.querySelectorAll('.edit-rate-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                editRate(index);
-            });
-        });
-
-        document.querySelectorAll('.delete-rate-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                deleteRate(index);
-            });
         });
     }
 
@@ -1257,21 +1948,6 @@ function readCallsFromStorage() {
             callLogTableBody.appendChild(row);
         });
 
-        document.querySelectorAll('.edit-call-btn').forEach(button => {
-  button.addEventListener('click', (e) => {
-    const callId = e.currentTarget.dataset.callId;
-    editCall(callId);
-    openCallModal();
-  });
-});
-
-document.querySelectorAll('.delete-call-btn').forEach(button => {
-  button.addEventListener('click', (e) => {
-    const callId = e.currentTarget.dataset.callId;
-    deleteCall(callId);
-  });
-});
-
         const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
         const totalMinutes = totalDuration / (1000 * 60);
         const totalEarnings = filteredCalls.reduce((sum, call) => sum + call.earned, 0);
@@ -1442,6 +2118,7 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
 
     function setConfirmationStatus(text = '', isError = false) {
         if (!confirmationModalStatus) return;
+        confirmationModalStatus.setAttribute('aria-live', isError ? 'assertive' : 'polite');
         confirmationModalStatus.textContent = text;
         confirmationModalStatus.classList.remove('text-red-600', 'dark:text-red-400');
         confirmationModalStatus.classList.add('text-gray-600', 'dark:text-gray-300');
@@ -1476,6 +2153,7 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
         confirmationModalTitle.innerHTML = `<i class="fas ${icon} ${iconColor} mr-2"></i>${title}`;
         confirmationModalMessage.textContent = message;
         confirmationConfirmBtn.textContent = confirmText;
+        confirmationConfirmBtn.setAttribute('aria-busy', 'false');
         setConfirmationConfirmTone(tone);
         confirmationCancelBtn.textContent = cancelText;
         confirmationCancelBtn.style.display = showCancel ? '' : 'none';
@@ -1522,6 +2200,7 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
         }
         setConfirmationConfirmTone('danger');
         setConfirmationActionEnabled(true);
+        if (confirmationConfirmBtn) confirmationConfirmBtn.setAttribute('aria-busy', 'false');
         if (confirmationVerifyGroup && confirmationVerifyInput) {
             confirmationVerifyGroup.style.display = 'none';
             confirmationVerifyInput.value = '';
@@ -1568,8 +2247,8 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
     }
 
     // Call modal functions
-    function openCallModal() {
-        ModalManager.open(callModal, { focusSelector: '#call-start-time' });
+    function openCallModal(triggerEl = null) {
+        ModalManager.open(callModal, { focusSelector: '#call-start-time', sourceEl: triggerEl });
     }
 
     function closeCallModal() {
@@ -1600,17 +2279,20 @@ document.querySelectorAll('.delete-call-btn').forEach(button => {
         endCallBtn.style.display = 'block';
         liveCallInfo.classList.add('active-call-pulse');
 
-        saveActiveCallState();
+        saveActiveCallState(true);
 
         liveCallTimerId = setInterval(() => {
             const elapsed = Date.now() - liveCallStart;
             liveCallTimerDisplay.textContent = formatTime(elapsed);
             const earned = calculateEarnings(elapsed, currentCallRate);
             liveCallEarningsDisplay.textContent = formatEarnings(earned);
+            updateFloatingActiveCard(featureFlags, true);
+            saveActiveCallState();
         }, 1000);
 
-        saveActiveCallState();
+        saveActiveCallState(true);
         updateFloatingCallControls(featureFlags);
+        animateFloatingPrimaryTransition();
     }
 
     function endLiveCall() {
@@ -1643,17 +2325,64 @@ calls.push(callData);
         showToast('Live call saved!');
         clearActiveCallState();
         updateFloatingCallControls(featureFlags);
+        animateFloatingPrimaryTransition();
     }
 
     // Settings modal functions
-    function openSettingsModal() {
-        ModalManager.open(settingsModal, { focusSelector: '#feature-notes-toggle' });
+    function openSettingsModal(triggerEl = null) {
+        ModalManager.open(settingsModal, { focusSelector: '#feature-notes-toggle', sourceEl: triggerEl });
+        updateSettingsSplitState();
         updateStorageInfo();
-        setTimeout(() => document.getElementById('timezone-select').scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
     }
 
     function closeSettingsModal() {
+        closeOtherDetailModals(null);
+        detailModals().forEach((modalEl) => clearDetailModalPresentation(modalEl));
+        stopFloatingPreviewAutoRefresh();
         ModalManager.close(settingsModal);
+    }
+
+    function openPaymentCyclesSettingsModal(triggerEl = null) {
+        if (!featureFlags.paymentCycles) return;
+        closeOtherDetailModals(paymentCyclesSettingsModal);
+        settingsModal?.classList.add('settings-split-active');
+        applyDetailModalPresentation(paymentCyclesSettingsModal);
+        positionDetailModal(paymentCyclesSettingsModal);
+        ModalManager.open(paymentCyclesSettingsModal, { focusSelector: '#show-add-cycle-btn', sourceEl: triggerEl });
+        if (openPaymentCyclesSettingsBtn) openPaymentCyclesSettingsBtn.setAttribute('aria-expanded', 'true');
+        setDetailPanelOrigin(paymentCyclesSettingsModal, triggerEl);
+        updateSettingsSplitState();
+        updateStorageInfo();
+        renderPaymentCycles();
+    }
+
+    function closePaymentCyclesSettingsModal() {
+        ModalManager.close(paymentCyclesSettingsModal);
+        clearDetailModalPresentation(paymentCyclesSettingsModal);
+        if (openPaymentCyclesSettingsBtn) openPaymentCyclesSettingsBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function openFloatingControlsSettingsModal(triggerEl = null) {
+        if (!featureFlags.floatingCallControls) return;
+        closeOtherDetailModals(floatingControlsSettingsModal);
+        settingsModal?.classList.add('settings-split-active');
+        applyDetailModalPresentation(floatingControlsSettingsModal);
+        positionDetailModal(floatingControlsSettingsModal);
+        ModalManager.open(floatingControlsSettingsModal, { focusSelector: '#floating-controls-size-mode', sourceEl: triggerEl });
+        if (openFloatingControlsSettingsBtn) openFloatingControlsSettingsBtn.setAttribute('aria-expanded', 'true');
+        setDetailPanelOrigin(floatingControlsSettingsModal, triggerEl);
+        updateSettingsSplitState();
+        requestAnimationFrame(() => {
+            updateFloatingPreview(featureFlags, { randomize: true });
+            startFloatingPreviewAutoRefresh(featureFlags);
+        });
+    }
+
+    function closeFloatingControlsSettingsModal() {
+        stopFloatingPreviewAutoRefresh();
+        ModalManager.close(floatingControlsSettingsModal);
+        clearDetailModalPresentation(floatingControlsSettingsModal);
+        if (openFloatingControlsSettingsBtn) openFloatingControlsSettingsBtn.setAttribute('aria-expanded', 'false');
     }
 
     function openEditCycleModal() {
@@ -1732,28 +2461,6 @@ calls.push(callData);
                 </td>
             `;
             paymentCyclesList.appendChild(row);
-        });
-
-        document.querySelectorAll('.edit-cycle-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                editPaymentCycle(index);
-            });
-        });
-
-        document.querySelectorAll('.delete-cycle-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const index = parseInt(e.currentTarget.dataset.index);
-                showConfirmation(
-                    'Delete Payment Cycle',
-                    'Are you sure you want to delete this payment cycle?',
-                    'Delete',
-                    () => {
-                        paymentCycles.splice(index, 1);
-                        savePaymentCycles();
-                    }
-                );
-            });
         });
 
         if (paymentCyclesEnabled) {
@@ -1869,8 +2576,14 @@ calls.push(callData);
     }
 
     function showToast(message) {
+        const existing = document.querySelector('.app-toast');
+        if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
         const toast = document.createElement('div');
+        toast.className = 'app-toast';
         toast.textContent = message;
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+        toast.setAttribute('aria-atomic', 'true');
         toast.style.cssText = `
             position: fixed;
             bottom: 20px;
@@ -1956,11 +2669,16 @@ calls.push(callData);
     document.addEventListener('DOMContentLoaded', () => {
         try {
         ModalManager.setupGlobalKeyboard();
+        window.WTTModalQA = {
+            report: getModalQaSnapshot
+        };
         ModalManager.register(callModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#call-start-time' });
         ModalManager.register(settingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feature-notes-toggle' });
         ModalManager.register(editCycleModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#cycle-start-date-input' });
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
+        ModalManager.register(floatingControlsSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#floating-controls-size-mode' });
+        ModalManager.register(paymentCyclesSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#show-add-cycle-btn' });
         ModalManager.register(confirmationModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#confirmation-confirm-btn' });
         ModalManager.register(recoveryModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#recovery-resume-btn' });
 
@@ -1972,6 +2690,95 @@ calls.push(callData);
         if (floatingEndCallBtn) {
             floatingEndCallBtn.addEventListener('click', endLiveCall);
         }
+        if (floatingDockMiniBtn) {
+            floatingDockMiniBtn.addEventListener('click', expandFloatingDockWithAnimation);
+        }
+        if (floatingSecondaryActionBtn) {
+            floatingSecondaryActionBtn.addEventListener('click', () => {
+                const action = featureFlags.floatingSecondaryAction || 'add';
+                if (action === 'goto') {
+                    callControlsCard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else if (action === 'add') {
+                    addCallBtn?.click();
+                }
+            });
+        }
+
+        if (ratesList) {
+            ratesList.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.edit-rate-btn');
+                if (editBtn) {
+                    const index = Number(editBtn.dataset.index);
+                    if (Number.isInteger(index)) editRate(index);
+                    return;
+                }
+                const deleteBtn = e.target.closest('.delete-rate-btn');
+                if (deleteBtn) {
+                    const index = Number(deleteBtn.dataset.index);
+                    if (Number.isInteger(index)) deleteRate(index);
+                }
+            });
+        }
+
+        if (callLogTableBody) {
+            callLogTableBody.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.edit-call-btn');
+                if (editBtn) {
+                    const callId = String(editBtn.dataset.callId || '');
+                    if (callId) {
+                        editCall(callId);
+                        openCallModal(editBtn);
+                    }
+                    return;
+                }
+                const deleteBtn = e.target.closest('.delete-call-btn');
+                if (deleteBtn) {
+                    const callId = String(deleteBtn.dataset.callId || '');
+                    if (callId) deleteCall(callId);
+                }
+            });
+        }
+
+        if (paymentCyclesList) {
+            paymentCyclesList.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.edit-cycle-btn');
+                if (editBtn) {
+                    const index = Number(editBtn.dataset.index);
+                    if (Number.isInteger(index)) editPaymentCycle(index);
+                    return;
+                }
+                const deleteBtn = e.target.closest('.delete-cycle-btn');
+                if (deleteBtn) {
+                    const index = Number(deleteBtn.dataset.index);
+                    if (!Number.isInteger(index)) return;
+                    showConfirmation(
+                        'Delete Payment Cycle',
+                        'Are you sure you want to delete this payment cycle?',
+                        'Delete',
+                        () => {
+                            paymentCycles.splice(index, 1);
+                            savePaymentCycles();
+                        }
+                    );
+                }
+            });
+        }
+
+        const dockActivityEvents = ['scroll', 'mousemove', 'touchstart', 'keydown'];
+        let lastDockActivityAt = 0;
+        const onDockActivity = () => {
+            const nowTs = performance.now();
+            if (nowTs - lastDockActivityAt < 120) return;
+            lastDockActivityAt = nowTs;
+            if (isDockActuallyVisible() && floatingDockCollapsed) {
+                expandFloatingDockWithAnimation();
+            } else if (isDockActuallyVisible()) {
+                scheduleFloatingDockAutoHide();
+            }
+        };
+        dockActivityEvents.forEach(evt => {
+            window.addEventListener(evt, onDockActivity, { passive: evt !== 'keydown' });
+        });
         addCallBtn.addEventListener('click', () => {
         // mode: Add
         isEditingCall = false;
@@ -1980,7 +2787,7 @@ calls.push(callData);
         document.getElementById('modal-title').innerHTML =
             `<i class="fas fa-plus text-blue-500 mr-2"></i>Add Call`;
 
-        openCallModal();
+        openCallModal(addCallBtn);
 });
 
 // ✅ X (cerrar)
@@ -2045,6 +2852,13 @@ calls.push(callData);
             if (featureNotesToggle) featureNotesToggle.checked = !!featureFlags.notes;
             if (featurePaymentCyclesToggle) featurePaymentCyclesToggle.checked = !!featureFlags.paymentCycles;
             if (featureFloatingControlsToggle) featureFloatingControlsToggle.checked = !!featureFlags.floatingCallControls;
+            if (floatingShowActiveCardToggle) floatingShowActiveCardToggle.checked = !!featureFlags.floatingShowActiveCard;
+            if (floatingActiveShowTimerToggle) floatingActiveShowTimerToggle.checked = !!featureFlags.floatingActiveShowTimer;
+            if (floatingActiveShowEarningsToggle) floatingActiveShowEarningsToggle.checked = !!featureFlags.floatingActiveShowEarnings;
+            if (floatingActiveShowRateToggle) floatingActiveShowRateToggle.checked = !!featureFlags.floatingActiveShowRate;
+            if (floatingOneHandedToggle) floatingOneHandedToggle.checked = !!featureFlags.floatingOneHanded;
+            if (floatingSecondaryActionSelect) floatingSecondaryActionSelect.value = featureFlags.floatingSecondaryAction || 'add';
+            if (floatingPreviewEnabledToggle) floatingPreviewEnabledToggle.checked = ENABLE_FLOATING_PREVIEW_TESTING && !!featureFlags.floatingPreviewEnabled;
             // apply the flags immediately
             applyFeatureFlags(featureFlags);
 
@@ -2090,6 +2904,24 @@ calls.push(callData);
                 });
             }
 
+            if (openFloatingControlsSettingsBtn) {
+                openFloatingControlsSettingsBtn.addEventListener('click', (e) => openFloatingControlsSettingsModal(e.currentTarget));
+            }
+            if (openPaymentCyclesSettingsBtn) {
+                openPaymentCyclesSettingsBtn.addEventListener('click', (e) => openPaymentCyclesSettingsModal(e.currentTarget));
+            }
+            if (closeFloatingControlsSettingsBtn) {
+                closeFloatingControlsSettingsBtn.addEventListener('click', closeFloatingControlsSettingsModal);
+            }
+            if (doneFloatingControlsSettingsBtn) {
+                doneFloatingControlsSettingsBtn.addEventListener('click', closeFloatingControlsSettingsModal);
+            }
+            if (closePaymentCyclesSettingsModalBtn) {
+                closePaymentCyclesSettingsModalBtn.addEventListener('click', closePaymentCyclesSettingsModal);
+            }
+            if (donePaymentCyclesSettingsBtn) {
+                donePaymentCyclesSettingsBtn.addEventListener('click', closePaymentCyclesSettingsModal);
+            }
             if (floatingControlsSizeModeSelect) {
                 floatingControlsSizeModeSelect.addEventListener('change', (e) => {
                     featureFlags.floatingControlsSizeMode = e.target.value;
@@ -2103,6 +2935,68 @@ calls.push(callData);
                     featureFlags.floatingControlsSide = e.target.value === 'left' ? 'left' : 'right';
                     saveFeatureFlags(featureFlags);
                     applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingSecondaryActionSelect) {
+                floatingSecondaryActionSelect.addEventListener('change', (e) => {
+                    featureFlags.floatingSecondaryAction = ['add', 'goto', 'none'].includes(e.target.value) ? e.target.value : 'add';
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingShowActiveCardToggle) {
+                floatingShowActiveCardToggle.addEventListener('change', (e) => {
+                    featureFlags.floatingShowActiveCard = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingActiveShowTimerToggle) {
+                floatingActiveShowTimerToggle.addEventListener('change', (e) => {
+                    featureFlags.floatingActiveShowTimer = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingActiveShowEarningsToggle) {
+                floatingActiveShowEarningsToggle.addEventListener('change', (e) => {
+                    featureFlags.floatingActiveShowEarnings = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingActiveShowRateToggle) {
+                floatingActiveShowRateToggle.addEventListener('change', (e) => {
+                    featureFlags.floatingActiveShowRate = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingOneHandedToggle) {
+                floatingOneHandedToggle.addEventListener('change', (e) => {
+                    featureFlags.floatingOneHanded = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingPreviewEnabledToggle) {
+                floatingPreviewEnabledToggle.addEventListener('change', (e) => {
+                    featureFlags.floatingPreviewEnabled = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
+            if (floatingPreviewRandomizeBtn) {
+                floatingPreviewRandomizeBtn.addEventListener('click', () => {
+                    updateFloatingPreview(featureFlags, { randomize: true });
                 });
             }
 
@@ -2133,7 +3027,7 @@ calls.push(callData);
         // v1.0.5 Prevent accidental close when a live call is active
         window.addEventListener('beforeunload', (e) => {
             if (liveCallStart) {
-                saveActiveCallState();
+                saveActiveCallState(true);
                 e.preventDefault();
                 e.returnValue = '';
             }
@@ -2151,7 +3045,7 @@ calls.push(callData);
     if (typeof recoveryNotes !== 'undefined' && recoveryNotes) recoveryNotes.value = '';
 
   ModalManager.open(recoveryModal, { focusSelector: '#recovery-resume-btn' });
-  updateFloatingCallControls(featureFlags);
+  scheduleFloatingControlsRefresh();
 
   recoveryResumeBtn.onclick = () => {
         // restore selected rate if available
@@ -2187,10 +3081,10 @@ calls.push(callData);
             saveActiveCallState();
         }, 1000);
 
-        saveActiveCallState();
+        saveActiveCallState(true);
         closeRecoveryModal();
         showToast('Live call resumed.');
-        updateFloatingCallControls(featureFlags);
+        scheduleFloatingControlsRefresh();
   };
 
   recoverySummarizeBtn.onclick = () => {
@@ -2220,14 +3114,14 @@ calls.push(callData);
     clearActiveCallState();
     closeRecoveryModal();
     showToast('Unfinished call summarized and saved.');
-    updateFloatingCallControls(featureFlags);
+    scheduleFloatingControlsRefresh();
   };
 
   recoveryDiscardBtn.onclick = () => {
     clearActiveCallState();
     closeRecoveryModal();
     showToast('Unfinished call discarded.');
-    updateFloatingCallControls(featureFlags);
+    scheduleFloatingControlsRefresh();
   };
 })();
 
@@ -2389,7 +3283,7 @@ goalMinutesInput.addEventListener('input', () => {
             updateCallLogFilterButtons();
         });
         
-        settingsToggleBtn.addEventListener('click', openSettingsModal);
+        settingsToggleBtn.addEventListener('click', (e) => openSettingsModal(e.currentTarget));
         closeSettingsModalBtn.addEventListener('click', closeSettingsModal);
         
         if (tzSelect) {
@@ -2575,8 +3469,12 @@ goalMinutesInput.addEventListener('input', () => {
         updateStorageInfo();
         renderPaymentCycles();
         setInterval(updateLocalTime, 1000);
-        window.addEventListener('scroll', () => updateFloatingCallControls(featureFlags), { passive: true });
-        window.addEventListener('resize', () => updateFloatingCallControls(featureFlags));
+        window.addEventListener('scroll', scheduleFloatingControlsRefresh, { passive: true });
+        window.addEventListener('resize', () => {
+            scheduleModalLayoutRefresh();
+            scheduleFloatingControlsRefresh();
+            scheduleDetailPanelsReflow();
+        });
 
         const today = getTodayDateString();
         statsDatePicker.value = today;
@@ -2598,7 +3496,7 @@ goalMinutesInput.addEventListener('input', () => {
             updateCallLogFilterButtons();
         });
         updateCallLogFilterButtons();
-        updateFloatingCallControls(featureFlags);
+        scheduleFloatingControlsRefresh();
 
         // Confirmation modal listeners (v1.1.0)
         if (confirmationConfirmBtn) {
@@ -2615,6 +3513,7 @@ goalMinutesInput.addEventListener('input', () => {
                 }
                 isConfirmActionRunning = true;
                 setConfirmationActionEnabled(false);
+                if (confirmationConfirmBtn) confirmationConfirmBtn.setAttribute('aria-busy', 'true');
                 setConfirmationStatus(pendingConfirmOptions?.loadingText || 'Working...');
                 try {
                     if (typeof pendingConfirmAction === 'function') {
@@ -2669,3 +3568,4 @@ goalMinutesInput.addEventListener('input', () => {
             }
         }
     });
+
