@@ -1,7 +1,7 @@
 # Work Time Tracker
 
 
-![Version](https://img.shields.io/badge/version-1.1.3-blue)
+![Version](https://img.shields.io/badge/version-1.1.26-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![No Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Vanilla JS](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -93,6 +93,49 @@ Track live calls, monitor earnings, manage billing rates, set daily goals, and o
 - Replaced browser `alert()`/`confirm()` with the internal confirmation modal style across add/edit/delete/import/reset flows
 - Added reusable modal helper behavior for severity/icon/tone consistency
 - Kept a single `alert()` only as last-resort fallback for catastrophic initialization failure
+
+### v1.1.5 Notes
+- Fixed Settings modal overflow/scroll behavior for split-screen and short-height windows
+- Added dedicated centered modal for Floating Controls customization to reduce Settings clutter
+- Fixed floating mini button deformation by isolating icon-size styles to primary Start/End controls only
+- Improved dock behavior in `Icon` mode by simplifying actions (hides secondary action + active mini card)
+- Improved settings readability for floating customization with internal scroll area
+
+### v1.1.6 Notes
+- Reorganized `Settings` into cleaner section cards to reduce visual overload
+- Expanded and centered `Settings` modal (`max-w-3xl`) for split-screen usability
+- Removed forced auto-scroll to Time Zone when opening settings (prevents jumpy behavior)
+- Improved internal modal scrolling so content remains accessible in compact window layouts
+
+### v1.1.7 Notes
+- Added `Settings Control Center` navigation with tabs (`General`, `Floating`, `Data`, `Time`) and inline search
+- Added Floating density presets: `Minimal`, `Balanced`, `Data-rich`, and `Custom`
+- Added testing-focused mini live preview in Floating Controls modal with idle/on-call simulation
+- Added explicit preview toggle so preview lab can be disabled independently during evaluation
+- Preserved all existing user settings storage keys while extending feature flags safely
+
+### v1.1.8 Notes
+- Fixed layout regression where footer information appeared merged with modal viewport
+- Moved footer information into a dedicated centered floating modal (`Footer Info`) while preserving existing content/style
+- Simplified Settings flow back to `General-first` (no tabs) for current scope
+- Added per-feature customization entry buttons from General:
+  - `Notes Settings`
+  - `Payment Cycles Settings`
+  - `Floating Controls Settings`
+- Grouped `Payment Cycles + Data Management + Storage` into a dedicated Payment Cycles settings modal
+
+### v1.1.9 Notes
+- Restored classic footer as always-visible content at the bottom of the main page
+- Removed temporary footer-info floating modal
+- Kept footer visual style and content unchanged from original layout intent
+
+### v1.1.4 Notes
+- Added Smart Floating Dock with contextual primary actions (`Start`/`End`) and configurable secondary action (`Add Call` / `Go to Controls`)
+- Added idle auto-collapse to mini dock plus animated re-expand on user activity
+- Added customizable Active Call mini card (timer/earnings/rate visibility toggles)
+- Added one-handed mode option for larger touch targets on mobile
+- Added overlap-avoidance behavior for footer, toasts, and focused form fields
+- Added smooth `Go to Controls` action aligned with current app aesthetics
 
 ### v1.1.3 Notes
 - Added floating-controls customization panel in Settings (visible only when Floating Call Controls is enabled)
@@ -225,5 +268,5 @@ Built for interpreters by interpreters.
 
 Made by [Topo](https://www.instagram.com/otpo/)
 
-Current Version: v1.1.3
+Current Version: v1.1.26
 Last Updated: February 2026
