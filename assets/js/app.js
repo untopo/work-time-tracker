@@ -2,8 +2,29 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.26';
+    const APP_VERSION = '1.1.48';
     const CHANGELOG = [
+        { version: '1.1.48', date: '2026-02-28', changes: ['Added: CSV import preview now supports manual column mapping before merging calls', 'Changed: Backup import now merges into existing local data instead of replacing it', 'Improved: Data Management import action now supports safer call-log CSV workflows without erasing prior history'] },
+        { version: '1.1.47', date: '2026-02-28', changes: ['Added: Optional RPG progression toggle in Settings', 'Changed: XP is now granted only for calls completed while RPG progression is enabled', 'Changed: Achievements remain available when RPG is off, while XP and multiplier references are hidden'] },
+        { version: '1.1.46', date: '2026-02-26', changes: ['Added: New all-time achievement "Bounce Back" for returning after a 3+ day break', 'Added: Goal Mastery achievements (7 and 30 goal-hit days) with progress tracking', 'Changed: Removed Achievements shortcut from Settings (trophy button remains the single entry-point)'] },
+        { version: '1.1.45', date: '2026-02-26', changes: ['Added: Daily Quests section with automatic day-based rotation and progress bars', 'Added: Daily quest XP rewards now contribute to unified total XP progression', 'Changed: Rebalanced all-time earnings milestone from $100/day to $100/week for fairer progression'] },
+        { version: '1.1.44', date: '2026-02-26', changes: ['Changed: Streak multiplier now applies to call XP as well (not only achievement rewards)', 'Changed: Achievement XP reward now scales by level only for simpler/fairer understanding', 'Fixed: Achievements modal footer layout so Done button remains inside modal container'] },
+        { version: '1.1.43', date: '2026-02-26', changes: ['Fixed: Tooltip speech-bubbles no longer clip in stats panel layout', 'Fixed: Achievements modal Done action now sits at the true end of scrollable content (no sticky overlap)'] },
+        { version: '1.1.42', date: '2026-02-26', changes: ['Added: Contextual "?" help tooltips with hover speech-bubble explanations in RPG/Achievements UI', 'Improved: Achievement summary now includes inline explanation for streak reward multiplier logic'] },
+        { version: '1.1.41', date: '2026-02-26', changes: ['Improved: Added explicit XP-gained popup on call completion (live + manual add)', 'Clarified: XP feedback now appears alongside save confirmation to make progression visible every session'] },
+        { version: '1.1.40', date: '2026-02-26', changes: ['Improved: Achievement cards now show XP earned only after unlock (hidden for locked achievements)', 'Improved: Achievement unlock toasts now explicitly include achievement name + XP gained in a single lightweight popup'] },
+        { version: '1.1.39', date: '2026-02-26', changes: ['Added: One-time XP rewards for achievement unlocks', 'Added: Achievement reward scaling by current level and active streak at unlock time', 'Added: Persistent bonus XP ledger to prevent duplicate reward grants and support fair long-term progression'] },
+        { version: '1.1.38', date: '2026-02-26', changes: ['Changed: Replaced $150/day achievement with an all-time earnings milestone for fairer long-term progression'] },
+        { version: '1.1.37', date: '2026-02-26', changes: ['Changed: Removed rate-usage achievements to better match one-rate workflows', 'Changed: Rebalanced high daily earnings milestone from $250/day to $150/day for fairer progression'] },
+        { version: '1.1.36', date: '2026-02-26', changes: ['Changed: Achievements modal now opens as a standalone modal (not docked with Settings)', 'Improved: Trophy quick-access opens Achievements directly without opening Settings first', 'Improved: Settings Achievements button now transitions to standalone Achievements view'] },
+        { version: '1.1.35', date: '2026-02-26', changes: ['Added: Trophy entry-point and dedicated Achievements modal docked next to Settings', 'Added: Passive badge system with mixed difficulty milestones (calls, streaks, earnings, consistency)', 'Added: Live achievement unlock detection with toast notifications and persistent collected badge state'] },
+        { version: '1.1.34', date: '2026-02-26', changes: ['Added: Work RPG level progress card (Level, total XP, XP left, and progress bar)', 'Added: Fair level curve table with per-level XP requirements', 'Added: Level requirements modal for transparent progression planning'] },
+        { version: '1.1.33', date: '2026-02-26', changes: ['Added: Onboarding progress tracker (0/3 to 3/3) in the welcome modal', 'Added: Step completion now follows real actions (first rate saved, first call saved, settings opened)', 'Added: Restart Onboarding action in Settings for quick testing and guided re-runs'] },
+        { version: '1.1.32', date: '2026-02-26', changes: ['Improved: Onboarding now displays a single next-step cue to keep guidance simple and low-noise', 'Improved: Quick Start now executes a real first action flow (open first setup step + contextual highlight)', 'Polish: Added lightweight guided highlights and smoother cue transitions for a more interactive first-use experience'] },
+        { version: '1.1.31', date: '2026-02-26', changes: ['Improved: Onboarding now shows one prioritized cue at a time for lower visual noise', 'Improved: Quick Start now launches an interactive first step (opens Add Rate and highlights target area)', 'Polish: Added smoother onboarding card motion and visual emphasis for guided actions'] },
+        { version: '1.1.30', date: '2026-02-26', changes: ['Added: First-run Welcome modal with Quick Start, Customize First, and Skip actions', 'Added: Progressive onboarding cue cards for rates, call test flow, and settings customization', 'Added: Dismiss/seen onboarding persistence in localStorage to keep onboarding friction low'] },
+        { version: '1.1.29', date: '2026-02-26', changes: ['Performance: Added cached call filtering with date-keyed invalidation to reduce repeated list scans', 'Performance: Added progressive chunk rendering for Call Log to prevent large-list UI blocking', 'Performance: Added batched localStorage writes with safe flush-on-unload to reduce main-thread stalls'] },
+        { version: '1.1.28', date: '2026-02-26', changes: ['Changed: Removed Secure Sync feature and restored Settings to a single General flow', 'Changed: Removed Settings tab segmentation and returned Data Management/Storage to main Settings body', 'Docs: Updated README and roadmap to reflect manual JSON backup/import only'] },
         { version: '1.1.26', date: '2026-02-26', changes: ['Added: Modal stack/layer manager with deterministic z-index ordering and front-of-stack resolution', 'Added: Viewport-fit constraints for open modals to reduce clipping on small/short windows', 'Improved: Interaction stability via rapid open/close guards and deduplicated keyboard handling', 'Improved: Accessibility/status feedback (toast live region + confirmation busy/aria-live handling)', 'Improved: Floating settings UX consistency (detail entry guard + auto-close when feature disabled)'] },
         { version: '1.1.25', date: '2026-02-26', changes: ['Fixed: Feature detail panels now open directly next to General Settings using deterministic split geometry', 'Fixed: Floating Controls Settings button now hides when Floating Call Controls feature toggle is off', 'Improved: Split-panel positioning no longer depends on transition-timing-sensitive measurements'] },
         { version: '1.1.24', date: '2026-02-26', changes: ['Changed: Removed Notes Settings sub-modal to simplify Settings UX (Notes keeps a single feature toggle)', 'Refactor: Cleaned Notes Settings modal/event wiring from split-settings flow', 'Roadmap: Added advanced Notes customization ideas to future backlog'] },
@@ -140,10 +161,210 @@ function closeChangelogModal() {
   return Number.isFinite(d.getTime()) ? d : null;
 }
 
-function minutesToMs(mins) {
-  const n = Number(mins);
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  return Math.round(n * 60 * 1000);
+function parseOptionalTime(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+  const match = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const seconds = Number(match[3] || 0);
+  if (hours > 23 || minutes > 59 || seconds > 59) return null;
+  return { hours, minutes, seconds };
+}
+
+function combineCallDateAndTime(dateObj, timeValue) {
+  const time = parseOptionalTime(timeValue);
+  return combineCallDateAndParsedTime(dateObj, time);
+}
+
+function combineCallDateAndParsedTime(dateObj, time) {
+  if (!time) return null;
+  const base = dateObj instanceof Date && Number.isFinite(dateObj.getTime()) ? dateObj : new Date();
+  return new Date(
+    base.getFullYear(),
+    base.getMonth(),
+    base.getDate(),
+    time.hours,
+    time.minutes,
+    time.seconds,
+    0
+  );
+}
+
+function formatLocalTimeForInput(isoString) {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  if (!Number.isFinite(d.getTime())) return '';
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  return ss === '00' ? `${hh}:${mm}` : `${hh}:${mm}:${ss}`;
+}
+
+function minutesToMs(input) {
+  const raw = String(input ?? '').trim();
+  if (!raw) return 0;
+
+  if (/^\d+(\.\d+)?$/.test(raw)) {
+    const mins = Number(raw);
+    if (!Number.isFinite(mins) || mins <= 0) return NaN;
+    return Math.round(mins * 60 * 1000);
+  }
+
+  if (!/^\d{1,3}:\d{1,2}(:\d{1,2})?$/.test(raw)) return NaN;
+
+  const parts = raw.split(':').map((part) => Number(part));
+  if (parts.some((part) => !Number.isFinite(part) || part < 0)) return NaN;
+
+  let hours = 0;
+  let minutes = 0;
+  let seconds = 0;
+  if (parts.length === 3) {
+    [hours, minutes, seconds] = parts;
+    if (minutes >= 60 || seconds >= 60) return NaN;
+  } else if (parts.length === 2) {
+    [minutes, seconds] = parts;
+    if (seconds >= 60) return NaN;
+  } else {
+    return NaN;
+  }
+
+  const totalMs = (((hours * 60) + minutes) * 60 + seconds) * 1000;
+  return totalMs > 0 ? totalMs : NaN;
+}
+
+function parseCsvText(text) {
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const ch = text[i];
+    const next = text[i + 1];
+    if (ch === '"') {
+      if (inQuotes && next === '"') {
+        cell += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (ch === ',' && !inQuotes) {
+      row.push(cell);
+      cell = '';
+      continue;
+    }
+    if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (ch === '\r' && next === '\n') i += 1;
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = '';
+      continue;
+    }
+    cell += ch;
+  }
+
+  if (cell.length > 0 || row.length > 0) {
+    row.push(cell);
+    rows.push(row);
+  }
+
+  return rows.filter((r) => r.some((cellValue) => String(cellValue || '').trim().length > 0));
+}
+
+function normalizeCsvHeader(value) {
+  return String(value || '').replace(/^\ufeff/, '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function findCsvColumnIndex(headers, aliases) {
+  const normalized = headers.map(normalizeCsvHeader);
+  const aliasSet = new Set(aliases.map(normalizeCsvHeader));
+  return normalized.findIndex((header) => aliasSet.has(header));
+}
+
+function parseFlexibleDate(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return parseDateInput(raw);
+
+  const slash = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (slash) {
+    let month = Number(slash[1]);
+    let day = Number(slash[2]);
+    let year = Number(slash[3]);
+    if (year < 100) year += 2000;
+    if (month > 12 && day <= 12) {
+      const swap = month;
+      month = day;
+      day = swap;
+    }
+    const parsed = new Date(year, month - 1, day);
+    return Number.isFinite(parsed.getTime()) ? parsed : null;
+  }
+
+  const parsed = new Date(raw);
+  if (!Number.isFinite(parsed.getTime())) return null;
+  return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+}
+
+function parseFlexibleTime(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  const direct = parseOptionalTime(raw);
+  if (direct) return direct;
+
+  const meridiemMatch = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)$/i);
+  if (meridiemMatch) {
+    let hours = Number(meridiemMatch[1]);
+    const minutes = Number(meridiemMatch[2]);
+    const seconds = Number(meridiemMatch[3] || 0);
+    const meridiem = meridiemMatch[4].toUpperCase();
+    if (hours === 12) hours = 0;
+    if (meridiem === 'PM') hours += 12;
+    return { hours, minutes, seconds };
+  }
+
+  const dateMatch = raw.match(/(\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM)?)/i);
+  return dateMatch ? parseFlexibleTime(dateMatch[1]) : null;
+}
+
+function findMatchingRate(rawValue) {
+  const raw = String(rawValue || '').trim();
+  if (!raw) return null;
+  const byName = rates.find((rate) => String(rate.name).trim().toLowerCase() === raw.toLowerCase());
+  if (byName) return { amount: Number(byName.amount) || 0, rateName: byName.name, source: 'name' };
+
+  const numeric = raw.replace(/[^0-9.\-]/g, '');
+  const amount = Number(numeric);
+  if (Number.isFinite(amount) && amount > 0) {
+    const byAmount = rates.find((rate) => Math.abs((Number(rate.amount) || 0) - amount) < 0.0001);
+    return {
+      amount,
+      rateName: byAmount ? byAmount.name : '',
+      source: byAmount ? 'matched_amount' : 'numeric'
+    };
+  }
+  return null;
+}
+
+function getCallDuplicateKey(call) {
+  const startIso = call?.startTime ? new Date(call.startTime).toISOString() : '';
+  const endIso = call?.endTime ? new Date(call.endTime).toISOString() : '';
+  return `${startIso}|${endIso}`;
+}
+
+function formatPreviewDate(dateObj) {
+  if (!(dateObj instanceof Date) || !Number.isFinite(dateObj.getTime())) return '--';
+  return formatDateForInput(dateObj);
+}
+
+function formatPreviewTime(dateObj) {
+  if (!(dateObj instanceof Date) || !Number.isFinite(dateObj.getTime())) return '--';
+  return formatLocalTimeForInput(dateObj.toISOString());
 }
 
     // Global variables
@@ -168,6 +389,7 @@ function minutesToMs(mins) {
     const liveCallEarningsDisplay = document.getElementById('live-call-earnings');
     const liveCallNotesInput = document.getElementById('live-call-notes');
     const callLogTableBody = document.getElementById('call-log');
+    const callLogScrollContainer = callLogTableBody?.closest('.scrollable-table') || null;
     const totalMinutesDisplay = document.getElementById('total-minutes');
     const totalEarningsDisplay = document.getElementById('total-earnings');
     const rateSelect = document.getElementById('select-call-rate');
@@ -177,20 +399,37 @@ function minutesToMs(mins) {
     const closeModalBtn = document.getElementById('close-modal');
     const callForm = document.getElementById('call-form');
     const cancelCallBtn = document.getElementById('cancel-call');
+    const callDateInput = document.getElementById('call-date');
     const callStartTimeInput = document.getElementById('call-start-time');
     const callEndTimeInput = document.getElementById('call-end-time');
     const callRateSelect = document.getElementById('call-rate');
-    const callDurationMinutesInput = document.getElementById('call-duration-minutes');
+    const callDurationInput = document.getElementById('call-duration');
     const callNotesInput = document.getElementById('call-notes');
     const darkToggleBtn = document.getElementById('dark-toggle');
     const showRateAddBtn = document.getElementById('show-rate-add');
     const rateForm = document.getElementById('rate-form');
     const cancelRateAddBtn = document.getElementById('cancel-rate-add');
+    const achievementsToggleBtn = document.getElementById('achievements-toggle');
     const settingsToggleBtn = document.getElementById('settings-toggle');
     const settingsModal = document.getElementById('settings-modal');
     const closeSettingsModalBtn = document.getElementById('close-settings-modal');
     const exportDataBtn = document.getElementById('export-data');
     const importFile = document.getElementById('import-file');
+    const csvImportPreviewModal = document.getElementById('csv-import-preview-modal');
+    const closeCsvImportPreviewModalBtn = document.getElementById('close-csv-import-preview-modal');
+    const cancelCsvImportPreviewBtn = document.getElementById('cancel-csv-import-preview-btn');
+    const confirmCsvImportBtn = document.getElementById('confirm-csv-import-btn');
+    const csvImportSummary = document.getElementById('csv-import-summary');
+    const csvImportPreviewBody = document.getElementById('csv-import-preview-body');
+    const csvImportDateColumnSelect = document.getElementById('csv-import-date-column');
+    const csvImportStartColumnSelect = document.getElementById('csv-import-start-column');
+    const csvImportEndColumnSelect = document.getElementById('csv-import-end-column');
+    const csvImportDurationColumnSelect = document.getElementById('csv-import-duration-column');
+    const csvImportRateColumnSelect = document.getElementById('csv-import-rate-column');
+    const csvImportMappingWarning = document.getElementById('csv-import-mapping-warning');
+    const csvImportRateSelect = document.getElementById('csv-import-rate-select');
+    const csvImportOverrideRateToggle = document.getElementById('csv-import-override-rate');
+    const csvImportWarning = document.getElementById('csv-import-warning');
     const resetCallsBtn = document.getElementById('reset-calls');
     const resetAllBtn = document.getElementById('reset-all');
     const statsDatePicker = document.getElementById('stats-date-picker');
@@ -203,6 +442,15 @@ function minutesToMs(mins) {
     const firstHalfEarningsDisplay = document.getElementById('first-half-earnings');
     const secondHalfEarningsDisplay = document.getElementById('second-half-earnings');
     const monthlyTotalEarningsDisplay = document.getElementById('monthly-total-earnings');
+    const rpgLevelSummary = document.getElementById('rpg-level-summary');
+    const rpgLevelProgressBar = document.getElementById('rpg-level-progress-bar');
+    const rpgLevelProgressText = document.getElementById('rpg-level-progress-text');
+    const rpgLevelNextText = document.getElementById('rpg-level-next-text');
+    const openLevelCurveModalBtn = document.getElementById('open-level-curve-modal');
+    const levelCurveModal = document.getElementById('level-curve-modal');
+    const closeLevelCurveModalBtn = document.getElementById('close-level-curve-modal');
+    const doneLevelCurveModalBtn = document.getElementById('done-level-curve-modal');
+    const levelCurveTableBody = document.getElementById('level-curve-table-body');
     const goalForm = document.getElementById('goal-form');
     const goalAmountInput = document.getElementById('goal-amount');
     const goalMinutesInput = document.getElementById('goal-minutes');
@@ -246,6 +494,7 @@ function minutesToMs(mins) {
 const featureNotesToggle = document.getElementById('feature-notes-toggle');
 const featurePaymentCyclesToggle = document.getElementById('feature-payment-cycles-toggle');
 const featureFloatingControlsToggle = document.getElementById('feature-floating-controls-toggle');
+const featureRpgToggle = document.getElementById('feature-rpg-toggle');
 const openFloatingControlsSettingsBtn = document.getElementById('open-floating-controls-settings-btn');
 const openPaymentCyclesSettingsBtn = document.getElementById('open-payment-cycles-settings-btn');
 const floatingControlsSettingsModal = document.getElementById('floating-controls-settings-modal');
@@ -254,6 +503,27 @@ const doneFloatingControlsSettingsBtn = document.getElementById('done-floating-c
 const paymentCyclesSettingsModal = document.getElementById('payment-cycles-settings-modal');
 const closePaymentCyclesSettingsModalBtn = document.getElementById('close-payment-cycles-settings-modal');
 const donePaymentCyclesSettingsBtn = document.getElementById('done-payment-cycles-settings-btn');
+const achievementsSettingsModal = document.getElementById('achievements-settings-modal');
+const closeAchievementsSettingsModalBtn = document.getElementById('close-achievements-settings-modal');
+const doneAchievementsSettingsBtn = document.getElementById('done-achievements-settings-btn');
+const achievementsSummary = document.getElementById('achievements-summary');
+const achievementsGrid = document.getElementById('achievements-grid');
+const dailyQuestsSection = document.getElementById('daily-quests-section');
+const dailyQuestsDate = document.getElementById('daily-quests-date');
+const dailyQuestsSummary = document.getElementById('daily-quests-summary');
+const dailyQuestsGrid = document.getElementById('daily-quests-grid');
+const achievementDetailModal = document.getElementById('achievement-detail-modal');
+const closeAchievementDetailModalBtn = document.getElementById('close-achievement-detail-modal');
+const doneAchievementDetailBtn = document.getElementById('done-achievement-detail-btn');
+const achievementDetailTitle = document.getElementById('achievement-detail-title');
+const achievementDetailTier = document.getElementById('achievement-detail-tier');
+const achievementDetailDescription = document.getElementById('achievement-detail-description');
+const achievementDetailProgressLabel = document.getElementById('achievement-detail-progress-label');
+const achievementDetailProgressText = document.getElementById('achievement-detail-progress-text');
+const achievementDetailProgressBar = document.getElementById('achievement-detail-progress-bar');
+const achievementDetailEarnedRow = document.getElementById('achievement-detail-earned-row');
+const achievementDetailEarnedAt = document.getElementById('achievement-detail-earned-at');
+const rpgProgressCard = document.getElementById('rpg-progress-card');
 const floatingControlsCustomization = document.getElementById('floating-controls-customization');
 const floatingControlsSizeModeSelect = document.getElementById('floating-controls-size-mode');
 const floatingControlsSideSelect = document.getElementById('floating-controls-side');
@@ -274,6 +544,8 @@ const previewFloatingDocks = Array.from(document.querySelectorAll('[data-preview
 const ENABLE_FLOATING_PREVIEW_TESTING = true;
 let floatingPreviewSample = null;
 let floatingPreviewAutoRefreshTimer = null;
+let selectedAchievementId = null;
+let pendingCsvImport = null;
 
 function loadFeatureFlags() {
     try {
@@ -282,6 +554,7 @@ function loadFeatureFlags() {
             notes: true,
             paymentCycles: paymentCyclesEnabled,
             floatingCallControls: true,
+            rpg: true,
             floatingControlsSizeMode: 'auto',
             floatingControlsSide: 'right',
             floatingSecondaryAction: 'add',
@@ -297,6 +570,7 @@ function loadFeatureFlags() {
             notes: typeof parsed.notes === 'boolean' ? parsed.notes : true,
             paymentCycles: typeof parsed.paymentCycles === 'boolean' ? parsed.paymentCycles : paymentCyclesEnabled,
             floatingCallControls: typeof parsed.floatingCallControls === 'boolean' ? parsed.floatingCallControls : true,
+            rpg: typeof parsed.rpg === 'boolean' ? parsed.rpg : true,
             floatingControlsSizeMode: ['auto', 'full', 'compact', 'icon'].includes(parsed.floatingControlsSizeMode) ? parsed.floatingControlsSizeMode : 'auto',
             floatingControlsSide: parsed.floatingControlsSide === 'left' ? 'left' : 'right',
             floatingSecondaryAction: ['add', 'goto', 'none'].includes(parsed.floatingSecondaryAction) ? parsed.floatingSecondaryAction : 'add',
@@ -312,6 +586,7 @@ function loadFeatureFlags() {
             notes: true,
             paymentCycles: paymentCyclesEnabled,
             floatingCallControls: true,
+            rpg: true,
             floatingControlsSizeMode: 'auto',
             floatingControlsSide: 'right',
             floatingSecondaryAction: 'add',
@@ -327,7 +602,7 @@ function loadFeatureFlags() {
 
 function saveFeatureFlags(flags) {
     try {
-        localStorage.setItem('featureFlags', JSON.stringify(flags));
+        queueStorageWrite('featureFlags', JSON.stringify(flags));
     } catch (e) {
         console.warn('Could not save feature flags', e);
     }
@@ -594,6 +869,26 @@ function applyFeatureFlags(flags) {
         paymentCyclesToggle.checked = pcEnabled;
     }
 
+    const rpgEnabled = !!flags.rpg;
+    if (rpgProgressCard) {
+        rpgProgressCard.style.display = rpgEnabled ? '' : 'none';
+    }
+    if (!rpgEnabled && levelCurveModal && ModalManager.isOpen(levelCurveModal)) {
+        closeLevelCurveModal();
+    }
+    if (dailyQuestsSection) {
+        dailyQuestsSection.style.display = rpgEnabled ? '' : 'none';
+    }
+    if (featureRpgToggle) {
+        featureRpgToggle.checked = rpgEnabled;
+    }
+    if (!rpgEnabled && achievementDetailModal && ModalManager.isOpen(achievementDetailModal) && selectedAchievementId) {
+        const selectedAchievement = getAchievementById(selectedAchievementId);
+        if (selectedAchievement?.rpgOnly) {
+            closeAchievementDetailModal();
+        }
+    }
+
     // Floating call controls feature
     if (openFloatingControlsSettingsBtn) {
         openFloatingControlsSettingsBtn.style.display = flags.floatingCallControls ? '' : 'none';
@@ -649,6 +944,8 @@ function applyFeatureFlags(flags) {
     }
     updateFloatingPreview(flags);
     updateFloatingCallControls(flags);
+    renderAchievementsModal();
+    updateRpgProgress();
 }
 
 // initialize feature flags (will be applied on DOMContentLoaded too)
@@ -658,6 +955,7 @@ let featureFlags = {
     notes: true,
     paymentCycles: false,
     floatingCallControls: true,
+    rpg: true,
     floatingControlsSizeMode: 'auto',
     floatingControlsSide: 'right',
     floatingSecondaryAction: 'add',
@@ -1333,6 +1631,15 @@ if (storedDailyGoal) {
     let floatingDockExpandTimer = null;
     let lastActiveCallPersistAt = 0;
     let cachedTimeZoneFormatters = { tz: null, date: null, time: null };
+    let callsDatasetVersion = 0;
+    let filteredCallsCache = { key: '', rows: [] };
+    let callLogRenderTicket = 0;
+    let callLogRenderState = null;
+    let pendingStorageWrites = new Map();
+    let storageWriteTimer = null;
+    const CALL_LOG_RENDER_CHUNK_SIZE = 120;
+    const CALL_LOG_RENDER_AHEAD_PX = 180;
+    const RPG_CALL_ELIGIBILITY_MIGRATION_KEY = 'wtt_rpg_call_eligibility_migrated_v1';
 
     // Helper Functions
     function formatTime(milliseconds) {
@@ -1361,6 +1668,988 @@ if (storedDailyGoal) {
         };
     }
 
+    // Work RPG leveling (foundation)
+    function getXpToNextLevel(level) {
+        if (level < 5) return 100 + ((level - 1) * 25);       // 100, 125, 150, 175
+        if (level < 10) return 200 + ((level - 5) * 35);      // 200..340
+        if (level < 20) return 380 + ((level - 10) * 45);     // 380..785
+        return 850 + ((level - 20) * 60);                     // 850+
+    }
+
+    function buildLevelCurve(maxLevel = 50) {
+        const curve = [];
+        let cumulative = 0;
+        for (let level = 1; level <= maxLevel; level += 1) {
+            const xpToNext = getXpToNextLevel(level);
+            curve.push({
+                level,
+                xpToReach: cumulative,
+                xpToNext
+            });
+            cumulative += xpToNext;
+        }
+        return curve;
+    }
+
+    const LEVEL_CURVE = buildLevelCurve(50);
+
+    function isRpgEnabled() {
+        return !!featureFlags.rpg;
+    }
+
+    function isCallRpgEligible(call) {
+        return !!call?.rpgEligible;
+    }
+
+    function getRpgEligibleCalls(callRows) {
+        return Array.isArray(callRows) ? callRows.filter(isCallRpgEligible) : [];
+    }
+
+    function computeBaseXpFromCalls(callRows) {
+        // Fair, non-grindy baseline:
+        // - 10 XP per completed call (consistency reward)
+        // - 2 XP per minute worked (time reward)
+        return Math.max(0, Math.round(callRows.reduce((acc, call) => {
+            const minutes = Math.max(0, (Number(call.duration) || 0) / (1000 * 60));
+            return acc + 10 + (minutes * 2);
+        }, 0)));
+    }
+
+    function getBaseXpForCallDuration(durationMs) {
+        const minutes = Math.max(0, Number(durationMs) || 0) / (1000 * 60);
+        return Math.max(0, Math.round(10 + (minutes * 2)));
+    }
+
+    function getCallXpForDurationWithStreak(durationMs, currentStreak = 0) {
+        if (!isRpgEnabled()) return 0;
+        const base = getBaseXpForCallDuration(durationMs);
+        return Math.max(0, Math.round(base * getStreakRewardMultiplier(currentStreak)));
+    }
+
+    const RPG_PROGRESS_STATE_KEY = 'wtt_rpg_progress_state_v1';
+
+    function getRpgProgressState() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(RPG_PROGRESS_STATE_KEY) || '{}');
+            const legacyBonus = Math.max(0, Number(raw.bonusXp) || 0);
+            return {
+                achievementXp: Math.max(0, Number(raw.achievementXp) || legacyBonus),
+                dailyQuestXp: Math.max(0, Number(raw.dailyQuestXp) || 0),
+                achievementRewards: raw.achievementRewards && typeof raw.achievementRewards === 'object' ? raw.achievementRewards : {},
+                dailyQuestRewards: raw.dailyQuestRewards && typeof raw.dailyQuestRewards === 'object' ? raw.dailyQuestRewards : {}
+            };
+        } catch {
+            return { achievementXp: 0, dailyQuestXp: 0, achievementRewards: {}, dailyQuestRewards: {} };
+        }
+    }
+
+    function saveRpgProgressState(state) {
+        try {
+            queueStorageWrite(RPG_PROGRESS_STATE_KEY, JSON.stringify(state));
+        } catch (e) {
+            console.warn('Could not save RPG progress state', e);
+        }
+    }
+
+    function clearRpgProgressState() {
+        pendingStorageWrites.delete(RPG_PROGRESS_STATE_KEY);
+        localStorage.removeItem(RPG_PROGRESS_STATE_KEY);
+    }
+
+    function computeCallXpTotal(callRows, currentStreak = 0) {
+        if (!isRpgEnabled()) return 0;
+        const baseXp = computeBaseXpFromCalls(getRpgEligibleCalls(callRows));
+        const streakMult = getStreakRewardMultiplier(currentStreak);
+        return Math.max(0, Math.round(baseXp * streakMult));
+    }
+
+    function computeTotalXp(callRows, currentStreak = 0) {
+        if (!isRpgEnabled()) {
+            return {
+                callXp: 0,
+                achievementXp: 0,
+                dailyQuestXp: 0,
+                totalXp: 0
+            };
+        }
+        const callXp = computeCallXpTotal(callRows, currentStreak);
+        const progressState = getRpgProgressState();
+        const rewardXp = progressState.achievementXp + progressState.dailyQuestXp;
+        return {
+            callXp,
+            achievementXp: progressState.achievementXp,
+            dailyQuestXp: progressState.dailyQuestXp,
+            totalXp: callXp + rewardXp
+        };
+    }
+
+    function getLevelState(totalXp) {
+        let levelState = LEVEL_CURVE[0];
+        for (let i = 0; i < LEVEL_CURVE.length; i += 1) {
+            if (totalXp >= LEVEL_CURVE[i].xpToReach) levelState = LEVEL_CURVE[i];
+            else break;
+        }
+        const currentLevel = levelState.level;
+        const currentBaseXp = levelState.xpToReach;
+        const xpToNext = levelState.xpToNext;
+        const currentIntoLevel = Math.max(0, totalXp - currentBaseXp);
+        const progressPct = xpToNext > 0 ? Math.min((currentIntoLevel / xpToNext) * 100, 100) : 100;
+        const nextLevel = currentLevel + 1;
+        const remaining = Math.max(0, xpToNext - currentIntoLevel);
+        return {
+            currentLevel,
+            totalXp,
+            currentIntoLevel,
+            xpToNext,
+            nextLevel,
+            remaining,
+            progressPct
+        };
+    }
+
+    function renderLevelCurveTable() {
+        if (!levelCurveTableBody) return;
+        levelCurveTableBody.innerHTML = LEVEL_CURVE.map((row) => `
+            <tr class="border-b border-gray-100 dark:border-gray-800">
+                <td class="py-2 font-semibold">Lv ${row.level}</td>
+                <td class="py-2">${row.xpToReach.toLocaleString()} XP</td>
+                <td class="py-2">${row.xpToNext.toLocaleString()} XP</td>
+            </tr>
+        `).join('');
+    }
+
+    function updateRpgProgress() {
+        if (!rpgLevelSummary || !rpgLevelProgressBar || !rpgLevelProgressText || !rpgLevelNextText) return;
+        if (!isRpgEnabled()) return;
+        const stats = computeAchievementStats();
+        const xpTotals = computeTotalXp(calls, stats.currentStreak);
+        const level = getLevelState(xpTotals.totalXp);
+        rpgLevelSummary.textContent = `Level ${level.currentLevel} - ${level.totalXp.toLocaleString()} XP total`;
+        rpgLevelProgressBar.style.width = `${level.progressPct}%`;
+        rpgLevelProgressText.textContent = `${level.currentIntoLevel.toLocaleString()} / ${level.xpToNext.toLocaleString()} XP`;
+        rpgLevelNextText.textContent = `${level.remaining.toLocaleString()} XP to level ${level.nextLevel}`;
+    }
+
+    // Achievements (passive)
+    const ACHIEVEMENTS_STATE_KEY = 'wtt_achievements_state_v1';
+    const DAILY_QUESTS_STATE_KEY = 'wtt_daily_quests_state_v1';
+    const ACHIEVEMENTS = [
+        { id: 'first_call', name: 'First Contact', icon: 'fa-phone', tier: 'Bronze', description: 'Complete your first call.', check: (s) => s.totalCalls >= 1 },
+        { id: 'ten_calls', name: 'Busy Hands', icon: 'fa-list-check', tier: 'Bronze', description: 'Complete 10 calls.', check: (s) => s.totalCalls >= 10 },
+        { id: 'fifty_calls', name: 'Flow Builder', icon: 'fa-stream', tier: 'Silver', description: 'Complete 50 calls.', check: (s) => s.totalCalls >= 50 },
+        { id: 'two_hundred_calls', name: 'Call Veteran', icon: 'fa-headset', tier: 'Gold', description: 'Complete 200 calls.', check: (s) => s.totalCalls >= 200 },
+        { id: 'one_hour', name: 'One Focused Hour', icon: 'fa-hourglass-half', tier: 'Bronze', description: 'Log 60 total minutes.', check: (s) => s.totalMinutes >= 60 },
+        { id: 'ten_hours', name: 'Deep Work', icon: 'fa-business-time', tier: 'Silver', description: 'Log 10 total hours.', check: (s) => s.totalMinutes >= 600 },
+        { id: 'hundred_hours', name: 'Marathon Mindset', icon: 'fa-mountain', tier: 'Gold', description: 'Log 100 total hours.', check: (s) => s.totalMinutes >= 6000 },
+        { id: 'week_100', name: 'Century Week', icon: 'fa-dollar-sign', tier: 'Silver', description: 'Reach $100 in a single week.', check: (s) => s.maxWeekEarnings >= 100 },
+        { id: 'total_5000_earned', name: 'Money Milestone', icon: 'fa-gem', tier: 'Gold', description: 'Earn $5,000 total.', check: (s) => s.totalEarnings >= 5000 },
+        { id: 'total_1000_earned', name: 'Four Digits', icon: 'fa-sack-dollar', tier: 'Gold', description: 'Earn $1,000 total.', check: (s) => s.totalEarnings >= 1000 },
+        { id: 'streak_3', name: 'On a Roll', icon: 'fa-fire', tier: 'Bronze', description: 'Work 3 days in a row.', check: (s) => s.longestStreak >= 3 },
+        { id: 'streak_7', name: 'Week Warrior', icon: 'fa-calendar-week', tier: 'Silver', description: 'Work 7 days in a row.', check: (s) => s.longestStreak >= 7 },
+        { id: 'streak_14', name: 'Habit Architect', icon: 'fa-layer-group', tier: 'Gold', description: 'Work 14 days in a row.', check: (s) => s.longestStreak >= 14 },
+        { id: 'recovery_habit', name: 'Bounce Back', icon: 'fa-person-walking-arrow-loop-left', tier: 'Silver', description: 'Return and complete a call after a 3+ day break.', check: (s) => s.recoveryAfterBreak3Count >= 1 },
+        { id: 'thirty_work_days', name: 'Consistency Club', icon: 'fa-calendar-check', tier: 'Silver', description: 'Work on 30 unique days.', check: (s) => s.uniqueDaysWorked >= 30 },
+        { id: 'sixty_work_days', name: 'Ritual Master', icon: 'fa-crown', tier: 'Gold', description: 'Work on 60 unique days.', check: (s) => s.uniqueDaysWorked >= 60 },
+        { id: 'goal_mastery_7', name: 'Goal Chaser', icon: 'fa-bullseye', tier: 'Silver', description: 'Hit your daily goal on 7 different days.', check: (s) => s.goalHitDays >= 7 },
+        { id: 'goal_mastery_30', name: 'Goal Master', icon: 'fa-trophy', tier: 'Gold', description: 'Hit your daily goal on 30 different days.', check: (s) => s.goalHitDays >= 30 },
+        { id: 'level_10', name: 'Rookie Adventurer', icon: 'fa-hat-wizard', tier: 'Bronze', rpgOnly: true, description: 'Reach level 10 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 10 },
+        { id: 'level_20', name: 'Seasoned Grinder', icon: 'fa-shield-halved', tier: 'Silver', rpgOnly: true, description: 'Reach level 20 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 20 },
+        { id: 'level_30', name: 'Elite Specialist', icon: 'fa-dragon', tier: 'Gold', rpgOnly: true, description: 'Reach level 30 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 30 },
+        { id: 'level_40', name: 'Legend in Progress', icon: 'fa-crown', tier: 'Gold', rpgOnly: true, description: 'Reach level 40 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 40 },
+        { id: 'level_50', name: 'Max Momentum', icon: 'fa-star', tier: 'Gold', rpgOnly: true, description: 'Reach level 50 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 50 },
+        { id: 'long_call_30', name: 'Steady Session', icon: 'fa-stopwatch', tier: 'Bronze', description: 'Complete a 30+ minute call.', check: (s) => s.longestCallMinutes >= 30 },
+        { id: 'long_call_120', name: 'Iron Focus', icon: 'fa-medal', tier: 'Gold', description: 'Complete a 2+ hour call.', check: (s) => s.longestCallMinutes >= 120 }
+    ];
+
+    const DAILY_QUEST_POOL = [
+        { id: 'dq_calls_2', name: 'Quick Start', icon: 'fa-phone', tier: 'Bronze', weight: 1.0, rewardXp: 30, description: 'Complete 2 calls today.', label: 'Calls today', target: 2, getCurrent: (s) => s.todayCalls, format: (v) => `${Math.round(v)}` },
+        { id: 'dq_calls_4', name: 'Steady Flow', icon: 'fa-list-check', tier: 'Silver', weight: 0.8, rewardXp: 55, description: 'Complete 4 calls today.', label: 'Calls today', target: 4, getCurrent: (s) => s.todayCalls, format: (v) => `${Math.round(v)}` },
+        { id: 'dq_calls_6', name: 'Busy Hour', icon: 'fa-headset', tier: 'Gold', weight: 0.45, rewardXp: 80, description: 'Complete 6 calls today.', label: 'Calls today', target: 6, getCurrent: (s) => s.todayCalls, format: (v) => `${Math.round(v)}` },
+        { id: 'dq_earn_20', name: 'Pocket Win', icon: 'fa-sack-dollar', tier: 'Bronze', weight: 1.0, rewardXp: 35, description: 'Earn $20 today.', label: 'Earnings today', target: 20, getCurrent: (s) => s.todayEarnings, format: (v) => `$${Number(v).toFixed(2)}` },
+        { id: 'dq_earn_35', name: 'Good Shift', icon: 'fa-coins', tier: 'Silver', weight: 0.75, rewardXp: 60, description: 'Earn $35 today.', label: 'Earnings today', target: 35, getCurrent: (s) => s.todayEarnings, format: (v) => `$${Number(v).toFixed(2)}` },
+        { id: 'dq_minutes_30', name: '30-Min Sprint', icon: 'fa-stopwatch', tier: 'Bronze', weight: 1.0, rewardXp: 30, description: 'Work 30 total minutes today.', label: 'Minutes today', target: 30, getCurrent: (s) => s.todayMinutes, format: (v) => `${Math.round(v)} min` },
+        { id: 'dq_minutes_60', name: 'One-Hour Push', icon: 'fa-hourglass-half', tier: 'Silver', weight: 0.8, rewardXp: 55, description: 'Work 60 total minutes today.', label: 'Minutes today', target: 60, getCurrent: (s) => s.todayMinutes, format: (v) => `${Math.round(v)} min` },
+        { id: 'dq_long_call_15', name: 'Deep Focus', icon: 'fa-clock', tier: 'Bronze', weight: 0.9, rewardXp: 35, description: 'Complete a 15+ minute call today.', label: 'Longest call today', target: 15, getCurrent: (s) => s.todayLongestCallMinutes, format: (v) => `${Math.round(v)} min` }
+    ];
+
+    function getAchievementState() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(ACHIEVEMENTS_STATE_KEY) || '{}');
+            const unlocked = raw?.unlocked && typeof raw.unlocked === 'object' ? raw.unlocked : {};
+            if (unlocked.max_100_day && !unlocked.week_100) {
+                unlocked.week_100 = unlocked.max_100_day;
+                delete unlocked.max_100_day;
+            }
+            return { unlocked };
+        } catch {
+            return { unlocked: {} };
+        }
+    }
+
+    function saveAchievementState(state) {
+        try {
+            queueStorageWrite(ACHIEVEMENTS_STATE_KEY, JSON.stringify(state));
+        } catch (e) {
+            console.warn('Could not save achievements state', e);
+        }
+    }
+
+    function clearAchievementState() {
+        pendingStorageWrites.delete(ACHIEVEMENTS_STATE_KEY);
+        localStorage.removeItem(ACHIEVEMENTS_STATE_KEY);
+    }
+
+    function getCurrentLocalDayKey() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function seededHashFromString(input) {
+        let h = 2166136261;
+        for (let i = 0; i < input.length; i += 1) {
+            h ^= input.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+    }
+
+    function mulberry32(seed) {
+        return function rand() {
+            let t = seed += 0x6D2B79F5;
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    function getDailyQuestState() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(DAILY_QUESTS_STATE_KEY) || '{}');
+            return {
+                activeDayKey: typeof raw.activeDayKey === 'string' ? raw.activeDayKey : '',
+                activeQuestIds: Array.isArray(raw.activeQuestIds) ? raw.activeQuestIds : [],
+                completedByDay: raw.completedByDay && typeof raw.completedByDay === 'object' ? raw.completedByDay : {}
+            };
+        } catch {
+            return { activeDayKey: '', activeQuestIds: [], completedByDay: {} };
+        }
+    }
+
+    function saveDailyQuestState(state) {
+        try {
+            queueStorageWrite(DAILY_QUESTS_STATE_KEY, JSON.stringify(state));
+        } catch (e) {
+            console.warn('Could not save daily quest state', e);
+        }
+    }
+
+    function clearDailyQuestState() {
+        pendingStorageWrites.delete(DAILY_QUESTS_STATE_KEY);
+        localStorage.removeItem(DAILY_QUESTS_STATE_KEY);
+    }
+
+    function pickWeightedQuest(pool, rng) {
+        const totalWeight = pool.reduce((sum, q) => sum + Math.max(0.01, Number(q.weight) || 0.01), 0);
+        let roll = rng() * totalWeight;
+        for (let i = 0; i < pool.length; i += 1) {
+            roll -= Math.max(0.01, Number(pool[i].weight) || 0.01);
+            if (roll <= 0) return i;
+        }
+        return pool.length - 1;
+    }
+
+    function pickDailyQuestIds(dayKey, count = 4) {
+        const rng = mulberry32(seededHashFromString(`wtt-dq-${dayKey}`));
+        const workingPool = [...DAILY_QUEST_POOL];
+        const picks = [];
+        const maxPicks = Math.min(count, workingPool.length);
+
+        while (picks.length < maxPicks && workingPool.length > 0) {
+            const idx = pickWeightedQuest(workingPool, rng);
+            const chosen = workingPool.splice(idx, 1)[0];
+            picks.push(chosen.id);
+        }
+
+        return picks;
+    }
+
+    function ensureDailyQuestRotation() {
+        const state = getDailyQuestState();
+        const dayKey = getCurrentLocalDayKey();
+        const needsRefresh = state.activeDayKey !== dayKey || !Array.isArray(state.activeQuestIds) || state.activeQuestIds.length === 0;
+        if (needsRefresh) {
+            state.activeDayKey = dayKey;
+            state.activeQuestIds = pickDailyQuestIds(dayKey, 4);
+            if (!state.completedByDay || typeof state.completedByDay !== 'object') state.completedByDay = {};
+            if (!state.completedByDay[dayKey] || typeof state.completedByDay[dayKey] !== 'object') {
+                state.completedByDay[dayKey] = {};
+            }
+            saveDailyQuestState(state);
+        }
+        return state;
+    }
+
+    function getActiveDailyQuests() {
+        const state = ensureDailyQuestRotation();
+        const selected = state.activeQuestIds
+            .map((id) => DAILY_QUEST_POOL.find((q) => q.id === id))
+            .filter(Boolean);
+        if (selected.length > 0) return selected;
+        return DAILY_QUEST_POOL.slice(0, 4);
+    }
+
+    function getCallLocalDayStamp(call) {
+        const d = new Date(call.startTime);
+        if (!Number.isFinite(d.getTime())) return NaN;
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    }
+
+    function getWeekStartStampFromDate(dateObj) {
+        if (!(dateObj instanceof Date) || !Number.isFinite(dateObj.getTime())) return NaN;
+        const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+        const day = d.getDay(); // 0 Sunday ... 6 Saturday
+        const diffToMonday = day === 0 ? -6 : (1 - day);
+        d.setDate(d.getDate() + diffToMonday);
+        return d.getTime();
+    }
+
+    function computeLongestStreak(dayStamps) {
+        if (!dayStamps.length) return 0;
+        let longest = 1;
+        let current = 1;
+        for (let i = 1; i < dayStamps.length; i += 1) {
+            if (dayStamps[i] - dayStamps[i - 1] === 24 * 60 * 60 * 1000) {
+                current += 1;
+                longest = Math.max(longest, current);
+            } else {
+                current = 1;
+            }
+        }
+        return longest;
+    }
+
+    function computeAchievementStats() {
+        const dayEarnings = new Map();
+        const dayMinutes = new Map();
+        const weekEarnings = new Map();
+        const uniqueDayStamps = new Set();
+        const now = new Date();
+        const todayStamp = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        let totalCalls = 0;
+        let totalMinutes = 0;
+        let totalEarnings = 0;
+        let longestCallMinutes = 0;
+        let todayCalls = 0;
+        let todayMinutes = 0;
+        let todayLongestCallMinutes = 0;
+
+        calls.forEach((call) => {
+            totalCalls += 1;
+            const durationMin = Math.max(0, (Number(call.duration) || 0) / (1000 * 60));
+            const earned = Number(call.earned) || Number(call.earnings) || 0;
+            totalMinutes += durationMin;
+            totalEarnings += earned;
+            longestCallMinutes = Math.max(longestCallMinutes, durationMin);
+
+            const dayStamp = getCallLocalDayStamp(call);
+            if (Number.isFinite(dayStamp)) {
+                uniqueDayStamps.add(dayStamp);
+                dayEarnings.set(dayStamp, (dayEarnings.get(dayStamp) || 0) + earned);
+                dayMinutes.set(dayStamp, (dayMinutes.get(dayStamp) || 0) + durationMin);
+                const startDate = new Date(call.startTime);
+                const weekStamp = getWeekStartStampFromDate(startDate);
+                if (Number.isFinite(weekStamp)) {
+                    weekEarnings.set(weekStamp, (weekEarnings.get(weekStamp) || 0) + earned);
+                }
+                if (dayStamp === todayStamp) {
+                    todayCalls += 1;
+                    todayMinutes += durationMin;
+                    todayLongestCallMinutes = Math.max(todayLongestCallMinutes, durationMin);
+                }
+            }
+
+        });
+
+        const sortedDays = Array.from(uniqueDayStamps).sort((a, b) => a - b);
+        const maxDayEarnings = dayEarnings.size ? Math.max(...Array.from(dayEarnings.values())) : 0;
+        const maxWeekEarnings = weekEarnings.size ? Math.max(...Array.from(weekEarnings.values())) : 0;
+        const todayEarnings = dayEarnings.get(todayStamp) || 0;
+        let recoveryAfterBreak3Count = 0;
+        for (let i = 1; i < sortedDays.length; i += 1) {
+            const diffDays = Math.round((sortedDays[i] - sortedDays[i - 1]) / (24 * 60 * 60 * 1000));
+            if (diffDays >= 4) recoveryAfterBreak3Count += 1;
+        }
+        const hasGoalConfigured = (Number(dailyGoal?.amount) || 0) > 0 || (Number(dailyGoal?.minutes) || 0) > 0;
+        let goalHitDays = 0;
+        if (hasGoalConfigured) {
+            const goalAmount = Math.max(0, Number(dailyGoal?.amount) || 0);
+            const goalMinutes = Math.max(0, Number(dailyGoal?.minutes) || 0);
+            sortedDays.forEach((stamp) => {
+                const earned = dayEarnings.get(stamp) || 0;
+                const minutes = dayMinutes.get(stamp) || 0;
+                const hitByAmount = goalAmount > 0 ? earned >= goalAmount : false;
+                const hitByMinutes = goalMinutes > 0 ? minutes >= goalMinutes : false;
+                if (hitByAmount || (!goalAmount && hitByMinutes)) {
+                    goalHitDays += 1;
+                }
+            });
+        }
+
+        return {
+            totalCalls,
+            totalMinutes,
+            totalEarnings,
+            maxDayEarnings,
+            maxWeekEarnings,
+            todayEarnings,
+            todayCalls,
+            todayMinutes,
+            todayLongestCallMinutes,
+            recoveryAfterBreak3Count,
+            goalHitDays,
+            hasGoalConfigured,
+            uniqueDaysWorked: uniqueDayStamps.size,
+            longestStreak: computeLongestStreak(sortedDays),
+            currentStreak: computeCurrentStreak(sortedDays),
+            longestCallMinutes
+        };
+    }
+
+    function computeDailyQuestStats() {
+        const now = new Date();
+        const todayStamp = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const eligibleCalls = getRpgEligibleCalls(calls);
+        let todayCalls = 0;
+        let todayMinutes = 0;
+        let todayEarnings = 0;
+        let todayLongestCallMinutes = 0;
+
+        eligibleCalls.forEach((call) => {
+            const dayStamp = getCallLocalDayStamp(call);
+            if (dayStamp !== todayStamp) return;
+            const durationMin = Math.max(0, (Number(call.duration) || 0) / (1000 * 60));
+            const earned = Number(call.earned) || Number(call.earnings) || 0;
+            todayCalls += 1;
+            todayMinutes += durationMin;
+            todayEarnings += earned;
+            todayLongestCallMinutes = Math.max(todayLongestCallMinutes, durationMin);
+        });
+
+        return {
+            todayCalls,
+            todayMinutes,
+            todayEarnings,
+            todayLongestCallMinutes
+        };
+    }
+
+    function computeCurrentStreak(dayStamps) {
+        if (!dayStamps.length) return 0;
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const daySet = new Set(dayStamps);
+        const now = new Date();
+        const todayStamp = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const yesterdayStamp = todayStamp - oneDayMs;
+
+        let cursor = daySet.has(todayStamp) ? todayStamp : (daySet.has(yesterdayStamp) ? yesterdayStamp : null);
+        if (cursor === null) return 0;
+
+        let streak = 0;
+        while (daySet.has(cursor)) {
+            streak += 1;
+            cursor -= oneDayMs;
+        }
+        return streak;
+    }
+
+    function getTierClasses(tier, unlocked) {
+        if (!unlocked) return {
+            badge: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+            card: 'border-gray-200 dark:border-gray-700'
+        };
+        if (tier === 'Gold') return {
+            badge: 'bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100',
+            card: 'border-amber-300 dark:border-amber-700'
+        };
+        if (tier === 'Silver') return {
+            badge: 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
+            card: 'border-slate-300 dark:border-slate-600'
+        };
+        return {
+            badge: 'bg-orange-200 text-orange-900 dark:bg-orange-800 dark:text-orange-100',
+            card: 'border-orange-300 dark:border-orange-700'
+        };
+    }
+
+    function getAchievementBaseXp(tier) {
+        if (tier === 'Gold') return 220;
+        if (tier === 'Silver') return 120;
+        return 65;
+    }
+
+    function getLevelRewardMultiplier(level) {
+        // Small but meaningful: +2% every 3 levels, capped at +40%
+        const bumps = Math.floor(Math.max(0, level - 1) / 3);
+        return 1 + Math.min(0.40, bumps * 0.02);
+    }
+
+    function getStreakRewardMultiplier(streak) {
+        // Starts at 3-day streak and scales gently up to +35%
+        if (streak < 3) return 1;
+        const extra = 0.05 + (Math.max(0, streak - 3) * 0.02);
+        return 1 + Math.min(0.35, extra);
+    }
+
+    function getAchievementById(id) {
+        return ACHIEVEMENTS.find((a) => a.id === id) || null;
+    }
+
+    function getVisibleAchievements() {
+        return isRpgEnabled() ? ACHIEVEMENTS : ACHIEVEMENTS.filter((a) => !a.rpgOnly);
+    }
+
+    function getCurrentRpgLevel(currentStreak = 0) {
+        if (!isRpgEnabled()) return 0;
+        return getLevelState(computeTotalXp(calls, currentStreak).totalXp).currentLevel;
+    }
+
+    function getAchievementProgress(achievement, stats, unlocked) {
+        const meta = {
+            label: 'Progress',
+            current: 0,
+            target: 1,
+            formatter: (v) => `${Math.round(v).toLocaleString()}`
+        };
+
+        switch (achievement.id) {
+            case 'first_call':
+                meta.current = stats.totalCalls;
+                meta.target = 1;
+                meta.label = 'Calls completed';
+                break;
+            case 'ten_calls':
+                meta.current = stats.totalCalls;
+                meta.target = 10;
+                meta.label = 'Calls completed';
+                break;
+            case 'fifty_calls':
+                meta.current = stats.totalCalls;
+                meta.target = 50;
+                meta.label = 'Calls completed';
+                break;
+            case 'two_hundred_calls':
+                meta.current = stats.totalCalls;
+                meta.target = 200;
+                meta.label = 'Calls completed';
+                break;
+            case 'one_hour':
+                meta.current = stats.totalMinutes;
+                meta.target = 60;
+                meta.label = 'Total minutes';
+                break;
+            case 'ten_hours':
+                meta.current = stats.totalMinutes;
+                meta.target = 600;
+                meta.label = 'Total minutes';
+                break;
+            case 'hundred_hours':
+                meta.current = stats.totalMinutes;
+                meta.target = 6000;
+                meta.label = 'Total minutes';
+                break;
+            case 'week_100':
+                meta.current = stats.maxWeekEarnings;
+                meta.target = 100;
+                meta.label = 'Best week earnings';
+                meta.formatter = (v) => `$${Number(v).toFixed(2)}`;
+                break;
+            case 'total_1000_earned':
+                meta.current = stats.totalEarnings;
+                meta.target = 1000;
+                meta.label = 'All-time earnings';
+                meta.formatter = (v) => `$${Number(v).toFixed(2)}`;
+                break;
+            case 'total_5000_earned':
+                meta.current = stats.totalEarnings;
+                meta.target = 5000;
+                meta.label = 'All-time earnings';
+                meta.formatter = (v) => `$${Number(v).toFixed(2)}`;
+                break;
+            case 'streak_3':
+                meta.current = stats.longestStreak;
+                meta.target = 3;
+                meta.label = 'Longest streak (days)';
+                break;
+            case 'streak_7':
+                meta.current = stats.longestStreak;
+                meta.target = 7;
+                meta.label = 'Longest streak (days)';
+                break;
+            case 'streak_14':
+                meta.current = stats.longestStreak;
+                meta.target = 14;
+                meta.label = 'Longest streak (days)';
+                break;
+            case 'recovery_habit':
+                meta.current = stats.recoveryAfterBreak3Count;
+                meta.target = 1;
+                meta.label = 'Returns after 3+ day breaks';
+                break;
+            case 'thirty_work_days':
+                meta.current = stats.uniqueDaysWorked;
+                meta.target = 30;
+                meta.label = 'Unique days worked';
+                break;
+            case 'sixty_work_days':
+                meta.current = stats.uniqueDaysWorked;
+                meta.target = 60;
+                meta.label = 'Unique days worked';
+                break;
+            case 'goal_mastery_7':
+                meta.current = stats.goalHitDays;
+                meta.target = 7;
+                meta.label = stats.hasGoalConfigured ? 'Days with goal reached' : 'Set a daily goal to track';
+                break;
+            case 'goal_mastery_30':
+                meta.current = stats.goalHitDays;
+                meta.target = 30;
+                meta.label = stats.hasGoalConfigured ? 'Days with goal reached' : 'Set a daily goal to track';
+                break;
+            case 'level_10':
+                meta.current = getCurrentRpgLevel(stats.currentStreak);
+                meta.target = 10;
+                meta.label = 'Current level';
+                meta.formatter = (v) => `Lv ${Math.round(v)}`;
+                break;
+            case 'level_20':
+                meta.current = getCurrentRpgLevel(stats.currentStreak);
+                meta.target = 20;
+                meta.label = 'Current level';
+                meta.formatter = (v) => `Lv ${Math.round(v)}`;
+                break;
+            case 'level_30':
+                meta.current = getCurrentRpgLevel(stats.currentStreak);
+                meta.target = 30;
+                meta.label = 'Current level';
+                meta.formatter = (v) => `Lv ${Math.round(v)}`;
+                break;
+            case 'level_40':
+                meta.current = getCurrentRpgLevel(stats.currentStreak);
+                meta.target = 40;
+                meta.label = 'Current level';
+                meta.formatter = (v) => `Lv ${Math.round(v)}`;
+                break;
+            case 'level_50':
+                meta.current = getCurrentRpgLevel(stats.currentStreak);
+                meta.target = 50;
+                meta.label = 'Current level';
+                meta.formatter = (v) => `Lv ${Math.round(v)}`;
+                break;
+            case 'long_call_30':
+                meta.current = stats.longestCallMinutes;
+                meta.target = 30;
+                meta.label = 'Longest call (minutes)';
+                break;
+            case 'long_call_120':
+                meta.current = stats.longestCallMinutes;
+                meta.target = 120;
+                meta.label = 'Longest call (minutes)';
+                break;
+            default:
+                meta.current = unlocked ? 1 : 0;
+                meta.target = 1;
+                break;
+        }
+
+        const cappedCurrent = unlocked ? meta.target : Math.min(meta.current, meta.target);
+        const pct = meta.target > 0 ? Math.max(0, Math.min(100, (cappedCurrent / meta.target) * 100)) : 0;
+        return {
+            ...meta,
+            current: cappedCurrent,
+            pct
+        };
+    }
+
+    function formatAchievementDate(iso) {
+        if (!iso) return '';
+        const d = new Date(iso);
+        if (!Number.isFinite(d.getTime())) return '';
+        return d.toLocaleDateString(undefined, {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+
+    function renderAchievementsModal() {
+        if (!achievementsGrid || !achievementsSummary) return;
+        const state = getAchievementState();
+        const rpgState = getRpgProgressState();
+        const stats = computeAchievementStats();
+        const streakMult = getStreakRewardMultiplier(stats.currentStreak);
+        const rpgEnabled = isRpgEnabled();
+        const visibleAchievements = getVisibleAchievements();
+        renderDailyQuestsSection(computeDailyQuestStats());
+        const unlockedCount = visibleAchievements.filter((a) => !!state.unlocked[a.id]).length;
+        achievementsSummary.innerHTML = rpgEnabled
+            ? `
+            <span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s) | Call XP multiplier: x${streakMult.toFixed(2)}</span>
+            <span class="hint-tooltip ml-1" data-tooltip="Streak multiplier starts at 3 days (+5%), then +2% per extra day, capped at +35%. It boosts call XP. Achievement rewards scale by level only.">?</span>
+        `
+            : `<span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s)</span>`;
+
+        achievementsGrid.innerHTML = visibleAchievements.map((a) => {
+            const unlocked = !!state.unlocked[a.id];
+            const tierStyles = getTierClasses(a.tier, unlocked);
+            const earnedXp = Number(rpgState.achievementRewards?.[a.id]?.xp) || 0;
+            const statusLabel = unlocked ? 'Unlocked' : 'Locked';
+            const unlockedAt = unlocked ? formatAchievementDate(state.unlocked[a.id]) : '';
+            const progress = getAchievementProgress(a, stats, unlocked);
+            const progressText = `${progress.formatter(progress.current)} / ${progress.formatter(progress.target)}`;
+            return `
+                <button type="button" class="achievement-card-btn settings-section-card border ${tierStyles.card} ${unlocked ? 'opacity-100' : 'opacity-80'}" data-achievement-id="${a.id}">
+                    <div class="flex items-start justify-between gap-3 mb-1">
+                        <div class="font-semibold text-gray-800 dark:text-gray-100">
+                            <i class="fas ${a.icon} mr-2 ${unlocked ? 'text-amber-500' : 'text-gray-400'}"></i>${a.name}
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full ${tierStyles.badge}">${a.tier}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">${a.description}</p>
+                    <div class="mb-2">
+                        <div class="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-400 mb-1">
+                            <span>${progress.label}</span>
+                            <span>${progressText}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                            <div class="achievement-progress-fill bg-amber-500 h-1.5 rounded-full transition-all duration-500 ease-out" style="width:${progress.pct}%"></div>
+                        </div>
+                    </div>
+                    ${rpgEnabled
+                        ? (unlocked
+                            ? `<div class="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-semibold">XP earned: +${earnedXp.toLocaleString()} XP</div>
+                               <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Earned on ${unlockedAt}</div>`
+                            : `<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">XP reward hidden until unlocked</div>`)
+                        : (unlocked
+                            ? `<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Earned on ${unlockedAt}</div>`
+                            : '')
+                    }
+                    <div class="text-xs font-semibold ${unlocked ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}">${statusLabel}</div>
+                </button>
+            `;
+        }).join('');
+    }
+
+    function renderDailyQuestsSection(statsInput = null) {
+        if (!dailyQuestsGrid || !dailyQuestsSummary) return;
+        if (!isRpgEnabled()) {
+            if (dailyQuestsSection) dailyQuestsSection.style.display = 'none';
+            dailyQuestsGrid.innerHTML = '';
+            dailyQuestsSummary.textContent = '';
+            if (dailyQuestsDate) dailyQuestsDate.textContent = '';
+            return;
+        }
+        const stats = statsInput || computeDailyQuestStats();
+        const dailyState = ensureDailyQuestRotation();
+        const dayKey = dailyState.activeDayKey || getCurrentLocalDayKey();
+        const activeQuests = getActiveDailyQuests();
+        const completedToday = dailyState.completedByDay?.[dayKey] || {};
+        const completedCount = activeQuests.filter((q) => !!completedToday[q.id]).length;
+
+        if (dailyQuestsSection) dailyQuestsSection.style.display = '';
+        if (dailyQuestsDate) {
+            dailyQuestsDate.textContent = dayKey;
+        }
+        dailyQuestsSummary.textContent = `${completedCount} / ${activeQuests.length} completed today`;
+
+        dailyQuestsGrid.innerHTML = activeQuests.map((q) => {
+            const completedAt = completedToday[q.id] || null;
+            const unlocked = !!completedAt;
+            const tierStyles = getTierClasses(q.tier, unlocked);
+            const rawCurrent = Number(q.getCurrent(stats)) || 0;
+            const current = unlocked ? q.target : Math.min(rawCurrent, q.target);
+            const pct = Math.max(0, Math.min(100, (current / q.target) * 100));
+            const progressText = `${q.format(current)} / ${q.format(q.target)}`;
+            const doneText = unlocked ? `Completed on ${formatAchievementDate(completedAt)}` : 'In progress';
+            return `
+                <div class="settings-section-card border ${tierStyles.card} ${unlocked ? 'opacity-100' : 'opacity-90'}">
+                    <div class="flex items-start justify-between gap-3 mb-1">
+                        <div class="font-semibold text-gray-800 dark:text-gray-100">
+                            <i class="fas ${q.icon} mr-2 ${unlocked ? 'text-emerald-500' : 'text-gray-400'}"></i>${q.name}
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full ${tierStyles.badge}">+${q.rewardXp} XP</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">${q.description}</p>
+                    <div class="mb-2">
+                        <div class="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-400 mb-1">
+                            <span>${q.label}</span>
+                            <span>${progressText}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                            <div class="achievement-progress-fill bg-emerald-500 h-1.5 rounded-full transition-all duration-500 ease-out" style="width:${pct}%"></div>
+                        </div>
+                    </div>
+                    <div class="text-xs font-semibold ${unlocked ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}">${doneText}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function evaluateDailyQuests({ notify = true } = {}) {
+        if (!isRpgEnabled()) {
+            renderDailyQuestsSection();
+            return;
+        }
+        const stats = computeDailyQuestStats();
+        const dailyState = ensureDailyQuestRotation();
+        const dayKey = dailyState.activeDayKey || getCurrentLocalDayKey();
+        if (!dailyState.completedByDay || typeof dailyState.completedByDay !== 'object') {
+            dailyState.completedByDay = {};
+        }
+        if (!dailyState.completedByDay[dayKey] || typeof dailyState.completedByDay[dayKey] !== 'object') {
+            dailyState.completedByDay[dayKey] = {};
+        }
+
+        const activeQuests = getActiveDailyQuests();
+        const rpgState = getRpgProgressState();
+        if (!rpgState.dailyQuestRewards || typeof rpgState.dailyQuestRewards !== 'object') {
+            rpgState.dailyQuestRewards = {};
+        }
+        if (!Number.isFinite(rpgState.dailyQuestXp)) {
+            rpgState.dailyQuestXp = 0;
+        }
+        const rewards = [];
+        let changed = false;
+
+        activeQuests.forEach((q) => {
+            if (dailyState.completedByDay[dayKey][q.id]) return;
+            const current = Number(q.getCurrent(stats)) || 0;
+            if (current < q.target) return;
+            const rewardId = `${dayKey}:${q.id}`;
+            if (!rpgState.dailyQuestRewards[rewardId]) {
+                rpgState.dailyQuestRewards[rewardId] = {
+                    xp: q.rewardXp,
+                    dayKey,
+                    completedAt: new Date().toISOString(),
+                    questId: q.id
+                };
+                rpgState.dailyQuestXp += q.rewardXp;
+                rewards.push({ name: q.name, xp: q.rewardXp });
+            }
+            dailyState.completedByDay[dayKey][q.id] = new Date().toISOString();
+            changed = true;
+        });
+
+        if (changed) {
+            saveDailyQuestState(dailyState);
+            saveRpgProgressState(rpgState);
+            updateRpgProgress();
+            if (notify) {
+                rewards.forEach((r) => showToast(`Daily quest completed: ${r.name} • XP gained: +${r.xp}`));
+            }
+        }
+
+        renderDailyQuestsSection(stats);
+    }
+
+    function renderAchievementDetailModal(achievementId) {
+        if (!achievementDetailModal) return;
+        const achievement = getAchievementById(achievementId);
+        if (!achievement) return;
+
+        const state = getAchievementState();
+        const stats = computeAchievementStats();
+        const unlocked = !!state.unlocked[achievement.id];
+        const progress = getAchievementProgress(achievement, stats, unlocked);
+        const tierStyles = getTierClasses(achievement.tier, unlocked);
+        const unlockedAt = unlocked ? formatAchievementDate(state.unlocked[achievement.id]) : '';
+
+        if (achievementDetailTitle) {
+            achievementDetailTitle.innerHTML = `<i class="fas ${achievement.icon} mr-2 ${unlocked ? 'text-amber-500' : 'text-gray-400'}"></i>${achievement.name}`;
+        }
+        if (achievementDetailTier) {
+            achievementDetailTier.className = `text-xs inline-block px-2 py-1 rounded-full mb-3 ${tierStyles.badge}`;
+            achievementDetailTier.textContent = achievement.tier;
+        }
+        if (achievementDetailDescription) {
+            achievementDetailDescription.textContent = achievement.description;
+        }
+        if (achievementDetailProgressLabel) {
+            achievementDetailProgressLabel.textContent = progress.label;
+        }
+        if (achievementDetailProgressText) {
+            achievementDetailProgressText.textContent = `${progress.formatter(progress.current)} / ${progress.formatter(progress.target)} (${Math.round(progress.pct)}%)`;
+        }
+        if (achievementDetailProgressBar) {
+            achievementDetailProgressBar.style.width = `${progress.pct}%`;
+        }
+        if (achievementDetailEarnedRow && achievementDetailEarnedAt) {
+            if (unlocked) {
+                achievementDetailEarnedRow.style.display = '';
+                achievementDetailEarnedAt.textContent = `Earned on ${unlockedAt}`;
+            } else {
+                achievementDetailEarnedRow.style.display = 'none';
+                achievementDetailEarnedAt.textContent = '';
+            }
+        }
+    }
+
+    function evaluateAchievements({ notify = true } = {}) {
+        const state = getAchievementState();
+        const rpgState = getRpgProgressState();
+        const stats = computeAchievementStats();
+        const newlyUnlocked = [];
+        const nowIso = new Date().toISOString();
+        const rewardEvents = [];
+
+        ACHIEVEMENTS.forEach((a) => {
+            if (state.unlocked[a.id]) return;
+            if (a.check(stats)) {
+                state.unlocked[a.id] = nowIso;
+                newlyUnlocked.push(a);
+                if (isRpgEnabled()) {
+                    const currentXpBeforeReward = computeTotalXp(calls, stats.currentStreak).totalXp;
+                    const levelState = getLevelState(currentXpBeforeReward);
+                    const levelMult = getLevelRewardMultiplier(levelState.currentLevel);
+                    const baseXp = getAchievementBaseXp(a.tier);
+                    const rewardXp = Math.max(1, Math.round(baseXp * levelMult));
+
+                    rpgState.achievementRewards[a.id] = {
+                        xp: rewardXp,
+                        baseXp,
+                        levelAtUnlock: levelState.currentLevel,
+                        streakAtUnlock: stats.currentStreak,
+                        unlockedAt: nowIso
+                    };
+                    rpgState.achievementXp += rewardXp;
+                    rewardEvents.push({ name: a.name, xp: rewardXp });
+                }
+            }
+        });
+
+        if (newlyUnlocked.length > 0) {
+            saveAchievementState(state);
+            if (isRpgEnabled()) {
+                saveRpgProgressState(rpgState);
+                updateRpgProgress();
+            }
+            if (notify && isRpgEnabled()) {
+                rewardEvents.forEach((r) => {
+                    showToast(`Achievement unlocked: ${r.name} • XP gained: +${r.xp}`);
+                });
+            }
+        }
+
+        renderAchievementsModal();
+        if (achievementDetailModal && ModalManager.isOpen(achievementDetailModal) && selectedAchievementId) {
+            renderAchievementDetailModal(selectedAchievementId);
+        }
+        evaluateDailyQuests({ notify });
+    }
+
 
 
 
@@ -1381,6 +2670,484 @@ function getCallEarnings(call) {
     return (getCallDurationSeconds(call) / 60) * rate;
 }
 
+function getCsvImportColumnMap(headers) {
+    return {
+        date: findCsvColumnIndex(headers, ['date', 'call date', 'calldate', 'day']),
+        start: findCsvColumnIndex(headers, ['start', 'start time', 'starttime', 'call start', 'time start']),
+        end: findCsvColumnIndex(headers, ['end', 'end time', 'endtime', 'call end', 'time end', 'finish']),
+        duration: findCsvColumnIndex(headers, ['duration', 'call duration', 'durationminutes', 'length', 'elapsed', 'talk time', 'talktime']),
+        rate: findCsvColumnIndex(headers, ['rate', 'pay rate', 'rate per min', 'ratepermin', 'amount'])
+    };
+}
+
+function parseCsvImportFile(text) {
+    const rows = parseCsvText(text);
+    if (rows.length < 2) {
+        throw new Error('The CSV file is empty or does not contain any call rows.');
+    }
+
+    return {
+        headers: rows[0].map((cell) => String(cell || '').trim()),
+        rows: rows.slice(1),
+        columnMap: getCsvImportColumnMap(rows[0].map((cell) => String(cell || '').trim()))
+    };
+}
+
+function parseCsvImportRows(csvImportData, columnMap = csvImportData?.columnMap || {}) {
+    const headers = Array.isArray(csvImportData?.headers) ? csvImportData.headers : [];
+    const dataRows = Array.isArray(csvImportData?.rows) ? csvImportData.rows : [];
+    if (dataRows.length === 0) {
+        throw new Error('The CSV file is empty or does not contain any call rows.');
+    }
+
+    const resolvedMap = {
+        date: Number.isInteger(columnMap.date) ? columnMap.date : -1,
+        start: Number.isInteger(columnMap.start) ? columnMap.start : -1,
+        end: Number.isInteger(columnMap.end) ? columnMap.end : -1,
+        duration: Number.isInteger(columnMap.duration) ? columnMap.duration : -1,
+        rate: Number.isInteger(columnMap.rate) ? columnMap.rate : -1
+    };
+
+    return dataRows.map((cells, rowIndex) => {
+        const getCell = (idx) => idx >= 0 ? String(cells[idx] || '').trim() : '';
+        const callDate = parseFlexibleDate(getCell(resolvedMap.date));
+        const startTime = parseFlexibleTime(getCell(resolvedMap.start));
+        const endTime = parseFlexibleTime(getCell(resolvedMap.end));
+        const durationRaw = getCell(resolvedMap.duration);
+        const durationMs = minutesToMs(durationRaw);
+        const hasDuration = durationRaw.length > 0;
+        const matchedRate = findMatchingRate(getCell(resolvedMap.rate));
+        const issues = [];
+
+        if (resolvedMap.date === -1) {
+            issues.push('Select a Call Date column');
+        } else if (!callDate) {
+            issues.push('Invalid or missing date');
+        }
+        if (resolvedMap.start === -1 && resolvedMap.end === -1 && resolvedMap.duration === -1) {
+            issues.push('Select Start Time, End Time, or Duration');
+        }
+        if (hasDuration && !Number.isFinite(durationMs)) issues.push('Invalid duration');
+
+        let finalStart = combineCallDateAndParsedTime(callDate, startTime);
+        let finalEnd = combineCallDateAndParsedTime(callDate, endTime);
+
+        if (finalStart && finalEnd && finalEnd <= finalStart) {
+            finalEnd = new Date(finalEnd.getTime() + (24 * 60 * 60 * 1000));
+        }
+
+        if (Number.isFinite(durationMs) && durationMs > 0) {
+            if (finalStart && !finalEnd) {
+                finalEnd = new Date(finalStart.getTime() + durationMs);
+            } else if (!finalStart && finalEnd) {
+                finalStart = new Date(finalEnd.getTime() - durationMs);
+            } else if (!finalStart && !finalEnd && callDate) {
+                finalStart = new Date(callDate.getFullYear(), callDate.getMonth(), callDate.getDate(), 12, 0, 0, 0);
+                finalEnd = new Date(finalStart.getTime() + durationMs);
+            }
+        }
+
+        if (!finalStart || !finalEnd || finalEnd <= finalStart) {
+            issues.push('Not enough valid time information');
+        }
+
+        return {
+            rowNumber: rowIndex + 2,
+            headers,
+            callDate,
+            startTime: finalStart,
+            endTime: finalEnd,
+            durationMs: finalStart && finalEnd ? Math.max(0, finalEnd.getTime() - finalStart.getTime()) : 0,
+            importedRate: matchedRate,
+            rawRate: getCell(columnMap.rate),
+            issues
+        };
+    });
+}
+
+function getCsvColumnSelectValue(selectEl) {
+    if (!selectEl) return -1;
+    const value = Number(selectEl.value);
+    return Number.isInteger(value) ? value : -1;
+}
+
+function getCsvImportColumnMapFromUi() {
+    return {
+        date: getCsvColumnSelectValue(csvImportDateColumnSelect),
+        start: getCsvColumnSelectValue(csvImportStartColumnSelect),
+        end: getCsvColumnSelectValue(csvImportEndColumnSelect),
+        duration: getCsvColumnSelectValue(csvImportDurationColumnSelect),
+        rate: getCsvColumnSelectValue(csvImportRateColumnSelect)
+    };
+}
+
+function populateCsvImportColumnMapping(headers, columnMap) {
+    const selectConfigs = [
+        { element: csvImportDateColumnSelect, value: columnMap?.date ?? -1, includeIgnore: false },
+        { element: csvImportStartColumnSelect, value: columnMap?.start ?? -1, includeIgnore: true },
+        { element: csvImportEndColumnSelect, value: columnMap?.end ?? -1, includeIgnore: true },
+        { element: csvImportDurationColumnSelect, value: columnMap?.duration ?? -1, includeIgnore: true },
+        { element: csvImportRateColumnSelect, value: columnMap?.rate ?? -1, includeIgnore: true }
+    ];
+
+    const options = headers.map((header, index) => ({
+        value: String(index),
+        label: header || `Column ${index + 1}`
+    }));
+
+    selectConfigs.forEach(({ element, value, includeIgnore }) => {
+        if (!element) return;
+        const optionHtml = [
+            includeIgnore ? '<option value="-1">Ignore this column</option>' : '<option value="-1">Select a column</option>',
+            ...options.map((option) => `<option value="${option.value}">${escapeHTML(option.label)}</option>`)
+        ].join('');
+        element.innerHTML = optionHtml;
+        const normalizedValue = Number.isInteger(value) && value >= 0 && value < headers.length ? String(value) : '-1';
+        element.value = normalizedValue;
+    });
+}
+
+function getCsvImportMappingIssues(columnMap) {
+    const issues = [];
+    if (columnMap.date === -1) issues.push('Select which CSV column contains the call date.');
+    if (columnMap.start === -1 && columnMap.end === -1 && columnMap.duration === -1) {
+        issues.push('Select at least one time field: Start Time, End Time, or Duration.');
+    }
+    return issues;
+}
+
+function mergeCallsWithExisting(existingCalls, importedCalls) {
+    const merged = existingCalls.map(normalizeCall);
+    const existingKeys = new Set(merged.map(getCallDuplicateKey));
+    let addedCount = 0;
+    let skippedCount = 0;
+
+    importedCalls.forEach((call) => {
+        const normalizedCall = normalizeCall({
+            ...call,
+            id: call.id || generateUUID(),
+            rpgEligible: typeof call.rpgEligible === 'boolean' ? call.rpgEligible : true
+        });
+        const duplicateKey = getCallDuplicateKey(normalizedCall);
+        if (existingKeys.has(duplicateKey)) {
+            skippedCount += 1;
+            return;
+        }
+        existingKeys.add(duplicateKey);
+        merged.push(normalizedCall);
+        addedCount += 1;
+    });
+
+    return { merged, addedCount, skippedCount };
+}
+
+function normalizeImportedRate(rate) {
+    const safeRate = rate && typeof rate === 'object' ? rate : {};
+    const name = String(safeRate.name || '').trim();
+    const amount = Number(safeRate.amount);
+    if (!name || !Number.isFinite(amount) || amount < 0) return null;
+    return { name, amount };
+}
+
+function getRateDuplicateKey(rate) {
+    return `${String(rate.name || '').trim().toLowerCase()}|${Number(rate.amount || 0).toFixed(6)}`;
+}
+
+function mergeRatesWithExisting(existingRates, importedRates) {
+    const merged = Array.isArray(existingRates) ? existingRates.map((rate) => ({ ...rate })) : [];
+    const existingKeys = new Set(merged.map(getRateDuplicateKey));
+    const existingNames = new Set(merged.map((rate) => String(rate.name || '').trim().toLowerCase()));
+    let addedCount = 0;
+    let skippedCount = 0;
+
+    (Array.isArray(importedRates) ? importedRates : []).forEach((rate) => {
+        const normalizedRate = normalizeImportedRate(rate);
+        if (!normalizedRate) {
+            skippedCount += 1;
+            return;
+        }
+        const duplicateKey = getRateDuplicateKey(normalizedRate);
+        const normalizedName = normalizedRate.name.toLowerCase();
+        if (existingKeys.has(duplicateKey) || existingNames.has(normalizedName)) {
+            skippedCount += 1;
+            return;
+        }
+        existingKeys.add(duplicateKey);
+        existingNames.add(normalizedName);
+        merged.push(normalizedRate);
+        addedCount += 1;
+    });
+
+    return { merged, addedCount, skippedCount };
+}
+
+function getPaymentCycleDuplicateKey(cycle) {
+    if (!cycle || typeof cycle !== 'object') return '';
+    return `${cycle.startDate || ''}|${cycle.endDate || ''}|${cycle.payDate || ''}`;
+}
+
+function mergePaymentCyclesWithExisting(existingCycles, importedCycles) {
+    const merged = Array.isArray(existingCycles) ? existingCycles.map((cycle) => ({ ...cycle })) : [];
+    const existingKeys = new Set(merged.map(getPaymentCycleDuplicateKey));
+    let addedCount = 0;
+    let skippedCount = 0;
+
+    (Array.isArray(importedCycles) ? importedCycles : []).forEach((cycle) => {
+        const duplicateKey = getPaymentCycleDuplicateKey(cycle);
+        if (!duplicateKey || existingKeys.has(duplicateKey)) {
+            skippedCount += 1;
+            return;
+        }
+        existingKeys.add(duplicateKey);
+        merged.push({ ...cycle });
+        addedCount += 1;
+    });
+
+    return { merged, addedCount, skippedCount };
+}
+
+function getSelectedCsvImportRate() {
+    if (!csvImportRateSelect || !csvImportRateSelect.value) return null;
+    const selected = rates.find((rate) => rate.name === csvImportRateSelect.value);
+    return selected ? { amount: Number(selected.amount) || 0, rateName: selected.name } : null;
+}
+
+function getResolvedCsvImportRate(row) {
+    const selected = getSelectedCsvImportRate();
+    const override = !!csvImportOverrideRateToggle?.checked;
+    if (selected && (override || !row.importedRate)) return selected;
+    if (row.importedRate) return { amount: Number(row.importedRate.amount) || 0, rateName: row.importedRate.rateName || '' };
+    return { amount: 0, rateName: '' };
+}
+
+function buildCsvPreviewRows(parsedRows) {
+    const existingKeys = new Set(readCallsFromStorage().map(getCallDuplicateKey));
+    const fileKeys = new Set();
+
+    return parsedRows.map((row) => {
+        const resolvedRate = getResolvedCsvImportRate(row);
+        const normalizedCall = (row.issues.length === 0 && row.startTime && row.endTime)
+            ? normalizeCall({
+                id: generateUUID(),
+                startTime: row.startTime.toISOString(),
+                endTime: row.endTime.toISOString(),
+                duration: row.durationMs,
+                rate: resolvedRate.amount,
+                rateName: resolvedRate.rateName,
+                rpgEligible: isRpgEnabled()
+            })
+            : null;
+        const duplicateKey = normalizedCall ? getCallDuplicateKey(normalizedCall) : '';
+        let status = 'ready';
+        let reason = '';
+
+        if (row.issues.length > 0) {
+            status = 'invalid';
+            reason = row.issues.join(', ');
+        } else if (existingKeys.has(duplicateKey)) {
+            status = 'duplicate';
+            reason = 'Already exists in Call Log';
+        } else if (fileKeys.has(duplicateKey)) {
+            status = 'duplicate';
+            reason = 'Duplicate inside this CSV';
+        } else {
+            fileKeys.add(duplicateKey);
+            if (!(resolvedRate.amount > 0)) {
+                reason = 'Will import without rate';
+            }
+        }
+
+        return {
+            ...row,
+            normalizedCall,
+            resolvedRate,
+            status,
+            reason
+        };
+    });
+}
+
+function renderCsvImportPreview() {
+    if (!pendingCsvImport || !csvImportSummary || !csvImportPreviewBody) return;
+    const columnMap = getCsvImportColumnMapFromUi();
+    pendingCsvImport.columnMap = columnMap;
+    const mappingIssues = getCsvImportMappingIssues(columnMap);
+    const parsedRows = parseCsvImportRows(pendingCsvImport.csvData, columnMap);
+    const previewRows = buildCsvPreviewRows(parsedRows);
+    pendingCsvImport.previewRows = previewRows;
+    const readyCount = previewRows.filter((row) => row.status === 'ready').length;
+    const duplicateCount = previewRows.filter((row) => row.status === 'duplicate').length;
+    const invalidCount = previewRows.filter((row) => row.status === 'invalid').length;
+    const missingRateCount = previewRows.filter((row) => row.status === 'ready' && !(row.resolvedRate.amount > 0)).length;
+
+    csvImportSummary.innerHTML = [
+        { label: 'Rows', value: previewRows.length, tone: 'text-gray-900 dark:text-gray-100' },
+        { label: 'Ready', value: readyCount, tone: 'text-emerald-600 dark:text-emerald-400' },
+        { label: 'Duplicates', value: duplicateCount, tone: 'text-amber-600 dark:text-amber-300' },
+        { label: 'Invalid', value: invalidCount, tone: 'text-red-600 dark:text-red-400' }
+    ].map((item) => `
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2">
+            <div class="text-xs text-gray-500 dark:text-gray-400">${item.label}</div>
+            <div class="text-lg font-semibold ${item.tone}">${item.value}</div>
+        </div>
+    `).join('');
+
+    csvImportPreviewBody.innerHTML = previewRows.slice(0, 150).map((row) => {
+        const statusTone = row.status === 'ready'
+            ? 'text-emerald-600 dark:text-emerald-400'
+            : row.status === 'duplicate'
+                ? 'text-amber-600 dark:text-amber-300'
+                : 'text-red-600 dark:text-red-400';
+        const durationText = row.durationMs > 0 ? msToHMS(row.durationMs) : '--';
+        const rateText = row.resolvedRate.amount > 0
+            ? `${row.resolvedRate.rateName ? `${row.resolvedRate.rateName} - ` : ''}$${row.resolvedRate.amount.toFixed(2)}/min`
+            : '--';
+        return `
+            <tr class="border-b border-gray-100 dark:border-gray-800 align-top">
+                <td class="py-2 pr-3">${formatPreviewDate(row.callDate)}</td>
+                <td class="py-2 pr-3">${formatPreviewTime(row.startTime)}</td>
+                <td class="py-2 pr-3">${formatPreviewTime(row.endTime)}</td>
+                <td class="py-2 pr-3">${durationText}</td>
+                <td class="py-2 pr-3">${rateText}</td>
+                <td class="py-2">
+                    <div class="${statusTone} font-semibold capitalize">${row.status}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">${row.reason || '--'}</div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    if (csvImportMappingWarning) {
+        csvImportMappingWarning.style.display = mappingIssues.length > 0 ? '' : 'none';
+        csvImportMappingWarning.textContent = mappingIssues.join(' ');
+    }
+
+    if (csvImportWarning) {
+        csvImportWarning.style.display = missingRateCount > 0 ? '' : 'none';
+        csvImportWarning.textContent = missingRateCount > 0
+            ? `${missingRateCount} ready call(s) currently have no rate and will import as $0.00 unless you assign one.`
+            : '';
+    }
+    if (confirmCsvImportBtn) {
+        confirmCsvImportBtn.disabled = readyCount === 0;
+        confirmCsvImportBtn.textContent = readyCount > 0 ? `Import ${readyCount} Call${readyCount === 1 ? '' : 's'}` : 'Nothing to Import';
+    }
+}
+
+function populateCsvImportRateSelect() {
+    if (!csvImportRateSelect) return;
+    const selectedValue = csvImportRateSelect.value;
+    csvImportRateSelect.innerHTML = '<option value="">Use imported rate when possible</option>' +
+        rates.map((rate) => `<option value="${escapeHTML(rate.name)}">${escapeHTML(rate.name)} - $${Number(rate.amount).toFixed(2)}/min</option>`).join('');
+    if (selectedValue && rates.some((rate) => rate.name === selectedValue)) {
+        csvImportRateSelect.value = selectedValue;
+    }
+}
+
+function openCsvImportPreviewModal(csvImportData) {
+    pendingCsvImport = { csvData: csvImportData, columnMap: csvImportData.columnMap };
+    populateCsvImportColumnMapping(csvImportData.headers, csvImportData.columnMap);
+    populateCsvImportRateSelect();
+    if (csvImportOverrideRateToggle) csvImportOverrideRateToggle.checked = false;
+    renderCsvImportPreview();
+    ModalManager.open(csvImportPreviewModal, { focusSelector: '#confirm-csv-import-btn' });
+    const scrollEl = csvImportPreviewModal?.querySelector('.settings-modal-scroll');
+    if (scrollEl) scrollEl.scrollTop = 0;
+}
+
+function closeCsvImportPreviewModal() {
+    if (csvImportPreviewModal) ModalManager.close(csvImportPreviewModal);
+    pendingCsvImport = null;
+    if (csvImportPreviewBody) csvImportPreviewBody.innerHTML = '';
+    if (csvImportSummary) csvImportSummary.innerHTML = '';
+    if (csvImportMappingWarning) {
+        csvImportMappingWarning.style.display = 'none';
+        csvImportMappingWarning.textContent = '';
+    }
+    if (csvImportWarning) {
+        csvImportWarning.style.display = 'none';
+        csvImportWarning.textContent = '';
+    }
+}
+
+function confirmCsvImport() {
+    if (!pendingCsvImport?.previewRows) return;
+    const readyRows = pendingCsvImport.previewRows.filter((row) => row.status === 'ready' && row.normalizedCall);
+    if (readyRows.length === 0) {
+        showAlertModal('No Calls To Import', 'This CSV does not contain any new valid calls to add.');
+        return;
+    }
+    calls = readCallsFromStorage();
+    readyRows.forEach((row) => {
+        calls.push(row.normalizedCall);
+    });
+    saveCalls();
+    closeCsvImportPreviewModal();
+    closeSettingsModal();
+    showToast(`${readyRows.length} call${readyRows.length === 1 ? '' : 's'} imported from CSV.`);
+}
+
+function importJsonBackup(importedData) {
+    const importedCalls = Array.isArray(importedData?.calls) ? importedData.calls : [];
+    const importedRates = Array.isArray(importedData?.rates) ? importedData.rates : [];
+    const importedGoal = normalizeDailyGoal(importedData?.dailyGoal);
+    const importedCycles = Array.isArray(importedData?.paymentCycles) ? importedData.paymentCycles : [];
+    const existingCalls = readCallsFromStorage();
+    const callMerge = mergeCallsWithExisting(existingCalls, importedCalls);
+    const rateMerge = mergeRatesWithExisting(rates, importedRates);
+    const cycleMerge = mergePaymentCyclesWithExisting(paymentCycles, importedCycles);
+    const currentGoal = normalizeDailyGoal(dailyGoal);
+    const shouldApplyImportedGoal = currentGoal.amount <= 0 && currentGoal.minutes <= 0
+        && (importedGoal.amount > 0 || importedGoal.minutes > 0);
+
+    if (callMerge.addedCount === 0 && rateMerge.addedCount === 0 && cycleMerge.addedCount === 0 && !shouldApplyImportedGoal) {
+        showAlertModal('Nothing New To Import', 'This backup does not contain any new calls, rates, payment cycles, or goal data to merge.');
+        return;
+    }
+
+    const summaryParts = [
+        `${callMerge.addedCount} new call${callMerge.addedCount === 1 ? '' : 's'}`,
+        `${rateMerge.addedCount} new rate${rateMerge.addedCount === 1 ? '' : 's'}`,
+        `${cycleMerge.addedCount} new payment cycle${cycleMerge.addedCount === 1 ? '' : 's'}`
+    ];
+    const skippedParts = [
+        callMerge.skippedCount > 0 ? `${callMerge.skippedCount} duplicate call${callMerge.skippedCount === 1 ? '' : 's'} skipped` : '',
+        rateMerge.skippedCount > 0 ? `${rateMerge.skippedCount} duplicate/invalid rate${rateMerge.skippedCount === 1 ? '' : 's'} skipped` : '',
+        cycleMerge.skippedCount > 0 ? `${cycleMerge.skippedCount} duplicate cycle${cycleMerge.skippedCount === 1 ? '' : 's'} skipped` : ''
+    ].filter(Boolean);
+    if (shouldApplyImportedGoal) summaryParts.push('daily goal applied');
+
+    showConfirmation(
+        'Merge Backup Data',
+        `This backup will be merged into your current local data. Existing calls and settings stay in place. New items detected: ${summaryParts.join(', ')}.${skippedParts.length ? ` ${skippedParts.join(', ')}.` : ''}`,
+        'Merge',
+        () => {
+            calls = callMerge.merged;
+            rates = rateMerge.merged;
+            if (shouldApplyImportedGoal) {
+                dailyGoal = importedGoal;
+            }
+            paymentCyclesEnabled = paymentCyclesEnabled || !!importedData?.paymentCyclesEnabled;
+            paymentCycles = cycleMerge.merged;
+            saveRates();
+            saveCalls();
+            saveDailyGoal();
+            savePaymentCycles();
+            syncDailyGoalInputs();
+            populateRateSelects();
+            showToast(`Backup merged: ${callMerge.addedCount} calls, ${rateMerge.addedCount} rates, ${cycleMerge.addedCount} cycles added.`);
+            closeSettingsModal();
+        },
+        {
+            icon: 'fa-upload',
+            iconColor: 'text-blue-500',
+            tone: 'primary',
+            loadingText: 'Merging backup...',
+            successText: 'Backup merged successfully.'
+        }
+    );
+}
+
 // v1.0.5 Active live call state (for crash/close recovery)
 const ACTIVE_CALL_KEY = 'activeLiveCallState';
 
@@ -1394,7 +3161,7 @@ function saveActiveCallState(force = false) {
     rateName: rateSelect.value || null,
     lastPing: now
   };
-  localStorage.setItem(ACTIVE_CALL_KEY, JSON.stringify(state));
+  queueStorageWrite(ACTIVE_CALL_KEY, JSON.stringify(state));
   lastActiveCallPersistAt = now;
 }
 
@@ -1409,6 +3176,7 @@ function readActiveCallState() {
 }
 
 function clearActiveCallState() {
+  pendingStorageWrites.delete(ACTIVE_CALL_KEY);
   localStorage.removeItem(ACTIVE_CALL_KEY);
 }
 
@@ -1458,6 +3226,12 @@ function normalizeCall(call) {
   };
 
   normalized.earned = normalized.earnings; // compat
+  Object.defineProperty(normalized, '_startMs', {
+    value: start.getTime(),
+    writable: true,
+    enumerable: false,
+    configurable: true
+  });
   return normalized;
 }
 
@@ -1471,6 +3245,27 @@ function readCallsFromStorage() {
     }
 }
 
+function migrateLegacyRpgCallEligibility() {
+    try {
+        if (localStorage.getItem(RPG_CALL_ELIGIBILITY_MIGRATION_KEY) === '1') return;
+        const storedCalls = readCallsFromStorage();
+        let changed = false;
+        const migrated = storedCalls.map((call) => {
+            if (typeof call.rpgEligible === 'boolean') return call;
+            changed = true;
+            return { ...call, rpgEligible: true };
+        });
+        if (changed) {
+            calls = migrated.map(normalizeCall);
+            queueStorageWrite('calls', JSON.stringify(calls));
+            markCallsDatasetDirty();
+        }
+        localStorage.setItem(RPG_CALL_ELIGIBILITY_MIGRATION_KEY, '1');
+    } catch (e) {
+        console.warn('Could not migrate RPG call eligibility', e);
+    }
+}
+
     function syncDailyGoalInputs() {
         const selectedRateAmount = getSelectedRateAmount();
         const derivedMinutes = dailyGoal.amount > 0 && selectedRateAmount > 0
@@ -1479,25 +3274,154 @@ function readCallsFromStorage() {
         goalAmountInput.value = dailyGoal.amount > 0 ? dailyGoal.amount : '';
         goalMinutesInput.value = derivedMinutes > 0 ? derivedMinutes : '';
     }
+
+    function getCallStartMs(call) {
+        if (call && Number.isFinite(call._startMs)) return call._startMs;
+        const value = Date.parse(call?.startTime || '');
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    function markCallsDatasetDirty() {
+        callsDatasetVersion += 1;
+        filteredCallsCache.key = '';
+        filteredCallsCache.rows = [];
+    }
+
+    function queueStorageWrite(key, value) {
+        pendingStorageWrites.set(key, value);
+        if (storageWriteTimer) return;
+        storageWriteTimer = setTimeout(() => {
+            flushPendingStorageWrites();
+        }, 180);
+    }
+
+    function flushPendingStorageWrites() {
+        if (storageWriteTimer) {
+            clearTimeout(storageWriteTimer);
+            storageWriteTimer = null;
+        }
+        if (!pendingStorageWrites.size) return;
+        pendingStorageWrites.forEach((value, key) => {
+            try {
+                localStorage.setItem(key, value);
+            } catch (err) {
+                console.warn(`Could not persist key ${key}`, err);
+            }
+        });
+        pendingStorageWrites.clear();
+    }
+
+    function getFilterCacheKey() {
+        const dateKey = callLogFilter === 'date' ? (statsDatePicker?.value || getTodayDateString()) : '';
+        return `${callsDatasetVersion}|${callLogFilter}|${dateKey}`;
+    }
+
+    function getFilteredCallsCached() {
+        const cacheKey = getFilterCacheKey();
+        if (filteredCallsCache.key === cacheKey) return filteredCallsCache.rows;
+
+        const now = new Date();
+        let startMs = null;
+        let endMs = null;
+        if (callLogFilter === 'today') {
+            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const end = new Date(start);
+            end.setDate(end.getDate() + 1);
+            startMs = start.getTime();
+            endMs = end.getTime();
+        } else if (callLogFilter === 'week') {
+            const start = new Date(now);
+            start.setDate(now.getDate() - now.getDay());
+            const end = new Date(start);
+            end.setDate(end.getDate() + 7);
+            startMs = start.getTime();
+            endMs = end.getTime();
+        } else if (callLogFilter === 'month') {
+            const start = new Date(now.getFullYear(), now.getMonth(), 1);
+            const end = new Date(start);
+            end.setMonth(end.getMonth() + 1);
+            startMs = start.getTime();
+            endMs = end.getTime();
+        } else if (callLogFilter === 'date') {
+            const selectedDate = parseDateInput(statsDatePicker?.value) || new Date();
+            const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+            const end = new Date(start);
+            end.setDate(end.getDate() + 1);
+            startMs = start.getTime();
+            endMs = end.getTime();
+        }
+
+        const rows = (startMs === null)
+            ? calls.slice()
+            : calls.filter((call) => {
+                const t = getCallStartMs(call);
+                return t >= startMs && t < endMs;
+            });
+
+        filteredCallsCache = { key: cacheKey, rows };
+        return rows;
+    }
+
+    function buildCallRow(call, userTz, rateNameSet) {
+        const startDate = new Date(call.startTime);
+        const endDate = new Date(call.endTime);
+        const startDisplay = startDate.toLocaleString(undefined, { timeZone: userTz });
+        const endDisplay = endDate.toLocaleString(undefined, { timeZone: userTz });
+        const durationStr = formatTime(call.duration);
+        const earningsStr = formatEarnings(call.earned);
+
+        let safeRateName = escapeHTML(call.rateName || '');
+        if (!safeRateName) {
+            safeRateName = '<span class="text-gray-400 italic">Rate removed</span>';
+        } else if (!rateNameSet.has(call.rateName)) {
+            safeRateName = `<span title="Original rate: ${escapeHTML(call.rateName)}" class="text-yellow-600 dark:text-yellow-400 line-through">${escapeHTML(call.rateName)}</span>`;
+        }
+
+        const safeId = escapeHTML(call.id || '');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${escapeHTML(startDisplay)}</td>
+            <td>${escapeHTML(endDisplay)}</td>
+            <td>${durationStr}</td>
+            <td>${safeRateName}</td>
+            <td class="notes-column"></td>
+            <td>${earningsStr}</td>
+            <td>
+                <button class="edit-call-btn" data-call-id="${safeId}">
+<i class="fas fa-edit"></i> Edit
+</button>
+                <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        return row;
+    }
     
     // Storage functions
     function saveRates() {
-        localStorage.setItem('rates', JSON.stringify(rates));
+        queueStorageWrite('rates', JSON.stringify(rates));
         displayRates();
         populateRateSelects();
         updateStatistics();
+        if (rates.length > 0) markOnboardingStepComplete('rate');
+        updateOnboardingCues();
     }
 
-    function saveCalls() {
+function saveCalls() {
   calls = calls.map(normalizeCall);
-  localStorage.setItem('calls', JSON.stringify(calls));
+  markCallsDatasetDirty();
+  queueStorageWrite('calls', JSON.stringify(calls));
   displayCalls();
   updateStatistics();
+  evaluateAchievements({ notify: true });
+  if (calls.length > 0) markOnboardingStepComplete('call');
+  updateOnboardingCues();
 }
 
     function saveDailyGoal() {
   dailyGoal = normalizeDailyGoal(dailyGoal);
-  localStorage.setItem('dailyGoal', JSON.stringify(dailyGoal));
+  queueStorageWrite('dailyGoal', JSON.stringify(dailyGoal));
   updateStatistics();
 }
 
@@ -1528,7 +3452,7 @@ function readCallsFromStorage() {
 
     function saveLastSelectedRate() {
         lastSelectedRate = rateSelect.value;
-        localStorage.setItem('lastSelectedRate', lastSelectedRate);
+        queueStorageWrite('lastSelectedRate', lastSelectedRate);
         syncDailyGoalInputs();
         updateStatistics();
     }
@@ -1553,24 +3477,73 @@ function readCallsFromStorage() {
         storageBar.style.width = `${percentage}%`;
     }
 
+    const scheduleStorageInfoRefresh = createRafScheduler(() => updateStorageInfo());
+
     function updateStatistics() {
         const now = new Date();
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
-        const todaysCalls = calls.filter(call => new Date(call.startTime) >= todayStart);
-        const todaysEarnings = todaysCalls.reduce((sum, call) => sum + call.earned, 0);
-        const todaysDuration = todaysCalls.reduce((sum, call) => sum + call.duration, 0);
+        const nowMs = now.getTime();
+        const todayStartMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const tomorrowStartMs = todayStartMs + (24 * 60 * 60 * 1000);
+        const monthStartMs = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        const nextMonthStartMs = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+
+        let todaysEarnings = 0;
+        let todaysDuration = 0;
+        let todaysCount = 0;
+        let firstHalfEarnings = 0;
+        let secondHalfEarnings = 0;
+
+        let currentCycle = null;
+        let cycleStartMs = 0;
+        let cycleEndMs = 0;
+        let cycleEarnings = 0;
+
+        if (paymentCyclesEnabled && paymentCycles.length > 0) {
+            currentCycle = paymentCycles.find((cycle) => {
+                const start = new Date(cycle.startDate).getTime();
+                const end = new Date(cycle.endDate).getTime();
+                return nowMs >= start && nowMs <= end;
+            }) || null;
+            if (currentCycle) {
+                cycleStartMs = new Date(currentCycle.startDate).getTime();
+                cycleEndMs = new Date(currentCycle.endDate).getTime();
+            }
+        }
+
+        for (let i = 0; i < calls.length; i += 1) {
+            const call = calls[i];
+            const startMs = getCallStartMs(call);
+            const earned = Number(call.earned) || 0;
+            const duration = Number(call.duration) || 0;
+
+            if (startMs >= todayStartMs && startMs < tomorrowStartMs) {
+                todaysEarnings += earned;
+                todaysDuration += duration;
+                todaysCount += 1;
+            }
+
+            if (startMs >= monthStartMs && startMs < nextMonthStartMs) {
+                const day = new Date(startMs).getDate();
+                if (day <= 15) firstHalfEarnings += earned;
+                else secondHalfEarnings += earned;
+            }
+
+            if (currentCycle && startMs >= cycleStartMs && startMs <= cycleEndMs) {
+                cycleEarnings += earned;
+            }
+        }
+
         const todaysMinutes = todaysDuration / (1000 * 60);
-        
+
         todayEarningsDisplay.textContent = formatEarnings(todaysEarnings);
-        
-        if (todaysCalls.length > 0) {
-            const avgDuration = todaysDuration / todaysCalls.length;
+
+        if (todaysCount > 0) {
+            const avgDuration = todaysDuration / todaysCount;
             avgDurationDisplay.textContent = formatTime(avgDuration);
         } else {
             avgDurationDisplay.textContent = '00:00:00';
         }
-        
+
         const hasAmountGoal = dailyGoal.amount > 0;
         const hasMinutesGoal = dailyGoal.minutes > 0;
         const selectedRateAmount = getSelectedRateAmount();
@@ -1627,54 +3600,39 @@ function readCallsFromStorage() {
             goalAmountDisplay.textContent = '$0.00 / $0.00';
             goalMinutesDisplay.textContent = '0 / 0 Min';
         }
-        
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        const monthCalls = calls.filter(call => new Date(call.startTime) >= monthStart);
-        
-        const firstHalfCalls = monthCalls.filter(call => new Date(call.startTime).getDate() <= 15);
-        const secondHalfCalls = monthCalls.filter(call => new Date(call.startTime).getDate() > 15);
-        
-        const firstHalfEarnings = firstHalfCalls.reduce((sum, call) => sum + call.earned, 0);
-        const secondHalfEarnings = secondHalfCalls.reduce((sum, call) => sum + call.earned, 0);
+
         const monthlyEarnings = firstHalfEarnings + secondHalfEarnings;
-        
+
         firstHalfEarningsDisplay.textContent = formatEarnings(firstHalfEarnings);
         secondHalfEarningsDisplay.textContent = formatEarnings(secondHalfEarnings);
         monthlyTotalEarningsDisplay.textContent = formatEarnings(monthlyEarnings);
-        
-        if (paymentCyclesEnabled && paymentCycles.length > 0) {
-            const currentCycle = paymentCycles.find(cycle => {
-                const start = new Date(cycle.startDate);
-                const end = new Date(cycle.endDate);
-                return now >= start && now <= end;
-            });
-            
-            if (currentCycle) {
-                const cycleStart = new Date(currentCycle.startDate);
-                const cycleEnd = new Date(currentCycle.endDate);
-                const cycleCalls = calls.filter(call => {
-                    const callDate = new Date(call.startTime);
-                    return callDate >= cycleStart && callDate <= cycleEnd;
-                });
-                
-                const cycleEarnings = cycleCalls.reduce((sum, call) => sum + call.earned, 0);
+
+        if (currentCycle) {
                 cycleEarningsDisplay.textContent = formatEarnings(cycleEarnings);
-                
+
                 cycleStartDateDisplay.textContent = formatDate(currentCycle.startDate);
                 cycleEndDateDisplay.textContent = formatDate(currentCycle.endDate);
-                
-                const daysLeft = Math.ceil((cycleEnd - now) / (1000 * 60 * 60 * 24));
+
+                const cycleEnd = new Date(currentCycle.endDate);
+                const daysLeft = Math.ceil((cycleEnd.getTime() - nowMs) / (1000 * 60 * 60 * 24));
                 daysUntilEndDisplay.textContent = `${daysLeft} days`;
-                
+
                 const payDate = new Date(currentCycle.payDate);
                 payDateDisplay.textContent = formatDate(currentCycle.payDate);
-                
-                const daysUntilPay = Math.ceil((payDate - now) / (1000 * 60 * 60 * 24));
+
+                const daysUntilPay = Math.ceil((payDate.getTime() - nowMs) / (1000 * 60 * 60 * 24));
                 daysUntilPayDisplay.textContent = `${daysUntilPay} days`;
-            }
+        } else if (paymentCyclesEnabled) {
+            cycleEarningsDisplay.textContent = '$0.00';
+            cycleStartDateDisplay.textContent = '--';
+            cycleEndDateDisplay.textContent = '--';
+            daysUntilEndDisplay.textContent = '--';
+            payDateDisplay.textContent = '--';
+            daysUntilPayDisplay.textContent = '--';
         }
-        
-        updateStorageInfo();
+
+        updateRpgProgress();
+        scheduleStorageInfoRefresh();
     }
     
     // Time zone helpers
@@ -1687,9 +3645,10 @@ function readCallsFromStorage() {
 
     function setUserTimeZone(tz) {
         if (!tz) {
+            pendingStorageWrites.delete('timeZone');
             localStorage.removeItem('timeZone');
         } else {
-            localStorage.setItem('timeZone', tz);
+            queueStorageWrite('timeZone', tz);
         }
     }
 
@@ -1857,103 +3816,65 @@ function readCallsFromStorage() {
     }
 
     function displayCalls() {
+        callLogRenderTicket += 1;
+        const renderTicket = callLogRenderTicket;
+        const filteredCalls = getFilteredCallsCached();
         callLogTableBody.innerHTML = '';
-        let filteredCalls = [];
-        const now = new Date();
-
-        if (callLogFilter === 'today') {
-            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const tomorrowStart = new Date(todayStart);
-            tomorrowStart.setDate(tomorrowStart.getDate() + 1);
-            filteredCalls = calls.filter(call => {
-                const t = new Date(call.startTime);
-                return t >= todayStart && t < tomorrowStart;
-            });
-        } else if (callLogFilter === 'week') {
-            const weekStart = new Date(now);
-            weekStart.setDate(now.getDate() - now.getDay());
-            const nextWeek = new Date(weekStart);
-            nextWeek.setDate(nextWeek.getDate() + 7);
-            filteredCalls = calls.filter(call => {
-                const t = new Date(call.startTime);
-                return t >= weekStart && t < nextWeek;
-            });
-        } else if (callLogFilter === 'month') {
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-            const nextMonth = new Date(monthStart);
-            nextMonth.setMonth(nextMonth.getMonth() + 1);
-            filteredCalls = calls.filter(call => {
-                const t = new Date(call.startTime);
-                return t >= monthStart && t < nextMonth;
-            });
-        } else if (callLogFilter === 'date') {
-            // Use parseDateInput to build a local-midnight Date (avoids UTC parsing issues)
-            const selectedDate = parseDateInput(statsDatePicker.value) || new Date(statsDatePicker.value);
-            const dateStart = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-            const dateEnd = new Date(dateStart);
-            dateEnd.setDate(dateEnd.getDate() + 1);
-            filteredCalls = calls.filter(call => {
-                const t = new Date(call.startTime);
-                return t >= dateStart && t < dateEnd;
-            });
-        }
+        if (callLogScrollContainer) callLogScrollContainer.scrollTop = 0;
 
         if (filteredCalls.length === 0) {
+            callLogRenderState = null;
             callLogTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls recorded.</td></tr>`;
             totalMinutesDisplay.textContent = '0 min';
             totalEarningsDisplay.textContent = '$0.00';
             return;
         }
 
-        filteredCalls.forEach((call) => {
-            const startDate = new Date(call.startTime);
-            const endDate = new Date(call.endTime);
-            
-            const startDisplay = startDate.toLocaleString(undefined, { timeZone: getUserTimeZone() });
-            const endDisplay = endDate.toLocaleString(undefined, { timeZone: getUserTimeZone() });
-            
-            const durationStr = formatTime(call.duration);
-            const earningsStr = formatEarnings(call.earned);
-
-            // Fallback: if rate doesn't exist, show "Rate removed" (v1.0.9)
-            let safeRateName = escapeHTML(call.rateName || '');
-            if (!safeRateName) {
-                safeRateName = '<span class="text-gray-400 italic">Rate removed</span>';
-            } else {
-                const rateExists = rates.some(r => r.name === call.rateName);
-                if (!rateExists) {
-                    safeRateName = `<span title="Original rate: ${escapeHTML(call.rateName)}" class="text-yellow-600 dark:text-yellow-400 line-through">${escapeHTML(call.rateName)}</span>`;
-                }
-            }
-
-            const safeId = escapeHTML(call.id || '');
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${escapeHTML(startDisplay)}</td>
-                <td>${escapeHTML(endDisplay)}</td>
-                <td>${durationStr}</td>
-                <td>${safeRateName}</td>
-                <td class="notes-column"></td>
-                <td>${earningsStr}</td>
-                <td>
-                    <button class="edit-call-btn" data-call-id="${safeId}">
-  <i class="fas fa-edit"></i> Edit
-</button>
-                    <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            `;
-            callLogTableBody.appendChild(row);
-        });
-
         const totalDuration = filteredCalls.reduce((sum, call) => sum + call.duration, 0);
         const totalMinutes = totalDuration / (1000 * 60);
         const totalEarnings = filteredCalls.reduce((sum, call) => sum + call.earned, 0);
-
         totalMinutesDisplay.textContent = `${Math.round(totalMinutes)} min`;
         totalEarningsDisplay.textContent = formatEarnings(totalEarnings);
+
+        const userTz = getUserTimeZone();
+        const rateNameSet = new Set(rates.map((r) => r.name));
+        callLogRenderState = {
+            ticket: renderTicket,
+            rows: filteredCalls,
+            cursor: 0,
+            userTz,
+            rateNameSet,
+            done: false
+        };
+
+        renderNextCallLogChunk();
+    }
+
+    function renderNextCallLogChunk() {
+        const state = callLogRenderState;
+        if (!state || state.done) return;
+        if (state.ticket !== callLogRenderTicket) return;
+
+        const fragment = document.createDocumentFragment();
+        const end = Math.min(state.cursor + CALL_LOG_RENDER_CHUNK_SIZE, state.rows.length);
+        for (let i = state.cursor; i < end; i += 1) {
+            fragment.appendChild(buildCallRow(state.rows[i], state.userTz, state.rateNameSet));
+        }
+        callLogTableBody.appendChild(fragment);
+        state.cursor = end;
+        state.done = state.cursor >= state.rows.length;
+
+        if (!state.done) {
+            requestAnimationFrame(() => {
+                if (state.ticket !== callLogRenderTicket) return;
+                if (callLogScrollContainer) {
+                    const nearBottom = callLogScrollContainer.scrollTop + callLogScrollContainer.clientHeight >= (callLogScrollContainer.scrollHeight - CALL_LOG_RENDER_AHEAD_PX);
+                    if (nearBottom) renderNextCallLogChunk();
+                } else {
+                    renderNextCallLogChunk();
+                }
+            });
+        }
     }
 
     // Rate functions
@@ -1990,14 +3911,25 @@ function readCallsFromStorage() {
 
   calls = readCallsFromStorage();
 
-  const start = parseOptionalDate(callStartTimeInput.value);
-  const end = parseOptionalDate(callEndTimeInput.value);
-  const durationMsFromMinutes = minutesToMs(callDurationMinutesInput.value);
+  const callDate = parseDateInput(callDateInput?.value || '') || parseDateInput(getTodayDateString());
+  let start = combineCallDateAndTime(callDate, callStartTimeInput.value);
+  let end = combineCallDateAndTime(callDate, callEndTimeInput.value);
+  const durationMsFromMinutes = minutesToMs(callDurationInput.value);
+  const hasDurationInput = String(callDurationInput.value || '').trim().length > 0;
+
+  if (hasDurationInput && !Number.isFinite(durationMsFromMinutes)) {
+    showAlertModal('Invalid Duration', 'Use minutes like 15 or a time format like 00:15:30.');
+    return;
+  }
 
   // Validación mínima: al menos (start+end) o minutes
   if ((!start || !end) && !durationMsFromMinutes) {
-    showAlertModal('Invalid Call Data', 'Please enter Start & End time, or a Duration in minutes.');
+    showAlertModal('Invalid Call Data', 'Please enter Start & End time, or a valid Duration.');
     return;
+  }
+
+  if (start && end && end <= start) {
+    end = new Date(end.getTime() + (24 * 60 * 60 * 1000));
   }
 
   let finalStart = start;
@@ -2010,8 +3942,10 @@ function readCallsFromStorage() {
     } else if (!finalStart && finalEnd) {
       finalStart = new Date(finalEnd.getTime() - durationMsFromMinutes);
     } else if (!finalStart && !finalEnd) {
-      // minutes-only: anclamos a "ahora" para mantener consistencia interna
-      finalStart = new Date();
+      const baseDate = callDate || new Date();
+      finalStart = callDate
+        ? new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), 12, 0, 0, 0)
+        : new Date();
       finalEnd = new Date(finalStart.getTime() + durationMsFromMinutes);
     }
   }
@@ -2028,6 +3962,8 @@ function readCallsFromStorage() {
 
   const durationMs = finalEnd - finalStart;
   const earnings = Number(((durationMs / (1000 * 60)) * ratePerMin).toFixed(2));
+  const wasEditing = isEditingCall;
+  const rpgEligible = isRpgEnabled();
 
   if (isEditingCall) {
     const idx = calls.findIndex(c => c.id === editingCallId);
@@ -2039,6 +3975,7 @@ function readCallsFromStorage() {
       endTime: finalEnd.toISOString(),
       duration: durationMs,
       rate: ratePerMin,
+      rpgEligible: typeof calls[idx].rpgEligible === 'boolean' ? calls[idx].rpgEligible : rpgEligible,
       rateName: selectedRateName,
             earnings
     });
@@ -2051,6 +3988,7 @@ function readCallsFromStorage() {
       endTime: finalEnd.toISOString(),
       duration: durationMs,
       rate: ratePerMin,
+      rpgEligible,
       rateName: selectedRateName,
             earnings
     }));
@@ -2058,6 +3996,17 @@ function readCallsFromStorage() {
 
   saveCalls();
   closeCallModal();
+  if (wasEditing) {
+    showToast('Call updated.');
+  } else {
+    if (rpgEligible) {
+      const statsAfterSave = computeAchievementStats();
+      const earnedXp = getCallXpForDurationWithStreak(durationMs, statsAfterSave.currentStreak);
+      showToast(`Call saved! XP gained: +${earnedXp}`);
+    } else {
+      showToast('Call saved!');
+    }
+  }
 }
 
     function editCall(callId) {
@@ -2069,10 +4018,15 @@ function readCallsFromStorage() {
   editingCallId = callId;
 
   // Llenar inputs del modal con los valores guardados
-  callStartTimeInput.value = formatLocalDateTime(callToEdit.startTime);
-  callEndTimeInput.value = formatLocalDateTime(callToEdit.endTime);
-  const mins = Math.ceil((new Date(callToEdit.endTime) - new Date(callToEdit.startTime)) / (1000 * 60));
-    callDurationMinutesInput.value = mins > 0 ? mins : '';
+  callDateInput.value = formatDateForInput(new Date(callToEdit.startTime));
+  callStartTimeInput.value = formatLocalTimeForInput(callToEdit.startTime);
+  callEndTimeInput.value = formatLocalTimeForInput(callToEdit.endTime);
+  const durationMs = new Date(callToEdit.endTime) - new Date(callToEdit.startTime);
+  const totalSeconds = Math.max(0, Math.round(durationMs / 1000));
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+    callDurationInput.value = totalSeconds > 0 ? `${hours}:${minutes}:${seconds}` : '';
     // For privacy, saved calls do not contain notes. Clear notes input when editing.
     if (callNotesInput) callNotesInput.value = '';
 
@@ -2248,7 +4202,7 @@ function readCallsFromStorage() {
 
     // Call modal functions
     function openCallModal(triggerEl = null) {
-        ModalManager.open(callModal, { focusSelector: '#call-start-time', sourceEl: triggerEl });
+        ModalManager.open(callModal, { focusSelector: '#call-date', sourceEl: triggerEl });
     }
 
     function closeCallModal() {
@@ -2256,7 +4210,7 @@ function readCallsFromStorage() {
         isEditingCall = false;
         editingCallId = null;
         callForm.reset();
-        callDurationMinutesInput.value = '';
+        callDurationInput.value = '';
     }
 
     // Live call functions
@@ -2302,12 +4256,13 @@ function readCallsFromStorage() {
         const endTime = Date.now();
         const elapsed = endTime - liveCallStart;
         const earned = calculateEarnings(elapsed, currentCallRate);
-        const callData = normalizeCall({
+const callData = normalizeCall({
   id: generateUUID(),
   startTime: new Date(liveCallStart).toISOString(),
   endTime: new Date(endTime).toISOString(),
   duration: elapsed,
   rate: currentCallRate,
+  rpgEligible: isRpgEnabled(),
   rateName: rateSelect.value,
   earnings: Number(earned.toFixed(2))
 });
@@ -2322,7 +4277,13 @@ calls.push(callData);
         if (liveCallNotesInput) liveCallNotesInput.value = '';
         liveCallStart = null;
         currentCallRate = null;
-        showToast('Live call saved!');
+        if (isRpgEnabled()) {
+            const statsAfterSave = computeAchievementStats();
+            const earnedXp = getCallXpForDurationWithStreak(elapsed, statsAfterSave.currentStreak);
+            showToast(`Live call saved! XP gained: +${earnedXp}`);
+        } else {
+            showToast('Live call saved!');
+        }
         clearActiveCallState();
         updateFloatingCallControls(featureFlags);
         animateFloatingPrimaryTransition();
@@ -2331,6 +4292,15 @@ calls.push(callData);
     // Settings modal functions
     function openSettingsModal(triggerEl = null) {
         ModalManager.open(settingsModal, { focusSelector: '#feature-notes-toggle', sourceEl: triggerEl });
+        const state = loadOnboardingState();
+        state.dismissed.settings = true;
+        state.seen = true;
+        if (!state.completed || typeof state.completed !== 'object') {
+            state.completed = { rate: false, call: false, settings: false };
+        }
+        state.completed.settings = true;
+        saveOnboardingState(state);
+        updateOnboardingCues();
         updateSettingsSplitState();
         updateStorageInfo();
     }
@@ -2354,6 +4324,38 @@ calls.push(callData);
         updateSettingsSplitState();
         updateStorageInfo();
         renderPaymentCycles();
+    }
+
+    function openAchievementsSettingsModal(triggerEl = null) {
+        if (settingsModal && ModalManager.isOpen(settingsModal)) {
+            closeSettingsModal();
+        }
+        clearDetailModalPresentation(achievementsSettingsModal);
+        renderAchievementsModal();
+        ModalManager.open(achievementsSettingsModal, { focusSelector: '#done-achievements-settings-btn', sourceEl: triggerEl });
+        const scrollEl = achievementsSettingsModal?.querySelector('.settings-modal-scroll');
+        if (scrollEl) {
+            scrollEl.scrollTop = 0;
+            requestAnimationFrame(() => {
+                scrollEl.scrollTop = 0;
+            });
+        }
+    }
+
+    function openAchievementDetailModal(achievementId, triggerEl = null) {
+        if (!achievementDetailModal) return;
+        selectedAchievementId = achievementId;
+        renderAchievementDetailModal(achievementId);
+        ModalManager.open(achievementDetailModal, { focusSelector: '#done-achievement-detail-btn', sourceEl: triggerEl });
+    }
+
+    function closeAchievementDetailModal() {
+        ModalManager.close(achievementDetailModal);
+    }
+
+    function closeAchievementsSettingsModal() {
+        closeAchievementDetailModal();
+        ModalManager.close(achievementsSettingsModal);
     }
 
     function closePaymentCyclesSettingsModal() {
@@ -2618,6 +4620,27 @@ calls.push(callData);
     const cancelFeedbackBtn = document.getElementById('cancel-feedback');
     const feedbackForm = document.getElementById('feedback-form');
     const contactUsBtn = document.getElementById('contact-us-btn');
+    const onboardingModal = document.getElementById('onboarding-modal');
+    const closeOnboardingModalBtn = document.getElementById('close-onboarding-modal');
+    const onboardingDontShowToggle = document.getElementById('onboarding-dont-show-toggle');
+    const onboardingQuickStartBtn = document.getElementById('onboarding-quick-start-btn');
+    const onboardingCustomizeFirstBtn = document.getElementById('onboarding-customize-first-btn');
+    const onboardingSkipBtn = document.getElementById('onboarding-skip-btn');
+    const onboardingCues = document.getElementById('onboarding-cues');
+    const cueAddRateCard = document.getElementById('cue-add-rate');
+    const cueStartCallCard = document.getElementById('cue-start-call');
+    const cueOpenSettingsCard = document.getElementById('cue-open-settings');
+    const cueAddRateBtn = document.getElementById('cue-add-rate-btn');
+    const cueStartCallBtn = document.getElementById('cue-start-call-btn');
+    const cueOpenSettingsBtn = document.getElementById('cue-open-settings-btn');
+    const onboardingProgressText = document.getElementById('onboarding-progress-text');
+    const onboardingStepRate = document.getElementById('onboarding-step-rate');
+    const onboardingStepCall = document.getElementById('onboarding-step-call');
+    const onboardingStepSettings = document.getElementById('onboarding-step-settings');
+    const restartOnboardingBtn = document.getElementById('restart-onboarding-btn');
+    const ONBOARDING_STATE_KEY = 'wtt_onboarding_state_v1';
+    const ratesCard = document.getElementById('rates-card');
+    let onboardingHighlightTimer = null;
 
     function openFeedbackModal() {
         ModalManager.open(feedbackModal, { focusSelector: '#feedback-name' });
@@ -2628,9 +4651,210 @@ calls.push(callData);
         feedbackForm.reset();
     }
 
+    function openLevelCurveModal(triggerEl = null) {
+        renderLevelCurveTable();
+        ModalManager.open(levelCurveModal, { focusSelector: '#done-level-curve-modal', sourceEl: triggerEl });
+    }
+
+    function closeLevelCurveModal() {
+        ModalManager.close(levelCurveModal);
+    }
+
+    function createDefaultOnboardingState() {
+        return {
+            seen: false,
+            dismissAll: false,
+            dismissed: { rate: false, call: false, settings: false },
+            completed: { rate: false, call: false, settings: false }
+        };
+    }
+
+    function loadOnboardingState() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(ONBOARDING_STATE_KEY) || '{}');
+            const dismissed = parsed?.dismissed && typeof parsed.dismissed === 'object' ? parsed.dismissed : {};
+            const completed = parsed?.completed && typeof parsed.completed === 'object' ? parsed.completed : {};
+            return {
+                seen: !!parsed.seen,
+                dismissAll: !!parsed.dismissAll,
+                dismissed: {
+                    rate: !!dismissed.rate,
+                    call: !!dismissed.call,
+                    settings: !!dismissed.settings
+                },
+                completed: {
+                    rate: !!completed.rate,
+                    call: !!completed.call,
+                    settings: !!completed.settings
+                }
+            };
+        } catch (e) {
+            return createDefaultOnboardingState();
+        }
+    }
+
+    function saveOnboardingState(state) {
+        try {
+            localStorage.setItem(ONBOARDING_STATE_KEY, JSON.stringify(state));
+        } catch (e) {
+            console.warn('Could not save onboarding state', e);
+        }
+    }
+
+    function closeOnboardingModal() {
+        if (!onboardingModal) return;
+        ModalManager.close(onboardingModal);
+    }
+
+    function getOnboardingCompletionState() {
+        const state = loadOnboardingState();
+        return {
+            rate: rates.length > 0 || !!state.completed?.rate,
+            call: calls.length > 0 || !!state.completed?.call,
+            settings: !!state.completed?.settings
+        };
+    }
+
+    function updateOnboardingProgressUI() {
+        const completion = getOnboardingCompletionState();
+        const doneCount = [completion.rate, completion.call, completion.settings].filter(Boolean).length;
+
+        if (onboardingProgressText) onboardingProgressText.textContent = `Progress: ${doneCount}/3`;
+        if (onboardingStepRate) onboardingStepRate.classList.toggle('done', completion.rate);
+        if (onboardingStepCall) onboardingStepCall.classList.toggle('done', completion.call);
+        if (onboardingStepSettings) onboardingStepSettings.classList.toggle('done', completion.settings);
+    }
+
+    function highlightOnboardingTarget(targetEl) {
+        if (!targetEl) return;
+        if (onboardingHighlightTimer) clearTimeout(onboardingHighlightTimer);
+        targetEl.classList.remove('onboarding-highlight-target');
+        requestAnimationFrame(() => {
+            targetEl.classList.add('onboarding-highlight-target');
+            onboardingHighlightTimer = setTimeout(() => {
+                targetEl.classList.remove('onboarding-highlight-target');
+            }, 1800);
+        });
+    }
+
+    function runQuickStartFlow() {
+        if (rates.length === 0) {
+            ratesCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showRateAddBtn?.click();
+            highlightOnboardingTarget(ratesCard || showRateAddBtn);
+            return;
+        }
+        if (calls.length === 0) {
+            callControlsCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightOnboardingTarget(callControlsCard || startCallBtn);
+            highlightOnboardingTarget(startCallBtn);
+            return;
+        }
+        openSettingsModal(settingsToggleBtn);
+    }
+
+    function updateOnboardingCues() {
+        if (!onboardingCues) return;
+        const state = loadOnboardingState();
+        const completion = getOnboardingCompletionState();
+        updateOnboardingProgressUI();
+        if (state.dismissAll || !state.seen) {
+            onboardingCues.style.display = 'none';
+            return;
+        }
+
+        const showRateCue = !completion.rate && !state.dismissed.rate;
+        const showCallCue = completion.rate && !completion.call && !state.dismissed.call;
+        const showSettingsCue = completion.rate && completion.call && !completion.settings && !state.dismissed.settings;
+        const activeCue = showRateCue ? 'rate' : (showCallCue ? 'call' : (showSettingsCue ? 'settings' : 'none'));
+
+        if (cueAddRateCard) {
+            cueAddRateCard.style.display = activeCue === 'rate' ? '' : 'none';
+        }
+        if (cueStartCallCard) {
+            cueStartCallCard.style.display = activeCue === 'call' ? '' : 'none';
+        }
+        if (cueOpenSettingsCard) {
+            cueOpenSettingsCard.style.display = activeCue === 'settings' ? '' : 'none';
+        }
+
+        onboardingCues.style.display = activeCue !== 'none' ? '' : 'none';
+    }
+
+    function markOnboardingCueDismissed(key) {
+        const state = loadOnboardingState();
+        state.dismissed[key] = true;
+        state.seen = true;
+        saveOnboardingState(state);
+        updateOnboardingCues();
+    }
+
+    function markOnboardingStepComplete(key) {
+        const state = loadOnboardingState();
+        if (!state.completed || typeof state.completed !== 'object') {
+            state.completed = { rate: false, call: false, settings: false };
+        }
+        state.completed[key] = true;
+        saveOnboardingState(state);
+        updateOnboardingCues();
+    }
+
+    function resetOnboardingFlow() {
+        const state = createDefaultOnboardingState();
+        saveOnboardingState(state);
+        if (onboardingDontShowToggle) onboardingDontShowToggle.checked = false;
+        updateOnboardingProgressUI();
+        updateOnboardingCues();
+        openOnboardingModalIfNeeded(true);
+    }
+
+    function openOnboardingModalIfNeeded(force = false) {
+        if (!onboardingModal) return;
+        const state = loadOnboardingState();
+        const hasExistingData = rates.length > 0 || calls.length > 0;
+        updateOnboardingProgressUI();
+        if (!force && (state.seen || state.dismissAll || hasExistingData)) {
+            updateOnboardingCues();
+            return;
+        }
+        ModalManager.open(onboardingModal, { focusSelector: '#onboarding-quick-start-btn' });
+    }
+
     if (contactUsBtn) {
         contactUsBtn.addEventListener('click', openFeedbackModal);
     }
+    if (achievementsToggleBtn) {
+        achievementsToggleBtn.addEventListener('click', (e) => openAchievementsSettingsModal(e.currentTarget));
+    }
+    if (openLevelCurveModalBtn) {
+        openLevelCurveModalBtn.addEventListener('click', (e) => openLevelCurveModal(e.currentTarget));
+    }
+    if (closeLevelCurveModalBtn) {
+        closeLevelCurveModalBtn.addEventListener('click', closeLevelCurveModal);
+    }
+    if (doneLevelCurveModalBtn) {
+        doneLevelCurveModalBtn.addEventListener('click', closeLevelCurveModal);
+    }
+    if (closeCsvImportPreviewModalBtn) {
+        closeCsvImportPreviewModalBtn.addEventListener('click', closeCsvImportPreviewModal);
+    }
+    if (cancelCsvImportPreviewBtn) {
+        cancelCsvImportPreviewBtn.addEventListener('click', closeCsvImportPreviewModal);
+    }
+    if (confirmCsvImportBtn) {
+        confirmCsvImportBtn.addEventListener('click', confirmCsvImport);
+    }
+    if (csvImportRateSelect) {
+        csvImportRateSelect.addEventListener('change', renderCsvImportPreview);
+    }
+    if (csvImportOverrideRateToggle) {
+        csvImportOverrideRateToggle.addEventListener('change', renderCsvImportPreview);
+    }
+    [csvImportDateColumnSelect, csvImportStartColumnSelect, csvImportEndColumnSelect, csvImportDurationColumnSelect, csvImportRateColumnSelect]
+        .filter(Boolean)
+        .forEach((selectEl) => {
+            selectEl.addEventListener('change', renderCsvImportPreview);
+        });
 
     if (closeFeedbackModalBtn) {
         closeFeedbackModalBtn.addEventListener('click', closeFeedbackModal);
@@ -2672,15 +4896,114 @@ calls.push(callData);
         window.WTTModalQA = {
             report: getModalQaSnapshot
         };
-        ModalManager.register(callModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#call-start-time' });
+        ModalManager.register(callModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#call-date' });
         ModalManager.register(settingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feature-notes-toggle' });
         ModalManager.register(editCycleModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#cycle-start-date-input' });
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
+        ModalManager.register(levelCurveModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-level-curve-modal' });
+        ModalManager.register(csvImportPreviewModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-csv-import-btn' });
+        ModalManager.register(achievementsSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-achievements-settings-btn' });
+        ModalManager.register(achievementDetailModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-achievement-detail-btn' });
         ModalManager.register(floatingControlsSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#floating-controls-size-mode' });
         ModalManager.register(paymentCyclesSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#show-add-cycle-btn' });
         ModalManager.register(confirmationModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#confirmation-confirm-btn' });
         ModalManager.register(recoveryModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#recovery-resume-btn' });
+        ModalManager.register(onboardingModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#onboarding-quick-start-btn' });
+
+        if (closeOnboardingModalBtn) {
+            closeOnboardingModalBtn.addEventListener('click', () => {
+                const state = loadOnboardingState();
+                state.seen = true;
+                state.dismissAll = !!onboardingDontShowToggle?.checked;
+                saveOnboardingState(state);
+                closeOnboardingModal();
+                updateOnboardingCues();
+            });
+        }
+        if (onboardingSkipBtn) {
+            onboardingSkipBtn.addEventListener('click', () => {
+                const state = loadOnboardingState();
+                state.seen = true;
+                state.dismissAll = !!onboardingDontShowToggle?.checked;
+                saveOnboardingState(state);
+                closeOnboardingModal();
+                updateOnboardingCues();
+            });
+        }
+        if (onboardingQuickStartBtn) {
+            onboardingQuickStartBtn.addEventListener('click', () => {
+                const state = loadOnboardingState();
+                state.seen = true;
+                state.dismissAll = !!onboardingDontShowToggle?.checked;
+                saveOnboardingState(state);
+                closeOnboardingModal();
+                updateOnboardingCues();
+                runQuickStartFlow();
+                showToast('Quick start: follow the next guided step.');
+            });
+        }
+        if (onboardingCustomizeFirstBtn) {
+            onboardingCustomizeFirstBtn.addEventListener('click', () => {
+                const state = loadOnboardingState();
+                state.seen = true;
+                state.dismissAll = !!onboardingDontShowToggle?.checked;
+                saveOnboardingState(state);
+                closeOnboardingModal();
+                openSettingsModal(onboardingCustomizeFirstBtn);
+            });
+        }
+
+        document.querySelectorAll('[data-cue-dismiss]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const key = String(btn.getAttribute('data-cue-dismiss') || '').trim();
+                if (!key) return;
+                markOnboardingCueDismissed(key);
+            });
+        });
+        if (cueAddRateBtn) {
+            cueAddRateBtn.addEventListener('click', () => {
+                ratesCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showRateAddBtn?.click();
+                highlightOnboardingTarget(ratesCard || showRateAddBtn);
+                markOnboardingCueDismissed('rate');
+            });
+        }
+        if (cueStartCallBtn) {
+            cueStartCallBtn.addEventListener('click', () => {
+                callControlsCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                highlightOnboardingTarget(callControlsCard || startCallBtn);
+                highlightOnboardingTarget(startCallBtn);
+                markOnboardingCueDismissed('call');
+            });
+        }
+        if (cueOpenSettingsBtn) {
+            cueOpenSettingsBtn.addEventListener('click', () => {
+                highlightOnboardingTarget(settingsToggleBtn);
+                openSettingsModal(cueOpenSettingsBtn);
+                markOnboardingCueDismissed('settings');
+            });
+        }
+        if (restartOnboardingBtn) {
+            restartOnboardingBtn.addEventListener('click', () => {
+                showConfirmation(
+                    'Restart Onboarding',
+                    'This will reopen the first-time guide and reset onboarding progress to 0/3.',
+                    'Restart',
+                    () => {
+                        resetOnboardingFlow();
+                        showToast('Onboarding restarted.');
+                    },
+                    {
+                        icon: 'fa-rotate-left',
+                        iconColor: 'text-indigo-500',
+                        tone: 'primary',
+                        loadingText: 'Restarting onboarding...',
+                        successText: 'Onboarding restarted.'
+                    }
+                );
+            });
+        }
 
         startCallBtn.addEventListener('click', startLiveCall);
         endCallBtn.addEventListener('click', endLiveCall);
@@ -2739,6 +5062,15 @@ calls.push(callData);
             });
         }
 
+        if (callLogScrollContainer) {
+            callLogScrollContainer.addEventListener('scroll', () => {
+                const state = callLogRenderState;
+                if (!state || state.done) return;
+                const nearBottom = callLogScrollContainer.scrollTop + callLogScrollContainer.clientHeight >= (callLogScrollContainer.scrollHeight - CALL_LOG_RENDER_AHEAD_PX);
+                if (nearBottom) renderNextCallLogChunk();
+            }, { passive: true });
+        }
+
         if (paymentCyclesList) {
             paymentCyclesList.addEventListener('click', (e) => {
                 const editBtn = e.target.closest('.edit-cycle-btn');
@@ -2783,6 +5115,7 @@ calls.push(callData);
         // mode: Add
         isEditingCall = false;
         editingCallId = null;
+        if (callDateInput) callDateInput.value = getTodayDateString();
 
         document.getElementById('modal-title').innerHTML =
             `<i class="fas fa-plus text-blue-500 mr-2"></i>Add Call`;
@@ -2815,6 +5148,8 @@ calls.push(callData);
             const savedHeightModal = localStorage.getItem('callNotesHeight');
             if (savedHeightModal && callNotesInput) {
                 callNotesInput.style.height = savedHeightModal;
+            } else if (callNotesInput) {
+                callNotesInput.style.height = '88px';
             }
 
             // Use ResizeObserver when available to detect manual resize and persist
@@ -2848,10 +5183,12 @@ calls.push(callData);
 
         // Apply feature flags to show/hide optional UI
         featureFlags = loadFeatureFlags();
+            migrateLegacyRpgCallEligibility();
             // set toggle states in settings modal if present
             if (featureNotesToggle) featureNotesToggle.checked = !!featureFlags.notes;
             if (featurePaymentCyclesToggle) featurePaymentCyclesToggle.checked = !!featureFlags.paymentCycles;
             if (featureFloatingControlsToggle) featureFloatingControlsToggle.checked = !!featureFlags.floatingCallControls;
+            if (featureRpgToggle) featureRpgToggle.checked = !!featureFlags.rpg;
             if (floatingShowActiveCardToggle) floatingShowActiveCardToggle.checked = !!featureFlags.floatingShowActiveCard;
             if (floatingActiveShowTimerToggle) floatingActiveShowTimerToggle.checked = !!featureFlags.floatingActiveShowTimer;
             if (floatingActiveShowEarningsToggle) floatingActiveShowEarningsToggle.checked = !!featureFlags.floatingActiveShowEarnings;
@@ -2904,6 +5241,14 @@ calls.push(callData);
                 });
             }
 
+            if (featureRpgToggle) {
+                featureRpgToggle.addEventListener('change', (e) => {
+                    featureFlags.rpg = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
             if (openFloatingControlsSettingsBtn) {
                 openFloatingControlsSettingsBtn.addEventListener('click', (e) => openFloatingControlsSettingsModal(e.currentTarget));
             }
@@ -2921,6 +5266,27 @@ calls.push(callData);
             }
             if (donePaymentCyclesSettingsBtn) {
                 donePaymentCyclesSettingsBtn.addEventListener('click', closePaymentCyclesSettingsModal);
+            }
+            if (closeAchievementsSettingsModalBtn) {
+                closeAchievementsSettingsModalBtn.addEventListener('click', closeAchievementsSettingsModal);
+            }
+            if (doneAchievementsSettingsBtn) {
+                doneAchievementsSettingsBtn.addEventListener('click', closeAchievementsSettingsModal);
+            }
+            if (closeAchievementDetailModalBtn) {
+                closeAchievementDetailModalBtn.addEventListener('click', closeAchievementDetailModal);
+            }
+            if (doneAchievementDetailBtn) {
+                doneAchievementDetailBtn.addEventListener('click', closeAchievementDetailModal);
+            }
+            if (achievementsGrid) {
+                achievementsGrid.addEventListener('click', (e) => {
+                    const target = e.target?.closest?.('[data-achievement-id]');
+                    if (!target) return;
+                    const achievementId = target.getAttribute('data-achievement-id');
+                    if (!achievementId) return;
+                    openAchievementDetailModal(achievementId, target);
+                });
             }
             if (floatingControlsSizeModeSelect) {
                 floatingControlsSizeModeSelect.addEventListener('change', (e) => {
@@ -3026,6 +5392,7 @@ calls.push(callData);
 
         // v1.0.5 Prevent accidental close when a live call is active
         window.addEventListener('beforeunload', (e) => {
+            flushPendingStorageWrites();
             if (liveCallStart) {
                 saveActiveCallState(true);
                 e.preventDefault();
@@ -3103,6 +5470,7 @@ calls.push(callData);
       endTime: new Date(endTime).toISOString(),
       duration: elapsedMs,
       rate: ratePerMin,
+      rpgEligible: isRpgEnabled(),
       rateName: rateName,
       earnings: Number(earned.toFixed(2))
     });
@@ -3126,24 +5494,34 @@ calls.push(callData);
 })();
 
         function syncTimesFromMinutes() {
-  const minsMs = minutesToMs(callDurationMinutesInput.value);
-  if (!minsMs) return;
+  const minsMs = minutesToMs(callDurationInput.value);
+  if (!Number.isFinite(minsMs) || !minsMs) return;
 
-  const start = parseOptionalDate(callStartTimeInput.value);
-  const end = parseOptionalDate(callEndTimeInput.value);
+  const callDate = parseDateInput(callDateInput?.value || '') || parseDateInput(getTodayDateString());
+  const start = combineCallDateAndTime(callDate, callStartTimeInput.value);
+  const end = combineCallDateAndTime(callDate, callEndTimeInput.value);
 
   if (start && !end) {
     const computedEnd = new Date(start.getTime() + minsMs);
-    callEndTimeInput.value = formatLocalDateTime(computedEnd.toISOString());
+    callEndTimeInput.value = formatLocalTimeForInput(computedEnd.toISOString());
   } else if (!start && end) {
     const computedStart = new Date(end.getTime() - minsMs);
-    callStartTimeInput.value = formatLocalDateTime(computedStart.toISOString());
+    callStartTimeInput.value = formatLocalTimeForInput(computedStart.toISOString());
   }
 }
 
-callDurationMinutesInput.addEventListener('input', syncTimesFromMinutes);
+function syncCallDateFromDateTime() {
+  if (!callDateInput || callDateInput.value) return;
+  if (String(callStartTimeInput.value || '').trim() || String(callEndTimeInput.value || '').trim()) {
+    callDateInput.value = getTodayDateString();
+  }
+}
+
+callDurationInput.addEventListener('input', syncTimesFromMinutes);
 callStartTimeInput.addEventListener('input', syncTimesFromMinutes);
 callEndTimeInput.addEventListener('input', syncTimesFromMinutes);
+callStartTimeInput.addEventListener('input', syncCallDateFromDateTime);
+callEndTimeInput.addEventListener('input', syncCallDateFromDateTime);
         
         showAddCycleBtn.addEventListener('click', addPaymentCycle);
         const restoreBackupBtn = document.getElementById('restore-backup-cycles-btn');
@@ -3154,15 +5532,25 @@ callEndTimeInput.addEventListener('input', syncTimesFromMinutes);
         cancelEditCycleBtn.addEventListener('click', closeEditCycleModal);
         editCycleForm.addEventListener('submit', handleEditCycleFormSubmit);
 
-        darkToggleBtn.addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
+        function applyTheme(theme) {
+            const isDark = theme === 'dark';
+            document.documentElement.classList.toggle('dark', isDark);
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            if (darkToggleBtn) {
+                darkToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+                darkToggleBtn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+            }
+        }
+
+        darkToggleBtn.addEventListener('click', () => {
+            const nextTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+            applyTheme(nextTheme);
         });
         const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
+        const initialTheme = (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches))
+            ? 'dark'
+            : 'light';
+        applyTheme(initialTheme);
 
         rateSelect.addEventListener('change', saveLastSelectedRate);
         showRateAddBtn.addEventListener('click', () => {
@@ -3305,7 +5693,7 @@ goalMinutesInput.addEventListener('input', () => {
                 updateLocalTime();
             });
         }
-        
+
         exportDataBtn.addEventListener('click', () => {
             // Respect feature flags when exporting (e.g. strip notes if feature disabled)
             const exportCalls = calls.map(c => ({ ...c }));
@@ -3346,42 +5734,23 @@ goalMinutesInput.addEventListener('input', () => {
 
             const reader = new FileReader();
             reader.onload = (event) => {
+                const text = String(event.target.result || '');
+                const lowerName = String(file.name || '').toLowerCase();
                 try {
-                    const importedData = JSON.parse(event.target.result);
-                    showConfirmation(
-                        'Import Data',
-                        'This will replace your current local data with the selected backup file.',
-                        'Import',
-                        () => {
-                        calls = importedData.calls || [];
-                        calls = calls.map(call => ({
-  ...call,
-  id: call.id || generateUUID()
-}));
-                        rates = importedData.rates || [];
-                        dailyGoal = normalizeDailyGoal(importedData.dailyGoal);
-                        paymentCyclesEnabled = importedData.paymentCyclesEnabled || false;
-                        paymentCycles = importedData.paymentCycles || [];
-                        saveRates();
-                        saveCalls();
-                        saveDailyGoal();
-                        savePaymentCycles();
-                        syncDailyGoalInputs();
-                        populateRateSelects();
-                        showToast('Data imported successfully!');
-                        closeSettingsModal();
-                        },
-                        {
-                            icon: 'fa-upload',
-                            iconColor: 'text-blue-500',
-                            tone: 'primary',
-                            loadingText: 'Importing backup...',
-                            successText: 'Backup imported successfully.'
-                        }
-                    );
+                    if (lowerName.endsWith('.csv')) {
+                        const csvImportData = parseCsvImportFile(text);
+                        openCsvImportPreviewModal(csvImportData);
+                    } else {
+                        const importedData = JSON.parse(text);
+                        importJsonBackup(importedData);
+                    }
                 } catch (error) {
-                    showAlertModal('Import Failed', 'Failed to import file. Please ensure it is a valid JSON file from this app.');
+                    showAlertModal('Import Failed', lowerName.endsWith('.csv')
+                        ? 'Failed to parse the CSV file. Please check the file format and required columns.'
+                        : 'Failed to import file. Please ensure it is a valid JSON file from this app.');
                     console.error('Import error:', error);
+                } finally {
+                    importFile.value = '';
                 }
             };
             reader.readAsText(file);
@@ -3394,7 +5763,11 @@ goalMinutesInput.addEventListener('input', () => {
                 'Erase',
                 () => {
                 calls = [];
+                clearAchievementState();
+                clearDailyQuestState();
+                clearRpgProgressState();
                 saveCalls();
+                renderAchievementsModal();
                 showToast('All call history erased.');
                 },
                 {
@@ -3466,8 +5839,11 @@ goalMinutesInput.addEventListener('input', () => {
         displayCalls();
         syncDailyGoalInputs();
         updateStatistics();
+        evaluateAchievements({ notify: false });
         updateStorageInfo();
         renderPaymentCycles();
+        updateOnboardingCues();
+        openOnboardingModalIfNeeded();
         setInterval(updateLocalTime, 1000);
         window.addEventListener('scroll', scheduleFloatingControlsRefresh, { passive: true });
         window.addEventListener('resize', () => {
@@ -3568,4 +5944,3 @@ goalMinutesInput.addEventListener('input', () => {
             }
         }
     });
-
