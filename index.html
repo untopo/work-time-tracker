@@ -14,6 +14,10 @@
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
 <div class="container mx-auto px-4 py-8 max-w-7xl">
     <div class="flex justify-end mb-4 gap-2">
+        <button id="achievements-toggle" aria-label="Open achievements"
+                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
+            <i class="fas fa-trophy text-gray-600 dark:text-gray-300 text-xl"></i>
+        </button>
         <button id="settings-toggle" aria-label="Open settings"
                 class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
             <i class="fas fa-cog text-gray-600 dark:text-gray-300 transition-transform duration-300 text-xl"></i>
@@ -80,7 +84,7 @@
         </div>
     </div>
 
-    <div class="dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full">
+    <div id="rates-card" class="dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full">
         <div class="flex flex-col items-center mb-4">
             <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
                 <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
@@ -170,7 +174,7 @@
     </div>
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8 p-6">
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg mb-8 p-6">
     <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
         <i class="fas fa-chart-bar text-purple-500 mr-2"></i>Call Statistics
     </h2>
@@ -214,6 +218,32 @@
                 <i class="fas fa-chart-line mr-2"></i>Today's Earnings
             </h3>
             <p id="today-earnings" class="text-2xl font-bold text-yellow-800 dark:text-yellow-200">$0.00</p>
+        </div>
+    </div>
+
+    <div id="rpg-progress-card" class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg mb-4">
+        <div class="flex items-start justify-between gap-3 mb-2">
+            <div>
+                <h3 class="text-indigo-700 dark:text-indigo-300 font-medium text-xl flex items-center gap-2">
+                    <i class="fas fa-shield-alt mr-2"></i>Work RPG Level
+                    <span class="hint-tooltip" data-tooltip="Base XP from calls: 10 XP per completed call + 2 XP per minute. Call XP is boosted by your current streak multiplier.">?</span>
+                </h3>
+                <p id="rpg-level-summary" class="text-sm text-indigo-700 dark:text-indigo-200">Level 1 - 0 XP total</p>
+            </div>
+            <button id="open-level-curve-modal" type="button"
+                    class="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                View Level Table
+            </button>
+        </div>
+        <div class="w-full bg-indigo-200 dark:bg-indigo-900 rounded-full h-3 overflow-hidden">
+            <div id="rpg-level-progress-bar" class="bg-indigo-500 h-3 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+        </div>
+        <div class="flex items-center justify-between mt-2 text-xs text-indigo-700 dark:text-indigo-200">
+            <span id="rpg-level-progress-text">0 / 100 XP</span>
+            <div class="flex items-center gap-1">
+                <span id="rpg-level-next-text">100 XP to level 2</span>
+                <span class="hint-tooltip" data-tooltip="All XP is combined into one total. Sources can include calls and one-time achievement rewards.">?</span>
+            </div>
         </div>
     </div>
 
@@ -276,6 +306,39 @@
             <p class="text-sm text-gray-700 dark:text-gray-300">
                 <span class="font-semibold">Days Until Pay:</span> <span id="days-until-pay">--</span>
             </p>
+        </div>
+    </div>
+</div>
+
+<div id="level-curve-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal p-6 max-w-2xl w-full relative">
+        <button id="close-level-curve-modal" type="button"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <i class="fas fa-medal text-indigo-500 mr-2"></i>Level Requirements
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            XP is earned from completed calls. This table shows how much XP is needed per level.
+        </p>
+        <div class="max-h-[60vh] overflow-y-auto pr-1">
+            <table class="w-full text-sm">
+                <thead>
+                <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                    <th class="py-2">Level</th>
+                    <th class="py-2">XP to Reach</th>
+                    <th class="py-2">XP to Next</th>
+                </tr>
+                </thead>
+                <tbody id="level-curve-table-body"></tbody>
+            </table>
+        </div>
+        <div class="mt-5 flex justify-end">
+            <button id="done-level-curve-modal" type="button"
+                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
+                Done
+            </button>
         </div>
     </div>
 </div>
@@ -510,6 +573,76 @@
     </div>
 </div>
 
+<div id="onboarding-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[75]" style="display:none;">
+    <div class="modal p-6 max-w-xl w-full relative">
+        <button id="close-onboarding-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            <i class="fas fa-hand-sparkles text-blue-500 mr-2"></i>Welcome to Work Time Tracker
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            Start in under a minute. Add one rate, run one test call, then customize the workspace to your style.
+        </p>
+        <div class="onboarding-steps mb-2">
+            <div id="onboarding-step-rate" class="onboarding-step-pill"><span>1</span> Add Rate</div>
+            <div id="onboarding-step-call" class="onboarding-step-pill"><span>2</span> Test Call</div>
+            <div id="onboarding-step-settings" class="onboarding-step-pill"><span>3</span> Customize</div>
+        </div>
+        <p id="onboarding-progress-text" class="text-xs text-gray-600 dark:text-gray-300 mb-4">Progress: 0/3</p>
+        <div class="settings-section-card mb-4">
+            <p class="text-sm text-gray-700 dark:text-gray-200 font-semibold mb-2">Suggested quick flow:</p>
+            <ol class="text-sm text-gray-600 dark:text-gray-300 space-y-1 list-decimal pl-5">
+                <li>Add your first rate.</li>
+                <li>Start and end one test call.</li>
+                <li>Set your time zone and feature toggles.</li>
+            </ol>
+        </div>
+        <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 mb-4">
+            <input type="checkbox" id="onboarding-dont-show-toggle">
+            Do not show this again
+        </label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <button id="onboarding-quick-start-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                Quick Start
+            </button>
+            <button id="onboarding-customize-first-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                Customize First
+            </button>
+            <button id="onboarding-skip-btn" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                Skip
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="onboarding-cues" class="onboarding-cues" style="display:none;">
+    <div id="cue-add-rate" class="onboarding-cue-card" style="display:none;">
+        <button type="button" class="onboarding-cue-close" data-cue-dismiss="rate" aria-label="Dismiss tip">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="onboarding-cue-title"><i class="fas fa-tag mr-1 text-blue-500"></i>Add your first rate</div>
+        <div class="onboarding-cue-text">Rates are required to start tracking calls and earnings.</div>
+        <button id="cue-add-rate-btn" type="button" class="onboarding-cue-action">Add Rate</button>
+    </div>
+    <div id="cue-start-call" class="onboarding-cue-card" style="display:none;">
+        <button type="button" class="onboarding-cue-close" data-cue-dismiss="call" aria-label="Dismiss tip">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="onboarding-cue-title"><i class="fas fa-phone mr-1 text-green-500"></i>Run a quick test call</div>
+        <div class="onboarding-cue-text">Use Start Call and End Call once to confirm your setup.</div>
+        <button id="cue-start-call-btn" type="button" class="onboarding-cue-action">Go to Call Controls</button>
+    </div>
+    <div id="cue-open-settings" class="onboarding-cue-card" style="display:none;">
+        <button type="button" class="onboarding-cue-close" data-cue-dismiss="settings" aria-label="Dismiss tip">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="onboarding-cue-title"><i class="fas fa-sliders-h mr-1 text-purple-500"></i>Customize your workspace</div>
+        <div class="onboarding-cue-text">Set your time zone and enable the features you want.</div>
+        <button id="cue-open-settings-btn" type="button" class="onboarding-cue-action">Open Settings</button>
+    </div>
+</div>
+
 <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
     <div class="modal modal-wide p-6 max-w-3xl w-full relative settings-main-modal-panel">
         <button id="close-settings-modal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
@@ -520,104 +653,291 @@
         </h2>
 
         <div class="settings-modal-scroll">
-            <div class="mb-6 settings-section-card">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">General</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                    Enable features here. Each feature has its own customization modal.
-                </p>
-            </div>
+                <div class="mb-6 settings-section-card">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">General</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                        Enable features here. Each feature has its own customization modal.
+                    </p>
+                </div>
 
-            <div class="mb-6 settings-section-card">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Features</h3>
-                <div class="flex flex-col gap-3 mb-4">
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Notes textbox</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Show the small notes textarea when starting a live call and in the Add Call form. <span class="block mt-1 text-green-600 dark:text-green-400 font-semibold">Notes are volatile - never saved or exported.</span></div>
+                <div class="mb-6 settings-section-card">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Features</h3>
+                    <div class="flex flex-col gap-3 mb-4">
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Notes textbox</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Show the small notes textarea when starting a live call and in the Add Call form. <span class="block mt-1 text-green-600 dark:text-green-400 font-semibold">Notes are volatile - never saved or exported.</span></div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="feature-notes-toggle">
+                                <span class="slider round"></span>
+                            </label>
                         </div>
-                        <label class="switch">
-                            <input type="checkbox" id="feature-notes-toggle">
-                            <span class="slider round"></span>
-                        </label>
+
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Payment Cycles</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Enable payment cycle tracking</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="feature-payment-cycles-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Floating Call Controls</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Show floating Start/End buttons when Call Controls are out of view.</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="feature-floating-controls-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <div class="text-gray-700 dark:text-gray-300 font-medium">Activate RPG Mode</div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Turn your work sessions into progression: earn XP from eligible calls, level up over time, unlock RPG-only milestones, and reveal the full Level + Daily Quests system.</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="feature-rpg-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
                     </div>
 
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Payment Cycles</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Enable payment cycle tracking</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="feature-payment-cycles-toggle">
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-
-                    <div class="flex items-center justify-between gap-4">
-                        <div>
-                            <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Floating Call Controls</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">Show floating Start/End buttons when Call Controls are out of view.</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="feature-floating-controls-toggle">
-                            <span class="slider round"></span>
-                        </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <button id="open-payment-cycles-settings-btn" type="button"
+                                aria-controls="payment-cycles-settings-modal"
+                                class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-3 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm">
+                            <i class="fas fa-calendar-alt mr-1"></i> Payment Cycles Settings
+                        </button>
+                        <button id="open-floating-controls-settings-btn" type="button"
+                                aria-controls="floating-controls-settings-modal"
+                                class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-3 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm">
+                            <i class="fas fa-sliders-h mr-1"></i> Floating Controls Settings
+                        </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <button id="open-payment-cycles-settings-btn" type="button"
-                            aria-controls="payment-cycles-settings-modal"
-                            class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-3 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm">
-                        <i class="fas fa-calendar-alt mr-1"></i> Payment Cycles Settings
-                    </button>
-                    <button id="open-floating-controls-settings-btn" type="button"
-                            aria-controls="floating-controls-settings-modal"
-                            class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-3 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm">
-                        <i class="fas fa-sliders-h mr-1"></i> Floating Controls Settings
+                <div class="settings-section-card mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Time Zone</h3>
+                    <div class="flex items-center gap-2">
+                        <select id="timezone-select" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        </select>
+                        <button id="reset-timezone" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="settings-section-card mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Onboarding</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                        Restart the first-time guide to test or review the setup flow.
+                    </p>
+                    <button id="restart-onboarding-btn" type="button"
+                            class="w-full bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+                        <i class="fas fa-rotate-left mr-1"></i> Restart Onboarding
                     </button>
                 </div>
-            </div>
-
-            <div class="settings-section-card mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Time Zone</h3>
-                <div class="flex items-center gap-2">
-                    <select id="timezone-select" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                    </select>
-                    <button id="reset-timezone" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
-                        Reset
-                    </button>
+                <div class="mb-6 settings-section-card">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Data Management</h3>
+                    <div class="flex flex-col gap-2">
+                        <button id="export-data" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                            <i class="fas fa-download"></i> Export Data
+                        </button>
+                        <label class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition cursor-pointer text-center">
+                            <i class="fas fa-upload"></i> Import Backup / CSV Call Log
+                            <input type="file" id="import-file" accept=".json,.csv,text/csv" class="hidden">
+                        </label>
+                        <button id="reset-calls" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">
+                            <i class="fas fa-trash-alt"></i> Reset Calls Only
+                        </button>
+                        <button id="reset-all" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+                            <i class="fas fa-exclamation-triangle"></i> Reset All Data
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-6 settings-section-card">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Data Management</h3>
-                <div class="flex flex-col gap-2">
-                    <button id="export-data" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                        <i class="fas fa-download"></i> Export Data
-                    </button>
-                    <label class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition cursor-pointer text-center">
-                        <i class="fas fa-upload"></i> Import Data
-                        <input type="file" id="import-file" accept=".json" class="hidden">
-                    </label>
-                    <button id="reset-calls" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">
-                        <i class="fas fa-trash-alt"></i> Reset Calls Only
-                    </button>
-                    <button id="reset-all" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
-                        <i class="fas fa-exclamation-triangle"></i> Reset All Data
-                    </button>
+                <div class="settings-section-card">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Storage Usage</h3>
+                    <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        <span>Storage used:</span>
+                        <span id="storage-used">0 KB / 5.0 MB</span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div id="storage-bar" class="bg-blue-500 h-2 rounded-full" style="width:0%"></div>
+                    </div>
                 </div>
-            </div>
+        </div>
+    </div>
+</div>
 
+<div id="csv-import-preview-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal modal-wide p-6 max-w-4xl w-full relative">
+        <button id="close-csv-import-preview-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <i class="fas fa-file-csv text-blue-500 mr-2"></i>CSV Import Preview
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Review detected calls before merging them into your Call Log. Exact duplicates are skipped automatically.
+        </p>
+        <div class="settings-modal-scroll">
+            <div class="settings-section-card mb-4">
+                <div class="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Column Mapping</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Confirm which CSV columns contain your call date, times, duration, and optional rate before importing.
+                        </p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="csv-import-date-column" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Call Date</label>
+                        <select id="csv-import-date-column" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></select>
+                    </div>
+                    <div>
+                        <label for="csv-import-rate-column" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate (optional)</label>
+                        <select id="csv-import-rate-column" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></select>
+                    </div>
+                    <div>
+                        <label for="csv-import-start-column" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
+                        <select id="csv-import-start-column" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></select>
+                    </div>
+                    <div>
+                        <label for="csv-import-end-column" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
+                        <select id="csv-import-end-column" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></select>
+                    </div>
+                    <div>
+                        <label for="csv-import-duration-column" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration</label>
+                        <select id="csv-import-duration-column" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></select>
+                    </div>
+                </div>
+                <p id="csv-import-mapping-warning" class="text-xs text-amber-600 dark:text-amber-300 mt-3" style="display:none;"></p>
+            </div>
+            <div class="settings-section-card mb-4">
+                <div id="csv-import-summary" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm"></div>
+            </div>
+            <div class="settings-section-card mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="csv-import-rate-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Apply Rate</label>
+                        <select id="csv-import-rate-select" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <option value="">Use imported rate when possible</option>
+                        </select>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">If your CSV has no rate column, you can assign one here before importing.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 mt-7">
+                            <input type="checkbox" id="csv-import-override-rate">
+                            <span>Override imported rates with selected rate</span>
+                        </label>
+                    </div>
+                </div>
+                <p id="csv-import-warning" class="text-xs text-amber-600 dark:text-amber-300 mt-3" style="display:none;"></p>
+            </div>
             <div class="settings-section-card">
-                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Storage Usage</h3>
-                <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    <span>Storage used:</span>
-                    <span id="storage-used">0 KB / 5.0 MB</span>
-                </div>
-                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div id="storage-bar" class="bg-blue-500 h-2 rounded-full" style="width:0%"></div>
+                <div class="overflow-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                                <th class="py-2 pr-3">Date</th>
+                                <th class="py-2 pr-3">Start</th>
+                                <th class="py-2 pr-3">End</th>
+                                <th class="py-2 pr-3">Duration</th>
+                                <th class="py-2 pr-3">Rate</th>
+                                <th class="py-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="csv-import-preview-body"></tbody>
+                    </table>
                 </div>
             </div>
+            <div class="mt-5 flex gap-2 justify-end">
+                <button id="cancel-csv-import-preview-btn" type="button" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </button>
+                <button id="confirm-csv-import-btn" type="button" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                    Import Calls
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="achievements-settings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal modal-wide p-6 max-w-3xl w-full relative">
+        <button id="close-achievements-settings-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <i class="fas fa-trophy text-amber-500 mr-2"></i>Achievements
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+            Earn badges by staying consistent, hitting milestones, and building strong work habits.
+        </p>
+        <div id="achievements-summary" class="text-sm text-gray-700 dark:text-gray-300 font-semibold mb-4">0 / 0 unlocked</div>
+        <div class="settings-modal-scroll">
+            <div id="daily-quests-section" class="settings-section-card mb-4">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Daily Quests</h3>
+                    <span id="daily-quests-date" class="text-xs text-gray-500 dark:text-gray-400">Today</span>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">Fresh every day. Complete quests for one-time daily XP rewards.</p>
+                <div id="daily-quests-summary" class="text-sm text-gray-700 dark:text-gray-300 font-semibold mb-3">0 / 0 completed</div>
+                <div id="daily-quests-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            </div>
+            <div class="settings-section-card mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">All-Time Achievements</h3>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">Permanent milestones that never reset.</p>
+            </div>
+            <div id="achievements-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            <div class="mt-5 flex justify-end">
+                <button id="done-achievements-settings-btn" type="button" class="bg-amber-500 text-white px-4 py-2 rounded hover:bg-amber-600 transition">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="achievement-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal p-6 max-w-xl w-full relative">
+        <button id="close-achievement-detail-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 id="achievement-detail-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            Achievement
+        </h2>
+        <div id="achievement-detail-tier" class="text-xs inline-block px-2 py-1 rounded-full mb-3 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+            Tier
+        </div>
+        <p id="achievement-detail-description" class="text-sm text-gray-700 dark:text-gray-300 mb-4"></p>
+
+        <div class="settings-section-card mb-4">
+            <div class="flex items-center justify-between text-xs mb-2">
+                <span id="achievement-detail-progress-label" class="font-semibold text-gray-700 dark:text-gray-300">Progress</span>
+                <span id="achievement-detail-progress-text" class="text-gray-600 dark:text-gray-400">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                <div id="achievement-detail-progress-bar" class="bg-amber-500 h-2.5 rounded-full transition-all duration-500 ease-out" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div id="achievement-detail-earned-row" class="text-sm text-emerald-700 dark:text-emerald-300 font-semibold mb-5" style="display:none;">
+            <i class="fas fa-check-circle mr-1"></i>
+            <span id="achievement-detail-earned-at">Earned</span>
+        </div>
+
+        <div class="flex justify-end">
+            <button id="done-achievement-detail-btn" type="button" class="bg-amber-500 text-white px-4 py-2 rounded hover:bg-amber-600 transition">
+                Done
+            </button>
         </div>
     </div>
 </div>
@@ -708,29 +1028,29 @@
     </h2>
 
     <form id="call-form">
+      <label for="call-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Call Date</label>
+      <input type="date" id="call-date"
+             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
+
       <label for="call-start-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Time</label>
-      <input type="datetime-local" id="call-start-time"
+      <input type="time" id="call-start-time" step="1"
              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
 
       <label for="call-end-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Time</label>
-      <input type="datetime-local" id="call-end-time"
+      <input type="time" id="call-end-time" step="1"
              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
 
-      <label for="call-duration-minutes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        Duration (minutes)
+      <label for="call-duration" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+        <span>Duration</span>
+        <span class="hint-tooltip" data-tooltip="Choose a Call Date for the correct day. Then use Start + End for exact times, Start/End + Duration to auto-fill the missing time, or Duration only for a quick manual entry on that selected date. Duration accepts minutes like 15 or time format like 00:15:30.">?</span>
       </label>
       <input
-        type="number"
-        id="call-duration-minutes"
-        min="1"
-        step="1"
-        placeholder="e.g. 15"
+        type="text"
+        id="call-duration"
+        inputmode="numeric"
+        placeholder="e.g. 00:15:30 or 15"
         class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4"
       />
-
-      <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
-        Tip: You can fill Start + Minutes (End auto-fills), or End + Minutes (Start auto-fills), or just Minutes.
-      </p>
 
       <label for="call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rate</label>
       <select id="call-rate" required
@@ -738,7 +1058,7 @@
       </select>
 
       <label for="call-notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes (optional)</label>
-      <textarea id="call-notes" rows="2" placeholder="e.g. client name or topic" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4"></textarea>
+      <textarea id="call-notes" rows="3" placeholder="e.g. client name or topic" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4"></textarea>
 
       <div class="flex gap-2">
         <button type="submit" class="flex-1 btn-primary text-white px-4 py-2 rounded transition">
@@ -795,7 +1115,7 @@
         <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
             <i class="fas fa-envelope text-blue-500 mr-2"></i>Contact Us
         </h2>
-        <form id="feedback-form" action="https://formspree.io/f/xjvnbqgy" method="POST">
+        <form id="feedback-form" action="https://formspree.io/f/xwvqagvg" method="POST">
             <label for="feedback-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
             <input type="text" id="feedback-name" name="name" required
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
