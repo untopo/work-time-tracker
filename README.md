@@ -1,13 +1,13 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.26-blue)
+![Version](https://img.shields.io/badge/version-1.1.48-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
 
 A lightweight, privacy-first time tracker for interpreters and freelancers.
 
-Track live calls, earnings, rates, goals, and payment cycles directly in your browser.
+Track live calls, earnings, rates, goals, achievements, and payment cycles directly in your browser.
 
 ## Table of Contents
 - [Live Demo](#live-demo)
@@ -40,8 +40,9 @@ Track live calls, earnings, rates, goals, and payment cycles directly in your br
 ## Key Workflows
 1. Select a rate and start a live call.
 2. End the call and automatically save duration + earnings.
-3. Review totals in stats and call log filters.
-4. Export JSON backup regularly from Settings.
+3. Add manual calls with flexible date, time, and duration inputs when needed.
+4. Review totals in stats, achievements, and call log filters.
+5. Export backups or import JSON / CSV call logs from Settings.
 
 ## Screenshots
 ### Dashboard
@@ -56,10 +57,17 @@ Track live calls, earnings, rates, goals, and payment cycles directly in your br
 ## Core Features
 - Live call timer with real-time earnings
 - Manual call entry + call editing
+- Flexible Add Call modal with separate `Call Date`, `Start Time`, `End Time`, and `Duration`
+- Duration input supports minutes (`15`) or time formats like `00:15:30`
 - Multiple billing rates
 - Call filters: Today / Week / Month / Custom date
 - Daily goal tracking (USD and minutes sync)
 - Monthly stats + optional payment cycle tracking
+- Achievements system with milestone tracking
+- Optional RPG Mode with XP, levels, and daily quests
+- CSV call log import with preview, dedupe, and rate assignment
+- Safe backup merge import that preserves existing local data
+- Dark mode / light mode toggle
 - Floating call controls (optional)
 - Optional volatile notes (never persisted/exported)
 - Built-in changelog modal
@@ -70,7 +78,7 @@ Track live calls, earnings, rates, goals, and payment cycles directly in your br
 - No tracking
 - No analytics
 - No backend
-- No cloud sync
+- No automatic cloud sync
 - Notes are volatile by design
 
 ## Security Notes
@@ -80,9 +88,21 @@ Track live calls, earnings, rates, goals, and payment cycles directly in your br
 
 ## Backup & Restore
 - Export: `Settings -> Data Management -> Export Data`
-- Import: `Settings -> Data Management -> Import Data`
+- Import backup / CSV: `Settings -> Data Management -> Import Backup / CSV Call Log`
 - Reset calls only: `Settings -> Data Management -> Reset Calls Only`
 - Full reset: `Settings -> Data Management -> Reset All Data`
+
+### Import Behavior
+- JSON backups are merged into your current local data instead of replacing it.
+- CSV imports are reviewed before saving.
+- Exact duplicate calls are skipped automatically during CSV and backup merges.
+- CSV preview lets you map columns for:
+  - `Call Date`
+  - `Start Time`
+  - `End Time`
+  - `Duration`
+  - `Rate` (optional)
+- If a CSV has no usable rate column, you can apply a rate before confirming the import.
 
 ## Limitations
 - No multi-device sync (single browser profile only).
@@ -145,6 +165,20 @@ No. Notes are volatile and intentionally not persisted/exported.
 ### Can I sync data across devices?
 Not currently. Use JSON export/import manually.
 
+### Can I import a company call history CSV?
+Yes. The app can import CSV files when they include the same core fields used by the Call Log:
+- `Call Date`
+- `Start Time`
+- `End Time`
+- `Duration`
+- `Rate` (optional)
+
+Before importing, the app shows a preview so you can:
+- confirm detected rows
+- map columns manually if needed
+- assign a rate to imported calls
+- skip accidental duplicates automatically
+
 ### Why did my data disappear?
 Most likely browser/site storage was cleared or a private session ended.
 
@@ -152,14 +186,25 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management`.
 
 ## Release Notes
-- Current Version: `v1.1.26`
+- Current Version: `v1.1.48`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.48`
+- Added optional RPG Mode toggle with hidden XP UI when disabled
+- Added RPG-only level achievements for levels 10, 20, 30, 40, and 50
+- Improved Achievements modal behavior and icon styling
+- Improved theme toggle behavior for dark / light mode
+- Reworked Add Call modal for date-only, time-only, or duration-only manual entries
+- Added safer CSV call log import with preview, manual column mapping, dedupe, and optional rate assignment
+- Changed backup import to merge safely with existing local data instead of replacing it
 
 ## Feedback
 Use the in-app `Contact Us` modal for:
 - Bug reports
 - Feature requests
 - General feedback
+
+Direct contact reference: `worktimetrackertool@gmail.com`
 
 ## Credits
 Built for interpreters by interpreters.
