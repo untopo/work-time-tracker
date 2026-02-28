@@ -594,6 +594,50 @@
             width: min(95vw, 930px);
         }
 
+        #achievements-settings-modal {
+            align-items: center;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        #achievements-settings-modal .modal {
+            max-height: calc(100vh - 2rem);
+            margin: 0.75rem auto;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            width: min(95vw, 930px);
+        }
+
+        #achievements-settings-modal .settings-modal-scroll {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: none;
+            overflow-y: auto;
+        }
+
+        .achievement-card-btn {
+            width: 100%;
+            text-align: left;
+            border-width: 1px;
+            transition: transform var(--motion-fast) var(--ease-subtle), box-shadow var(--motion-fast) var(--ease-subtle), border-color var(--motion-fast) var(--ease-subtle);
+        }
+
+        .achievement-card-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+        }
+
+        .achievement-card-btn:focus-visible {
+            outline: 2px solid #f59e0b;
+            outline-offset: 2px;
+        }
+
+        #achievement-detail-modal .modal {
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+        }
+
         .settings-side-modal {
             background: transparent !important;
             z-index: var(--settings-side-z, 72);
@@ -642,43 +686,6 @@
             max-height: calc(100vh - 12rem);
         }
 
-        .settings-tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .settings-tab-btn {
-            border: 1px solid #d1d5db;
-            border-radius: 9999px;
-            padding: 0.35rem 0.8rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #374151;
-            background: #f3f4f6;
-            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .settings-tab-btn:hover {
-            background: #e5e7eb;
-        }
-
-        .settings-tab-btn.settings-tab-active {
-            color: #ffffff;
-            border-color: #2563eb;
-            background: #2563eb;
-        }
-
-        html.dark .settings-tab-btn {
-            color: #d1d5db;
-            border-color: #475569;
-            background: #1f2937;
-        }
-
-        html.dark .settings-tab-btn:hover {
-            background: #334155;
-        }
-
         .settings-section-card {
             border: 1px solid #e5e7eb;
             border-radius: 0.75rem;
@@ -697,6 +704,12 @@
             background: inherit;
             padding-top: 0.75rem;
             backdrop-filter: none;
+        }
+
+        .modal-actions-inline {
+            position: static;
+            bottom: auto;
+            padding-top: 0.75rem;
         }
 
         .preview-states-grid {
@@ -1102,5 +1115,255 @@
                 animation: none !important;
                 transition: none !important;
             }
+        }
+
+        .hint-tooltip {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            line-height: 1;
+            cursor: help;
+            background: #1d4ed8;
+            color: #fff;
+            user-select: none;
+        }
+
+        .hint-tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            width: min(280px, 72vw);
+            padding: 0.45rem 0.55rem;
+            border-radius: 0.5rem;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-size: 0.72rem;
+            font-weight: 500;
+            line-height: 1.35;
+            text-align: left;
+            box-shadow: 0 8px 24px rgba(2, 6, 23, 0.35);
+            border: 1px solid #334155;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 95;
+            transition: opacity 130ms ease, transform 130ms ease;
+            white-space: normal;
+        }
+
+        .hint-tooltip::before {
+            content: '';
+            position: absolute;
+            bottom: calc(100% + 2px);
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #0f172a transparent transparent transparent;
+            opacity: 0;
+            transition: opacity 130ms ease;
+            z-index: 96;
+        }
+
+        .hint-tooltip:hover::after,
+        .hint-tooltip:hover::before {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .onboarding-cues {
+            position: fixed;
+            right: 1rem;
+            bottom: 1rem;
+            z-index: 65;
+            width: min(92vw, 320px);
+            display: grid;
+            gap: 0.75rem;
+            pointer-events: none;
+            transition: opacity 180ms var(--ease-subtle), transform 180ms var(--ease-standard);
+        }
+
+        .onboarding-steps {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+
+        .onboarding-step-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-radius: 9999px;
+            background: #e0e7ff;
+            color: #1e3a8a;
+            padding: 0.22rem 0.55rem;
+            font-size: 0.73rem;
+            font-weight: 600;
+        }
+
+        .onboarding-step-pill span {
+            width: 1.05rem;
+            height: 1.05rem;
+            border-radius: 9999px;
+            background: #2563eb;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.67rem;
+            font-weight: 700;
+        }
+
+        html.dark .onboarding-step-pill {
+            background: #1e293b;
+            color: #dbeafe;
+        }
+
+        .onboarding-step-pill.done {
+            background: #dcfce7;
+            color: #14532d;
+        }
+
+        .onboarding-step-pill.done span {
+            background: #16a34a;
+            color: #ffffff;
+        }
+
+        html.dark .onboarding-step-pill.done {
+            background: #14532d;
+            color: #dcfce7;
+        }
+
+        .onboarding-cue-card {
+            position: relative;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.85rem;
+            padding: 0.85rem 0.85rem 0.75rem 0.85rem;
+            background: #ffffff;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+            pointer-events: auto;
+            animation: onboarding-cue-in 220ms ease-out;
+            transition: transform 160ms var(--ease-standard), box-shadow 160ms var(--ease-subtle), border-color 160ms var(--ease-subtle);
+        }
+
+        html.dark .onboarding-cue-card {
+            border-color: #334155;
+            background: #0f172a;
+            box-shadow: 0 10px 24px rgba(2, 6, 23, 0.45);
+        }
+
+        .onboarding-cue-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.2rem;
+        }
+
+        html.dark .onboarding-cue-title {
+            color: #e2e8f0;
+        }
+
+        .onboarding-cue-text {
+            font-size: 0.82rem;
+            color: #475569;
+            margin-bottom: 0.55rem;
+            line-height: 1.35;
+        }
+
+        html.dark .onboarding-cue-text {
+            color: #94a3b8;
+        }
+
+        .onboarding-cue-action {
+            width: 100%;
+            border: 0;
+            border-radius: 0.6rem;
+            background: #2563eb;
+            color: #ffffff;
+            padding: 0.45rem 0.65rem;
+            font-size: 0.84rem;
+            font-weight: 600;
+            transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+        }
+
+        .onboarding-cue-action:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.3);
+        }
+
+        .onboarding-cue-action:active {
+            transform: translateY(1px);
+        }
+
+        .onboarding-cue-close {
+            position: absolute;
+            top: 0.35rem;
+            right: 0.4rem;
+            border: 0;
+            background: transparent;
+            color: #64748b;
+            width: 1.6rem;
+            height: 1.6rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .onboarding-cue-close:hover {
+            color: #0f172a;
+            background: rgba(148, 163, 184, 0.2);
+        }
+
+        html.dark .onboarding-cue-close {
+            color: #94a3b8;
+        }
+
+        html.dark .onboarding-cue-close:hover {
+            color: #e2e8f0;
+            background: rgba(148, 163, 184, 0.25);
+        }
+
+        @media (max-width: 640px) {
+            .onboarding-cues {
+                left: 0.75rem;
+                right: 0.75rem;
+                width: auto;
+                bottom: 0.75rem;
+            }
+        }
+
+        .onboarding-highlight-target {
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45);
+            animation: onboarding-target-pulse 1.1s ease-out 2;
+            border-radius: 0.9rem;
+        }
+
+        .onboarding-cue-card:hover {
+            transform: translateY(-1px);
+            border-color: #93c5fd;
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.22);
+        }
+
+        @keyframes onboarding-cue-in {
+            from { opacity: 0; transform: translateY(8px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes onboarding-target-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.45); }
+            70% { box-shadow: 0 0 0 12px rgba(37, 99, 235, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
         }
     
