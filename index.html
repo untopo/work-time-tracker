@@ -746,7 +746,10 @@
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Data Management</h3>
                     <div class="flex flex-col gap-2">
                         <button id="export-data" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                            <i class="fas fa-download"></i> Export Data
+                            <i class="fas fa-download"></i> Export Backup JSON
+                        </button>
+                        <button id="export-call-log-csv" class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 transition">
+                            <i class="fas fa-file-csv"></i> Export Call Log CSV
                         </button>
                         <label class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition cursor-pointer text-center">
                             <i class="fas fa-upload"></i> Import Backup / CSV Call Log
@@ -842,10 +845,22 @@
                 <p id="csv-import-warning" class="text-xs text-amber-600 dark:text-amber-300 mt-3" style="display:none;"></p>
             </div>
             <div class="settings-section-card">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+                    <div id="csv-import-preview-meta" class="text-xs text-gray-500 dark:text-gray-400">
+                        Showing all detected rows.
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="csv-filter-all" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-blue-500 text-white">All</button>
+                        <button id="csv-filter-ready" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Ready</button>
+                        <button id="csv-filter-duplicate" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Duplicates</button>
+                        <button id="csv-filter-invalid" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Invalid</button>
+                    </div>
+                </div>
                 <div class="overflow-auto">
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                                <th class="py-2 pr-3">Row</th>
                                 <th class="py-2 pr-3">Date</th>
                                 <th class="py-2 pr-3">Start</th>
                                 <th class="py-2 pr-3">End</th>
