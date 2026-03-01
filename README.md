@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.48-blue)
+![Version](https://img.shields.io/badge/version-1.1.49-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -66,6 +66,7 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - Achievements system with milestone tracking
 - Optional RPG Mode with XP, levels, and daily quests
 - CSV call log import with preview, dedupe, and rate assignment
+- Call Log CSV export for spreadsheet-friendly records
 - Safe backup merge import that preserves existing local data
 - Dark mode / light mode toggle
 - Floating call controls (optional)
@@ -87,7 +88,8 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - Use export backups if your tracking data is important.
 
 ## Backup & Restore
-- Export: `Settings -> Data Management -> Export Data`
+- Export Backup JSON: `Settings -> Data Management -> Export Backup JSON`
+- Export Call Log CSV: `Settings -> Data Management -> Export Call Log CSV`
 - Import backup / CSV: `Settings -> Data Management -> Import Backup / CSV Call Log`
 - Reset calls only: `Settings -> Data Management -> Reset Calls Only`
 - Full reset: `Settings -> Data Management -> Reset All Data`
@@ -95,6 +97,7 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 ### Import Behavior
 - JSON backups are merged into your current local data instead of replacing it.
 - CSV imports are reviewed before saving.
+- CSV preview supports filters for `Ready`, `Duplicates`, and `Invalid` rows.
 - Exact duplicate calls are skipped automatically during CSV and backup merges.
 - CSV preview lets you map columns for:
   - `Call Date`
@@ -186,8 +189,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management`.
 
 ## Release Notes
-- Current Version: `v1.1.48`
+- Current Version: `v1.1.49`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.49`
+- Added `Export Call Log CSV` in Settings
+- Added `Ready / Duplicates / Invalid` filters in the CSV import preview
+- Added a clearer import-complete summary after CSV merges
 
 ### Highlights in `v1.1.48`
 - Added optional RPG Mode toggle with hidden XP UI when disabled
