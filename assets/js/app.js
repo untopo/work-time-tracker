@@ -2,8 +2,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.50';
+    const APP_VERSION = '1.1.51';
     const CHANGELOG = [
+        { version: '1.1.51', date: '2026-03-01', changes: ['Added: Minimal Data Hub modal that separates backups from Call Log CSV actions', 'Improved: Export flow now supports custom date ranges and selectable CSV fields', 'Improved: CSV import preview now supports row selection and optional rate-required importing'] },
         { version: '1.1.50', date: '2026-03-01', changes: ['Added: Export options modal to choose all history, current view, or a specific date before exporting', 'Added: Ko-fi support button alongside PayPal in the footer', 'Improved: Backup JSON and Call Log CSV exports now share the same safer scoped export flow'] },
         { version: '1.1.49', date: '2026-03-01', changes: ['Added: Call Log CSV export from Settings for spreadsheet-friendly backups', 'Improved: CSV import preview now supports status filters and clearer row-level review', 'Improved: CSV import completion now summarizes imported, duplicate, and invalid rows before closing'] },
         { version: '1.1.48', date: '2026-02-28', changes: ['Added: CSV import preview now supports manual column mapping before merging calls', 'Changed: Backup import now merges into existing local data instead of replacing it', 'Improved: Data Management import action now supports safer call-log CSV workflows without erasing prior history'] },
@@ -410,6 +411,7 @@ function downloadBlob(blob, fileName) {
 }
 
 function getCurrentExportScope() {
+    if (exportScopeRangeInput?.checked) return 'range';
     if (exportScopeDateInput?.checked) return 'date';
     if (exportScopeCurrentInput?.checked) return 'current';
     return 'all';
@@ -441,6 +443,17 @@ function getCallsForExportScope(scope, specificDateValue = '') {
             return callStartMs >= startMs && callStartMs < endMs;
         });
     }
+    if (scope === 'range') {
+        const startDate = parseDateInput(exportRangeStartInput?.value || '');
+        const endDate = parseDateInput(exportRangeEndInput?.value || '');
+        if (!startDate || !endDate) return [];
+        const startMs = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()).getTime();
+        const endMs = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() + 1).getTime();
+        return storedCalls.filter((call) => {
+            const callStartMs = getCallStartMs(call);
+            return callStartMs >= startMs && callStartMs < endMs;
+        });
+    }
     return storedCalls;
 }
 
@@ -448,10 +461,23 @@ function getExportFileDateSuffix() {
     return new Date().toISOString().slice(0, 10);
 }
 
+function getSelectedExportCsvFields() {
+    return [
+        { key: 'date', label: 'Call Date', enabled: !!exportFieldDate?.checked },
+        { key: 'start', label: 'Start Time', enabled: !!exportFieldStart?.checked },
+        { key: 'end', label: 'End Time', enabled: !!exportFieldEnd?.checked },
+        { key: 'duration', label: 'Duration', enabled: !!exportFieldDuration?.checked },
+        { key: 'rateName', label: 'Rate Name', enabled: !!exportFieldRateName?.checked },
+        { key: 'rateAmount', label: 'Rate Amount', enabled: !!exportFieldRateAmount?.checked },
+        { key: 'earnings', label: 'Earnings', enabled: !!exportFieldEarnings?.checked }
+    ];
+}
+
 function exportCallsAsCsv(exportCalls) {
     const userTimeZone = getUserTimeZone();
+    const selectedFields = getSelectedExportCsvFields().filter((field) => field.enabled);
     const csvRows = [
-        ['Call Date', 'Start Time', 'End Time', 'Duration', 'Rate Name', 'Rate Amount', 'Earnings']
+        selectedFields.map((field) => field.label)
     ];
 
     exportCalls
@@ -460,15 +486,16 @@ function exportCallsAsCsv(exportCalls) {
         .forEach((call) => {
             const start = formatCallDateTimeForExport(call.startTime, userTimeZone);
             const end = formatCallDateTimeForExport(call.endTime, userTimeZone);
-            csvRows.push([
-                start.date,
-                start.time,
-                end.time,
-                msToHMS(Number(call.duration) || 0),
-                call.rateName || '',
-                Number(call.rate || 0).toFixed(2),
-                Number(getCallEarnings(call) || 0).toFixed(2)
-            ]);
+            const valueMap = {
+                date: start.date,
+                start: start.time,
+                end: end.time,
+                duration: msToHMS(Number(call.duration) || 0),
+                rateName: call.rateName || '',
+                rateAmount: Number(call.rate || 0).toFixed(2),
+                earnings: Number(getCallEarnings(call) || 0).toFixed(2)
+            };
+            csvRows.push(selectedFields.map((field) => valueMap[field.key] ?? ''));
         });
 
     const csvText = csvRows.map((row) => row.map(escapeCsvCell).join(',')).join('\r\n');
@@ -496,15 +523,44 @@ function exportCallsAsJson(exportCalls) {
     downloadBlob(blob, `work-time-tracker-data-${getExportFileDateSuffix()}.json`);
 }
 
+function openDataHubModal() {
+    ModalManager.open(dataHubModal, { focusSelector: '#data-hub-export-json-btn' });
+}
+
+function closeDataHubModal() {
+    if (dataHubModal) ModalManager.close(dataHubModal);
+}
+
+function openImportFilePicker(mode) {
+    pendingImportMode = mode;
+    if (!importFile) return;
+    if (mode === 'json') {
+        importFile.accept = '.json,application/json';
+    } else {
+        importFile.accept = '.csv,text/csv';
+    }
+    importFile.value = '';
+    importFile.click();
+}
+
 function refreshExportOptionsModalState() {
     if (!exportSpecificDateInput) return;
     const scope = getCurrentExportScope();
     exportSpecificDateInput.disabled = scope !== 'date';
+    if (exportRangeStartInput) exportRangeStartInput.disabled = scope !== 'range';
+    if (exportRangeEndInput) exportRangeEndInput.disabled = scope !== 'range';
     if (scope === 'date' && !exportSpecificDateInput.value) {
         exportSpecificDateInput.value = statsDatePicker?.value || getTodayDateString();
     }
+    if (scope === 'range') {
+        if (exportRangeStartInput && !exportRangeStartInput.value) exportRangeStartInput.value = statsDatePicker?.value || getTodayDateString();
+        if (exportRangeEndInput && !exportRangeEndInput.value) exportRangeEndInput.value = statsDatePicker?.value || getTodayDateString();
+    }
     if (exportCurrentViewLabel) {
         exportCurrentViewLabel.textContent = `Use the same calls shown by your current ${getCurrentCallLogViewLabel()} filter.`;
+    }
+    if (exportFieldsCard) {
+        exportFieldsCard.style.display = pendingExportFormat === 'csv' ? '' : 'none';
     }
     if (exportOptionsWarning) {
         exportOptionsWarning.style.display = 'none';
@@ -514,6 +570,7 @@ function refreshExportOptionsModalState() {
 
 function openExportOptionsModal(format) {
     pendingExportFormat = format === 'csv' ? 'csv' : 'json';
+    closeDataHubModal();
     if (exportOptionsTitle) {
         exportOptionsTitle.innerHTML = pendingExportFormat === 'csv'
             ? '<i class="fas fa-file-csv text-emerald-500 mr-2"></i>Export Call Log CSV'
@@ -530,10 +587,22 @@ function openExportOptionsModal(format) {
     if (exportScopeAllInput) exportScopeAllInput.checked = true;
     if (exportScopeCurrentInput) exportScopeCurrentInput.checked = false;
     if (exportScopeDateInput) exportScopeDateInput.checked = false;
+    if (exportScopeRangeInput) exportScopeRangeInput.checked = false;
     if (exportSpecificDateInput) {
         exportSpecificDateInput.max = getTodayDateString();
         exportSpecificDateInput.value = statsDatePicker?.value || getTodayDateString();
     }
+    if (exportRangeStartInput) {
+        exportRangeStartInput.max = getTodayDateString();
+        exportRangeStartInput.value = statsDatePicker?.value || getTodayDateString();
+    }
+    if (exportRangeEndInput) {
+        exportRangeEndInput.max = getTodayDateString();
+        exportRangeEndInput.value = statsDatePicker?.value || getTodayDateString();
+    }
+    [exportFieldDate, exportFieldStart, exportFieldEnd, exportFieldDuration, exportFieldRateName, exportFieldRateAmount, exportFieldEarnings]
+        .filter(Boolean)
+        .forEach((checkbox) => { checkbox.checked = true; });
     refreshExportOptionsModalState();
     ModalManager.open(exportOptionsModal, { focusSelector: '#confirm-export-options-btn' });
 }
@@ -551,6 +620,7 @@ function confirmExportOptions() {
     const scope = getCurrentExportScope();
     const specificDateValue = exportSpecificDateInput?.value || '';
     const exportCalls = getCallsForExportScope(scope, specificDateValue);
+    const selectedCsvFields = getSelectedExportCsvFields().filter((field) => field.enabled);
 
     if (scope === 'date' && !parseDateInput(specificDateValue)) {
         if (exportOptionsWarning) {
@@ -559,11 +629,36 @@ function confirmExportOptions() {
         }
         return;
     }
+    if (scope === 'range') {
+        const startDate = parseDateInput(exportRangeStartInput?.value || '');
+        const endDate = parseDateInput(exportRangeEndInput?.value || '');
+        if (!startDate || !endDate) {
+            if (exportOptionsWarning) {
+                exportOptionsWarning.style.display = '';
+                exportOptionsWarning.textContent = 'Choose a valid start and end date for the custom range.';
+            }
+            return;
+        }
+        if (endDate < startDate) {
+            if (exportOptionsWarning) {
+                exportOptionsWarning.style.display = '';
+                exportOptionsWarning.textContent = 'Custom range end date cannot be before the start date.';
+            }
+            return;
+        }
+    }
 
     if (pendingExportFormat === 'csv' && exportCalls.length === 0) {
         if (exportOptionsWarning) {
             exportOptionsWarning.style.display = '';
             exportOptionsWarning.textContent = 'There are no calls in the selected scope to export as CSV.';
+        }
+        return;
+    }
+    if (pendingExportFormat === 'csv' && selectedCsvFields.length === 0) {
+        if (exportOptionsWarning) {
+            exportOptionsWarning.style.display = '';
+            exportOptionsWarning.textContent = 'Choose at least one CSV field to export.';
         }
         return;
     }
@@ -625,8 +720,16 @@ function confirmExportOptions() {
     const settingsToggleBtn = document.getElementById('settings-toggle');
     const settingsModal = document.getElementById('settings-modal');
     const closeSettingsModalBtn = document.getElementById('close-settings-modal');
+    const openDataHubBtn = document.getElementById('open-data-hub-btn');
     const exportDataBtn = document.getElementById('export-data');
     const exportCallLogCsvBtn = document.getElementById('export-call-log-csv');
+    const dataHubModal = document.getElementById('data-hub-modal');
+    const closeDataHubModalBtn = document.getElementById('close-data-hub-modal');
+    const doneDataHubBtn = document.getElementById('done-data-hub-btn');
+    const dataHubExportJsonBtn = document.getElementById('data-hub-export-json-btn');
+    const dataHubImportJsonBtn = document.getElementById('data-hub-import-json-btn');
+    const dataHubExportCsvBtn = document.getElementById('data-hub-export-csv-btn');
+    const dataHubImportCsvBtn = document.getElementById('data-hub-import-csv-btn');
     const exportOptionsModal = document.getElementById('export-options-modal');
     const closeExportOptionsModalBtn = document.getElementById('close-export-options-modal');
     const cancelExportOptionsBtn = document.getElementById('cancel-export-options-btn');
@@ -636,9 +739,20 @@ function confirmExportOptions() {
     const exportOptionsWarning = document.getElementById('export-options-warning');
     const exportCurrentViewLabel = document.getElementById('export-current-view-label');
     const exportSpecificDateInput = document.getElementById('export-specific-date');
+    const exportRangeStartInput = document.getElementById('export-range-start');
+    const exportRangeEndInput = document.getElementById('export-range-end');
     const exportScopeAllInput = document.getElementById('export-scope-all');
     const exportScopeCurrentInput = document.getElementById('export-scope-current');
     const exportScopeDateInput = document.getElementById('export-scope-date');
+    const exportScopeRangeInput = document.getElementById('export-scope-range');
+    const exportFieldsCard = document.getElementById('export-fields-card');
+    const exportFieldDate = document.getElementById('export-field-date');
+    const exportFieldStart = document.getElementById('export-field-start');
+    const exportFieldEnd = document.getElementById('export-field-end');
+    const exportFieldDuration = document.getElementById('export-field-duration');
+    const exportFieldRateName = document.getElementById('export-field-rate-name');
+    const exportFieldRateAmount = document.getElementById('export-field-rate-amount');
+    const exportFieldEarnings = document.getElementById('export-field-earnings');
     const importFile = document.getElementById('import-file');
     const csvImportPreviewModal = document.getElementById('csv-import-preview-modal');
     const closeCsvImportPreviewModalBtn = document.getElementById('close-csv-import-preview-modal');
@@ -657,8 +771,11 @@ function confirmExportOptions() {
     const csvFilterReadyBtn = document.getElementById('csv-filter-ready');
     const csvFilterDuplicateBtn = document.getElementById('csv-filter-duplicate');
     const csvFilterInvalidBtn = document.getElementById('csv-filter-invalid');
+    const csvSelectReadyBtn = document.getElementById('csv-select-ready');
+    const csvClearSelectedBtn = document.getElementById('csv-clear-selected');
     const csvImportRateSelect = document.getElementById('csv-import-rate-select');
     const csvImportOverrideRateToggle = document.getElementById('csv-import-override-rate');
+    const csvImportRequireRateToggle = document.getElementById('csv-import-require-rate');
     const csvImportWarning = document.getElementById('csv-import-warning');
     const resetCallsBtn = document.getElementById('reset-calls');
     const resetAllBtn = document.getElementById('reset-all');
@@ -1869,6 +1986,7 @@ if (storedDailyGoal) {
     let storageWriteTimer = null;
     let pendingCsvImportFilter = 'all';
     let pendingExportFormat = null;
+    let pendingImportMode = null;
     const CALL_LOG_RENDER_CHUNK_SIZE = 120;
     const CALL_LOG_RENDER_AHEAD_PX = 180;
     const RPG_CALL_ELIGIBILITY_MIGRATION_KEY = 'wtt_rpg_call_eligibility_migrated_v1';
@@ -3155,6 +3273,9 @@ function getResolvedCsvImportRate(row) {
 function buildCsvPreviewRows(parsedRows) {
     const existingKeys = new Set(readCallsFromStorage().map(getCallDuplicateKey));
     const fileKeys = new Set();
+    const selectedRows = pendingCsvImport?.selectedRows || new Set();
+    const selectionMode = pendingCsvImport?.selectionMode || 'default';
+    const requireRate = !!csvImportRequireRateToggle?.checked;
 
     return parsedRows.map((row) => {
         const resolvedRate = getResolvedCsvImportRate(row);
@@ -3184,19 +3305,37 @@ function buildCsvPreviewRows(parsedRows) {
             reason = 'Duplicate inside this CSV';
         } else {
             fileKeys.add(duplicateKey);
-            if (!(resolvedRate.amount > 0)) {
+            if (requireRate && !(resolvedRate.amount > 0)) {
+                status = 'invalid';
+                reason = 'Rate required for import';
+            } else if (!(resolvedRate.amount > 0)) {
                 reason = 'Will import without rate';
             }
         }
+
+        const defaultSelected = status === 'ready';
+        const isSelected = selectionMode === 'custom'
+            ? selectedRows.has(row.rowNumber)
+            : defaultSelected;
 
         return {
             ...row,
             normalizedCall,
             resolvedRate,
             status,
-            reason
+            reason,
+            selected: status === 'ready' ? isSelected : false
         };
     });
+}
+
+function syncPendingCsvSelections(previewRows) {
+    if (!pendingCsvImport) return;
+    const next = new Set();
+    previewRows.forEach((row) => {
+        if (row.status === 'ready' && row.selected) next.add(row.rowNumber);
+    });
+    pendingCsvImport.selectedRows = next;
 }
 
 function setCsvImportFilter(filter) {
@@ -3232,16 +3371,19 @@ function renderCsvImportPreview() {
     const parsedRows = parseCsvImportRows(pendingCsvImport.csvData, columnMap);
     const previewRows = buildCsvPreviewRows(parsedRows);
     pendingCsvImport.previewRows = previewRows;
+    syncPendingCsvSelections(previewRows);
     const readyCount = previewRows.filter((row) => row.status === 'ready').length;
     const duplicateCount = previewRows.filter((row) => row.status === 'duplicate').length;
     const invalidCount = previewRows.filter((row) => row.status === 'invalid').length;
+    const selectedCount = previewRows.filter((row) => row.status === 'ready' && row.selected).length;
     const missingRateCount = previewRows.filter((row) => row.status === 'ready' && !(row.resolvedRate.amount > 0)).length;
 
     csvImportSummary.innerHTML = [
         { label: 'Rows', value: previewRows.length, tone: 'text-gray-900 dark:text-gray-100' },
         { label: 'Ready', value: readyCount, tone: 'text-emerald-600 dark:text-emerald-400' },
         { label: 'Duplicates', value: duplicateCount, tone: 'text-amber-600 dark:text-amber-300' },
-        { label: 'Invalid', value: invalidCount, tone: 'text-red-600 dark:text-red-400' }
+        { label: 'Invalid', value: invalidCount, tone: 'text-red-600 dark:text-red-400' },
+        { label: 'Selected', value: selectedCount, tone: 'text-blue-600 dark:text-blue-300' }
     ].map((item) => `
         <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2">
             <div class="text-xs text-gray-500 dark:text-gray-400">${item.label}</div>
@@ -3266,6 +3408,9 @@ function renderCsvImportPreview() {
             : '--';
         return `
             <tr class="border-b border-gray-100 dark:border-gray-800 align-top">
+                <td class="py-2 pr-3">
+                    <input type="checkbox" class="csv-row-select" data-row-number="${row.rowNumber}" ${row.status === 'ready' ? '' : 'disabled'} ${row.selected ? 'checked' : ''}>
+                </td>
                 <td class="py-2 pr-3 font-medium text-gray-500 dark:text-gray-400">#${row.rowNumber}</td>
                 <td class="py-2 pr-3">${formatPreviewDate(row.callDate)}</td>
                 <td class="py-2 pr-3">${formatPreviewTime(row.startTime)}</td>
@@ -3283,7 +3428,7 @@ function renderCsvImportPreview() {
     if (!csvImportPreviewBody.innerHTML) {
         csvImportPreviewBody.innerHTML = `
             <tr>
-                <td colspan="7" class="py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colspan="8" class="py-4 text-center text-gray-500 dark:text-gray-400">
                     No rows match the current filter.
                 </td>
             </tr>
@@ -3297,7 +3442,7 @@ function renderCsvImportPreview() {
             duplicate: 'duplicate rows',
             invalid: 'invalid rows'
         };
-        csvImportPreviewMeta.textContent = `Showing ${Math.min(visibleRows.length, filteredRows.length)} of ${filteredRows.length} ${filterLabelMap[pendingCsvImportFilter] || 'rows'}${filteredRows.length > visibleRows.length ? ' (first 150)' : ''}.`;
+        csvImportPreviewMeta.textContent = `Showing ${Math.min(visibleRows.length, filteredRows.length)} of ${filteredRows.length} ${filterLabelMap[pendingCsvImportFilter] || 'rows'}${filteredRows.length > visibleRows.length ? ' (first 150)' : ''}. ${selectedCount} ready row${selectedCount === 1 ? '' : 's'} selected.`;
     }
 
     if (csvImportMappingWarning) {
@@ -3312,8 +3457,8 @@ function renderCsvImportPreview() {
             : '';
     }
     if (confirmCsvImportBtn) {
-        confirmCsvImportBtn.disabled = readyCount === 0 || mappingIssues.length > 0;
-        confirmCsvImportBtn.textContent = readyCount > 0 ? `Import ${readyCount} Call${readyCount === 1 ? '' : 's'}` : 'Nothing to Import';
+        confirmCsvImportBtn.disabled = selectedCount === 0 || mappingIssues.length > 0;
+        confirmCsvImportBtn.textContent = selectedCount > 0 ? `Import ${selectedCount} Call${selectedCount === 1 ? '' : 's'}` : 'Nothing to Import';
     }
 }
 
@@ -3328,7 +3473,7 @@ function populateCsvImportRateSelect() {
 }
 
 function openCsvImportPreviewModal(csvImportData) {
-    pendingCsvImport = { csvData: csvImportData, columnMap: csvImportData.columnMap };
+    pendingCsvImport = { csvData: csvImportData, columnMap: csvImportData.columnMap, selectedRows: new Set(), selectionMode: 'default' };
     pendingCsvImportFilter = 'all';
     populateCsvImportColumnMapping(csvImportData.headers, csvImportData.columnMap);
     populateCsvImportRateSelect();
@@ -3362,7 +3507,7 @@ function closeCsvImportPreviewModal() {
 function confirmCsvImport() {
     if (!pendingCsvImport?.previewRows) return;
     const previewRows = pendingCsvImport.previewRows;
-    const readyRows = previewRows.filter((row) => row.status === 'ready' && row.normalizedCall);
+    const readyRows = previewRows.filter((row) => row.status === 'ready' && row.selected && row.normalizedCall);
     const duplicateCount = previewRows.filter((row) => row.status === 'duplicate').length;
     const invalidCount = previewRows.filter((row) => row.status === 'invalid').length;
     if (readyRows.length === 0) {
@@ -5208,6 +5353,7 @@ calls.push(callData);
         };
         ModalManager.register(callModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#call-date' });
         ModalManager.register(settingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feature-notes-toggle' });
+        ModalManager.register(dataHubModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#data-hub-export-json-btn' });
         ModalManager.register(editCycleModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#cycle-start-date-input' });
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
@@ -6005,19 +6151,38 @@ goalMinutesInput.addEventListener('input', () => {
             });
         }
 
-        exportDataBtn.addEventListener('click', () => {
-            openExportOptionsModal('json');
-        });
-
-        if (exportCallLogCsvBtn) {
-            exportCallLogCsvBtn.addEventListener('click', exportCallLogCsv);
+        if (openDataHubBtn) {
+            openDataHubBtn.addEventListener('click', openDataHubModal);
         }
-        [exportScopeAllInput, exportScopeCurrentInput, exportScopeDateInput].filter(Boolean).forEach((inputEl) => {
+        if (closeDataHubModalBtn) {
+            closeDataHubModalBtn.addEventListener('click', closeDataHubModal);
+        }
+        if (doneDataHubBtn) {
+            doneDataHubBtn.addEventListener('click', closeDataHubModal);
+        }
+        if (dataHubExportJsonBtn) {
+            dataHubExportJsonBtn.addEventListener('click', () => openExportOptionsModal('json'));
+        }
+        if (dataHubExportCsvBtn) {
+            dataHubExportCsvBtn.addEventListener('click', exportCallLogCsv);
+        }
+        if (dataHubImportJsonBtn) {
+            dataHubImportJsonBtn.addEventListener('click', () => openImportFilePicker('json'));
+        }
+        if (dataHubImportCsvBtn) {
+            dataHubImportCsvBtn.addEventListener('click', () => openImportFilePicker('csv'));
+        }
+        [exportScopeAllInput, exportScopeCurrentInput, exportScopeDateInput, exportScopeRangeInput].filter(Boolean).forEach((inputEl) => {
             inputEl.addEventListener('change', refreshExportOptionsModalState);
         });
-        if (exportSpecificDateInput) {
-            exportSpecificDateInput.addEventListener('input', refreshExportOptionsModalState);
-        }
+        [exportSpecificDateInput, exportRangeStartInput, exportRangeEndInput].filter(Boolean).forEach((inputEl) => {
+            inputEl.addEventListener('input', refreshExportOptionsModalState);
+        });
+        [exportFieldDate, exportFieldStart, exportFieldEnd, exportFieldDuration, exportFieldRateName, exportFieldRateAmount, exportFieldEarnings]
+            .filter(Boolean)
+            .forEach((inputEl) => {
+                inputEl.addEventListener('change', refreshExportOptionsModalState);
+            });
         if (confirmExportOptionsBtn) {
             confirmExportOptionsBtn.addEventListener('click', confirmExportOptions);
         }
@@ -6037,24 +6202,75 @@ goalMinutesInput.addEventListener('input', () => {
                 const text = String(event.target.result || '');
                 const lowerName = String(file.name || '').toLowerCase();
                 try {
-                    if (lowerName.endsWith('.csv')) {
+                    const expectedMode = pendingImportMode;
+                    const isCsv = lowerName.endsWith('.csv');
+                    const isJson = lowerName.endsWith('.json');
+                    if (expectedMode === 'csv' && !isCsv) {
+                        throw new Error('Please choose a CSV call log file.');
+                    }
+                    if (expectedMode === 'json' && !isJson) {
+                        throw new Error('Please choose a JSON backup file.');
+                    }
+                    if (isCsv) {
                         const csvImportData = parseCsvImportFile(text);
+                        closeDataHubModal();
                         openCsvImportPreviewModal(csvImportData);
                     } else {
+                        closeDataHubModal();
                         const importedData = JSON.parse(text);
                         importJsonBackup(importedData);
                     }
                 } catch (error) {
-                    showAlertModal('Import Failed', lowerName.endsWith('.csv')
-                        ? 'Failed to parse the CSV file. Please check the file format and required columns.'
-                        : 'Failed to import file. Please ensure it is a valid JSON file from this app.');
+                    showAlertModal('Import Failed', String(error?.message || '').includes('choose a')
+                        ? String(error.message)
+                        : lowerName.endsWith('.csv')
+                            ? 'Failed to parse the CSV file. Please check the file format and required columns.'
+                            : 'Failed to import file. Please ensure it is a valid JSON file from this app.');
                     console.error('Import error:', error);
                 } finally {
+                    pendingImportMode = null;
                     importFile.value = '';
                 }
             };
             reader.readAsText(file);
         });
+
+        if (csvImportRequireRateToggle) {
+            csvImportRequireRateToggle.addEventListener('change', renderCsvImportPreview);
+        }
+        if (csvSelectReadyBtn) {
+            csvSelectReadyBtn.addEventListener('click', () => {
+                if (!pendingCsvImport?.previewRows) return;
+                pendingCsvImport.selectedRows = new Set(
+                    pendingCsvImport.previewRows
+                        .filter((row) => row.status === 'ready')
+                        .map((row) => row.rowNumber)
+                );
+                pendingCsvImport.selectionMode = 'custom';
+                renderCsvImportPreview();
+            });
+        }
+        if (csvClearSelectedBtn) {
+            csvClearSelectedBtn.addEventListener('click', () => {
+                if (!pendingCsvImport) return;
+                pendingCsvImport.selectedRows = new Set();
+                pendingCsvImport.selectionMode = 'custom';
+                renderCsvImportPreview();
+            });
+        }
+        if (csvImportPreviewBody) {
+            csvImportPreviewBody.addEventListener('change', (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLInputElement) || !target.classList.contains('csv-row-select') || !pendingCsvImport) return;
+                const rowNumber = Number(target.dataset.rowNumber);
+                if (!Number.isInteger(rowNumber)) return;
+                const next = new Set(pendingCsvImport.selectedRows || []);
+                if (target.checked) next.add(rowNumber); else next.delete(rowNumber);
+                pendingCsvImport.selectedRows = next;
+                pendingCsvImport.selectionMode = 'custom';
+                renderCsvImportPreview();
+            });
+        }
 
         resetCallsBtn.addEventListener('click', () => {
             showConfirmation(
