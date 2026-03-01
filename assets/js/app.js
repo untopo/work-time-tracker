@@ -2,8 +2,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.49';
+    const APP_VERSION = '1.1.50';
     const CHANGELOG = [
+        { version: '1.1.50', date: '2026-03-01', changes: ['Added: Export options modal to choose all history, current view, or a specific date before exporting', 'Added: Ko-fi support button alongside PayPal in the footer', 'Improved: Backup JSON and Call Log CSV exports now share the same safer scoped export flow'] },
         { version: '1.1.49', date: '2026-03-01', changes: ['Added: Call Log CSV export from Settings for spreadsheet-friendly backups', 'Improved: CSV import preview now supports status filters and clearer row-level review', 'Improved: CSV import completion now summarizes imported, duplicate, and invalid rows before closing'] },
         { version: '1.1.48', date: '2026-02-28', changes: ['Added: CSV import preview now supports manual column mapping before merging calls', 'Changed: Backup import now merges into existing local data instead of replacing it', 'Improved: Data Management import action now supports safer call-log CSV workflows without erasing prior history'] },
         { version: '1.1.47', date: '2026-02-28', changes: ['Added: Optional RPG progression toggle in Settings', 'Changed: XP is now granted only for calls completed while RPG progression is enabled', 'Changed: Achievements remain available when RPG is off, while XP and multiplier references are hidden'] },
@@ -408,6 +409,176 @@ function downloadBlob(blob, fileName) {
   URL.revokeObjectURL(url);
 }
 
+function getCurrentExportScope() {
+    if (exportScopeDateInput?.checked) return 'date';
+    if (exportScopeCurrentInput?.checked) return 'current';
+    return 'all';
+}
+
+function getCurrentCallLogViewLabel() {
+    if (callLogFilter === 'today') return 'Today';
+    if (callLogFilter === 'week') return 'Week';
+    if (callLogFilter === 'month') return 'Month';
+    if (callLogFilter === 'date') {
+        const selectedDate = statsDatePicker?.value || getTodayDateString();
+        return `Date (${selectedDate})`;
+    }
+    return 'Current View';
+}
+
+function getCallsForExportScope(scope, specificDateValue = '') {
+    const storedCalls = readCallsFromStorage();
+    if (scope === 'current') {
+        return getFilteredCallsCached().map(normalizeCall);
+    }
+    if (scope === 'date') {
+        const selectedDate = parseDateInput(specificDateValue);
+        if (!selectedDate) return [];
+        const startMs = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()).getTime();
+        const endMs = startMs + (24 * 60 * 60 * 1000);
+        return storedCalls.filter((call) => {
+            const callStartMs = getCallStartMs(call);
+            return callStartMs >= startMs && callStartMs < endMs;
+        });
+    }
+    return storedCalls;
+}
+
+function getExportFileDateSuffix() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function exportCallsAsCsv(exportCalls) {
+    const userTimeZone = getUserTimeZone();
+    const csvRows = [
+        ['Call Date', 'Start Time', 'End Time', 'Duration', 'Rate Name', 'Rate Amount', 'Earnings']
+    ];
+
+    exportCalls
+        .slice()
+        .sort((a, b) => getCallStartMs(a) - getCallStartMs(b))
+        .forEach((call) => {
+            const start = formatCallDateTimeForExport(call.startTime, userTimeZone);
+            const end = formatCallDateTimeForExport(call.endTime, userTimeZone);
+            csvRows.push([
+                start.date,
+                start.time,
+                end.time,
+                msToHMS(Number(call.duration) || 0),
+                call.rateName || '',
+                Number(call.rate || 0).toFixed(2),
+                Number(getCallEarnings(call) || 0).toFixed(2)
+            ]);
+        });
+
+    const csvText = csvRows.map((row) => row.map(escapeCsvCell).join(',')).join('\r\n');
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+    downloadBlob(blob, `work-time-tracker-call-log-${getExportFileDateSuffix()}.csv`);
+}
+
+function exportCallsAsJson(exportCalls) {
+    const exportCallsClone = exportCalls.map((call) => ({ ...call }));
+    try {
+        const flags = loadFeatureFlags();
+        if (!flags.notes) {
+            exportCallsClone.forEach((call) => { delete call.notes; });
+        }
+    } catch (e) {}
+
+    const data = {
+        calls: exportCallsClone,
+        rates: rates,
+        dailyGoal: dailyGoal,
+        paymentCyclesEnabled: paymentCyclesEnabled,
+        paymentCycles: paymentCycles
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    downloadBlob(blob, `work-time-tracker-data-${getExportFileDateSuffix()}.json`);
+}
+
+function refreshExportOptionsModalState() {
+    if (!exportSpecificDateInput) return;
+    const scope = getCurrentExportScope();
+    exportSpecificDateInput.disabled = scope !== 'date';
+    if (scope === 'date' && !exportSpecificDateInput.value) {
+        exportSpecificDateInput.value = statsDatePicker?.value || getTodayDateString();
+    }
+    if (exportCurrentViewLabel) {
+        exportCurrentViewLabel.textContent = `Use the same calls shown by your current ${getCurrentCallLogViewLabel()} filter.`;
+    }
+    if (exportOptionsWarning) {
+        exportOptionsWarning.style.display = 'none';
+        exportOptionsWarning.textContent = '';
+    }
+}
+
+function openExportOptionsModal(format) {
+    pendingExportFormat = format === 'csv' ? 'csv' : 'json';
+    if (exportOptionsTitle) {
+        exportOptionsTitle.innerHTML = pendingExportFormat === 'csv'
+            ? '<i class="fas fa-file-csv text-emerald-500 mr-2"></i>Export Call Log CSV'
+            : '<i class="fas fa-download text-green-500 mr-2"></i>Export Backup JSON';
+    }
+    if (exportOptionsDescription) {
+        exportOptionsDescription.textContent = pendingExportFormat === 'csv'
+            ? 'Choose how much call history you want to export into a spreadsheet-friendly CSV.'
+            : 'Choose how much call history you want to include in the backup JSON. Rates and settings are still included.';
+    }
+    if (confirmExportOptionsBtn) {
+        confirmExportOptionsBtn.textContent = pendingExportFormat === 'csv' ? 'Export CSV' : 'Export JSON';
+    }
+    if (exportScopeAllInput) exportScopeAllInput.checked = true;
+    if (exportScopeCurrentInput) exportScopeCurrentInput.checked = false;
+    if (exportScopeDateInput) exportScopeDateInput.checked = false;
+    if (exportSpecificDateInput) {
+        exportSpecificDateInput.max = getTodayDateString();
+        exportSpecificDateInput.value = statsDatePicker?.value || getTodayDateString();
+    }
+    refreshExportOptionsModalState();
+    ModalManager.open(exportOptionsModal, { focusSelector: '#confirm-export-options-btn' });
+}
+
+function closeExportOptionsModal() {
+    if (exportOptionsModal) ModalManager.close(exportOptionsModal);
+    pendingExportFormat = null;
+    if (exportOptionsWarning) {
+        exportOptionsWarning.style.display = 'none';
+        exportOptionsWarning.textContent = '';
+    }
+}
+
+function confirmExportOptions() {
+    const scope = getCurrentExportScope();
+    const specificDateValue = exportSpecificDateInput?.value || '';
+    const exportCalls = getCallsForExportScope(scope, specificDateValue);
+
+    if (scope === 'date' && !parseDateInput(specificDateValue)) {
+        if (exportOptionsWarning) {
+            exportOptionsWarning.style.display = '';
+            exportOptionsWarning.textContent = 'Choose a valid specific date before exporting.';
+        }
+        return;
+    }
+
+    if (pendingExportFormat === 'csv' && exportCalls.length === 0) {
+        if (exportOptionsWarning) {
+            exportOptionsWarning.style.display = '';
+            exportOptionsWarning.textContent = 'There are no calls in the selected scope to export as CSV.';
+        }
+        return;
+    }
+
+    if (pendingExportFormat === 'csv') {
+        exportCallsAsCsv(exportCalls);
+        showToast(`Call Log CSV exported with ${exportCalls.length} call${exportCalls.length === 1 ? '' : 's'}.`);
+    } else {
+        exportCallsAsJson(exportCalls);
+        showToast(`Backup JSON exported with ${exportCalls.length} call${exportCalls.length === 1 ? '' : 's'} in scope.`);
+    }
+
+    closeExportOptionsModal();
+}
+
     // Global variables
     const startCallBtn = document.getElementById('start-call-btn');
     const endCallBtn = document.getElementById('end-call-btn');
@@ -456,6 +627,18 @@ function downloadBlob(blob, fileName) {
     const closeSettingsModalBtn = document.getElementById('close-settings-modal');
     const exportDataBtn = document.getElementById('export-data');
     const exportCallLogCsvBtn = document.getElementById('export-call-log-csv');
+    const exportOptionsModal = document.getElementById('export-options-modal');
+    const closeExportOptionsModalBtn = document.getElementById('close-export-options-modal');
+    const cancelExportOptionsBtn = document.getElementById('cancel-export-options-btn');
+    const confirmExportOptionsBtn = document.getElementById('confirm-export-options-btn');
+    const exportOptionsTitle = document.getElementById('export-options-title');
+    const exportOptionsDescription = document.getElementById('export-options-description');
+    const exportOptionsWarning = document.getElementById('export-options-warning');
+    const exportCurrentViewLabel = document.getElementById('export-current-view-label');
+    const exportSpecificDateInput = document.getElementById('export-specific-date');
+    const exportScopeAllInput = document.getElementById('export-scope-all');
+    const exportScopeCurrentInput = document.getElementById('export-scope-current');
+    const exportScopeDateInput = document.getElementById('export-scope-date');
     const importFile = document.getElementById('import-file');
     const csvImportPreviewModal = document.getElementById('csv-import-preview-modal');
     const closeCsvImportPreviewModalBtn = document.getElementById('close-csv-import-preview-modal');
@@ -1685,6 +1868,7 @@ if (storedDailyGoal) {
     let pendingStorageWrites = new Map();
     let storageWriteTimer = null;
     let pendingCsvImportFilter = 'all';
+    let pendingExportFormat = null;
     const CALL_LOG_RENDER_CHUNK_SIZE = 120;
     const CALL_LOG_RENDER_AHEAD_PX = 180;
     const RPG_CALL_ELIGIBILITY_MIGRATION_KEY = 'wtt_rpg_call_eligibility_migrated_v1';
@@ -3201,32 +3385,7 @@ function confirmCsvImport() {
 }
 
 function exportCallLogCsv() {
-    const userTimeZone = getUserTimeZone();
-    const csvRows = [
-        ['Call Date', 'Start Time', 'End Time', 'Duration', 'Rate Name', 'Rate Amount', 'Earnings']
-    ];
-
-    readCallsFromStorage()
-        .slice()
-        .sort((a, b) => getCallStartMs(a) - getCallStartMs(b))
-        .forEach((call) => {
-            const start = formatCallDateTimeForExport(call.startTime, userTimeZone);
-            const end = formatCallDateTimeForExport(call.endTime, userTimeZone);
-            csvRows.push([
-                start.date,
-                start.time,
-                end.time,
-                msToHMS(Number(call.duration) || 0),
-                call.rateName || '',
-                Number(call.rate || 0).toFixed(2),
-                Number(getCallEarnings(call) || 0).toFixed(2)
-            ]);
-        });
-
-    const csvText = csvRows.map((row) => row.map(escapeCsvCell).join(',')).join('\r\n');
-    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
-    downloadBlob(blob, `work-time-tracker-call-log-${new Date().toISOString().slice(0, 10)}.csv`);
-    showToast('Call Log CSV exported successfully!');
+    openExportOptionsModal('csv');
 }
 
 function importJsonBackup(importedData) {
@@ -5053,6 +5212,7 @@ calls.push(callData);
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
         ModalManager.register(levelCurveModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-level-curve-modal' });
+        ModalManager.register(exportOptionsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-export-options-btn' });
         ModalManager.register(csvImportPreviewModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-csv-import-btn' });
         ModalManager.register(achievementsSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-achievements-settings-btn' });
         ModalManager.register(achievementDetailModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-achievement-detail-btn' });
@@ -5846,34 +6006,26 @@ goalMinutesInput.addEventListener('input', () => {
         }
 
         exportDataBtn.addEventListener('click', () => {
-            // Respect feature flags when exporting (e.g. strip notes if feature disabled)
-            const exportCalls = calls.map(c => ({ ...c }));
-            try {
-                const flags = loadFeatureFlags();
-                if (!flags.notes) {
-                    exportCalls.forEach(ec => { delete ec.notes; });
-                }
-                if (!flags.paymentCycles) {
-                    // hide payment cycle details when feature disabled
-                    // we'll still include the keys but mark disabled
-                }
-            } catch (e) {}
-
-            const data = {
-                calls: exportCalls,
-                rates: rates,
-                dailyGoal: dailyGoal,
-                paymentCyclesEnabled: paymentCyclesEnabled,
-                paymentCycles: paymentCycles
-            };
-            const dataStr = JSON.stringify(data, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            downloadBlob(blob, `work-time-tracker-data-${new Date().toISOString().slice(0, 10)}.json`);
-            showToast('Backup JSON exported successfully!');
+            openExportOptionsModal('json');
         });
 
         if (exportCallLogCsvBtn) {
             exportCallLogCsvBtn.addEventListener('click', exportCallLogCsv);
+        }
+        [exportScopeAllInput, exportScopeCurrentInput, exportScopeDateInput].filter(Boolean).forEach((inputEl) => {
+            inputEl.addEventListener('change', refreshExportOptionsModalState);
+        });
+        if (exportSpecificDateInput) {
+            exportSpecificDateInput.addEventListener('input', refreshExportOptionsModalState);
+        }
+        if (confirmExportOptionsBtn) {
+            confirmExportOptionsBtn.addEventListener('click', confirmExportOptions);
+        }
+        if (closeExportOptionsModalBtn) {
+            closeExportOptionsModalBtn.addEventListener('click', closeExportOptionsModal);
+        }
+        if (cancelExportOptionsBtn) {
+            cancelExportOptionsBtn.addEventListener('click', closeExportOptionsModal);
         }
         
         importFile.addEventListener('change', (e) => {
