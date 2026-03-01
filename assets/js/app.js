@@ -2,8 +2,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.48';
+    const APP_VERSION = '1.1.49';
     const CHANGELOG = [
+        { version: '1.1.49', date: '2026-03-01', changes: ['Added: Call Log CSV export from Settings for spreadsheet-friendly backups', 'Improved: CSV import preview now supports status filters and clearer row-level review', 'Improved: CSV import completion now summarizes imported, duplicate, and invalid rows before closing'] },
         { version: '1.1.48', date: '2026-02-28', changes: ['Added: CSV import preview now supports manual column mapping before merging calls', 'Changed: Backup import now merges into existing local data instead of replacing it', 'Improved: Data Management import action now supports safer call-log CSV workflows without erasing prior history'] },
         { version: '1.1.47', date: '2026-02-28', changes: ['Added: Optional RPG progression toggle in Settings', 'Changed: XP is now granted only for calls completed while RPG progression is enabled', 'Changed: Achievements remain available when RPG is off, while XP and multiplier references are hidden'] },
         { version: '1.1.46', date: '2026-02-26', changes: ['Added: New all-time achievement "Bounce Back" for returning after a 3+ day break', 'Added: Goal Mastery achievements (7 and 30 goal-hit days) with progress tracking', 'Changed: Removed Achievements shortcut from Settings (trophy button remains the single entry-point)'] },
@@ -367,6 +368,46 @@ function formatPreviewTime(dateObj) {
   return formatLocalTimeForInput(dateObj.toISOString());
 }
 
+function escapeCsvCell(value) {
+  const raw = value == null ? '' : String(value);
+  if (/[",\r\n]/.test(raw)) {
+    return `"${raw.replace(/"/g, '""')}"`;
+  }
+  return raw;
+}
+
+function formatCallDateTimeForExport(isoString, timeZone) {
+  const date = new Date(isoString);
+  if (!Number.isFinite(date.getTime())) return { date: '', time: '' };
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  const parts = formatter.formatToParts(date);
+  const get = (type) => parts.find((part) => part.type === type)?.value || '';
+  return {
+    date: `${get('year')}-${get('month')}-${get('day')}`,
+    time: `${get('hour')}:${get('minute')}:${get('second')}`
+  };
+}
+
+function downloadBlob(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+}
+
     // Global variables
     const startCallBtn = document.getElementById('start-call-btn');
     const endCallBtn = document.getElementById('end-call-btn');
@@ -414,6 +455,7 @@ function formatPreviewTime(dateObj) {
     const settingsModal = document.getElementById('settings-modal');
     const closeSettingsModalBtn = document.getElementById('close-settings-modal');
     const exportDataBtn = document.getElementById('export-data');
+    const exportCallLogCsvBtn = document.getElementById('export-call-log-csv');
     const importFile = document.getElementById('import-file');
     const csvImportPreviewModal = document.getElementById('csv-import-preview-modal');
     const closeCsvImportPreviewModalBtn = document.getElementById('close-csv-import-preview-modal');
@@ -427,6 +469,11 @@ function formatPreviewTime(dateObj) {
     const csvImportDurationColumnSelect = document.getElementById('csv-import-duration-column');
     const csvImportRateColumnSelect = document.getElementById('csv-import-rate-column');
     const csvImportMappingWarning = document.getElementById('csv-import-mapping-warning');
+    const csvImportPreviewMeta = document.getElementById('csv-import-preview-meta');
+    const csvFilterAllBtn = document.getElementById('csv-filter-all');
+    const csvFilterReadyBtn = document.getElementById('csv-filter-ready');
+    const csvFilterDuplicateBtn = document.getElementById('csv-filter-duplicate');
+    const csvFilterInvalidBtn = document.getElementById('csv-filter-invalid');
     const csvImportRateSelect = document.getElementById('csv-import-rate-select');
     const csvImportOverrideRateToggle = document.getElementById('csv-import-override-rate');
     const csvImportWarning = document.getElementById('csv-import-warning');
@@ -1637,6 +1684,7 @@ if (storedDailyGoal) {
     let callLogRenderState = null;
     let pendingStorageWrites = new Map();
     let storageWriteTimer = null;
+    let pendingCsvImportFilter = 'all';
     const CALL_LOG_RENDER_CHUNK_SIZE = 120;
     const CALL_LOG_RENDER_AHEAD_PX = 180;
     const RPG_CALL_ELIGIBILITY_MIGRATION_KEY = 'wtt_rpg_call_eligibility_migrated_v1';
@@ -2967,6 +3015,31 @@ function buildCsvPreviewRows(parsedRows) {
     });
 }
 
+function setCsvImportFilter(filter) {
+    pendingCsvImportFilter = ['ready', 'duplicate', 'invalid'].includes(filter) ? filter : 'all';
+    updateCsvImportFilterButtons();
+    renderCsvImportPreview();
+}
+
+function updateCsvImportFilterButtons() {
+    const filterButtons = [
+        { button: csvFilterAllBtn, value: 'all' },
+        { button: csvFilterReadyBtn, value: 'ready' },
+        { button: csvFilterDuplicateBtn, value: 'duplicate' },
+        { button: csvFilterInvalidBtn, value: 'invalid' }
+    ];
+    filterButtons.forEach(({ button, value }) => {
+        if (!button) return;
+        const isActive = pendingCsvImportFilter === value;
+        button.classList.toggle('bg-blue-500', isActive);
+        button.classList.toggle('text-white', isActive);
+        button.classList.toggle('bg-gray-200', !isActive);
+        button.classList.toggle('text-gray-700', !isActive);
+        button.classList.toggle('dark:bg-gray-700', !isActive);
+        button.classList.toggle('dark:text-gray-200', !isActive);
+    });
+}
+
 function renderCsvImportPreview() {
     if (!pendingCsvImport || !csvImportSummary || !csvImportPreviewBody) return;
     const columnMap = getCsvImportColumnMapFromUi();
@@ -2992,7 +3065,12 @@ function renderCsvImportPreview() {
         </div>
     `).join('');
 
-    csvImportPreviewBody.innerHTML = previewRows.slice(0, 150).map((row) => {
+    const filteredRows = pendingCsvImportFilter === 'all'
+        ? previewRows
+        : previewRows.filter((row) => row.status === pendingCsvImportFilter);
+    const visibleRows = filteredRows.slice(0, 150);
+
+    csvImportPreviewBody.innerHTML = visibleRows.map((row) => {
         const statusTone = row.status === 'ready'
             ? 'text-emerald-600 dark:text-emerald-400'
             : row.status === 'duplicate'
@@ -3004,6 +3082,7 @@ function renderCsvImportPreview() {
             : '--';
         return `
             <tr class="border-b border-gray-100 dark:border-gray-800 align-top">
+                <td class="py-2 pr-3 font-medium text-gray-500 dark:text-gray-400">#${row.rowNumber}</td>
                 <td class="py-2 pr-3">${formatPreviewDate(row.callDate)}</td>
                 <td class="py-2 pr-3">${formatPreviewTime(row.startTime)}</td>
                 <td class="py-2 pr-3">${formatPreviewTime(row.endTime)}</td>
@@ -3017,6 +3096,26 @@ function renderCsvImportPreview() {
         `;
     }).join('');
 
+    if (!csvImportPreviewBody.innerHTML) {
+        csvImportPreviewBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="py-4 text-center text-gray-500 dark:text-gray-400">
+                    No rows match the current filter.
+                </td>
+            </tr>
+        `;
+    }
+
+    if (csvImportPreviewMeta) {
+        const filterLabelMap = {
+            all: 'all detected rows',
+            ready: 'ready rows',
+            duplicate: 'duplicate rows',
+            invalid: 'invalid rows'
+        };
+        csvImportPreviewMeta.textContent = `Showing ${Math.min(visibleRows.length, filteredRows.length)} of ${filteredRows.length} ${filterLabelMap[pendingCsvImportFilter] || 'rows'}${filteredRows.length > visibleRows.length ? ' (first 150)' : ''}.`;
+    }
+
     if (csvImportMappingWarning) {
         csvImportMappingWarning.style.display = mappingIssues.length > 0 ? '' : 'none';
         csvImportMappingWarning.textContent = mappingIssues.join(' ');
@@ -3029,7 +3128,7 @@ function renderCsvImportPreview() {
             : '';
     }
     if (confirmCsvImportBtn) {
-        confirmCsvImportBtn.disabled = readyCount === 0;
+        confirmCsvImportBtn.disabled = readyCount === 0 || mappingIssues.length > 0;
         confirmCsvImportBtn.textContent = readyCount > 0 ? `Import ${readyCount} Call${readyCount === 1 ? '' : 's'}` : 'Nothing to Import';
     }
 }
@@ -3046,9 +3145,11 @@ function populateCsvImportRateSelect() {
 
 function openCsvImportPreviewModal(csvImportData) {
     pendingCsvImport = { csvData: csvImportData, columnMap: csvImportData.columnMap };
+    pendingCsvImportFilter = 'all';
     populateCsvImportColumnMapping(csvImportData.headers, csvImportData.columnMap);
     populateCsvImportRateSelect();
     if (csvImportOverrideRateToggle) csvImportOverrideRateToggle.checked = false;
+    updateCsvImportFilterButtons();
     renderCsvImportPreview();
     ModalManager.open(csvImportPreviewModal, { focusSelector: '#confirm-csv-import-btn' });
     const scrollEl = csvImportPreviewModal?.querySelector('.settings-modal-scroll');
@@ -3058,8 +3159,12 @@ function openCsvImportPreviewModal(csvImportData) {
 function closeCsvImportPreviewModal() {
     if (csvImportPreviewModal) ModalManager.close(csvImportPreviewModal);
     pendingCsvImport = null;
+    pendingCsvImportFilter = 'all';
     if (csvImportPreviewBody) csvImportPreviewBody.innerHTML = '';
     if (csvImportSummary) csvImportSummary.innerHTML = '';
+    if (csvImportPreviewMeta) {
+        csvImportPreviewMeta.textContent = 'Showing all detected rows.';
+    }
     if (csvImportMappingWarning) {
         csvImportMappingWarning.style.display = 'none';
         csvImportMappingWarning.textContent = '';
@@ -3072,7 +3177,10 @@ function closeCsvImportPreviewModal() {
 
 function confirmCsvImport() {
     if (!pendingCsvImport?.previewRows) return;
-    const readyRows = pendingCsvImport.previewRows.filter((row) => row.status === 'ready' && row.normalizedCall);
+    const previewRows = pendingCsvImport.previewRows;
+    const readyRows = previewRows.filter((row) => row.status === 'ready' && row.normalizedCall);
+    const duplicateCount = previewRows.filter((row) => row.status === 'duplicate').length;
+    const invalidCount = previewRows.filter((row) => row.status === 'invalid').length;
     if (readyRows.length === 0) {
         showAlertModal('No Calls To Import', 'This CSV does not contain any new valid calls to add.');
         return;
@@ -3084,7 +3192,41 @@ function confirmCsvImport() {
     saveCalls();
     closeCsvImportPreviewModal();
     closeSettingsModal();
+    showAlertModal(
+        'CSV Import Complete',
+        `${readyRows.length} call${readyRows.length === 1 ? '' : 's'} imported. ${duplicateCount} duplicate row${duplicateCount === 1 ? '' : 's'} skipped. ${invalidCount} invalid row${invalidCount === 1 ? '' : 's'} not imported.`,
+        { severity: 'info', buttonText: 'Done' }
+    );
     showToast(`${readyRows.length} call${readyRows.length === 1 ? '' : 's'} imported from CSV.`);
+}
+
+function exportCallLogCsv() {
+    const userTimeZone = getUserTimeZone();
+    const csvRows = [
+        ['Call Date', 'Start Time', 'End Time', 'Duration', 'Rate Name', 'Rate Amount', 'Earnings']
+    ];
+
+    readCallsFromStorage()
+        .slice()
+        .sort((a, b) => getCallStartMs(a) - getCallStartMs(b))
+        .forEach((call) => {
+            const start = formatCallDateTimeForExport(call.startTime, userTimeZone);
+            const end = formatCallDateTimeForExport(call.endTime, userTimeZone);
+            csvRows.push([
+                start.date,
+                start.time,
+                end.time,
+                msToHMS(Number(call.duration) || 0),
+                call.rateName || '',
+                Number(call.rate || 0).toFixed(2),
+                Number(getCallEarnings(call) || 0).toFixed(2)
+            ]);
+        });
+
+    const csvText = csvRows.map((row) => row.map(escapeCsvCell).join(',')).join('\r\n');
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+    downloadBlob(blob, `work-time-tracker-call-log-${new Date().toISOString().slice(0, 10)}.csv`);
+    showToast('Call Log CSV exported successfully!');
 }
 
 function importJsonBackup(importedData) {
@@ -4855,6 +4997,15 @@ calls.push(callData);
         .forEach((selectEl) => {
             selectEl.addEventListener('change', renderCsvImportPreview);
         });
+    [
+        { button: csvFilterAllBtn, filter: 'all' },
+        { button: csvFilterReadyBtn, filter: 'ready' },
+        { button: csvFilterDuplicateBtn, filter: 'duplicate' },
+        { button: csvFilterInvalidBtn, filter: 'invalid' }
+    ].forEach(({ button, filter }) => {
+        if (!button) return;
+        button.addEventListener('click', () => setCsvImportFilter(filter));
+    });
 
     if (closeFeedbackModalBtn) {
         closeFeedbackModalBtn.addEventListener('click', closeFeedbackModal);
@@ -5717,16 +5868,13 @@ goalMinutesInput.addEventListener('input', () => {
             };
             const dataStr = JSON.stringify(data, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `work-time-tracker-data-${new Date().toISOString().slice(0, 10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast('Data exported successfully!');
+            downloadBlob(blob, `work-time-tracker-data-${new Date().toISOString().slice(0, 10)}.json`);
+            showToast('Backup JSON exported successfully!');
         });
+
+        if (exportCallLogCsvBtn) {
+            exportCallLogCsvBtn.addEventListener('click', exportCallLogCsv);
+        }
         
         importFile.addEventListener('change', (e) => {
             const file = e.target.files[0];
