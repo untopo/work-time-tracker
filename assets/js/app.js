@@ -2,8 +2,16 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.51';
+    const APP_VERSION = '1.1.59';
     const CHANGELOG = [
+        { version: '1.1.59', date: '2026-03-01', changes: ['Improved: CSV Fields in Export Options now includes an inline help tooltip to explain when exporting fewer or more columns makes sense'] },
+        { version: '1.1.58', date: '2026-03-01', changes: ['Improved: Export Options now includes inline help tooltips to clarify Current Call Log View vs Custom Range without adding persistent UI clutter'] },
+        { version: '1.1.57', date: '2026-03-01', changes: ['Improved: Data Hub now includes inline help tooltips to explain Backups vs Call Log CSV more clearly without adding visual clutter'] },
+        { version: '1.1.56', date: '2026-03-01', changes: ['Fixed: Light-mode modal surfaces are now explicit for onboarding, changelog, confirmation, payment cycle, recovery, and data import/export panels', 'Changed: Removed the RPG level requirements table entry-point to simplify the progression UI', 'Fixed: Restart Onboarding now closes Settings first and reopens the guide cleanly from the main page'] },
+        { version: '1.1.55', date: '2026-03-01', changes: ['Fixed: Achievements modal now has an explicit solid panel background in light mode instead of showing transparent bleed-through', 'Fixed: Achievement detail modal now shares the same explicit light/dark panel surface styling for visual consistency'] },
+        { version: '1.1.54', date: '2026-03-01', changes: ['Fixed: Tailwind class-based dark mode config is now applied after the CDN script for more reliable theme switching', 'Improved: Theme application now also updates `data-theme` and `color-scheme` for cleaner browser-level light/dark behavior'] },
+        { version: '1.1.53', date: '2026-03-01', changes: ['Fixed: Tailwind dark-mode behavior now follows the app theme toggle consistently via class-based dark mode', 'Fixed: Theme icon/state mismatch caused by mixed system-theme and app-theme styling sources', 'Polish: Apply saved theme earlier in the document to reduce mixed-theme flashes on load'] },
+        { version: '1.1.52', date: '2026-03-01', changes: ['Polish: Unified dashboard surface styling for a cleaner and more consistent main layout', 'Polish: Replaced the header separator with a safer HTML entity to avoid encoding artifacts', 'Docs: Refreshed roadmap to separate core stabilization work from later ideas'] },
         { version: '1.1.51', date: '2026-03-01', changes: ['Added: Minimal Data Hub modal that separates backups from Call Log CSV actions', 'Improved: Export flow now supports custom date ranges and selectable CSV fields', 'Improved: CSV import preview now supports row selection and optional rate-required importing'] },
         { version: '1.1.50', date: '2026-03-01', changes: ['Added: Export options modal to choose all history, current view, or a specific date before exporting', 'Added: Ko-fi support button alongside PayPal in the footer', 'Improved: Backup JSON and Call Log CSV exports now share the same safer scoped export flow'] },
         { version: '1.1.49', date: '2026-03-01', changes: ['Added: Call Log CSV export from Settings for spreadsheet-friendly backups', 'Improved: CSV import preview now supports status filters and clearer row-level review', 'Improved: CSV import completion now summarizes imported, duplicate, and invalid rows before closing'] },
@@ -793,11 +801,6 @@ function confirmExportOptions() {
     const rpgLevelProgressBar = document.getElementById('rpg-level-progress-bar');
     const rpgLevelProgressText = document.getElementById('rpg-level-progress-text');
     const rpgLevelNextText = document.getElementById('rpg-level-next-text');
-    const openLevelCurveModalBtn = document.getElementById('open-level-curve-modal');
-    const levelCurveModal = document.getElementById('level-curve-modal');
-    const closeLevelCurveModalBtn = document.getElementById('close-level-curve-modal');
-    const doneLevelCurveModalBtn = document.getElementById('done-level-curve-modal');
-    const levelCurveTableBody = document.getElementById('level-curve-table-body');
     const goalForm = document.getElementById('goal-form');
     const goalAmountInput = document.getElementById('goal-amount');
     const goalMinutesInput = document.getElementById('goal-minutes');
@@ -1219,9 +1222,6 @@ function applyFeatureFlags(flags) {
     const rpgEnabled = !!flags.rpg;
     if (rpgProgressCard) {
         rpgProgressCard.style.display = rpgEnabled ? '' : 'none';
-    }
-    if (!rpgEnabled && levelCurveModal && ModalManager.isOpen(levelCurveModal)) {
-        closeLevelCurveModal();
     }
     if (dailyQuestsSection) {
         dailyQuestsSection.style.display = rpgEnabled ? '' : 'none';
@@ -2155,17 +2155,6 @@ if (storedDailyGoal) {
             remaining,
             progressPct
         };
-    }
-
-    function renderLevelCurveTable() {
-        if (!levelCurveTableBody) return;
-        levelCurveTableBody.innerHTML = LEVEL_CURVE.map((row) => `
-            <tr class="border-b border-gray-100 dark:border-gray-800">
-                <td class="py-2 font-semibold">Lv ${row.level}</td>
-                <td class="py-2">${row.xpToReach.toLocaleString()} XP</td>
-                <td class="py-2">${row.xpToNext.toLocaleString()} XP</td>
-            </tr>
-        `).join('');
     }
 
     function updateRpgProgress() {
@@ -5097,15 +5086,6 @@ calls.push(callData);
         feedbackForm.reset();
     }
 
-    function openLevelCurveModal(triggerEl = null) {
-        renderLevelCurveTable();
-        ModalManager.open(levelCurveModal, { focusSelector: '#done-level-curve-modal', sourceEl: triggerEl });
-    }
-
-    function closeLevelCurveModal() {
-        ModalManager.close(levelCurveModal);
-    }
-
     function createDefaultOnboardingState() {
         return {
             seen: false,
@@ -5251,7 +5231,14 @@ calls.push(callData);
         if (onboardingDontShowToggle) onboardingDontShowToggle.checked = false;
         updateOnboardingProgressUI();
         updateOnboardingCues();
-        openOnboardingModalIfNeeded(true);
+        closePaymentCyclesSettingsModal();
+        closeFloatingControlsSettingsModal();
+        closeDataHubModal();
+        closeSettingsModal();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.setTimeout(() => {
+            openOnboardingModalIfNeeded(true);
+        }, 180);
     }
 
     function openOnboardingModalIfNeeded(force = false) {
@@ -5271,15 +5258,6 @@ calls.push(callData);
     }
     if (achievementsToggleBtn) {
         achievementsToggleBtn.addEventListener('click', (e) => openAchievementsSettingsModal(e.currentTarget));
-    }
-    if (openLevelCurveModalBtn) {
-        openLevelCurveModalBtn.addEventListener('click', (e) => openLevelCurveModal(e.currentTarget));
-    }
-    if (closeLevelCurveModalBtn) {
-        closeLevelCurveModalBtn.addEventListener('click', closeLevelCurveModal);
-    }
-    if (doneLevelCurveModalBtn) {
-        doneLevelCurveModalBtn.addEventListener('click', closeLevelCurveModal);
     }
     if (closeCsvImportPreviewModalBtn) {
         closeCsvImportPreviewModalBtn.addEventListener('click', closeCsvImportPreviewModal);
@@ -5357,7 +5335,6 @@ calls.push(callData);
         ModalManager.register(editCycleModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#cycle-start-date-input' });
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
-        ModalManager.register(levelCurveModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-level-curve-modal' });
         ModalManager.register(exportOptionsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-export-options-btn' });
         ModalManager.register(csvImportPreviewModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-csv-import-btn' });
         ModalManager.register(achievementsSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-achievements-settings-btn' });
@@ -5992,6 +5969,8 @@ callEndTimeInput.addEventListener('input', syncCallDateFromDateTime);
         function applyTheme(theme) {
             const isDark = theme === 'dark';
             document.documentElement.classList.toggle('dark', isDark);
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             if (darkToggleBtn) {
                 darkToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
