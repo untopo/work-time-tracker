@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.50-blue)
+![Version](https://img.shields.io/badge/version-1.1.51-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -67,7 +67,8 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - Optional RPG Mode with XP, levels, and daily quests
 - CSV call log import with preview, dedupe, and rate assignment
 - Call Log CSV export for spreadsheet-friendly records
-- Export scope selector for all history, current filtered view, or a specific date
+- Export scope selector for all history, current filtered view, a specific date, or a custom range
+- Minimal Data Hub that separates backups from Call Log CSV actions
 - Safe backup merge import that preserves existing local data
 - Dark mode / light mode toggle
 - Floating call controls (optional)
@@ -113,8 +114,10 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
   - `All History`
   - `Current Call Log View`
   - `Specific Date`
+-  `Custom Range`
 - `Export Backup JSON` still includes rates, goals, and payment cycle settings.
 - `Export Call Log CSV` exports just the selected call rows in spreadsheet format.
+- CSV export also lets you choose which columns to include.
 
 ## Limitations
 - No multi-device sync (single browser profile only).
@@ -198,8 +201,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management`.
 
 ## Release Notes
-- Current Version: `v1.1.50`
+- Current Version: `v1.1.51`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.51`
+- Added a minimal `Data Hub` to separate backups from Call Log CSV tools
+- Added `Custom Range` and field selection for Call Log CSV exports
+- Added row selection and an optional `require rate` rule in CSV import preview
 
 ### Highlights in `v1.1.50`
 - Added an export options modal for `All History`, `Current View`, or `Specific Date`
