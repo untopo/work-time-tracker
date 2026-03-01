@@ -744,17 +744,13 @@
                 </div>
                 <div class="mb-6 settings-section-card">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Data Management</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                        Open a single clean workspace for backups, CSV call log imports, and scoped exports.
+                    </p>
                     <div class="flex flex-col gap-2">
-                        <button id="export-data" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                            <i class="fas fa-download"></i> Export Backup JSON
+                        <button id="open-data-hub-btn" class="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 transition">
+                            <i class="fas fa-database"></i> Open Data Hub
                         </button>
-                        <button id="export-call-log-csv" class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 transition">
-                            <i class="fas fa-file-csv"></i> Export Call Log CSV
-                        </button>
-                        <label class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition cursor-pointer text-center">
-                            <i class="fas fa-upload"></i> Import Backup / CSV Call Log
-                            <input type="file" id="import-file" accept=".json,.csv,text/csv" class="hidden">
-                        </label>
                         <button id="reset-calls" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">
                             <i class="fas fa-trash-alt"></i> Reset Calls Only
                         </button>
@@ -774,6 +770,62 @@
                         <div id="storage-bar" class="bg-blue-500 h-2 rounded-full" style="width:0%"></div>
                     </div>
                 </div>
+        </div>
+    </div>
+</div>
+
+<div id="data-hub-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal modal-wide p-6 max-w-3xl w-full relative">
+        <button id="close-data-hub-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <i class="fas fa-database text-slate-700 dark:text-slate-200 mr-2"></i>Data Hub
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            Keep backups separate from call log CSV work so importing and exporting stays clear.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="settings-section-card">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fas fa-box-archive text-green-500"></i>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Backups</h3>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                    Full app safety copy with calls, rates, goals, and payment cycle settings.
+                </p>
+                <div class="flex flex-col gap-2">
+                    <button id="data-hub-export-json-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                        <i class="fas fa-download"></i> Export Backup JSON
+                    </button>
+                    <button id="data-hub-import-json-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+                        <i class="fas fa-upload"></i> Import Backup JSON
+                    </button>
+                </div>
+            </div>
+            <div class="settings-section-card">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fas fa-file-csv text-emerald-500"></i>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Call Log CSV</h3>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                    Import company call logs or export only the call rows you need, with flexible date ranges and fields.
+                </p>
+                <div class="flex flex-col gap-2">
+                    <button id="data-hub-export-csv-btn" class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 transition">
+                        <i class="fas fa-file-export"></i> Export Call Log CSV
+                    </button>
+                    <button id="data-hub-import-csv-btn" class="bg-cyan-600 text-white px-4 py-2 rounded hover:bg-cyan-700 transition">
+                        <i class="fas fa-file-import"></i> Import Call Log CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+        <input type="file" id="import-file" accept=".json,.csv,text/csv" class="hidden">
+        <div class="mt-5 flex justify-end">
+            <button id="done-data-hub-btn" type="button" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                Done
+            </button>
         </div>
     </div>
 </div>
@@ -814,6 +866,35 @@
                         <input type="date" id="export-specific-date" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" disabled>
                     </span>
                 </label>
+                <label class="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+                    <input type="radio" name="export-scope" id="export-scope-range" value="range" class="mt-1">
+                    <span class="flex-1">
+                        <span class="font-semibold block">Custom Range</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 block mb-2">Export calls between two dates.</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input type="date" id="export-range-start" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" disabled>
+                            <input type="date" id="export-range-end" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" disabled>
+                        </div>
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div id="export-fields-card" class="settings-section-card mb-4" style="display:none;">
+            <div class="flex items-center justify-between gap-3 mb-3">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">CSV Fields</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Keep only the columns you want in the exported file.</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <label class="flex items-center gap-2"><input type="checkbox" id="export-field-date" checked> <span>Call Date</span></label>
+                <label class="flex items-center gap-2"><input type="checkbox" id="export-field-start" checked> <span>Start Time</span></label>
+                <label class="flex items-center gap-2"><input type="checkbox" id="export-field-end" checked> <span>End Time</span></label>
+                <label class="flex items-center gap-2"><input type="checkbox" id="export-field-duration" checked> <span>Duration</span></label>
+                <label class="flex items-center gap-2"><input type="checkbox" id="export-field-rate-name" checked> <span>Rate Name</span></label>
+                <label class="flex items-center gap-2"><input type="checkbox" id="export-field-rate-amount" checked> <span>Rate Amount</span></label>
+                <label class="flex items-center gap-2"><input type="checkbox" id="export-field-earnings" checked> <span>Earnings</span></label>
             </div>
         </div>
 
@@ -894,6 +975,12 @@
                         </label>
                     </div>
                 </div>
+                <div class="mt-3 flex flex-col gap-2 text-sm">
+                    <label class="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                        <input type="checkbox" id="csv-import-require-rate">
+                        <span>Only import rows that end up with a valid rate</span>
+                    </label>
+                </div>
                 <p id="csv-import-warning" class="text-xs text-amber-600 dark:text-amber-300 mt-3" style="display:none;"></p>
             </div>
             <div class="settings-section-card">
@@ -902,6 +989,8 @@
                         Showing all detected rows.
                     </div>
                     <div class="flex flex-wrap gap-2">
+                        <button id="csv-select-ready" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Select Ready</button>
+                        <button id="csv-clear-selected" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Clear</button>
                         <button id="csv-filter-all" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-blue-500 text-white">All</button>
                         <button id="csv-filter-ready" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Ready</button>
                         <button id="csv-filter-duplicate" type="button" class="px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200">Duplicates</button>
@@ -912,6 +1001,7 @@
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+                                <th class="py-2 pr-3">Pick</th>
                                 <th class="py-2 pr-3">Row</th>
                                 <th class="py-2 pr-3">Date</th>
                                 <th class="py-2 pr-3">Start</th>
