@@ -4,7 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Work Time Tracker</title>
+    <script>
+        try {
+            const savedTheme = localStorage.getItem('theme');
+            const shouldUseDark = savedTheme === 'dark'
+                || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', shouldUseDark);
+        } catch (e) {}
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        };
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +51,7 @@
                 <i class="fas fa-clock text-blue-500 dark:text-blue-400 mr-2 animate-pulse text-lg"></i>
                 Track Your Time
             </span>
-            <span class="mx-2">•</span>
+            <span class="mx-2">&bull;</span>
             <span class="inline-block">
                 <i class="fas fa-chart-line text-purple-500 dark:text-purple-400 mr-2 animate-pulse text-lg"></i>
                 Monitor Earnings
@@ -50,12 +63,12 @@
     </header>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-    <div id="call-controls-card" class="dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full">
+    <div id="call-controls-card" class="dashboard-surface rounded-xl shadow-lg p-6 w-full">
         <div class="flex flex-col items-center mb-4">
-            <div class="bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+            <div class="panel-icon-shell bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
                 <i class="fas fa-phone-volume text-3xl text-primary dark:text-blue-300"></i>
             </div>
-            <h2 class="text-2xl font-poppins font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
+            <h2 class="section-heading text-2xl font-poppins font-semibold mb-2 text-dark dark:text-gray-200">Call Controls</h2>
         </div>
         <div class="w-full mb-6">
             <label for="select-call-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Rate</label>
@@ -84,12 +97,12 @@
         </div>
     </div>
 
-    <div id="rates-card" class="dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full">
+    <div id="rates-card" class="dashboard-surface rounded-xl shadow-lg p-6 w-full">
         <div class="flex flex-col items-center mb-4">
-            <div class="bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+            <div class="panel-icon-shell bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
                 <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
             </div>
-            <h2 class="text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Rates</h2>
+            <h2 class="section-heading text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Rates</h2>
         </div>
         <div id="rates-list" class="mb-4">
         </div>
@@ -118,12 +131,12 @@
         </form>
     </div>
 
-    <div class="dark:bg-gray-800 rounded-xl shadow-lg p-6 w-full">
+    <div class="dashboard-surface rounded-xl shadow-lg p-6 w-full">
         <div class="flex flex-col items-center mb-4">
-            <div class="bg-green-100 dark:bg-green-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+            <div class="panel-icon-shell bg-green-100 dark:bg-green-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
                 <i class="fas fa-bullseye text-3xl text-green-500 dark:text-green-300"></i>
             </div>
-            <h2 class="text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Daily Goal</h2>
+            <h2 class="section-heading text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Daily Goal</h2>
         </div>
         <form id="goal-form" class="flex flex-col gap-3">
             <div class="flex items-center">
@@ -174,7 +187,7 @@
     </div>
 </div>
 
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg mb-8 p-6">
+<div class="dashboard-surface rounded-xl shadow-lg mb-8 p-6">
     <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
         <i class="fas fa-chart-bar text-purple-500 mr-2"></i>Call Statistics
     </h2>
@@ -201,19 +214,19 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-        <div class="bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
+        <div class="metric-surface bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
             <h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2 text-xl">
                 <i class="fas fa-clock mr-2"></i>Average Call Duration
             </h3>
             <p id="avg-duration" class="text-2xl font-bold text-blue-800 dark:text-blue-200">00:00:00</p>
         </div>
-        <div class="bg-green-50 dark:bg-green-900/40 p-4 rounded-lg">
+        <div class="metric-surface bg-green-50 dark:bg-green-900/40 p-4 rounded-lg">
             <h3 class="text-green-700 dark:text-green-300 font-medium mb-2 text-xl">
                 <i class="fas fa-bullseye mr-2"></i>Goal Progress
             </h3>
             <p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
         </div>
-        <div class="bg-yellow-50 dark:bg-yellow-900/40 p-4 rounded-lg">
+        <div class="metric-surface bg-yellow-50 dark:bg-yellow-900/40 p-4 rounded-lg">
             <h3 class="text-yellow-700 dark:text-yellow-300 font-medium mb-2 text-xl">
                 <i class="fas fa-chart-line mr-2"></i>Today's Earnings
             </h3>
@@ -230,10 +243,6 @@
                 </h3>
                 <p id="rpg-level-summary" class="text-sm text-indigo-700 dark:text-indigo-200">Level 1 - 0 XP total</p>
             </div>
-            <button id="open-level-curve-modal" type="button"
-                    class="px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                View Level Table
-            </button>
         </div>
         <div class="w-full bg-indigo-200 dark:bg-indigo-900 rounded-full h-3 overflow-hidden">
             <div id="rpg-level-progress-bar" class="bg-indigo-500 h-3 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
@@ -248,7 +257,7 @@
     </div>
 
     <div id="monthly-earnings-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <div class="metric-surface bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
                 <i class="fas fa-calendar-alt mr-2"></i>First Half of Month
             </h3>
@@ -256,7 +265,7 @@
                 <span id="first-half-earnings">$0.00</span>
             </p>
         </div>
-        <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <div class="metric-surface bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
                 <i class="fas fa-calendar-alt mr-2"></i>Second Half of Month
             </h3>
@@ -264,7 +273,7 @@
                 <span id="second-half-earnings">$0.00</span>
             </p>
         </div>
-        <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <div class="metric-surface bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
                 <i class="fas fa-dollar-sign mr-2"></i>Total in Current Month
             </h3>
@@ -274,7 +283,7 @@
         </div>
     </div>
     <div id="payment-cycle-earnings-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6 hidden">
-        <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <div class="metric-surface bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
                 <i class="fas fa-calendar-alt mr-2"></i>Current Cycle
             </h3>
@@ -288,7 +297,7 @@
                 <span class="font-semibold">Days Left:</span> <span id="days-until-end">--</span>
             </p>
         </div>
-        <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <div class="metric-surface bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
                 <i class="fas fa-dollar-sign mr-2"></i>Cycle Earnings
             </h3>
@@ -296,7 +305,7 @@
                 <span id="cycle-earnings">$0.00</span>
             </p>
         </div>
-        <div class="bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
+        <div class="metric-surface bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
                 <i class="fas fa-money-check-alt mr-2"></i>Next Pay Date
             </h3>
@@ -310,40 +319,7 @@
     </div>
 </div>
 
-<div id="level-curve-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
-    <div class="modal p-6 max-w-2xl w-full relative">
-        <button id="close-level-curve-modal" type="button"
-                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-            <i class="fas fa-times"></i>
-        </button>
-        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            <i class="fas fa-medal text-indigo-500 mr-2"></i>Level Requirements
-        </h2>
-        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            XP is earned from completed calls. This table shows how much XP is needed per level.
-        </p>
-        <div class="max-h-[60vh] overflow-y-auto pr-1">
-            <table class="w-full text-sm">
-                <thead>
-                <tr class="text-left border-b border-gray-200 dark:border-gray-700">
-                    <th class="py-2">Level</th>
-                    <th class="py-2">XP to Reach</th>
-                    <th class="py-2">XP to Next</th>
-                </tr>
-                </thead>
-                <tbody id="level-curve-table-body"></tbody>
-            </table>
-        </div>
-        <div class="mt-5 flex justify-end">
-            <button id="done-level-curve-modal" type="button"
-                    class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition">
-                Done
-            </button>
-        </div>
-    </div>
-</div>
-
-<div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+<div class="dashboard-surface rounded-xl shadow-lg overflow-hidden mb-8">
     <div class="p-6">
         <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
             <i class="fas fa-list text-blue-500 mr-2"></i>Call Log
@@ -779,8 +755,9 @@
         <button id="close-data-hub-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
             <i class="fas fa-times"></i>
         </button>
-        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            <i class="fas fa-database text-slate-700 dark:text-slate-200 mr-2"></i>Data Hub
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+            <span><i class="fas fa-database text-slate-700 dark:text-slate-200 mr-2"></i>Data Hub</span>
+            <span class="hint-tooltip" data-tooltip="Use Data Hub to manage your local app data safely. Backups are for full app restore or transfer. Call Log CSV is for spreadsheet-style call rows only.">?</span>
         </h2>
         <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
             Keep backups separate from call log CSV work so importing and exporting stays clear.
@@ -790,6 +767,7 @@
                 <div class="flex items-center gap-2 mb-2">
                     <i class="fas fa-box-archive text-green-500"></i>
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Backups</h3>
+                    <span class="hint-tooltip" data-tooltip="Backups use the app JSON format. Export one to keep a full copy of your local data, or import one to merge that backup into your current data without replacing everything.">?</span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
                     Full app safety copy with calls, rates, goals, and payment cycle settings.
@@ -807,6 +785,7 @@
                 <div class="flex items-center gap-2 mb-2">
                     <i class="fas fa-file-csv text-emerald-500"></i>
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Call Log CSV</h3>
+                    <span class="hint-tooltip" data-tooltip="Call Log CSV is for importing or exporting call rows in spreadsheet format. It supports preview, column mapping, dedupe, optional rate handling, date ranges, and selected fields.">?</span>
                 </div>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
                     Import company call logs or export only the call rows you need, with flexible date ranges and fields.
@@ -835,8 +814,9 @@
         <button id="close-export-options-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
             <i class="fas fa-times"></i>
         </button>
-        <h2 id="export-options-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            <i class="fas fa-download text-green-500 mr-2"></i>Export Options
+        <h2 id="export-options-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
+            <span><i class="fas fa-download text-green-500 mr-2"></i>Export Options</span>
+            <span class="hint-tooltip" data-tooltip="Choose how much call history to export. Current Call Log View follows the filter already shown on screen. Custom Range lets you choose your own start and end dates manually.">?</span>
         </h2>
         <p id="export-options-description" class="text-sm text-gray-600 dark:text-gray-300 mb-4">
             Choose how much call history you want to export.
@@ -854,7 +834,7 @@
                 <label class="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
                     <input type="radio" name="export-scope" id="export-scope-current" value="current" class="mt-1">
                     <span>
-                        <span class="font-semibold block">Current Call Log View</span>
+                        <span class="font-semibold block flex items-center gap-2">Current Call Log View <span class="hint-tooltip" data-tooltip="This exports the same calls currently visible in your Call Log based on the active Today, Week, Month, or selected date filter.">?</span></span>
                         <span id="export-current-view-label" class="text-xs text-gray-500 dark:text-gray-400">Use the same calls shown by your current Today / Week / Month / Date filter.</span>
                     </span>
                 </label>
@@ -869,7 +849,7 @@
                 <label class="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
                     <input type="radio" name="export-scope" id="export-scope-range" value="range" class="mt-1">
                     <span class="flex-1">
-                        <span class="font-semibold block">Custom Range</span>
+                        <span class="font-semibold block flex items-center gap-2">Custom Range <span class="hint-tooltip" data-tooltip="Use this when you want an exact export window like a pay period, a custom week, or any start/end date that does not match the current Call Log filter.">?</span></span>
                         <span class="text-xs text-gray-500 dark:text-gray-400 block mb-2">Export calls between two dates.</span>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <input type="date" id="export-range-start" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500" disabled>
@@ -883,7 +863,7 @@
         <div id="export-fields-card" class="settings-section-card mb-4" style="display:none;">
             <div class="flex items-center justify-between gap-3 mb-3">
                 <div>
-                    <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">CSV Fields</h3>
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">CSV Fields <span class="hint-tooltip" data-tooltip="Use fewer fields when you want a simpler spreadsheet or need to share only specific data. Keep more fields when you want a fuller payroll or audit export.">?</span></h3>
                     <p class="text-xs text-gray-500 dark:text-gray-400">Keep only the columns you want in the exported file.</p>
                 </div>
             </div>
