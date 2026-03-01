@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.51-blue)
+![Version](https://img.shields.io/badge/version-1.1.59-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -45,14 +45,20 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 5. Export backups or import JSON / CSV call logs from Settings.
 
 ## Screenshots
-### Dashboard
-![Dashboard Screenshot](assets/images/dashboard.png)
+### Dashboard Top
+![Dashboard Top Screenshot](assets/images/dashboard-top.png)
 
-### Call Log
-![Call Log Screenshot](assets/images/call-log.png)
+### Dashboard Stats
+![Dashboard Stats Screenshot](assets/images/dashboard-stats.png)
 
-### What's New
-![Changelog Screenshot](assets/images/changelog.png)
+### Data Hub
+![Data Hub Screenshot](assets/images/data-hub.png)
+
+### CSV Import Preview
+![CSV Import Preview Screenshot](assets/images/csv-import-preview.png)
+
+### Achievements
+![Achievements Screenshot](assets/images/achievements.png)
 
 ## Core Features
 - Live call timer with real-time earnings
@@ -90,9 +96,10 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - Use export backups if your tracking data is important.
 
 ## Backup & Restore
-- Export Backup JSON: `Settings -> Data Management -> Export Backup JSON`
-- Export Call Log CSV: `Settings -> Data Management -> Export Call Log CSV`
-- Import backup / CSV: `Settings -> Data Management -> Import Backup / CSV Call Log`
+- Open Data Hub: `Settings -> Data Management -> Open Data Hub`
+- Export Backup JSON: `Settings -> Data Management -> Open Data Hub -> Export Backup JSON`
+- Export Call Log CSV: `Settings -> Data Management -> Open Data Hub -> Export Call Log CSV`
+- Import backup / CSV: `Settings -> Data Management -> Open Data Hub -> Import Backup JSON / Import Call Log CSV`
 - Reset calls only: `Settings -> Data Management -> Reset Calls Only`
 - Full reset: `Settings -> Data Management -> Reset All Data`
 
@@ -114,7 +121,7 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
   - `All History`
   - `Current Call Log View`
   - `Specific Date`
--  `Custom Range`
+  - `Custom Range`
 - `Export Backup JSON` still includes rates, goals, and payment cycle settings.
 - `Export Call Log CSV` exports just the selected call rows in spreadsheet format.
 - CSV export also lets you choose which columns to include.
@@ -198,11 +205,43 @@ Before importing, the app shows a preview so you can:
 Most likely browser/site storage was cleared or a private session ended.
 
 ### How do I back up safely?
-Export JSON regularly from `Settings -> Data Management`.
+Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.51`
+- Current Version: `v1.1.59`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.59`
+- Added an inline `?` help tooltip in `CSV Fields` to explain when exporting fewer or more columns makes sense
+
+### Highlights in `v1.1.58`
+- Added inline `?` help tooltips in Export Options to clarify `Current Call Log View` vs `Custom Range`
+
+### Highlights in `v1.1.57`
+- Added inline `?` help tooltips in Data Hub to explain Backups vs Call Log CSV without adding more visual noise
+
+### Highlights in `v1.1.56`
+- Fixed additional light-mode modal bleed-through in onboarding, changelog, confirmation, payment cycle, recovery, and data import/export panels
+- Removed the RPG `Level Table` entry-point to simplify the progression UI
+- Restarting onboarding now closes Settings first and reopens the guide cleanly from the main page
+
+### Highlights in `v1.1.55`
+- Fixed transparent bleed-through in the Achievements modal on light mode
+- Unified Achievement detail modal panel styling across light and dark modes
+
+### Highlights in `v1.1.54`
+- Fixed Tailwind theme config ordering for more reliable light/dark switching
+- Improved theme application with explicit `data-theme` and `color-scheme` updates
+
+### Highlights in `v1.1.53`
+- Fixed mixed light/dark styling caused by inconsistent theme sources
+- Fixed theme toggle icon/state mismatches
+- Applied saved theme earlier during page load for cleaner visual transitions
+
+### Highlights in `v1.1.52`
+- Polished dashboard card styling for a more consistent main layout
+- Refreshed roadmap into `Core`, `Later`, and `Maybe Never`
+- Kept focus on stabilization and data integrity before larger feature growth
 
 ### Highlights in `v1.1.51`
 - Added a minimal `Data Hub` to separate backups from Call Log CSV tools
