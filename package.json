@@ -1,0 +1,29 @@
+{
+  "name": "work-time-tracker",
+  "version": "1.1.63",
+  "description": "Privacy-first time tracker for interpreters and freelancers.",
+  "main": "index.js",
+  "scripts": {
+    "dev:web": "serve . -l 1420 --no-clipboard",
+    "build:web": "node scripts/prepare-dist.mjs",
+    "tauri:dev": "node scripts/tauri-win.mjs dev",
+    "tauri:build": "node scripts/tauri-win.mjs build"
+  },
+  "keywords": [
+    "tracker",
+    "time-tracker",
+    "interpreters",
+    "freelancers",
+    "tauri"
+  ],
+  "author": "Topo",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@tauri-apps/api": "^2.8.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.0",
+    "serve": "^14.2.5"
+  }
+}
