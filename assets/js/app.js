@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.64';
+    const APP_VERSION = '1.1.65';
     const CHANGELOG = [
+        { version: '1.1.65', date: '2026-03-02', changes: ['Mobile: Tightened dashboard and modal spacing so the app fits better on phone-sized screens without feeling cramped', 'Mobile: Improved call log scrolling and modal viewport behavior on small devices to reduce clipped content and awkward overflow', 'Mobile: Floating call controls now prefer compact mode on narrow screens instead of collapsing straight to icon-only so core actions stay easier to use'] },
         { version: '1.1.64', date: '2026-03-02', changes: ['Desktop: Added native Tauri file dialogs for JSON backup import/export and CSV import/export while keeping the browser download/upload fallback unchanged', 'Desktop: Added native text-file read/write commands so the installed app can work with user-chosen files more like a real desktop tool'] },
         { version: '1.1.63', date: '2026-03-02', changes: ['Desktop: Removed the enforced Tauri minimum window size so the installed app can be resized down more like the responsive browser version'] },
         { version: '1.1.62', date: '2026-03-02', changes: ['Added: Tauri desktop builds now mirror app storage to a native JSON snapshot file through Rust commands', 'Prep: Browser users keep their existing localStorage data unchanged while the desktop app gains a native persistence bridge behind the same frontend storage API'] },
@@ -1809,7 +1810,7 @@ function expandFloatingDockWithAnimation() {
 
 function resolveDockMode(modePreference) {
     if (modePreference !== 'auto') return modePreference;
-    if (window.innerWidth <= 700) return 'icon';
+    if (window.innerWidth <= 700) return 'compact';
     if (window.innerWidth <= 1150) return 'compact';
     return 'full';
 }

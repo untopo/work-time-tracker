@@ -31,7 +31,11 @@
         }
 
         .amount-input { width: 100px; }
-        .scrollable-table { max-height: 400px; overflow-y: auto; }
+        .scrollable-table {
+            max-height: 400px;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .fade-in-out { animation: fadeInOut 2.5s forwards; }
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translateY(-10px);}
@@ -277,6 +281,9 @@
         .call-log-table th {
             font-weight: 600;
             background-color: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 2;
         }
 
         html.dark .call-log-table th {
@@ -442,6 +449,16 @@
 
             .rate-edit-form .flex {
                 flex-direction: column;
+            }
+
+            .scrollable-table {
+                max-height: min(52vh, 460px);
+                border-radius: 0.85rem;
+                overscroll-behavior: contain;
+            }
+
+            .call-log-table {
+                min-width: 760px;
             }
         }
 
@@ -1127,10 +1144,17 @@
             #floating-call-controls {
                 right: 0.75rem;
                 bottom: 0.75rem;
+                max-width: min(92vw, 340px);
+            }
+
+            #floating-call-dock {
+                width: min(92vw, 340px);
+                max-width: min(92vw, 340px);
             }
 
             #floating-call-dock button {
-                min-width: 150px;
+                width: 100%;
+                min-width: 0;
                 font-size: 0.95rem;
                 padding: 0.65rem 0.9rem;
             }
@@ -1425,6 +1449,153 @@
                 right: 0.75rem;
                 width: auto;
                 bottom: 0.75rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+            }
+
+            .container.mx-auto.max-w-7xl {
+                padding-left: 0.85rem;
+                padding-right: 0.85rem;
+                padding-top: 1rem;
+            }
+
+            header.mb-12 {
+                margin-bottom: 2rem;
+            }
+
+            header h1 {
+                font-size: clamp(2.1rem, 8vw, 2.9rem);
+                line-height: 1.08;
+            }
+
+            header p.text-lg.md\:text-xl {
+                font-size: 0.98rem;
+                line-height: 1.45;
+            }
+
+            .dashboard-surface {
+                border-radius: 1rem;
+            }
+
+            #call-controls-card,
+            #rates-card,
+            .dashboard-surface.rounded-xl {
+                padding: 1rem;
+            }
+
+            .section-heading {
+                font-size: 1.3rem;
+            }
+
+            #start-call-btn,
+            #end-call-btn,
+            #add-call-btn,
+            #show-rate-add,
+            #open-data-hub-btn,
+            #reset-calls,
+            #reset-all,
+            #data-hub-export-json-btn,
+            #data-hub-import-json-btn,
+            #data-hub-export-csv-btn,
+            #data-hub-import-csv-btn,
+            #confirm-export-options-btn,
+            #cancel-export-options-btn,
+            #confirm-csv-import-btn,
+            #cancel-csv-import-preview-btn {
+                min-height: 48px;
+            }
+
+            #live-call-timer {
+                font-size: 2rem;
+            }
+
+            #live-call-earnings {
+                font-size: 1.5rem;
+            }
+
+            .settings-section-card {
+                padding: 0.8rem;
+                border-radius: 0.85rem;
+            }
+
+            .settings-modal-scroll {
+                max-height: calc(100dvh - 8.5rem);
+                padding-right: 0;
+            }
+
+            .modal-actions {
+                padding-top: 0.75rem;
+            }
+
+            #settings-modal,
+            #floating-controls-settings-modal,
+            #achievements-settings-modal,
+            #data-hub-modal,
+            #export-options-modal,
+            #csv-import-preview-modal,
+            #payment-cycles-settings-modal,
+            #call-modal,
+            #edit-cycle-modal,
+            #feedback-modal,
+            #confirmation-modal,
+            #changelog-modal,
+            #achievement-detail-modal,
+            #onboarding-modal,
+            #recovery-modal {
+                align-items: flex-end;
+                padding: 0.5rem;
+            }
+
+            #settings-modal .modal,
+            #floating-controls-settings-modal .modal,
+            #achievements-settings-modal .modal,
+            #data-hub-modal .modal,
+            #export-options-modal .modal,
+            #csv-import-preview-modal .modal,
+            #payment-cycles-settings-modal .modal,
+            #call-modal .modal,
+            #edit-cycle-modal .modal,
+            #feedback-modal .modal,
+            #confirmation-modal .modal,
+            #changelog-modal .modal,
+            #achievement-detail-modal .modal,
+            #onboarding-modal .modal,
+            #recovery-modal .modal {
+                width: min(100%, calc(100vw - 1rem)) !important;
+                max-width: none !important;
+                max-height: calc(100dvh - 0.75rem) !important;
+                margin: 0;
+                border-radius: 1rem;
+            }
+
+            #settings-modal .modal,
+            #floating-controls-settings-modal .modal,
+            #achievements-settings-modal .modal,
+            #data-hub-modal .modal,
+            #csv-import-preview-modal .modal,
+            #payment-cycles-settings-modal .modal,
+            #changelog-modal .modal {
+                min-height: min(70dvh, 760px);
+            }
+
+            .preview-states-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #floating-call-controls {
+                bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+            }
+
+            #floating-call-controls[style*="left"] {
+                left: 0.75rem !important;
+            }
+
+            #floating-call-controls[style*="right"] {
+                right: 0.75rem !important;
             }
         }
 
