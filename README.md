@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.63-blue)
+![Version](https://img.shields.io/badge/version-1.1.64-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -137,6 +137,7 @@ Current setup:
 - Tauri config lives in `src-tauri/`
 - App persistence now goes through a shared storage adapter so the same frontend can target browser storage today and Tauri-native storage later
 - Tauri builds now mirror app storage to a native JSON snapshot file in the app data directory while keeping the browser flow unchanged
+- Tauri desktop builds now use native open/save dialogs for JSON backup import/export and CSV import/export while the browser version keeps its current download/upload flow
 
 Important:
 - Existing GitHub Pages users keep using the same browser `localStorage` keys as before, so this refactor does not wipe or rename their saved data
@@ -250,8 +251,12 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.63`
+- Current Version: `v1.1.64`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.64`
+- Added native Tauri file dialogs for JSON backup and CSV import/export in the desktop app
+- Kept the browser workflow intact so GitHub Pages users still use the current file input and download behavior
 
 ### Highlights in `v1.1.63`
 - Removed the enforced minimum Tauri window size so the desktop app can be resized down more like the responsive browser version

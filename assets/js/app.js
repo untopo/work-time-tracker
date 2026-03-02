@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.63';
+    const APP_VERSION = '1.1.64';
     const CHANGELOG = [
+        { version: '1.1.64', date: '2026-03-02', changes: ['Desktop: Added native Tauri file dialogs for JSON backup import/export and CSV import/export while keeping the browser download/upload fallback unchanged', 'Desktop: Added native text-file read/write commands so the installed app can work with user-chosen files more like a real desktop tool'] },
         { version: '1.1.63', date: '2026-03-02', changes: ['Desktop: Removed the enforced Tauri minimum window size so the installed app can be resized down more like the responsive browser version'] },
         { version: '1.1.62', date: '2026-03-02', changes: ['Added: Tauri desktop builds now mirror app storage to a native JSON snapshot file through Rust commands', 'Prep: Browser users keep their existing localStorage data unchanged while the desktop app gains a native persistence bridge behind the same frontend storage API'] },
         { version: '1.1.61', date: '2026-03-02', changes: ['Refactor: Introduced a shared storage adapter so the app no longer depends directly on browser localStorage calls', 'Prep: Preserved existing browser data keys to keep GitHub Pages users compatible while preparing the codebase for future Tauri-native persistence'] },
@@ -424,6 +425,38 @@ function downloadBlob(blob, fileName) {
   URL.revokeObjectURL(url);
 }
 
+const tauriInvoke = window.WTTEnv?.isTauri && typeof window.__TAURI_INTERNALS__?.invoke === 'function'
+    ? window.__TAURI_INTERNALS__.invoke
+    : null;
+
+function getFileNameFromPath(filePath) {
+    const parts = String(filePath || '').split(/[\\/]/);
+    return parts[parts.length - 1] || '';
+}
+
+async function pickNativeImportFile(mode) {
+    if (!tauriInvoke) return null;
+    const path = await tauriInvoke('pick_import_file', { fileKind: mode === 'csv' ? 'csv' : 'json' });
+    if (!path) return null;
+    const text = await tauriInvoke('read_text_file', { path });
+    return {
+        path,
+        name: getFileNameFromPath(path),
+        text: String(text || '')
+    };
+}
+
+async function saveTextWithNativeDialog(fileKind, suggestedFileName, text) {
+    if (!tauriInvoke) return false;
+    const path = await tauriInvoke('pick_export_file', {
+        defaultName: suggestedFileName,
+        fileKind: fileKind === 'csv' ? 'csv' : 'json'
+    });
+    if (!path) return false;
+    await tauriInvoke('write_text_file', { path, content: text });
+    return true;
+}
+
 function getCurrentExportScope() {
     if (exportScopeRangeInput?.checked) return 'range';
     if (exportScopeDateInput?.checked) return 'date';
@@ -487,7 +520,7 @@ function getSelectedExportCsvFields() {
     ];
 }
 
-function exportCallsAsCsv(exportCalls) {
+async function exportCallsAsCsv(exportCalls) {
     const userTimeZone = getUserTimeZone();
     const selectedFields = getSelectedExportCsvFields().filter((field) => field.enabled);
     const csvRows = [
@@ -513,11 +546,16 @@ function exportCallsAsCsv(exportCalls) {
         });
 
     const csvText = csvRows.map((row) => row.map(escapeCsvCell).join(',')).join('\r\n');
+    const fileName = `work-time-tracker-call-log-${getExportFileDateSuffix()}.csv`;
+    if (tauriInvoke) {
+        return saveTextWithNativeDialog('csv', fileName, csvText);
+    }
     const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
-    downloadBlob(blob, `work-time-tracker-call-log-${getExportFileDateSuffix()}.csv`);
+    downloadBlob(blob, fileName);
+    return true;
 }
 
-function exportCallsAsJson(exportCalls) {
+async function exportCallsAsJson(exportCalls) {
     const exportCallsClone = exportCalls.map((call) => ({ ...call }));
     try {
         const flags = loadFeatureFlags();
@@ -533,8 +571,14 @@ function exportCallsAsJson(exportCalls) {
         paymentCyclesEnabled: paymentCyclesEnabled,
         paymentCycles: paymentCycles
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    downloadBlob(blob, `work-time-tracker-data-${getExportFileDateSuffix()}.json`);
+    const jsonText = JSON.stringify(data, null, 2);
+    const fileName = `work-time-tracker-data-${getExportFileDateSuffix()}.json`;
+    if (tauriInvoke) {
+        return saveTextWithNativeDialog('json', fileName, jsonText);
+    }
+    const blob = new Blob([jsonText], { type: 'application/json' });
+    downloadBlob(blob, fileName);
+    return true;
 }
 
 function openDataHubModal() {
@@ -545,8 +589,51 @@ function closeDataHubModal() {
     if (dataHubModal) ModalManager.close(dataHubModal);
 }
 
-function openImportFilePicker(mode) {
+async function processImportedText(fileName, text) {
+    const lowerName = String(fileName || '').toLowerCase();
+    try {
+        const expectedMode = pendingImportMode;
+        const isCsv = lowerName.endsWith('.csv');
+        const isJson = lowerName.endsWith('.json');
+        if (expectedMode === 'csv' && !isCsv) {
+            throw new Error('Please choose a CSV call log file.');
+        }
+        if (expectedMode === 'json' && !isJson) {
+            throw new Error('Please choose a JSON backup file.');
+        }
+        if (isCsv) {
+            const csvImportData = parseCsvImportFile(text);
+            closeDataHubModal();
+            openCsvImportPreviewModal(csvImportData);
+        } else {
+            closeDataHubModal();
+            const importedData = JSON.parse(String(text || ''));
+            importJsonBackup(importedData);
+        }
+    } catch (error) {
+        showAlertModal('Import Failed', String(error?.message || '').includes('choose a')
+            ? String(error.message)
+            : lowerName.endsWith('.csv')
+                ? 'Failed to parse the CSV file. Please check the file format and required columns.'
+                : 'Failed to import file. Please ensure it is a valid JSON file from this app.');
+        console.error('Import error:', error);
+    } finally {
+        pendingImportMode = null;
+        if (importFile) importFile.value = '';
+    }
+}
+
+async function openImportFilePicker(mode) {
     pendingImportMode = mode;
+    if (tauriInvoke) {
+        const nativeFile = await pickNativeImportFile(mode);
+        if (!nativeFile) {
+            pendingImportMode = null;
+            return;
+        }
+        await processImportedText(nativeFile.name, nativeFile.text);
+        return;
+    }
     if (!importFile) return;
     if (mode === 'json') {
         importFile.accept = '.json,application/json';
@@ -630,7 +717,7 @@ function closeExportOptionsModal() {
     }
 }
 
-function confirmExportOptions() {
+async function confirmExportOptions() {
     const scope = getCurrentExportScope();
     const specificDateValue = exportSpecificDateInput?.value || '';
     const exportCalls = getCallsForExportScope(scope, specificDateValue);
@@ -678,10 +765,12 @@ function confirmExportOptions() {
     }
 
     if (pendingExportFormat === 'csv') {
-        exportCallsAsCsv(exportCalls);
+        const didExport = await exportCallsAsCsv(exportCalls);
+        if (!didExport) return;
         showToast(`Call Log CSV exported with ${exportCalls.length} call${exportCalls.length === 1 ? '' : 's'}.`);
     } else {
-        exportCallsAsJson(exportCalls);
+        const didExport = await exportCallsAsJson(exportCalls);
+        if (!didExport) return;
         showToast(`Backup JSON exported with ${exportCalls.length} call${exportCalls.length === 1 ? '' : 's'} in scope.`);
     }
 
@@ -6281,44 +6370,14 @@ goalMinutesInput.addEventListener('input', () => {
             activeCallDiscardBtn.addEventListener('click', () => discardRecoveredActiveCall());
         }
 
-        importFile.addEventListener('change', (e) => {
+        importFile.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = async (event) => {
                 const text = String(event.target.result || '');
-                const lowerName = String(file.name || '').toLowerCase();
-                try {
-                    const expectedMode = pendingImportMode;
-                    const isCsv = lowerName.endsWith('.csv');
-                    const isJson = lowerName.endsWith('.json');
-                    if (expectedMode === 'csv' && !isCsv) {
-                        throw new Error('Please choose a CSV call log file.');
-                    }
-                    if (expectedMode === 'json' && !isJson) {
-                        throw new Error('Please choose a JSON backup file.');
-                    }
-                    if (isCsv) {
-                        const csvImportData = parseCsvImportFile(text);
-                        closeDataHubModal();
-                        openCsvImportPreviewModal(csvImportData);
-                    } else {
-                        closeDataHubModal();
-                        const importedData = JSON.parse(text);
-                        importJsonBackup(importedData);
-                    }
-                } catch (error) {
-                    showAlertModal('Import Failed', String(error?.message || '').includes('choose a')
-                        ? String(error.message)
-                        : lowerName.endsWith('.csv')
-                            ? 'Failed to parse the CSV file. Please check the file format and required columns.'
-                            : 'Failed to import file. Please ensure it is a valid JSON file from this app.');
-                    console.error('Import error:', error);
-                } finally {
-                    pendingImportMode = null;
-                    importFile.value = '';
-                }
+                await processImportedText(file.name || '', text);
             };
             reader.readAsText(file);
         });

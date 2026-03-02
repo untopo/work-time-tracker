@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 
+use rfd::FileDialog;
 use serde_json::{Map, Value};
 use tauri::{AppHandle, Manager};
 
@@ -44,12 +45,62 @@ fn save_storage_snapshot(app: AppHandle, snapshot: Map<String, Value>) -> Result
     .map_err(|error| format!("Failed to write storage snapshot: {error}"))
 }
 
+#[tauri::command]
+fn pick_import_file(file_kind: String) -> Option<String> {
+  let dialog = match file_kind.as_str() {
+    "csv" => FileDialog::new().add_filter("CSV files", &["csv"]),
+    _ => FileDialog::new().add_filter("JSON files", &["json"]),
+  };
+
+  dialog
+    .pick_file()
+    .map(|path| path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn pick_export_file(default_name: String, file_kind: String) -> Option<String> {
+  let dialog = match file_kind.as_str() {
+    "csv" => FileDialog::new()
+      .add_filter("CSV files", &["csv"])
+      .set_file_name(&default_name),
+    _ => FileDialog::new()
+      .add_filter("JSON files", &["json"])
+      .set_file_name(&default_name),
+  };
+
+  dialog
+    .save_file()
+    .map(|path| path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn read_text_file(path: String) -> Result<String, String> {
+  fs::read_to_string(path)
+    .map_err(|error| format!("Failed to read file: {error}"))
+}
+
+#[tauri::command]
+fn write_text_file(path: String, content: String) -> Result<(), String> {
+  let path_buf = PathBuf::from(path);
+  if let Some(parent_dir) = path_buf.parent() {
+    fs::create_dir_all(parent_dir)
+      .map_err(|error| format!("Failed to create export directory: {error}"))?;
+  }
+
+  fs::write(path_buf, content)
+    .map_err(|error| format!("Failed to write file: {error}"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![
       load_storage_snapshot,
-      save_storage_snapshot
+      save_storage_snapshot,
+      pick_import_file,
+      pick_export_file,
+      read_text_file,
+      write_text_file
     ])
     .setup(|app| {
       if cfg!(debug_assertions) {
