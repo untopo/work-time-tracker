@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.67';
+    const APP_VERSION = '1.1.68';
     const CHANGELOG = [
+        { version: '1.1.68', date: '2026-03-02', changes: ['Fixed: Floating call controls now stay available whenever the original Call Controls section is genuinely out of view on mobile, regardless of scroll direction', 'Release: Added Android APK output to the public release assets so the mobile preview can be downloaded directly'] },
         { version: '1.1.67', date: '2026-03-02', changes: ['Mobile: Added a dedicated card-based Call Log layout for narrow screens so call history no longer depends on a squeezed desktop table', 'Prep: Added Capacitor + Android project scaffolding in the same repository so the app can keep one shared codebase for web, desktop, and future mobile builds', 'Improved: Mobile form inputs and action sizing were tightened further to reduce keyboard zoom and touch friction on phones'] },
         { version: '1.1.66', date: '2026-03-02', changes: ['Improved: Quick notes now opens with a larger default textarea size for first-time use on mobile and web', 'Preserved: Notes textarea height persistence still remembers the last manual resize the user left in place'] },
         { version: '1.1.65', date: '2026-03-02', changes: ['Mobile: Tightened dashboard and modal spacing so the app fits better on phone-sized screens without feeling cramped', 'Mobile: Improved call log scrolling and modal viewport behavior on small devices to reduce clipped content and awkward overflow', 'Mobile: Floating call controls now prefer compact mode on narrow screens instead of collapsing straight to icon-only so core actions stay easier to use'] },
@@ -1897,6 +1898,27 @@ function avoidFocusedInputOverlap(flags) {
     return flags.floatingControlsSide;
 }
 
+function isElementVisibleInViewport(el, minVisibleRatio = 0.2) {
+    if (!el || !(el instanceof HTMLElement)) return false;
+    const rect = el.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+
+    if (rect.width <= 0 || rect.height <= 0) return false;
+    if (rect.bottom <= 0 || rect.top >= viewportHeight) return false;
+    if (rect.right <= 0 || rect.left >= viewportWidth) return false;
+
+    const visibleHeight = Math.min(rect.bottom, viewportHeight) - Math.max(rect.top, 0);
+    const visibleWidth = Math.min(rect.right, viewportWidth) - Math.max(rect.left, 0);
+    if (visibleHeight <= 0 || visibleWidth <= 0) return false;
+
+    const visibleArea = visibleHeight * visibleWidth;
+    const totalArea = rect.width * rect.height;
+    if (totalArea <= 0) return false;
+
+    return (visibleArea / totalArea) >= minVisibleRatio;
+}
+
 function updateFloatingCallControls(flags = featureFlags) {
     if (!floatingCallControls || !floatingStartCallBtn || !floatingEndCallBtn || !callControlsCard) return;
 
@@ -1915,14 +1937,11 @@ function updateFloatingCallControls(flags = featureFlags) {
         return;
     }
 
-    const cardRect = callControlsCard.getBoundingClientRect();
-    const passedControls = cardRect.bottom < 0;
-
     const activeMainButton = endCallBtn.style.display === 'none' ? startCallBtn : endCallBtn;
-    const btnRect = activeMainButton.getBoundingClientRect();
-    const mainButtonVisible = btnRect.bottom > 0 && btnRect.top < window.innerHeight;
+    const controlsCardVisible = isElementVisibleInViewport(callControlsCard, 0.18);
+    const mainButtonVisible = isElementVisibleInViewport(activeMainButton, 0.45);
 
-    if (!passedControls || mainButtonVisible) {
+    if (controlsCardVisible || mainButtonVisible) {
         floatingCallControls.style.display = 'none';
         floatingCallControls.classList.remove('dock-visible');
         floatingCallControls.classList.remove('show-icon-details');

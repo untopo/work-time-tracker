@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.67-blue)
+![Version](https://img.shields.io/badge/version-1.1.68-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -279,13 +279,12 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.67`
+- Current Version: `v1.1.68`
 - Full history is available in-app via the footer version button (`What's New` modal).
 
-### Highlights in `v1.1.67`
-- Added a mobile card-based `Call Log` layout for narrow screens
-- Added Capacitor + Android scaffolding inside the same repository for shared web/desktop/mobile development
-- Improved mobile input sizing and touch behavior to reduce friction on phones
+### Highlights in `v1.1.68`
+- Fixed floating call controls on mobile so they now depend on real `Call Controls` visibility instead of disappearing incorrectly when scrolling upward
+- Added Android APK output as a release asset so the mobile preview can be downloaded directly from GitHub Releases
 
 ### Highlights in `v1.1.63`
 - Removed the enforced minimum Tauri window size so the desktop app can be resized down more like the responsive browser version
