@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.65-blue)
+![Version](https://img.shields.io/badge/version-1.1.66-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -251,13 +251,12 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.65`
+- Current Version: `v1.1.66`
 - Full history is available in-app via the footer version button (`What's New` modal).
 
-### Highlights in `v1.1.65`
-- Improved phone-sized layout density across the dashboard, core modals, and settings-heavy flows
-- Improved small-screen call log scrolling and modal viewport handling to reduce clipped or awkward overflow
-- Changed floating call controls so narrow screens now default to a more usable compact dock instead of icon-only mode
+### Highlights in `v1.1.66`
+- Increased the default first-open size of the live `Quick notes` textarea so it starts more usable on phones and desktop
+- Kept manual textarea resizing persistence unchanged, so the app still remembers the last size left by the user
 
 ### Highlights in `v1.1.63`
 - Removed the enforced minimum Tauri window size so the desktop app can be resized down more like the responsive browser version
