@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.66';
+    const APP_VERSION = '1.1.67';
     const CHANGELOG = [
+        { version: '1.1.67', date: '2026-03-02', changes: ['Mobile: Added a dedicated card-based Call Log layout for narrow screens so call history no longer depends on a squeezed desktop table', 'Prep: Added Capacitor + Android project scaffolding in the same repository so the app can keep one shared codebase for web, desktop, and future mobile builds', 'Improved: Mobile form inputs and action sizing were tightened further to reduce keyboard zoom and touch friction on phones'] },
         { version: '1.1.66', date: '2026-03-02', changes: ['Improved: Quick notes now opens with a larger default textarea size for first-time use on mobile and web', 'Preserved: Notes textarea height persistence still remembers the last manual resize the user left in place'] },
         { version: '1.1.65', date: '2026-03-02', changes: ['Mobile: Tightened dashboard and modal spacing so the app fits better on phone-sized screens without feeling cramped', 'Mobile: Improved call log scrolling and modal viewport behavior on small devices to reduce clipped content and awkward overflow', 'Mobile: Floating call controls now prefer compact mode on narrow screens instead of collapsing straight to icon-only so core actions stay easier to use'] },
         { version: '1.1.64', date: '2026-03-02', changes: ['Desktop: Added native Tauri file dialogs for JSON backup import/export and CSV import/export while keeping the browser download/upload fallback unchanged', 'Desktop: Added native text-file read/write commands so the installed app can work with user-chosen files more like a real desktop tool'] },
@@ -801,6 +802,7 @@ async function confirmExportOptions() {
     const liveCallEarningsDisplay = document.getElementById('live-call-earnings');
     const liveCallNotesInput = document.getElementById('live-call-notes');
     const callLogTableBody = document.getElementById('call-log');
+    const callLogMobileList = document.getElementById('call-log-mobile');
     const callLogScrollContainer = callLogTableBody?.closest('.scrollable-table') || null;
     const totalMinutesDisplay = document.getElementById('total-minutes');
     const totalEarningsDisplay = document.getElementById('total-earnings');
@@ -4073,6 +4075,49 @@ function migrateLegacyRpgCallEligibility() {
         `;
         return row;
     }
+
+    function buildCallMobileCard(call, userTz, rateNameSet) {
+        const startDate = new Date(call.startTime);
+        const endDate = new Date(call.endTime);
+        const callDate = startDate.toLocaleDateString(undefined, { timeZone: userTz, year: 'numeric', month: 'short', day: 'numeric' });
+        const startTime = startDate.toLocaleTimeString(undefined, { timeZone: userTz, hour: '2-digit', minute: '2-digit' });
+        const endTime = endDate.toLocaleTimeString(undefined, { timeZone: userTz, hour: '2-digit', minute: '2-digit' });
+        const durationStr = formatTime(call.duration);
+        const earningsStr = formatEarnings(call.earned);
+
+        let safeRateName = escapeHTML(call.rateName || '');
+        if (!safeRateName) {
+            safeRateName = '<span class="text-gray-400 italic">Rate removed</span>';
+        } else if (!rateNameSet.has(call.rateName)) {
+            safeRateName = `<span title="Original rate: ${escapeHTML(call.rateName)}" class="text-yellow-600 dark:text-yellow-400 line-through">${escapeHTML(call.rateName)}</span>`;
+        }
+
+        const safeId = escapeHTML(call.id || '');
+        const card = document.createElement('article');
+        card.className = 'call-log-mobile-card';
+        card.innerHTML = `
+            <div class="call-log-mobile-top">
+                <div>
+                    <div class="call-log-mobile-date">${escapeHTML(callDate)}</div>
+                    <div class="call-log-mobile-time">${escapeHTML(startTime)} - ${escapeHTML(endTime)}</div>
+                </div>
+                <div class="call-log-mobile-earnings">${earningsStr}</div>
+            </div>
+            <div class="call-log-mobile-meta">
+                <span><strong>Duration:</strong> ${durationStr}</span>
+                <span><strong>Rate:</strong> ${safeRateName}</span>
+            </div>
+            <div class="call-log-mobile-actions">
+                <button class="edit-call-btn" data-call-id="${safeId}">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        `;
+        return card;
+    }
     
     // Storage functions
     function saveRates() {
@@ -4496,11 +4541,15 @@ function saveCalls() {
         const renderTicket = callLogRenderTicket;
         const filteredCalls = getFilteredCallsCached();
         callLogTableBody.innerHTML = '';
+        if (callLogMobileList) callLogMobileList.innerHTML = '';
         if (callLogScrollContainer) callLogScrollContainer.scrollTop = 0;
 
         if (filteredCalls.length === 0) {
             callLogRenderState = null;
             callLogTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls recorded.</td></tr>`;
+            if (callLogMobileList) {
+                callLogMobileList.innerHTML = `<div class="call-log-mobile-empty text-center py-4 text-gray-500 dark:text-gray-400">No calls recorded.</div>`;
+            }
             totalMinutesDisplay.textContent = '0 min';
             totalEarningsDisplay.textContent = '$0.00';
             return;
@@ -4532,11 +4581,17 @@ function saveCalls() {
         if (state.ticket !== callLogRenderTicket) return;
 
         const fragment = document.createDocumentFragment();
+        const mobileFragment = document.createDocumentFragment();
         const end = Math.min(state.cursor + CALL_LOG_RENDER_CHUNK_SIZE, state.rows.length);
         for (let i = state.cursor; i < end; i += 1) {
-            fragment.appendChild(buildCallRow(state.rows[i], state.userTz, state.rateNameSet));
+            const call = state.rows[i];
+            fragment.appendChild(buildCallRow(call, state.userTz, state.rateNameSet));
+            if (callLogMobileList) {
+                mobileFragment.appendChild(buildCallMobileCard(call, state.userTz, state.rateNameSet));
+            }
         }
         callLogTableBody.appendChild(fragment);
+        if (callLogMobileList) callLogMobileList.appendChild(mobileFragment);
         state.cursor = end;
         state.done = state.cursor >= state.rows.length;
 
@@ -5722,23 +5777,29 @@ calls.push(callData);
             });
         }
 
+        const handleCallLogActionClick = (e) => {
+            const editBtn = e.target.closest('.edit-call-btn');
+            if (editBtn) {
+                const callId = String(editBtn.dataset.callId || '');
+                if (callId) {
+                    editCall(callId);
+                    openCallModal(editBtn);
+                }
+                return;
+            }
+            const deleteBtn = e.target.closest('.delete-call-btn');
+            if (deleteBtn) {
+                const callId = String(deleteBtn.dataset.callId || '');
+                if (callId) deleteCall(callId);
+            }
+        };
+
         if (callLogTableBody) {
-            callLogTableBody.addEventListener('click', (e) => {
-                const editBtn = e.target.closest('.edit-call-btn');
-                if (editBtn) {
-                    const callId = String(editBtn.dataset.callId || '');
-                    if (callId) {
-                        editCall(callId);
-                        openCallModal(editBtn);
-                    }
-                    return;
-                }
-                const deleteBtn = e.target.closest('.delete-call-btn');
-                if (deleteBtn) {
-                    const callId = String(deleteBtn.dataset.callId || '');
-                    if (callId) deleteCall(callId);
-                }
-            });
+            callLogTableBody.addEventListener('click', handleCallLogActionClick);
+        }
+
+        if (callLogMobileList) {
+            callLogMobileList.addEventListener('click', handleCallLogActionClick);
         }
 
         if (callLogScrollContainer) {

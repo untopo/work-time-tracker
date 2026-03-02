@@ -1,6 +1,13 @@
 node_modules/
 dist/
 src-tauri/target/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/captures/
+*.keystore
+*.jks
 
 # OS / editor noise
 .DS_Store

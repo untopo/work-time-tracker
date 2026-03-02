@@ -380,6 +380,125 @@
             opacity: 1 !important;
             visibility: visible !important;
         }
+
+        .call-log-mobile-list {
+            display: none;
+        }
+
+        .call-log-mobile-card {
+            border: 1px solid #dbeafe;
+            border-radius: 0.95rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+            padding: 0.95rem;
+            margin-bottom: 0.85rem;
+        }
+
+        html.dark .call-log-mobile-card {
+            border-color: #334155;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            box-shadow: 0 16px 34px rgba(2, 6, 23, 0.34);
+        }
+
+        .call-log-mobile-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .call-log-mobile-date {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        html.dark .call-log-mobile-date {
+            color: #f8fafc;
+        }
+
+        .call-log-mobile-time {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.15rem;
+        }
+
+        html.dark .call-log-mobile-time {
+            color: #94a3b8;
+        }
+
+        .call-log-mobile-earnings {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #14532d;
+            white-space: nowrap;
+        }
+
+        html.dark .call-log-mobile-earnings {
+            color: #86efac;
+        }
+
+        .call-log-mobile-meta {
+            display: grid;
+            gap: 0.35rem;
+            font-size: 0.84rem;
+            color: #334155;
+            margin-bottom: 0.85rem;
+        }
+
+        html.dark .call-log-mobile-meta {
+            color: #cbd5e1;
+        }
+
+        .call-log-mobile-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.65rem;
+        }
+
+        .call-log-mobile-actions button {
+            min-height: 44px;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            border: 1px solid #dbeafe;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        html.dark .call-log-mobile-actions button {
+            border-color: #334155;
+            background: #0f172a;
+            color: #dbeafe;
+        }
+
+        .call-log-mobile-actions .delete-call-btn {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626 !important;
+        }
+
+        html.dark .call-log-mobile-actions .delete-call-btn {
+            background: rgba(127, 29, 29, 0.2);
+            border-color: rgba(127, 29, 29, 0.5);
+            color: #fca5a5 !important;
+        }
+
+        .call-log-mobile-empty {
+            border: 1px dashed #cbd5e1;
+            border-radius: 0.95rem;
+            background: #f8fafc;
+            padding: 1.2rem;
+        }
+
+        html.dark .call-log-mobile-empty {
+            border-color: #334155;
+            background: #0f172a;
+        }
         /* notes column should wrap and not overflow */
         .call-log-table td:nth-child(5) {
             white-space: pre-wrap;
@@ -1457,6 +1576,12 @@
                 padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
             }
 
+            input,
+            select,
+            textarea {
+                font-size: 16px !important;
+            }
+
             .container.mx-auto.max-w-7xl {
                 padding-left: 0.85rem;
                 padding-right: 0.85rem;
@@ -1584,6 +1709,14 @@
 
             .preview-states-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .scrollable-table {
+                display: none;
+            }
+
+            .call-log-mobile-list {
+                display: block;
             }
 
             #floating-call-controls {
