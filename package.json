@@ -1,13 +1,16 @@
 {
   "name": "work-time-tracker",
-  "version": "1.1.66",
+  "version": "1.1.67",
   "description": "Privacy-first time tracker for interpreters and freelancers.",
   "main": "index.js",
   "scripts": {
     "dev:web": "serve . -l 1420 --no-clipboard",
     "build:web": "node scripts/prepare-dist.mjs",
     "tauri:dev": "node scripts/tauri-win.mjs dev",
-    "tauri:build": "node scripts/tauri-win.mjs build"
+    "tauri:build": "node scripts/tauri-win.mjs build",
+    "cap:sync": "npm run build:web && npx cap sync",
+    "cap:sync:android": "npm run build:web && npx cap sync android",
+    "cap:open:android": "npx cap open android"
   },
   "keywords": [
     "tracker",
@@ -23,6 +26,9 @@
     "@tauri-apps/api": "^2.8.0"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
     "@tauri-apps/cli": "^2.10.0",
     "serve": "^14.2.5"
   }

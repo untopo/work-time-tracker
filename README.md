@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.66-blue)
+![Version](https://img.shields.io/badge/version-1.1.67-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -19,6 +19,7 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - [Security Notes](#security-notes)
 - [Backup \& Restore](#backup--restore)
 - [Desktop App Prep](#desktop-app-prep)
+- [Mobile App Prep](#mobile-app-prep)
 - [Limitations](#limitations)
 - [Browser Support](#browser-support)
 - [Quick Start](#quick-start)
@@ -82,6 +83,7 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - Floating call controls (optional)
 - Optional volatile notes (never persisted/exported)
 - Built-in changelog modal
+- Mobile-friendly Call Log cards on narrow screens
 
 ## Data & Privacy
 - 100% local `localStorage`
@@ -163,6 +165,30 @@ Notes:
 - `npm run tauri:dev` launches the desktop app against the same frontend
 - `npm run tauri:build` creates the installable desktop bundle once the Windows build tools are installed
 
+## Mobile App Prep
+The same repository now also includes the first Capacitor-based mobile scaffold so web, desktop, and future mobile builds can keep sharing one frontend.
+
+Current setup:
+- Capacitor config lives in `capacitor.config.json`
+- Android scaffold lives in `android/`
+- Mobile sync still uses the generated `dist/` frontend output
+- Narrow screens now use a dedicated card-based `Call Log` layout instead of relying only on the desktop table view
+- Phone-sized inputs now use safer sizing to reduce browser zoom and touch friction
+
+Project commands:
+```bash
+npm run build:web
+npm run cap:sync
+npm run cap:sync:android
+npm run cap:open:android
+```
+
+Notes:
+- `npm run cap:sync` refreshes Capacitor platforms from the current shared web app
+- `npm run cap:sync:android` updates the Android project specifically
+- `npm run cap:open:android` opens the Android project in Android Studio once your Android toolchain is installed
+- The Android scaffold is a prep step, not a published mobile release yet
+
 ## Limitations
 - No multi-device sync (single browser profile only).
 - No cloud recovery.
@@ -196,9 +222,11 @@ No build step required.
 /
 |-- index.html
 |-- package.json
+|-- capacitor.config.json
 |-- scripts/
 |   |-- prepare-dist.mjs
 |   `-- tauri-win.mjs
+|-- android/
 |-- src-tauri/
 |-- assets/
 |   |-- css/
@@ -251,12 +279,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.66`
+- Current Version: `v1.1.67`
 - Full history is available in-app via the footer version button (`What's New` modal).
 
-### Highlights in `v1.1.66`
-- Increased the default first-open size of the live `Quick notes` textarea so it starts more usable on phones and desktop
-- Kept manual textarea resizing persistence unchanged, so the app still remembers the last size left by the user
+### Highlights in `v1.1.67`
+- Added a mobile card-based `Call Log` layout for narrow screens
+- Added Capacitor + Android scaffolding inside the same repository for shared web/desktop/mobile development
+- Improved mobile input sizing and touch behavior to reduce friction on phones
 
 ### Highlights in `v1.1.63`
 - Removed the enforced minimum Tauri window size so the desktop app can be resized down more like the responsive browser version
