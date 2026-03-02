@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.65';
+    const APP_VERSION = '1.1.66';
     const CHANGELOG = [
+        { version: '1.1.66', date: '2026-03-02', changes: ['Improved: Quick notes now opens with a larger default textarea size for first-time use on mobile and web', 'Preserved: Notes textarea height persistence still remembers the last manual resize the user left in place'] },
         { version: '1.1.65', date: '2026-03-02', changes: ['Mobile: Tightened dashboard and modal spacing so the app fits better on phone-sized screens without feeling cramped', 'Mobile: Improved call log scrolling and modal viewport behavior on small devices to reduce clipped content and awkward overflow', 'Mobile: Floating call controls now prefer compact mode on narrow screens instead of collapsing straight to icon-only so core actions stay easier to use'] },
         { version: '1.1.64', date: '2026-03-02', changes: ['Desktop: Added native Tauri file dialogs for JSON backup import/export and CSV import/export while keeping the browser download/upload fallback unchanged', 'Desktop: Added native text-file read/write commands so the installed app can work with user-chosen files more like a real desktop tool'] },
         { version: '1.1.63', date: '2026-03-02', changes: ['Desktop: Removed the enforced Tauri minimum window size so the installed app can be resized down more like the responsive browser version'] },
@@ -5821,6 +5822,8 @@ calls.push(callData);
             const savedHeightLive = appStorage.getItem('liveCallNotesHeight');
             if (savedHeightLive && liveCallNotesInput) {
                 liveCallNotesInput.style.height = savedHeightLive;
+            } else if (liveCallNotesInput) {
+                liveCallNotesInput.style.height = '112px';
             }
 
             const savedHeightModal = appStorage.getItem('callNotesHeight');
