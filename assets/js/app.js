@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.70';
+    const APP_VERSION = '1.1.71';
     const CHANGELOG = [
+        { version: '1.1.71', date: '2026-03-02', changes: ['Mobile: Prevented horizontal sideways scrolling by hardening the app shell and card containers against viewport overflow', 'Mobile: Floating Call Controls now stay expanded instead of auto-collapsing into the mini button, and only hide when the original Call Controls are actually visible', 'Android: Increased adaptive launcher foreground size so the installed app icon fills the launcher tile more like a normal native app icon'] },
         { version: '1.1.70', date: '2026-03-02', changes: ['Desktop: Added an optional always-on-top overlay window that keeps Start/End Call, live timer, and earnings visible outside the main app window', 'Desktop: Overlay actions now route back to the main Tauri window so you can start calls, end calls, add calls, or reopen the app from the mini control window', 'Prep: Added a dedicated overlay frontend and native desktop window bridge so multi-window desktop features ship without breaking the static web target'] },
         { version: '1.1.69', date: '2026-03-02', changes: ['Mobile: Added a more app-like native shell layout with safe-area-aware spacing, sticky action toolbar, and viewport-height syncing for Capacitor/standalone installs', 'Android: Unified launcher icons with the shared desktop icon source so the mobile install now uses the same product mark', 'Android: Added activity resize handling for the on-screen keyboard so forms behave more like a native app instead of a cramped browser view'] },
         { version: '1.1.68', date: '2026-03-02', changes: ['Fixed: Floating call controls now stay available whenever the original Call Controls section is genuinely out of view on mobile, regardless of scroll direction', 'Release: Added Android APK output to the public release assets so the mobile preview can be downloaded directly'] },
@@ -1963,8 +1964,12 @@ function isDockActuallyVisible() {
     return !!floatingCallControls && floatingCallControls.style.display === 'flex';
 }
 
+function shouldAutoCollapseFloatingDock() {
+    return window.innerWidth > 768 && !isStandaloneDisplayMode();
+}
+
 function setFloatingDockCollapsed(collapsed) {
-    floatingDockCollapsed = !!collapsed;
+    floatingDockCollapsed = shouldAutoCollapseFloatingDock() ? !!collapsed : false;
     if (!floatingCallControls) return;
     floatingCallControls.classList.toggle('dock-collapsed', floatingDockCollapsed);
     if (floatingDockMiniBtn) floatingDockMiniBtn.style.display = floatingDockCollapsed ? 'inline-flex' : 'none';
@@ -1973,6 +1978,10 @@ function setFloatingDockCollapsed(collapsed) {
 function scheduleFloatingDockAutoHide() {
     if (floatingDockIdleTimer) clearTimeout(floatingDockIdleTimer);
     if (!isDockActuallyVisible()) return;
+    if (!shouldAutoCollapseFloatingDock()) {
+        setFloatingDockCollapsed(false);
+        return;
+    }
     floatingDockIdleTimer = setTimeout(() => {
         if (isDockActuallyVisible() && !isAnyAppModalOpen()) {
             setFloatingDockCollapsed(true);
@@ -1988,7 +1997,9 @@ function expandFloatingDockWithAnimation() {
     floatingDockExpandTimer = setTimeout(() => {
         floatingCallControls.classList.remove('dock-animate-expand');
     }, 220);
-    scheduleFloatingDockAutoHide();
+    if (shouldAutoCollapseFloatingDock()) {
+        scheduleFloatingDockAutoHide();
+    }
 }
 
 function resolveDockMode(modePreference) {
@@ -2176,6 +2187,10 @@ function updateFloatingCallControls(flags = featureFlags) {
     const firstShow = floatingCallControls.style.display !== 'flex';
     floatingCallControls.style.display = 'flex';
     floatingCallControls.classList.add('dock-visible');
+    if (!shouldAutoCollapseFloatingDock()) {
+        setFloatingDockCollapsed(false);
+        return;
+    }
     if (firstShow) {
         setFloatingDockCollapsed(false);
         scheduleFloatingDockAutoHide();

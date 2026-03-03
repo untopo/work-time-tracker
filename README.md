@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.70-blue)
+![Version](https://img.shields.io/badge/version-1.1.71-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -281,8 +281,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.70`
+- Current Version: `v1.1.71`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.71`
+- Prevented horizontal sideways scrolling on mobile by hardening the app shell and main card containers against viewport overflow
+- Changed mobile Floating Call Controls so they stay expanded and only hide when the original Call Controls section is actually visible
+- Increased the Android adaptive launcher icon foreground size so the installed app icon fills the launcher tile better
 
 ### Highlights in `v1.1.70`
 - Added an optional desktop always-on-top overlay window that keeps Start/End Call, live timer, and earnings visible outside the main app window

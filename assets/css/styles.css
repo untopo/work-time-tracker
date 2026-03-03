@@ -30,6 +30,30 @@
             border: 2px solid #3b82f6;
         }
 
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            position: relative;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        img,
+        svg,
+        canvas,
+        video,
+        iframe {
+            max-width: 100%;
+        }
+
         .amount-input { width: 100px; }
         .scrollable-table {
             max-height: 400px;
@@ -1584,6 +1608,7 @@
         html.native-app-shell .container.mx-auto.max-w-7xl {
             width: 100%;
             max-width: none;
+            overflow-x: clip;
             padding-top: max(1rem, env(safe-area-inset-top));
             padding-right: max(1rem, env(safe-area-inset-right));
             padding-bottom: max(1.25rem, calc(env(safe-area-inset-bottom) + 1.25rem));
@@ -1603,6 +1628,7 @@
             box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
+            max-width: calc(100vw - max(1rem, env(safe-area-inset-left)) - max(1rem, env(safe-area-inset-right)));
         }
 
         html.dark.native-app-shell #app-toolbar {
@@ -1655,6 +1681,20 @@
                 padding-left: 0.85rem;
                 padding-right: 0.85rem;
                 padding-top: 1rem;
+                overflow-x: clip;
+            }
+
+            footer .container,
+            .dashboard-surface,
+            .settings-section-card,
+            .call-log-mobile-card,
+            #call-controls-card,
+            #rates-card,
+            #monthly-earnings-cards,
+            #payment-cycle-earnings-cards {
+                max-width: 100%;
+                min-width: 0;
+                overflow-x: clip;
             }
 
             html.native-app-shell header h1 {
@@ -1794,6 +1834,10 @@
 
             .call-log-mobile-list {
                 display: block;
+            }
+
+            .call-log-mobile-actions {
+                grid-template-columns: 1fr;
             }
 
             #floating-call-controls {
