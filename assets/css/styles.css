@@ -1649,8 +1649,50 @@
             overflow-x: clip;
         }
 
-        .kofi-mobile-link {
-            display: none;
+        .support-actions-row {
+            align-items: center;
+        }
+
+        .support-action-form {
+            margin: 0;
+        }
+
+        .support-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 164px;
+            height: 44px;
+            padding: 0 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1;
+            text-decoration: none;
+            transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
+        }
+
+        .support-action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .support-action-btn-paypal {
+            background: #facc15;
+            color: #111827;
+        }
+
+        .support-action-btn-paypal:hover {
+            background: #fde047;
+        }
+
+        .support-action-btn-kofi {
+            background: linear-gradient(180deg, #2ea2f4 0%, #238fe4 100%);
+            color: #ffffff;
+        }
+
+        .support-action-btn-kofi:hover {
+            background: linear-gradient(180deg, #41aff7 0%, #2698ef 100%);
         }
 
         @media (max-width: 640px) {
@@ -1706,20 +1748,10 @@
             }
 
             footer .grid > div,
-            footer .container,
-            .kofi-widget-shell,
-            .kofi-widget-shell * {
+            footer .container {
                 max-width: 100%;
                 min-width: 0;
                 box-sizing: border-box;
-            }
-
-            .kofi-widget-shell {
-                display: none;
-            }
-
-            .kofi-mobile-link {
-                display: inline-flex;
             }
 
             #local-time {
@@ -1727,6 +1759,13 @@
                 line-height: 1.4;
                 overflow-wrap: anywhere;
                 word-break: break-word;
+            }
+
+            .support-action-btn {
+                min-width: 148px;
+                height: 42px;
+                padding: 0 1rem;
+                font-size: 0.9rem;
             }
 
             html.native-app-shell header h1 {
