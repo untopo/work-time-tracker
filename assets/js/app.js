@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.84';
+    const APP_VERSION = '1.1.85';
     const CHANGELOG = [
+        { version: '1.1.85', date: '2026-03-03', changes: ['Fixed: Desktop update banner now opens the GitHub release page in the system browser instead of doing nothing inside the Tauri webview', 'Desktop: Installed builds now use a native Rust command for release links while mobile keeps using the normal browser open flow'] },
         { version: '1.1.84', date: '2026-03-03', changes: ['UI: Donate and Support me on Ko-fi now use identical fixed dimensions and stay side by side in the footer instead of wrapping unevenly on narrow screens', 'Polish: Both support buttons were slightly reduced in size so the footer support row feels tighter and more balanced on mobile and desktop'] },
         { version: '1.1.83', date: '2026-03-03', changes: ['Added: Desktop and mobile builds now check a lightweight public update manifest and show a non-blocking banner when a newer release is available', 'Added: Update notices can be dismissed per-version so users are reminded only when a truly newer release exists', 'Prep: The shared static build now includes version.json so GitHub Pages, Tauri, and Capacitor can read the same release metadata source'] },
         { version: '1.1.82', date: '2026-03-03', changes: ['Mobile: Active calls now auto-restore cleanly after background/minimized states, while explicit close attempts still keep the recovery decision flow available on next launch', 'Mobile: Removed shell overflow rules that were making vertical dashboard scrolling feel sticky or dependent on sideways gestures first', 'Stability: Active-call close intent is now tracked separately from normal background persistence so recovery behavior is less intrusive'] },
@@ -555,9 +556,17 @@ function hideUpdateAvailableBanner() {
     updateAvailableBanner.classList.add('hidden');
 }
 
-function openExternalUrl(url) {
+async function openExternalUrl(url) {
     const safeUrl = String(url || '').trim();
     if (!/^https?:\/\//i.test(safeUrl)) return;
+    if (isDesktopTauri && tauriInvoke) {
+        try {
+            await tauriInvoke('open_external_url', { url: safeUrl });
+            return;
+        } catch (error) {
+            console.error('Failed to open external URL via Tauri:', error);
+        }
+    }
     window.open(safeUrl, '_blank', 'noopener,noreferrer');
 }
 
@@ -6873,9 +6882,9 @@ goalMinutesInput.addEventListener('input', () => {
         
         document.getElementById('app-version').textContent = APP_VERSION;
         if (openUpdateReleaseBtn) {
-            openUpdateReleaseBtn.addEventListener('click', () => {
+            openUpdateReleaseBtn.addEventListener('click', async () => {
                 const targetUrl = pendingUpdateManifest?.releaseUrl || pendingUpdateManifest?.downloadsUrl;
-                if (targetUrl) openExternalUrl(targetUrl);
+                if (targetUrl) await openExternalUrl(targetUrl);
             });
         }
         if (laterUpdateBannerBtn) {

@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
+use std::process::Command;
 
 use rfd::FileDialog;
 use serde_json::{Map, Value};
@@ -104,6 +105,41 @@ fn show_main_window(app: AppHandle) -> Result<(), String> {
     .map_err(|error| format!("Failed to focus main window: {error}"))
 }
 
+#[tauri::command]
+fn open_external_url(url: String) -> Result<(), String> {
+  let trimmed = url.trim();
+  if !(trimmed.starts_with("http://") || trimmed.starts_with("https://")) {
+    return Err("Only http/https URLs are allowed".to_string());
+  }
+
+  #[cfg(target_os = "windows")]
+  {
+    Command::new("cmd")
+      .args(["/C", "start", "", trimmed])
+      .spawn()
+      .map_err(|error| format!("Failed to open external URL: {error}"))?;
+    return Ok(());
+  }
+
+  #[cfg(target_os = "macos")]
+  {
+    Command::new("open")
+      .arg(trimmed)
+      .spawn()
+      .map_err(|error| format!("Failed to open external URL: {error}"))?;
+    return Ok(());
+  }
+
+  #[cfg(all(unix, not(target_os = "macos")))]
+  {
+    Command::new("xdg-open")
+      .arg(trimmed)
+      .spawn()
+      .map_err(|error| format!("Failed to open external URL: {error}"))?;
+    return Ok(());
+  }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -114,7 +150,8 @@ pub fn run() {
       pick_export_file,
       read_text_file,
       write_text_file,
-      show_main_window
+      show_main_window,
+      open_external_url
     ])
     .setup(|app| {
       if let Some(main_window) = app.handle().get_webview_window("main") {
