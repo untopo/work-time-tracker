@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.83';
+    const APP_VERSION = '1.1.84';
     const CHANGELOG = [
+        { version: '1.1.84', date: '2026-03-03', changes: ['UI: Donate and Support me on Ko-fi now use identical fixed dimensions and stay side by side in the footer instead of wrapping unevenly on narrow screens', 'Polish: Both support buttons were slightly reduced in size so the footer support row feels tighter and more balanced on mobile and desktop'] },
         { version: '1.1.83', date: '2026-03-03', changes: ['Added: Desktop and mobile builds now check a lightweight public update manifest and show a non-blocking banner when a newer release is available', 'Added: Update notices can be dismissed per-version so users are reminded only when a truly newer release exists', 'Prep: The shared static build now includes version.json so GitHub Pages, Tauri, and Capacitor can read the same release metadata source'] },
         { version: '1.1.82', date: '2026-03-03', changes: ['Mobile: Active calls now auto-restore cleanly after background/minimized states, while explicit close attempts still keep the recovery decision flow available on next launch', 'Mobile: Removed shell overflow rules that were making vertical dashboard scrolling feel sticky or dependent on sideways gestures first', 'Stability: Active-call close intent is now tracked separately from normal background persistence so recovery behavior is less intrusive'] },
         { version: '1.1.81', date: '2026-03-03', changes: ['UI: Replaced the embedded Ko-fi widget with a fixed button so support actions stay visually consistent and no external widget stretches the footer', 'Footer: Donate and Support me on Ko-fi now sit side by side with matching pill dimensions', 'Mobile/Desktop: Unified the support button layout instead of switching between separate Ko-fi desktop/mobile treatments'] },
