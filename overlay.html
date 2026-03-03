@@ -16,26 +16,35 @@
     <link rel="stylesheet" href="assets/css/desktop-overlay.css">
 </head>
 <body>
-    <div class="overlay-shell">
-        <div class="overlay-panel">
-            <div class="overlay-titlebar">
-                <div class="overlay-drag-handle" data-tauri-drag-region aria-label="Move overlay"></div>
+    <div id="overlay-shell" class="overlay-shell">
+        <div id="overlay-panel" class="overlay-panel">
+            <div class="overlay-utility-row">
+                <div id="overlay-drag-zone" class="overlay-drag-zone" aria-label="Move overlay"></div>
                 <div class="overlay-window-actions">
                     <button id="overlay-minimize-btn" type="button" class="overlay-window-btn" aria-label="Hide overlay" title="Hide overlay">-</button>
                     <button id="overlay-close-btn" type="button" class="overlay-window-btn overlay-window-btn-close" aria-label="Disable overlay" title="Disable overlay">x</button>
                 </div>
             </div>
 
-            <div id="overlay-info-card" class="overlay-info-card" data-mode="idle">
-                <div id="overlay-status-text" class="overlay-status-text">Select Rate</div>
-                <div id="overlay-rate-name" class="overlay-rate-name">Open the main app and choose a rate.</div>
-                <div id="overlay-timer" class="overlay-timer" style="display:none;">00:00:00</div>
-                <div id="overlay-earnings" class="overlay-earnings" style="display:none;">$0.00</div>
-            </div>
+            <div id="overlay-call-dock" class="overlay-call-dock">
+                <div id="overlay-active-card" class="overlay-active-card" style="display:none;">
+                    <div class="overlay-active-label">Active Call</div>
+                    <div id="overlay-active-rate" class="overlay-active-rate" style="display:none;">Rate: --</div>
+                    <div id="overlay-active-timer" class="overlay-active-timer">00:00:00</div>
+                    <div id="overlay-active-earnings" class="overlay-active-earnings">$0.00</div>
+                </div>
 
-            <button id="overlay-primary-btn" type="button" class="overlay-primary-btn" aria-label="Overlay Action" title="Overlay Action">
-                <span id="overlay-primary-icon" class="overlay-primary-icon">&#9654;</span>
-            </button>
+                <div class="overlay-actions">
+                    <button id="overlay-primary-btn" type="button" class="overlay-primary-btn" aria-label="Start Call" title="Start Call">
+                        <span id="overlay-primary-icon" class="overlay-primary-icon">â–¶</span>
+                        <span id="overlay-primary-label" class="overlay-primary-label">Start Call</span>
+                    </button>
+                    <button id="overlay-secondary-btn" type="button" class="overlay-secondary-btn" aria-label="Add Call" title="Add Call">
+                        <span class="overlay-secondary-icon">+</span>
+                        <span>Add Call</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
