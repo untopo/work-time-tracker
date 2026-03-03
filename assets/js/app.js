@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.85';
+    const APP_VERSION = '1.1.86';
     const CHANGELOG = [
+        { version: '1.1.86', date: '2026-03-03', changes: ['UI: Tightened the footer support row again so Donate and Support me on Ko-fi fit side by side more reliably in narrow layouts', 'UI: Reduced support button width, height, and text size evenly so both actions stay visually identical while taking less space'] },
         { version: '1.1.85', date: '2026-03-03', changes: ['Fixed: Desktop update banner now opens the GitHub release page in the system browser instead of doing nothing inside the Tauri webview', 'Desktop: Installed builds now use a native Rust command for release links while mobile keeps using the normal browser open flow'] },
         { version: '1.1.84', date: '2026-03-03', changes: ['UI: Donate and Support me on Ko-fi now use identical fixed dimensions and stay side by side in the footer instead of wrapping unevenly on narrow screens', 'Polish: Both support buttons were slightly reduced in size so the footer support row feels tighter and more balanced on mobile and desktop'] },
         { version: '1.1.83', date: '2026-03-03', changes: ['Added: Desktop and mobile builds now check a lightweight public update manifest and show a non-blocking banner when a newer release is available', 'Added: Update notices can be dismissed per-version so users are reminded only when a truly newer release exists', 'Prep: The shared static build now includes version.json so GitHub Pages, Tauri, and Capacitor can read the same release metadata source'] },

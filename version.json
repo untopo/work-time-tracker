@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.1.85",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.1.85",
+  "latestVersion": "1.1.86",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.1.86",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Desktop update notices now open the GitHub release page correctly in the system browser."
+  "notes": "The footer support buttons are now smaller and fit side by side more reliably in narrow layouts."
 }
