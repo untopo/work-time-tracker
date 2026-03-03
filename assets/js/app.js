@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.69';
+    const APP_VERSION = '1.1.70';
     const CHANGELOG = [
+        { version: '1.1.70', date: '2026-03-02', changes: ['Desktop: Added an optional always-on-top overlay window that keeps Start/End Call, live timer, and earnings visible outside the main app window', 'Desktop: Overlay actions now route back to the main Tauri window so you can start calls, end calls, add calls, or reopen the app from the mini control window', 'Prep: Added a dedicated overlay frontend and native desktop window bridge so multi-window desktop features ship without breaking the static web target'] },
         { version: '1.1.69', date: '2026-03-02', changes: ['Mobile: Added a more app-like native shell layout with safe-area-aware spacing, sticky action toolbar, and viewport-height syncing for Capacitor/standalone installs', 'Android: Unified launcher icons with the shared desktop icon source so the mobile install now uses the same product mark', 'Android: Added activity resize handling for the on-screen keyboard so forms behave more like a native app instead of a cramped browser view'] },
         { version: '1.1.68', date: '2026-03-02', changes: ['Fixed: Floating call controls now stay available whenever the original Call Controls section is genuinely out of view on mobile, regardless of scroll direction', 'Release: Added Android APK output to the public release assets so the mobile preview can be downloaded directly'] },
         { version: '1.1.67', date: '2026-03-02', changes: ['Mobile: Added a dedicated card-based Call Log layout for narrow screens so call history no longer depends on a squeezed desktop table', 'Prep: Added Capacitor + Android project scaffolding in the same repository so the app can keep one shared codebase for web, desktop, and future mobile builds', 'Improved: Mobile form inputs and action sizing were tightened further to reduce keyboard zoom and touch friction on phones'] },
@@ -459,6 +460,35 @@ function downloadBlob(blob, fileName) {
 const tauriInvoke = window.WTTEnv?.isTauri && typeof window.__TAURI_INTERNALS__?.invoke === 'function'
     ? window.__TAURI_INTERNALS__.invoke
     : null;
+const tauriTransformCallback = window.WTTEnv?.isTauri && typeof window.__TAURI_INTERNALS__?.transformCallback === 'function'
+    ? window.__TAURI_INTERNALS__.transformCallback
+    : null;
+const isDesktopTauri = !!(window.WTTEnv?.isTauri && !window.Capacitor);
+let desktopOverlayStateSignature = '';
+
+function createTauriEventTarget(label) {
+    return typeof label === 'string' && label
+        ? { kind: 'AnyLabel', label }
+        : { kind: 'Any' };
+}
+
+async function tauriEmitTo(label, event, payload) {
+    if (!tauriInvoke) return;
+    await tauriInvoke('plugin:event|emit_to', {
+        target: createTauriEventTarget(label),
+        event,
+        payload
+    });
+}
+
+async function tauriListen(event, handler, targetLabel) {
+    if (!tauriInvoke || !tauriTransformCallback) return null;
+    return tauriInvoke('plugin:event|listen', {
+        event,
+        target: createTauriEventTarget(targetLabel),
+        handler: tauriTransformCallback(handler)
+    });
+}
 
 function getFileNameFromPath(filePath) {
     const parts = String(filePath || '').split(/[\\/]/);
@@ -971,6 +1001,8 @@ async function confirmExportOptions() {
 const featureNotesToggle = document.getElementById('feature-notes-toggle');
 const featurePaymentCyclesToggle = document.getElementById('feature-payment-cycles-toggle');
 const featureFloatingControlsToggle = document.getElementById('feature-floating-controls-toggle');
+const featureDesktopOverlayToggle = document.getElementById('feature-desktop-overlay-toggle');
+const desktopOverlayFeatureRow = document.getElementById('desktop-overlay-feature-row');
 const featureRpgToggle = document.getElementById('feature-rpg-toggle');
 const openFloatingControlsSettingsBtn = document.getElementById('open-floating-controls-settings-btn');
 const openPaymentCyclesSettingsBtn = document.getElementById('open-payment-cycles-settings-btn');
@@ -1031,6 +1063,7 @@ function loadFeatureFlags() {
             notes: true,
             paymentCycles: paymentCyclesEnabled,
             floatingCallControls: true,
+            desktopOverlayControls: false,
             rpg: true,
             floatingControlsSizeMode: 'auto',
             floatingControlsSide: 'right',
@@ -1047,6 +1080,7 @@ function loadFeatureFlags() {
             notes: typeof parsed.notes === 'boolean' ? parsed.notes : true,
             paymentCycles: typeof parsed.paymentCycles === 'boolean' ? parsed.paymentCycles : paymentCyclesEnabled,
             floatingCallControls: typeof parsed.floatingCallControls === 'boolean' ? parsed.floatingCallControls : true,
+            desktopOverlayControls: typeof parsed.desktopOverlayControls === 'boolean' ? parsed.desktopOverlayControls : false,
             rpg: typeof parsed.rpg === 'boolean' ? parsed.rpg : true,
             floatingControlsSizeMode: ['auto', 'full', 'compact', 'icon'].includes(parsed.floatingControlsSizeMode) ? parsed.floatingControlsSizeMode : 'auto',
             floatingControlsSide: parsed.floatingControlsSide === 'left' ? 'left' : 'right',
@@ -1063,6 +1097,7 @@ function loadFeatureFlags() {
             notes: true,
             paymentCycles: paymentCyclesEnabled,
             floatingCallControls: true,
+            desktopOverlayControls: false,
             rpg: true,
             floatingControlsSizeMode: 'auto',
             floatingControlsSide: 'right',
@@ -1198,6 +1233,114 @@ function updateFloatingPreview(flags = featureFlags, options = {}) {
         const fieldsText = visibleFields.length ? visibleFields.join(', ') : 'none';
         const secondaryText = (flags.floatingSecondaryAction || 'add') === 'none' ? 'hidden' : (flags.floatingSecondaryAction || 'add');
         floatingPreviewHint.textContent = `Preview: size ${mode} | secondary ${secondaryText} | active fields ${fieldsText}`;
+    }
+}
+
+async function showMainWindowNative() {
+    if (!isDesktopTauri || !tauriInvoke) return;
+    try {
+        await tauriInvoke('show_main_window');
+    } catch (error) {
+        console.error('Failed to focus the main desktop window:', error);
+    }
+}
+
+function buildDesktopOverlayState() {
+    const liveCallActive = !!liveCallStart || endCallBtn.style.display !== 'none';
+    const elapsed = liveCallActive && liveCallStart ? Math.max(0, Date.now() - liveCallStart) : 0;
+    const resolvedRate = currentCallRate || getSelectedRateAmount();
+    const selectedRateName = String(rateSelect?.value || '').trim();
+    let primaryAction = 'show-main';
+    let statusText = 'Rate required';
+    let noteText = 'Select a rate in the main app before starting a call.';
+
+    if (liveCallActive) {
+        primaryAction = 'end-call';
+        statusText = 'Active call';
+        noteText = 'End the current call instantly from the overlay.';
+    } else if (selectedRateName) {
+        primaryAction = 'start-call';
+        statusText = 'Ready to start';
+        noteText = 'Start a call instantly while working in other windows.';
+    }
+
+    return {
+        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+        liveCallActive,
+        primaryAction,
+        statusText,
+        rateName: selectedRateName || 'Select a rate in the main app',
+        timerText: formatTime(elapsed),
+        earningsText: formatEarnings(calculateEarnings(elapsed, resolvedRate)),
+        noteText
+    };
+}
+
+async function syncDesktopOverlayVisibility() {
+    if (!isDesktopTauri || !tauriInvoke) return;
+    try {
+        await tauriInvoke('set_desktop_overlay_visible', {
+            visible: !!featureFlags.desktopOverlayControls
+        });
+    } catch (error) {
+        console.error('Failed to update desktop overlay visibility:', error);
+    }
+}
+
+async function publishDesktopOverlayState(force = false) {
+    if (!isDesktopTauri || !tauriInvoke) return;
+    if (!featureFlags.desktopOverlayControls) {
+        desktopOverlayStateSignature = '';
+        await syncDesktopOverlayVisibility();
+        return;
+    }
+
+    const payload = buildDesktopOverlayState();
+    const signature = JSON.stringify(payload);
+    if (!force && signature === desktopOverlayStateSignature) return;
+    desktopOverlayStateSignature = signature;
+
+    try {
+        await tauriInvoke('update_desktop_overlay', { payload });
+    } catch (error) {
+        console.error('Failed to publish desktop overlay state:', error);
+    }
+}
+
+const scheduleDesktopOverlayRefresh = createRafScheduler(() => {
+    void publishDesktopOverlayState();
+});
+
+async function handleDesktopOverlayAction(action) {
+    const normalizedAction = String(action || '').trim();
+    if (!normalizedAction) return;
+
+    if (normalizedAction === 'overlay-ready') {
+        await syncDesktopOverlayVisibility();
+        await publishDesktopOverlayState(true);
+        return;
+    }
+
+    if (normalizedAction === 'show-main') {
+        await showMainWindowNative();
+        return;
+    }
+
+    if (normalizedAction === 'add-call') {
+        await showMainWindowNative();
+        openCallModal();
+        return;
+    }
+
+    if (normalizedAction === 'start-call') {
+        startLiveCall();
+        return;
+    }
+
+    if (normalizedAction === 'end-call') {
+        if (liveCallStart || endCallBtn.style.display !== 'none') {
+            endLiveCall();
+        }
     }
 }
 
@@ -1368,6 +1511,12 @@ function applyFeatureFlags(flags) {
         openFloatingControlsSettingsBtn.style.display = flags.floatingCallControls ? '' : 'none';
         openFloatingControlsSettingsBtn.setAttribute('aria-expanded', (floatingControlsSettingsModal && ModalManager.isOpen(floatingControlsSettingsModal)) ? 'true' : 'false');
     }
+    if (desktopOverlayFeatureRow) {
+        desktopOverlayFeatureRow.style.display = isDesktopTauri ? '' : 'none';
+    }
+    if (featureDesktopOverlayToggle) {
+        featureDesktopOverlayToggle.checked = !!flags.desktopOverlayControls;
+    }
     if (openPaymentCyclesSettingsBtn) {
         openPaymentCyclesSettingsBtn.style.display = flags.paymentCycles ? '' : 'none';
         openPaymentCyclesSettingsBtn.setAttribute('aria-expanded', (paymentCyclesSettingsModal && ModalManager.isOpen(paymentCyclesSettingsModal)) ? 'true' : 'false');
@@ -1418,6 +1567,8 @@ function applyFeatureFlags(flags) {
     }
     updateFloatingPreview(flags);
     updateFloatingCallControls(flags);
+    void syncDesktopOverlayVisibility();
+    scheduleDesktopOverlayRefresh();
     renderAchievementsModal();
     updateRpgProgress();
 }
@@ -1429,6 +1580,7 @@ let featureFlags = {
     notes: true,
     paymentCycles: false,
     floatingCallControls: true,
+    desktopOverlayControls: false,
     rpg: true,
     floatingControlsSizeMode: 'auto',
     floatingControlsSide: 'right',
@@ -3805,10 +3957,12 @@ function restoreLiveCallUi() {
     liveCallEarningsDisplay.textContent = formatEarnings(earned);
     updateFloatingActiveCard(featureFlags, true);
     saveActiveCallState();
+    scheduleDesktopOverlayRefresh();
   }, 1000);
 
   saveActiveCallState(true);
   updateFloatingCallControls(featureFlags);
+  scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
 }
 
@@ -3851,6 +4005,7 @@ function summarizeRecoveredActiveCall(state = recoveredActiveCallState) {
   hideActiveCallRecoveryBanner();
   clearActiveCallState();
   updateFloatingCallControls(featureFlags);
+  scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
   showToast('Recovered live call summarized and saved.');
 }
@@ -3872,6 +4027,7 @@ function discardRecoveredActiveCall() {
   hideActiveCallRecoveryBanner();
   clearActiveCallState();
   updateFloatingCallControls(featureFlags);
+  scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
   showToast('Recovered live call discarded.');
 }
@@ -3900,6 +4056,7 @@ function autoRestoreRecoveredActiveCall(state) {
     ? 'Your live call resumed automatically. It has been active for a while, so review it before ending if needed.'
     : 'Your live call resumed automatically based on the saved start time.';
   showActiveCallRecoveryBanner(message);
+  scheduleDesktopOverlayRefresh();
   showToast('Active call restored.');
   return true;
 }
@@ -5019,10 +5176,12 @@ function saveCalls() {
             liveCallEarningsDisplay.textContent = formatEarnings(earned);
             updateFloatingActiveCard(featureFlags, true);
             saveActiveCallState();
+            scheduleDesktopOverlayRefresh();
         }, 1000);
 
         saveActiveCallState(true);
         updateFloatingCallControls(featureFlags);
+        scheduleDesktopOverlayRefresh();
         animateFloatingPrimaryTransition();
         hideActiveCallRecoveryBanner();
         recoveredActiveCallState = null;
@@ -5065,6 +5224,7 @@ calls.push(callData);
         }
         clearActiveCallState();
         updateFloatingCallControls(featureFlags);
+        scheduleDesktopOverlayRefresh();
         animateFloatingPrimaryTransition();
         hideActiveCallRecoveryBanner();
         recoveredActiveCallState = null;
@@ -6038,6 +6198,14 @@ calls.push(callData);
                 });
             }
 
+            if (featureDesktopOverlayToggle) {
+                featureDesktopOverlayToggle.addEventListener('change', (e) => {
+                    featureFlags.desktopOverlayControls = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+
             if (openFloatingControlsSettingsBtn) {
                 openFloatingControlsSettingsBtn.addEventListener('click', (e) => openFloatingControlsSettingsModal(e.currentTarget));
             }
@@ -6275,6 +6443,7 @@ callEndTimeInput.addEventListener('input', syncCallDateFromDateTime);
             document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
             document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
             appStorage.setItem('theme', isDark ? 'dark' : 'light');
+            scheduleDesktopOverlayRefresh();
             if (darkToggleBtn) {
                 darkToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
                 darkToggleBtn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
@@ -6291,7 +6460,10 @@ callEndTimeInput.addEventListener('input', syncCallDateFromDateTime);
             : 'light';
         applyTheme(initialTheme);
 
-        rateSelect.addEventListener('change', saveLastSelectedRate);
+        rateSelect.addEventListener('change', () => {
+            saveLastSelectedRate();
+            scheduleDesktopOverlayRefresh();
+        });
         showRateAddBtn.addEventListener('click', () => {
             resetRateFormMode();
             rateForm.style.display = 'block';
@@ -6482,6 +6654,12 @@ goalMinutesInput.addEventListener('input', () => {
             activeCallDiscardBtn.addEventListener('click', () => discardRecoveredActiveCall());
         }
 
+        if (isDesktopTauri) {
+            void tauriListen('desktop-overlay-action', (event) => {
+                void handleDesktopOverlayAction(event?.payload?.action);
+            }, 'main');
+        }
+
         importFile.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -6619,6 +6797,8 @@ goalMinutesInput.addEventListener('input', () => {
         renderPaymentCycles();
         updateOnboardingCues();
         openOnboardingModalIfNeeded();
+        void syncDesktopOverlayVisibility();
+        void publishDesktopOverlayState(true);
         setInterval(updateLocalTime, 1000);
         window.addEventListener('scroll', scheduleFloatingControlsRefresh, { passive: true });
         window.addEventListener('resize', () => {
@@ -6626,6 +6806,7 @@ goalMinutesInput.addEventListener('input', () => {
             scheduleModalLayoutRefresh();
             scheduleFloatingControlsRefresh();
             scheduleDetailPanelsReflow();
+            scheduleDesktopOverlayRefresh();
         });
         window.addEventListener('orientationchange', scheduleAppShellRefresh);
         window.visualViewport?.addEventListener('resize', scheduleAppShellRefresh);

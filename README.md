@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.69-blue)
+![Version](https://img.shields.io/badge/version-1.1.70-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -81,6 +81,7 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - Safe backup merge import that preserves existing local data
 - Dark mode / light mode toggle
 - Floating call controls (optional)
+- Desktop always-on-top overlay controls (optional, Tauri build)
 - Optional volatile notes (never persisted/exported)
 - Built-in changelog modal
 - Mobile-friendly Call Log cards on narrow screens
@@ -140,6 +141,7 @@ Current setup:
 - App persistence now goes through a shared storage adapter so the same frontend can target browser storage today and Tauri-native storage later
 - Tauri builds now mirror app storage to a native JSON snapshot file in the app data directory while keeping the browser flow unchanged
 - Tauri desktop builds now use native open/save dialogs for JSON backup import/export and CSV import/export while the browser version keeps its current download/upload flow
+- Tauri desktop builds can now enable an always-on-top overlay mini-window that stays visible outside the main app and mirrors Start/End actions, live timer, and earnings
 
 Important:
 - Existing GitHub Pages users keep using the same browser `localStorage` keys as before, so this refactor does not wipe or rename their saved data
@@ -279,8 +281,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.69`
+- Current Version: `v1.1.70`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.70`
+- Added an optional desktop always-on-top overlay window that keeps Start/End Call, live timer, and earnings visible outside the main app window
+- Routed overlay actions back into the main Tauri window so the mini control can start calls, end calls, add calls, or reopen the app
+- Added a dedicated overlay frontend and desktop build support for the Tauri API runtime required by the new multi-window desktop flow
 
 ### Highlights in `v1.1.69`
 - Added a more app-like mobile shell for installed/standalone usage with safe-area-aware spacing, sticky top actions, and viewport-height syncing
