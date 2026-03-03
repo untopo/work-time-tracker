@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.78';
+    const APP_VERSION = '1.1.79';
     const CHANGELOG = [
+        { version: '1.1.79', date: '2026-03-03', changes: ['Hotfix: Removed the remaining desktop-overlay settings references and replaced the leftover overlay refresh calls with a harmless no-op so initialization can no longer fail after the overlay removal', 'Web/Desktop: Restored normal startup for GitHub Pages and the Tauri app without requiring any overlay-specific globals'] },
         { version: '1.1.78', date: '2026-03-03', changes: ['Hotfix: Removed the last broken desktop-overlay settings listener that was still throwing `openDesktopOverlaySettingsBtn is not defined` during app initialization', 'Web/Desktop: Restored normal startup so GitHub Pages and the Tauri app can boot again after the overlay removal cleanup'] },
         { version: '1.1.77', date: '2026-03-03', changes: ['Desktop: Removed the experimental always-on-top overlay controls after repeated reliability issues so the main app returns to a simpler, more dependable desktop experience', 'Desktop: Closing the Tauri main window now exits the app fully instead of leaving a lingering background process during reinstalls or updates', 'Maintenance: Cleaned the codebase and desktop packaging flow by removing overlay-specific windows, assets, and Rust commands'] },
         { version: '1.1.76', date: '2026-03-02', changes: ['Desktop: Rebuilt the always-on-top overlay to match the internal floating dock structure more closely, including the same active-call card and action stack instead of a separate mini-panel concept', 'Desktop: Overlay dragging now uses native window position commands so the user can move it freely around the screen instead of depending on the previous drag-region behavior', 'Desktop: The overlay keeps Start/End Call plus Add Call available in the same compact dock style while still supporting hide and disable controls'] },
@@ -201,6 +202,7 @@ function applyAppShellMode() {
 }
 
 const scheduleAppShellRefresh = createRafScheduler(applyAppShellMode);
+const scheduleDesktopOverlayRefresh = () => {};
 
     // ============================================
     // UTILITY FUNCTIONS
@@ -6147,12 +6149,6 @@ calls.push(callData);
             }
             if (doneFloatingControlsSettingsBtn) {
                 doneFloatingControlsSettingsBtn.addEventListener('click', closeFloatingControlsSettingsModal);
-            }
-            if (closeDesktopOverlaySettingsBtn) {
-                closeDesktopOverlaySettingsBtn.addEventListener('click', closeDesktopOverlaySettingsModal);
-            }
-            if (doneDesktopOverlaySettingsBtn) {
-                doneDesktopOverlaySettingsBtn.addEventListener('click', closeDesktopOverlaySettingsModal);
             }
             if (closePaymentCyclesSettingsModalBtn) {
                 closePaymentCyclesSettingsModalBtn.addEventListener('click', closePaymentCyclesSettingsModal);
