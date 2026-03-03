@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Work Time Tracker Overlay</title>
+    <script src="assets/js/storage.js"></script>
+    <script>
+        try {
+            const savedTheme = window.WTTStorage ? window.WTTStorage.getItem('theme') : localStorage.getItem('theme');
+            const shouldUseDark = savedTheme === 'dark'
+                || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', shouldUseDark);
+        } catch (error) {}
+    </script>
+    <link rel="stylesheet" href="assets/css/desktop-overlay.css">
+</head>
+<body>
+    <div class="overlay-shell">
+        <div class="overlay-panel">
+            <div class="overlay-handle" data-tauri-drag-region>
+                <div class="overlay-app-mark" aria-hidden="true"></div>
+                <div class="overlay-handle-text">
+                    <div class="overlay-title">Work Time Tracker</div>
+                    <div class="overlay-subtitle" id="overlay-status-text">Ready</div>
+                </div>
+            </div>
+
+            <div class="overlay-body">
+                <div class="overlay-rate" id="overlay-rate-name">Select a rate in the main app</div>
+                <div class="overlay-timer" id="overlay-timer">00:00:00</div>
+                <div class="overlay-earnings" id="overlay-earnings">$0.00</div>
+                <div class="overlay-note" id="overlay-note">The overlay stays on top while you work in other windows.</div>
+            </div>
+
+            <div class="overlay-actions">
+                <button id="overlay-primary-btn" type="button" class="overlay-btn overlay-btn-primary">Select Rate</button>
+                <button id="overlay-add-call-btn" type="button" class="overlay-btn overlay-btn-secondary">Add Call</button>
+                <button id="overlay-open-app-btn" type="button" class="overlay-btn overlay-btn-tertiary">Open App</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="assets/js/desktop-overlay.js"></script>
+</body>
+</html>

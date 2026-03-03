@@ -1,0 +1,181 @@
+:root {
+    color-scheme: light;
+    font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+
+html.dark {
+    color-scheme: dark;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+    background: transparent;
+}
+
+body {
+    overflow: hidden;
+}
+
+.overlay-shell {
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+}
+
+.overlay-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    background:
+        radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 34%),
+        rgba(255, 255, 255, 0.96);
+    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.22);
+    color: #0f172a;
+}
+
+html.dark .overlay-panel {
+    border-color: rgba(71, 85, 105, 0.58);
+    background:
+        radial-gradient(circle at top, rgba(59, 130, 246, 0.18), transparent 34%),
+        rgba(15, 23, 42, 0.95);
+    box-shadow: 0 22px 44px rgba(2, 6, 23, 0.45);
+    color: #e2e8f0;
+}
+
+.overlay-handle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: move;
+    user-select: none;
+}
+
+.overlay-app-mark {
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #2563eb, #22c55e);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.overlay-handle-text {
+    min-width: 0;
+    flex: 1;
+}
+
+.overlay-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.overlay-subtitle,
+.overlay-rate,
+.overlay-note {
+    font-size: 0.72rem;
+    color: #475569;
+}
+
+html.dark .overlay-subtitle,
+html.dark .overlay-rate,
+html.dark .overlay-note {
+    color: #94a3b8;
+}
+
+.overlay-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.overlay-rate {
+    font-weight: 600;
+    min-height: 1.05rem;
+}
+
+.overlay-timer {
+    font-size: 1.65rem;
+    line-height: 1;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.overlay-earnings {
+    font-size: 1.25rem;
+    line-height: 1;
+    font-weight: 700;
+    color: #047857;
+}
+
+html.dark .overlay-earnings {
+    color: #34d399;
+}
+
+.overlay-note {
+    min-height: 1.9rem;
+    line-height: 1.35;
+}
+
+.overlay-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.overlay-btn {
+    border: 0;
+    border-radius: 12px;
+    min-height: 40px;
+    padding: 0.65rem 0.8rem;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+.overlay-btn:hover {
+    transform: translateY(-1px);
+}
+
+.overlay-btn:active {
+    transform: translateY(1px);
+}
+
+.overlay-btn-primary {
+    background: #16a34a;
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(22, 163, 74, 0.22);
+}
+
+.overlay-btn-primary[data-mode="end"] {
+    background: #dc2626;
+    box-shadow: 0 10px 20px rgba(220, 38, 38, 0.22);
+}
+
+.overlay-btn-primary[data-mode="select"] {
+    background: #2563eb;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.22);
+}
+
+.overlay-btn-secondary,
+.overlay-btn-tertiary {
+    background: rgba(148, 163, 184, 0.16);
+    color: inherit;
+}
+
+html.dark .overlay-btn-secondary,
+html.dark .overlay-btn-tertiary {
+    background: rgba(51, 65, 85, 0.72);
+}
