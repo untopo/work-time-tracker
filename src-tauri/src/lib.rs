@@ -26,7 +26,7 @@ fn ensure_desktop_overlay_window(app: &AppHandle) -> Result<(), String> {
 
   WebviewWindowBuilder::new(app, DESKTOP_OVERLAY_LABEL, WebviewUrl::App("overlay.html".into()))
     .title("Work Time Tracker Overlay")
-    .inner_size(244.0, 236.0)
+    .inner_size(210.0, 208.0)
     .resizable(false)
     .visible(false)
     .decorations(false)
@@ -35,6 +35,8 @@ fn ensure_desktop_overlay_window(app: &AppHandle) -> Result<(), String> {
     .shadow(true)
     .build()
     .map_err(|error| format!("Failed to create desktop overlay window: {error}"))?;
+
+  let _ = dock_desktop_overlay_window(app);
 
   Ok(())
 }
@@ -152,7 +154,6 @@ fn set_desktop_overlay_visible(app: AppHandle, visible: bool) -> Result<(), Stri
     .ok_or_else(|| "Desktop overlay window is not available".to_string())?;
 
   if visible {
-    let _ = dock_desktop_overlay_window(&app);
     overlay
       .show()
       .map_err(|error| format!("Failed to show desktop overlay: {error}"))?;

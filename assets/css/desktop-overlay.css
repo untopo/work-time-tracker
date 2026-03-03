@@ -25,157 +25,133 @@ body {
 .overlay-shell {
     width: 100%;
     height: 100%;
-    padding: 10px;
+    padding: 8px;
 }
 
 .overlay-panel {
     height: 100%;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 12px;
-    padding: 14px;
+    padding: 12px;
     border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.32);
-    background:
-        radial-gradient(circle at top, rgba(59, 130, 246, 0.14), transparent 34%),
-        rgba(255, 255, 255, 0.96);
-    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.22);
-    color: #0f172a;
+    border: 1px solid rgba(148, 163, 184, 0.26);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.24);
 }
 
 html.dark .overlay-panel {
-    border-color: rgba(71, 85, 105, 0.58);
-    background:
-        radial-gradient(circle at top, rgba(59, 130, 246, 0.18), transparent 34%),
-        rgba(15, 23, 42, 0.95);
-    box-shadow: 0 22px 44px rgba(2, 6, 23, 0.45);
-    color: #e2e8f0;
+    border-color: rgba(51, 65, 85, 0.82);
+    background: rgba(15, 23, 42, 0.97);
+    box-shadow: 0 20px 36px rgba(2, 6, 23, 0.45);
 }
 
-.overlay-handle {
+.overlay-info-card {
+    width: 100%;
+    min-height: 106px;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    padding: 0.95rem 1rem;
+    border-radius: 14px;
+    border: 1px solid rgba(34, 197, 94, 0.28);
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.16), rgba(6, 95, 70, 0.2));
     cursor: move;
     user-select: none;
 }
 
-.overlay-app-mark {
-    width: 18px;
-    height: 18px;
-    border-radius: 9999px;
-    background: linear-gradient(135deg, #2563eb, #22c55e);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+.overlay-info-card[data-mode="ready"] {
+    border-color: rgba(37, 99, 235, 0.3);
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.14), rgba(30, 64, 175, 0.18));
 }
 
-.overlay-handle-text {
-    min-width: 0;
-    flex: 1;
+.overlay-info-card[data-mode="select"] {
+    border-color: rgba(148, 163, 184, 0.28);
+    background: linear-gradient(180deg, rgba(148, 163, 184, 0.16), rgba(71, 85, 105, 0.18));
 }
 
-.overlay-title {
-    font-size: 0.82rem;
+.overlay-status-text {
+    font-size: 0.9rem;
     font-weight: 700;
-    line-height: 1.1;
+    color: #ecfdf5;
 }
 
-.overlay-subtitle,
-.overlay-rate,
-.overlay-note {
-    font-size: 0.72rem;
-    color: #475569;
-}
-
-html.dark .overlay-subtitle,
-html.dark .overlay-rate,
-html.dark .overlay-note {
-    color: #94a3b8;
-}
-
-.overlay-body {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.overlay-rate {
+.overlay-rate-name {
+    font-size: 0.78rem;
     font-weight: 600;
-    min-height: 1.05rem;
+    color: rgba(236, 253, 245, 0.88);
 }
 
 .overlay-timer {
-    font-size: 1.65rem;
+    font-size: 1.45rem;
     line-height: 1;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
+    color: #f8fafc;
 }
 
 .overlay-earnings {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     line-height: 1;
     font-weight: 700;
-    color: #047857;
+    color: #d1fae5;
 }
 
-html.dark .overlay-earnings {
-    color: #34d399;
+.overlay-info-card[data-mode="ready"] .overlay-status-text,
+.overlay-info-card[data-mode="ready"] .overlay-rate-name,
+.overlay-info-card[data-mode="ready"] .overlay-timer,
+.overlay-info-card[data-mode="ready"] .overlay-earnings {
+    color: #dbeafe;
 }
 
-.overlay-note {
-    min-height: 1.9rem;
-    line-height: 1.35;
+.overlay-info-card[data-mode="select"] .overlay-status-text {
+    color: #f8fafc;
 }
 
-.overlay-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-    margin-top: auto;
+.overlay-info-card[data-mode="select"] .overlay-rate-name {
+    color: rgba(226, 232, 240, 0.9);
 }
 
-.overlay-btn {
+.overlay-primary-btn {
+    width: 64px;
+    height: 64px;
     border: 0;
-    border-radius: 12px;
-    min-height: 40px;
-    padding: 0.65rem 0.8rem;
-    font: inherit;
-    font-size: 0.86rem;
-    font-weight: 600;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #22c55e;
+    color: #ffffff;
+    box-shadow: 0 16px 26px rgba(34, 197, 94, 0.28);
     cursor: pointer;
-    transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+    transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
 }
 
-.overlay-btn:hover {
-    transform: translateY(-1px);
+.overlay-primary-btn[data-mode="end"] {
+    background: #ef4444;
+    box-shadow: 0 16px 26px rgba(239, 68, 68, 0.28);
 }
 
-.overlay-btn:active {
-    transform: translateY(1px);
+.overlay-primary-btn[data-mode="select"] {
+    background: #3b82f6;
+    box-shadow: 0 16px 26px rgba(59, 130, 246, 0.28);
 }
 
-.overlay-btn-primary {
-    background: #16a34a;
-    color: #fff;
-    box-shadow: 0 10px 20px rgba(22, 163, 74, 0.22);
+.overlay-primary-btn:hover {
+    transform: translateY(-1px) scale(1.02);
 }
 
-.overlay-btn-primary[data-mode="end"] {
-    background: #dc2626;
-    box-shadow: 0 10px 20px rgba(220, 38, 38, 0.22);
+.overlay-primary-btn:active {
+    transform: translateY(1px) scale(0.98);
 }
 
-.overlay-btn-primary[data-mode="select"] {
-    background: #2563eb;
-    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.22);
-}
-
-.overlay-btn-secondary,
-.overlay-btn-tertiary {
-    background: rgba(148, 163, 184, 0.16);
-    color: inherit;
-}
-
-html.dark .overlay-btn-secondary,
-html.dark .overlay-btn-tertiary {
-    background: rgba(51, 65, 85, 0.72);
+.overlay-primary-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem;
+    line-height: 1;
+    font-weight: 700;
 }

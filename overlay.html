@@ -18,26 +18,16 @@
 <body>
     <div class="overlay-shell">
         <div class="overlay-panel">
-            <div class="overlay-handle" data-tauri-drag-region>
-                <div class="overlay-app-mark" aria-hidden="true"></div>
-                <div class="overlay-handle-text">
-                    <div class="overlay-title">Work Time Tracker</div>
-                    <div class="overlay-subtitle" id="overlay-status-text">Ready</div>
-                </div>
+            <div id="overlay-info-card" class="overlay-info-card" data-mode="idle" data-tauri-drag-region>
+                <div id="overlay-status-text" class="overlay-status-text">Select Rate</div>
+                <div id="overlay-rate-name" class="overlay-rate-name">Open the main app and choose a rate.</div>
+                <div id="overlay-timer" class="overlay-timer" style="display:none;">00:00:00</div>
+                <div id="overlay-earnings" class="overlay-earnings" style="display:none;">$0.00</div>
             </div>
 
-            <div class="overlay-body">
-                <div class="overlay-rate" id="overlay-rate-name">Select a rate in the main app</div>
-                <div class="overlay-timer" id="overlay-timer">00:00:00</div>
-                <div class="overlay-earnings" id="overlay-earnings">$0.00</div>
-                <div class="overlay-note" id="overlay-note">The overlay stays on top while you work in other windows.</div>
-            </div>
-
-            <div class="overlay-actions">
-                <button id="overlay-primary-btn" type="button" class="overlay-btn overlay-btn-primary">Select Rate</button>
-                <button id="overlay-add-call-btn" type="button" class="overlay-btn overlay-btn-secondary">Add Call</button>
-                <button id="overlay-open-app-btn" type="button" class="overlay-btn overlay-btn-tertiary">Open App</button>
-            </div>
+            <button id="overlay-primary-btn" type="button" class="overlay-primary-btn" aria-label="Overlay Action" title="Overlay Action">
+                <span id="overlay-primary-icon" class="overlay-primary-icon">▶</span>
+            </button>
         </div>
     </div>
 
