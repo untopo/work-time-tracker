@@ -1589,10 +1589,10 @@
         html.native-app-shell,
         html.native-app-shell body {
             min-height: 100%;
-            overscroll-behavior-y: contain;
             width: 100%;
             max-width: 100%;
             overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
         }
 
         html.native-app-shell body {
@@ -1611,7 +1611,7 @@
         html.native-app-shell .container.mx-auto.max-w-7xl {
             width: 100%;
             max-width: none;
-            overflow-x: clip;
+            overflow-x: hidden;
             padding-top: max(1rem, env(safe-area-inset-top));
             padding-right: max(1rem, env(safe-area-inset-right));
             padding-bottom: max(1.25rem, calc(env(safe-area-inset-bottom) + 1.25rem));
@@ -1646,7 +1646,7 @@
 
         html.native-app-shell footer {
             padding-bottom: max(1rem, env(safe-area-inset-bottom));
-            overflow-x: clip;
+            overflow-x: hidden;
         }
 
         .support-actions-row {
@@ -1731,7 +1731,7 @@
                 padding-left: 0.85rem;
                 padding-right: 0.85rem;
                 padding-top: 1rem;
-                overflow-x: clip;
+                overflow-x: hidden;
             }
 
             footer .container,
@@ -1744,7 +1744,7 @@
             #payment-cycle-earnings-cards {
                 max-width: 100%;
                 min-width: 0;
-                overflow-x: clip;
+                overflow-x: hidden;
             }
 
             footer .grid > div,

@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.81';
+    const APP_VERSION = '1.1.82';
     const CHANGELOG = [
+        { version: '1.1.82', date: '2026-03-03', changes: ['Mobile: Active calls now auto-restore cleanly after background/minimized states, while explicit close attempts still keep the recovery decision flow available on next launch', 'Mobile: Removed shell overflow rules that were making vertical dashboard scrolling feel sticky or dependent on sideways gestures first', 'Stability: Active-call close intent is now tracked separately from normal background persistence so recovery behavior is less intrusive'] },
         { version: '1.1.81', date: '2026-03-03', changes: ['UI: Replaced the embedded Ko-fi widget with a fixed button so support actions stay visually consistent and no external widget stretches the footer', 'Footer: Donate and Support me on Ko-fi now sit side by side with matching pill dimensions', 'Mobile/Desktop: Unified the support button layout instead of switching between separate Ko-fi desktop/mobile treatments'] },
         { version: '1.1.80', date: '2026-03-03', changes: ['Hotfix: Restored the missing `beginLiveCallWithRate(...)` path so Start Call works again in web, desktop, and mobile builds', 'Android: The APK now reads its visible version from `package.json` instead of staying stuck at `1.0`', 'Mobile: Simplified the footer support area on small screens and removed the over-aggressive body `touch-action` rule to reduce scroll friction and horizontal overflow'] },
         { version: '1.1.79', date: '2026-03-03', changes: ['Hotfix: Removed the remaining desktop-overlay settings references and replaced the leftover overlay refresh calls with a harmless no-op so initialization can no longer fail after the overlay removal', 'Web/Desktop: Restored normal startup for GitHub Pages and the Tauri app without requiring any overlay-specific globals'] },
@@ -3854,6 +3855,7 @@ function importJsonBackup(importedData) {
 
 // v1.0.5 Active live call state (for crash/close recovery)
 const ACTIVE_CALL_KEY = 'activeLiveCallState';
+const ACTIVE_CALL_CLOSE_INTENT_KEY = 'activeLiveCallClosedExplicitly';
 
 function saveActiveCallState(force = false) {
   if (!liveCallStart) return;
@@ -3882,6 +3884,22 @@ function readActiveCallState() {
 function clearActiveCallState() {
   pendingStorageWrites.delete(ACTIVE_CALL_KEY);
   appStorage.removeItem(ACTIVE_CALL_KEY);
+}
+
+function markActiveCallClosedExplicitly() {
+  if (!liveCallStart) return;
+  queueStorageWrite(ACTIVE_CALL_CLOSE_INTENT_KEY, String(Date.now()));
+}
+
+function readActiveCallClosedExplicitly() {
+  const raw = Number(appStorage.getItem(ACTIVE_CALL_CLOSE_INTENT_KEY));
+  if (!Number.isFinite(raw) || raw <= 0) return false;
+  return true;
+}
+
+function clearActiveCallClosedExplicitly() {
+  pendingStorageWrites.delete(ACTIVE_CALL_CLOSE_INTENT_KEY);
+  appStorage.removeItem(ACTIVE_CALL_CLOSE_INTENT_KEY);
 }
 
 function showActiveCallRecoveryBanner(message) {
@@ -3928,6 +3946,7 @@ function restoreLiveCallUi() {
   }, 1000);
 
   saveActiveCallState(true);
+  clearActiveCallClosedExplicitly();
   updateFloatingCallControls(featureFlags);
   scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
@@ -3954,6 +3973,7 @@ function beginLiveCallWithRate(rateName, rateAmount) {
   liveCallStart = Date.now();
   currentCallRate = normalizedRateAmount;
   recoveredActiveCallState = null;
+  clearActiveCallClosedExplicitly();
   hideActiveCallRecoveryBanner();
   if (liveCallNotesInput) liveCallNotesInput.value = '';
   restoreLiveCallUi();
@@ -3998,6 +4018,7 @@ function summarizeRecoveredActiveCall(state = recoveredActiveCallState) {
   recoveredActiveCallState = null;
   hideActiveCallRecoveryBanner();
   clearActiveCallState();
+  clearActiveCallClosedExplicitly();
   updateFloatingCallControls(featureFlags);
   scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
@@ -4020,6 +4041,7 @@ function discardRecoveredActiveCall() {
   recoveredActiveCallState = null;
   hideActiveCallRecoveryBanner();
   clearActiveCallState();
+  clearActiveCallClosedExplicitly();
   updateFloatingCallControls(featureFlags);
   scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
@@ -4050,6 +4072,7 @@ function autoRestoreRecoveredActiveCall(state) {
     ? 'Your live call resumed automatically. It has been active for a while, so review it before ending if needed.'
     : 'Your live call resumed automatically based on the saved start time.';
   showActiveCallRecoveryBanner(message);
+  clearActiveCallClosedExplicitly();
   scheduleDesktopOverlayRefresh();
   showToast('Active call restored.');
   return true;
@@ -6308,8 +6331,21 @@ calls.push(callData);
             flushPendingStorageWrites();
             if (liveCallStart) {
                 saveActiveCallState(true);
+                markActiveCallClosedExplicitly();
                 e.preventDefault();
                 e.returnValue = '';
+            }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (!liveCallStart) return;
+            if (document.visibilityState === 'hidden') {
+                saveActiveCallState(true);
+                flushPendingStorageWrites();
+                return;
+            }
+            if (!readActiveCallState()) {
+                saveActiveCallState(true);
             }
         });
 
@@ -6324,7 +6360,7 @@ calls.push(callData);
   recoveryElapsed.textContent = msToHMS(elapsed);
     if (typeof recoveryNotes !== 'undefined' && recoveryNotes) recoveryNotes.value = '';
 
-  if (autoRestoreRecoveredActiveCall(state)) {
+  if (!readActiveCallClosedExplicitly() && autoRestoreRecoveredActiveCall(state)) {
     scheduleFloatingControlsRefresh();
     return;
   }
