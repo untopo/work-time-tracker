@@ -7,7 +7,7 @@ const distDir = resolve(rootDir, 'dist');
 rmSync(distDir, { recursive: true, force: true });
 mkdirSync(distDir, { recursive: true });
 
-for (const entry of ['index.html', 'overlay.html', 'assets']) {
+for (const entry of ['index.html', 'assets']) {
   const source = resolve(rootDir, entry);
   const target = resolve(distDir, entry);
   if (!existsSync(source)) {

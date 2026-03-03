@@ -1,6 +1,8 @@
 node_modules/
 dist/
 src-tauri/target/
+*_overlay-test_*.exe
+*_overlay-test_*.msi
 android/.gradle/
 android/build/
 android/app/build/
