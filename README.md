@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.79-blue)
+![Version](https://img.shields.io/badge/version-1.1.80-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -278,8 +278,14 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.79`
+- Current Version: `v1.1.80`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.80`
+
+- Hotfix: restored the missing `beginLiveCallWithRate(...)` path so `Start Call` works again across web, desktop, and mobile builds
+- Android: the APK version now follows the real project version instead of staying stuck at `1.0`
+- Mobile: simplified the footer support section on narrow screens and removed the over-aggressive body touch rule that was contributing to scroll friction
 
 ### Highlights in `v1.1.79`
 

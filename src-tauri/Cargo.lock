@@ -5450,7 +5450,7 @@ dependencies = [
 
 [[package]]
 name = "work_time_tracker"
-version = "1.1.79"
+version = "1.1.80"
 dependencies = [
  "log",
  "rfd",

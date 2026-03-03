@@ -1590,6 +1590,9 @@
         html.native-app-shell body {
             min-height: 100%;
             overscroll-behavior-y: contain;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         html.native-app-shell body {
@@ -1643,6 +1646,11 @@
 
         html.native-app-shell footer {
             padding-bottom: max(1rem, env(safe-area-inset-bottom));
+            overflow-x: clip;
+        }
+
+        .kofi-mobile-link {
+            display: none;
         }
 
         @media (max-width: 640px) {
@@ -1695,6 +1703,30 @@
                 max-width: 100%;
                 min-width: 0;
                 overflow-x: clip;
+            }
+
+            footer .grid > div,
+            footer .container,
+            .kofi-widget-shell,
+            .kofi-widget-shell * {
+                max-width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+            }
+
+            .kofi-widget-shell {
+                display: none;
+            }
+
+            .kofi-mobile-link {
+                display: inline-flex;
+            }
+
+            #local-time {
+                font-size: 1rem;
+                line-height: 1.4;
+                overflow-wrap: anywhere;
+                word-break: break-word;
             }
 
             html.native-app-shell header h1 {

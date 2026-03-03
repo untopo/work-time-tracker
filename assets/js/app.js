@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.79';
+    const APP_VERSION = '1.1.80';
     const CHANGELOG = [
+        { version: '1.1.80', date: '2026-03-03', changes: ['Hotfix: Restored the missing `beginLiveCallWithRate(...)` path so Start Call works again in web, desktop, and mobile builds', 'Android: The APK now reads its visible version from `package.json` instead of staying stuck at `1.0`', 'Mobile: Simplified the footer support area on small screens and removed the over-aggressive body `touch-action` rule to reduce scroll friction and horizontal overflow'] },
         { version: '1.1.79', date: '2026-03-03', changes: ['Hotfix: Removed the remaining desktop-overlay settings references and replaced the leftover overlay refresh calls with a harmless no-op so initialization can no longer fail after the overlay removal', 'Web/Desktop: Restored normal startup for GitHub Pages and the Tauri app without requiring any overlay-specific globals'] },
         { version: '1.1.78', date: '2026-03-03', changes: ['Hotfix: Removed the last broken desktop-overlay settings listener that was still throwing `openDesktopOverlaySettingsBtn is not defined` during app initialization', 'Web/Desktop: Restored normal startup so GitHub Pages and the Tauri app can boot again after the overlay removal cleanup'] },
         { version: '1.1.77', date: '2026-03-03', changes: ['Desktop: Removed the experimental always-on-top overlay controls after repeated reliability issues so the main app returns to a simpler, more dependable desktop experience', 'Desktop: Closing the Tauri main window now exits the app fully instead of leaving a lingering background process during reinstalls or updates', 'Maintenance: Cleaned the codebase and desktop packaging flow by removing overlay-specific windows, assets, and Rust commands'] },
@@ -3929,6 +3930,33 @@ function restoreLiveCallUi() {
   updateFloatingCallControls(featureFlags);
   scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
+}
+
+function beginLiveCallWithRate(rateName, rateAmount) {
+  const normalizedRateName = String(rateName || '').trim();
+  const normalizedRateAmount = Number(rateAmount) || 0;
+
+  if (!normalizedRateName || normalizedRateAmount <= 0) {
+    showAlertModal('Select Rate', 'Please select a valid rate before starting a call.');
+    return;
+  }
+
+  if (liveCallTimerId) {
+    clearInterval(liveCallTimerId);
+  }
+
+  if (rateSelect && rateSelect.value !== normalizedRateName) {
+    rateSelect.value = normalizedRateName;
+  }
+
+  saveLastSelectedRate();
+  liveCallStart = Date.now();
+  currentCallRate = normalizedRateAmount;
+  recoveredActiveCallState = null;
+  hideActiveCallRecoveryBanner();
+  if (liveCallNotesInput) liveCallNotesInput.value = '';
+  restoreLiveCallUi();
+  markOnboardingStepComplete('call');
 }
 
 function summarizeRecoveredActiveCall(state = recoveredActiveCallState) {
