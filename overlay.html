@@ -18,7 +18,15 @@
 <body>
     <div class="overlay-shell">
         <div class="overlay-panel">
-            <div id="overlay-info-card" class="overlay-info-card" data-mode="idle" data-tauri-drag-region>
+            <div class="overlay-titlebar">
+                <div class="overlay-drag-handle" data-tauri-drag-region aria-label="Move overlay"></div>
+                <div class="overlay-window-actions">
+                    <button id="overlay-minimize-btn" type="button" class="overlay-window-btn" aria-label="Hide overlay" title="Hide overlay">-</button>
+                    <button id="overlay-close-btn" type="button" class="overlay-window-btn overlay-window-btn-close" aria-label="Disable overlay" title="Disable overlay">x</button>
+                </div>
+            </div>
+
+            <div id="overlay-info-card" class="overlay-info-card" data-mode="idle">
                 <div id="overlay-status-text" class="overlay-status-text">Select Rate</div>
                 <div id="overlay-rate-name" class="overlay-rate-name">Open the main app and choose a rate.</div>
                 <div id="overlay-timer" class="overlay-timer" style="display:none;">00:00:00</div>
@@ -26,7 +34,7 @@
             </div>
 
             <button id="overlay-primary-btn" type="button" class="overlay-primary-btn" aria-label="Overlay Action" title="Overlay Action">
-                <span id="overlay-primary-icon" class="overlay-primary-icon">▶</span>
+                <span id="overlay-primary-icon" class="overlay-primary-icon">&#9654;</span>
             </button>
         </div>
     </div>

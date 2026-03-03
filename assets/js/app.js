@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.73';
+    const APP_VERSION = '1.1.74';
     const CHANGELOG = [
+        { version: '1.1.74', date: '2026-03-02', changes: ['Desktop: Fixed the overlay to inherit the same selected rate as the main window by default, so it no longer sits in a useless \"Select Rate\" state when valid rates already exist', 'Desktop: Added a dedicated draggable title bar plus tiny hide/disable controls so the overlay can be moved reliably and dismissed without reopening Settings', 'Desktop: Start Call from the overlay now forces the rate selection back through the same main-app flow before launching the live call, keeping the mini window and main window in sync'] },
         { version: '1.1.73', date: '2026-03-02', changes: ['Desktop: Added real native persistence for the overlay position so the mini window now reopens where you last dragged it instead of only remembering placement during the current session', 'Desktop: Overlay move events are now saved in the Tauri app data directory and restored on the next app launch', 'Maintenance: Kept the desktop overlay flow compatible with the existing multi-window desktop setup without affecting the web or mobile targets'] },
         { version: '1.1.72', date: '2026-03-02', changes: ['Desktop: Reworked the global overlay to match the internal floating call controls more closely with a compact active-card layout and a single circular primary action button', 'Desktop: Removed filler overlay text and extra actions so the mini window only shows the information and action that matter for the current call state', 'Desktop: Overlay windows now keep the position where the user drags them during the session instead of snapping back to the bottom-right every time they are shown'] },
         { version: '1.1.71', date: '2026-03-02', changes: ['Mobile: Prevented horizontal sideways scrolling by hardening the app shell and card containers against viewport overflow', 'Mobile: Floating Call Controls now stay expanded instead of auto-collapsing into the mini button, and only hide when the original Call Controls are actually visible', 'Android: Increased adaptive launcher foreground size so the installed app icon fills the launcher tile more like a normal native app icon'] },
@@ -1264,7 +1265,7 @@ function ensureDesktopOverlayRateSelection() {
     if (!rateName) return '';
     if (rateSelect && rateSelect.value !== rateName) {
         rateSelect.value = rateName;
-        saveLastSelectedRate();
+        rateSelect.dispatchEvent(new Event('change', { bubbles: true }));
     }
     return rateName;
 }
@@ -1357,6 +1358,17 @@ async function handleDesktopOverlayAction(action) {
 
     if (normalizedAction === 'show-main') {
         await showMainWindowNative();
+        return;
+    }
+
+    if (normalizedAction === 'disable-overlay') {
+        featureFlags.desktopOverlayControls = false;
+        if (featureDesktopOverlayToggle) {
+            featureDesktopOverlayToggle.checked = false;
+        }
+        saveFeatureFlags(featureFlags);
+        await syncDesktopOverlayVisibility();
+        showToast('Desktop overlay disabled.');
         return;
     }
 
@@ -4716,7 +4728,17 @@ function saveCalls() {
         
         if (lastSelectedRate && rates.some(rate => rate.name === lastSelectedRate)) {
             rateSelect.value = lastSelectedRate;
+        } else if (rates.length > 0) {
+            rateSelect.value = rates[0].name;
+            lastSelectedRate = rates[0].name;
+            queueStorageWrite('lastSelectedRate', lastSelectedRate);
         }
+
+        if (callRateSelect && callRateSelect.options.length > 0 && !callRateSelect.value) {
+            callRateSelect.value = rateSelect.value;
+        }
+
+        scheduleDesktopOverlayRefresh();
     }
 
     function formatLocalDateTime(isoString) {
