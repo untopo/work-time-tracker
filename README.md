@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.80-blue)
+![Version](https://img.shields.io/badge/version-1.1.81-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -278,8 +278,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.80`
+- Current Version: `v1.1.81`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.81`
+
+- Replaced the embedded Ko-fi widget with a fixed button so the footer support actions stay visually consistent and no external widget stretches the layout
+- Donate and Support me on Ko-fi now sit side by side with matching rounded button dimensions
 
 ### Highlights in `v1.1.80`
 

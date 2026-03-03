@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.80';
+    const APP_VERSION = '1.1.81';
     const CHANGELOG = [
+        { version: '1.1.81', date: '2026-03-03', changes: ['UI: Replaced the embedded Ko-fi widget with a fixed button so support actions stay visually consistent and no external widget stretches the footer', 'Footer: Donate and Support me on Ko-fi now sit side by side with matching pill dimensions', 'Mobile/Desktop: Unified the support button layout instead of switching between separate Ko-fi desktop/mobile treatments'] },
         { version: '1.1.80', date: '2026-03-03', changes: ['Hotfix: Restored the missing `beginLiveCallWithRate(...)` path so Start Call works again in web, desktop, and mobile builds', 'Android: The APK now reads its visible version from `package.json` instead of staying stuck at `1.0`', 'Mobile: Simplified the footer support area on small screens and removed the over-aggressive body `touch-action` rule to reduce scroll friction and horizontal overflow'] },
         { version: '1.1.79', date: '2026-03-03', changes: ['Hotfix: Removed the remaining desktop-overlay settings references and replaced the leftover overlay refresh calls with a harmless no-op so initialization can no longer fail after the overlay removal', 'Web/Desktop: Restored normal startup for GitHub Pages and the Tauri app without requiring any overlay-specific globals'] },
         { version: '1.1.78', date: '2026-03-03', changes: ['Hotfix: Removed the last broken desktop-overlay settings listener that was still throwing `openDesktopOverlaySettingsBtn is not defined` during app initialization', 'Web/Desktop: Restored normal startup so GitHub Pages and the Tauri app can boot again after the overlay removal cleanup'] },
