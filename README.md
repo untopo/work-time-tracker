@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.78-blue)
+![Version](https://img.shields.io/badge/version-1.1.79-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -278,8 +278,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.78`
+- Current Version: `v1.1.79`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.79`
+
+- Hotfix: removed the remaining desktop-overlay settings references and replaced leftover overlay refresh calls with a harmless no-op so initialization can no longer fail after the overlay cleanup
+- Restored normal startup for both GitHub Pages and the desktop app without requiring any removed overlay globals
 
 ### Highlights in `v1.1.78`
 
