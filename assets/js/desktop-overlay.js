@@ -1,10 +1,12 @@
-const infoCard = document.getElementById('overlay-info-card');
+﻿const infoCard = document.getElementById('overlay-info-card');
 const statusText = document.getElementById('overlay-status-text');
 const rateName = document.getElementById('overlay-rate-name');
 const timerText = document.getElementById('overlay-timer');
 const earningsText = document.getElementById('overlay-earnings');
 const primaryBtn = document.getElementById('overlay-primary-btn');
 const primaryIcon = document.getElementById('overlay-primary-icon');
+const minimizeBtn = document.getElementById('overlay-minimize-btn');
+const closeBtn = document.getElementById('overlay-close-btn');
 
 const tauriInvoke = typeof window.__TAURI_INTERNALS__?.invoke === 'function'
   ? window.__TAURI_INTERNALS__.invoke
@@ -52,7 +54,7 @@ function applyPrimaryAction(action) {
     primaryBtn.dataset.mode = 'end';
     primaryBtn.setAttribute('aria-label', 'End Call');
     primaryBtn.setAttribute('title', 'End Call');
-    primaryIcon.textContent = '■';
+    primaryIcon.innerHTML = '&#9632;';
     return;
   }
 
@@ -60,14 +62,14 @@ function applyPrimaryAction(action) {
     primaryBtn.dataset.mode = 'start';
     primaryBtn.setAttribute('aria-label', 'Start Call');
     primaryBtn.setAttribute('title', 'Start Call');
-    primaryIcon.textContent = '▶';
+    primaryIcon.innerHTML = '&#9654;';
     return;
   }
 
   primaryBtn.dataset.mode = 'select';
   primaryBtn.setAttribute('aria-label', 'Open App');
   primaryBtn.setAttribute('title', 'Open App');
-  primaryIcon.textContent = '↗';
+  primaryIcon.innerHTML = '&#8599;';
 }
 
 function applyState(payload = {}) {
@@ -95,8 +97,21 @@ async function emitAction(action) {
   await tauriEmitTo('main', 'desktop-overlay-action', { action });
 }
 
+async function hideOverlayWindow() {
+  if (!tauriInvoke) return;
+  await tauriInvoke('set_desktop_overlay_visible', { visible: false });
+}
+
 primaryBtn?.addEventListener('click', () => {
   void emitAction(currentPrimaryAction);
+});
+
+minimizeBtn?.addEventListener('click', () => {
+  void hideOverlayWindow();
+});
+
+closeBtn?.addEventListener('click', () => {
+  void emitAction('disable-overlay');
 });
 
 window.addEventListener('DOMContentLoaded', async () => {
