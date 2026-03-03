@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.74-blue)
+![Version](https://img.shields.io/badge/version-1.1.75-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -281,8 +281,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.74`
+- Current Version: `v1.1.75`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in 1.1.75
+- Reduced scroll-linked work on mobile by removing app-shell refreshes from isualViewport scroll events
+- Moved Floating Call Controls visibility tracking toward IntersectionObserver updates instead of repeated viewport geometry checks during every touch scroll
+- Kept the floating dock behavior aligned with the original Call Controls while reducing layout work during mobile scrolling
 
 ### Highlights in `v1.1.74`
 - Fixed the desktop overlay so it inherits the same selected rate as the main window by default instead of getting stuck on `Select Rate`
@@ -400,3 +405,4 @@ Direct contact reference: `worktimetrackertool@gmail.com`
 Built for interpreters by interpreters.
 
 Made by [Topo](https://www.instagram.com/otpo/)
+

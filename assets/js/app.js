@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.74';
+    const APP_VERSION = '1.1.75';
     const CHANGELOG = [
+        { version: '1.1.75', date: '2026-03-02', changes: ['Mobile: Reduced scroll-linked work by removing app-shell refreshes from visualViewport scroll events and moving Floating Call Controls visibility tracking toward IntersectionObserver-driven updates', 'Mobile: Floating controls now rely less on repeated viewport geometry checks during normal page scrolling, which should make the installed mobile app feel more responsive on touch scroll', 'Maintenance: Kept the dock visibility behavior aligned with the original Call Controls while reducing unnecessary layout reads on every scroll frame'] },
         { version: '1.1.74', date: '2026-03-02', changes: ['Desktop: Fixed the overlay to inherit the same selected rate as the main window by default, so it no longer sits in a useless \"Select Rate\" state when valid rates already exist', 'Desktop: Added a dedicated draggable title bar plus tiny hide/disable controls so the overlay can be moved reliably and dismissed without reopening Settings', 'Desktop: Start Call from the overlay now forces the rate selection back through the same main-app flow before launching the live call, keeping the mini window and main window in sync'] },
         { version: '1.1.73', date: '2026-03-02', changes: ['Desktop: Added real native persistence for the overlay position so the mini window now reopens where you last dragged it instead of only remembering placement during the current session', 'Desktop: Overlay move events are now saved in the Tauri app data directory and restored on the next app launch', 'Maintenance: Kept the desktop overlay flow compatible with the existing multi-window desktop setup without affecting the web or mobile targets'] },
         { version: '1.1.72', date: '2026-03-02', changes: ['Desktop: Reworked the global overlay to match the internal floating call controls more closely with a compact active-card layout and a single circular primary action button', 'Desktop: Removed filler overlay text and extra actions so the mini window only shows the information and action that matter for the current call state', 'Desktop: Overlay windows now keep the position where the user drags them during the session instead of snapping back to the bottom-right every time they are shown'] },
@@ -866,6 +867,10 @@ async function confirmExportOptions() {
     const callLogTableBody = document.getElementById('call-log');
     const callLogMobileList = document.getElementById('call-log-mobile');
     const callLogScrollContainer = callLogTableBody?.closest('.scrollable-table') || null;
+    let floatingVisibilityObserver = null;
+    let observedFloatingPrimaryButton = null;
+    let callControlsVisibleInViewport = false;
+    let activeCallButtonVisibleInViewport = false;
     const totalMinutesDisplay = document.getElementById('total-minutes');
     const totalEarningsDisplay = document.getElementById('total-earnings');
     const rateSelect = document.getElementById('select-call-rate');
@@ -2155,8 +2160,66 @@ function isElementVisibleInViewport(el, minVisibleRatio = 0.2) {
     return (visibleArea / totalArea) >= minVisibleRatio;
 }
 
+function refreshFloatingVisibilityObservers() {
+    if (!('IntersectionObserver' in window)) return;
+    if (!floatingVisibilityObserver || !callControlsCard) return;
+
+    const activeMainButton = endCallBtn.style.display === 'none' ? startCallBtn : endCallBtn;
+    if (observedFloatingPrimaryButton === activeMainButton) return;
+
+    if (observedFloatingPrimaryButton) {
+        floatingVisibilityObserver.unobserve(observedFloatingPrimaryButton);
+    }
+
+    observedFloatingPrimaryButton = activeMainButton || null;
+    activeCallButtonVisibleInViewport = false;
+
+    if (observedFloatingPrimaryButton) {
+        floatingVisibilityObserver.observe(observedFloatingPrimaryButton);
+    }
+}
+
+function setupFloatingVisibilityObservers() {
+    if (!('IntersectionObserver' in window)) return;
+    if (!callControlsCard || floatingVisibilityObserver) return;
+
+    floatingVisibilityObserver = new IntersectionObserver((entries) => {
+        let shouldRefresh = false;
+        entries.forEach((entry) => {
+            const ratio = Number(entry.intersectionRatio || 0);
+            if (entry.target === callControlsCard) {
+                const nextVisible = entry.isIntersecting && ratio >= 0.18;
+                if (nextVisible !== callControlsVisibleInViewport) {
+                    callControlsVisibleInViewport = nextVisible;
+                    shouldRefresh = true;
+                }
+                return;
+            }
+
+            if (entry.target === observedFloatingPrimaryButton) {
+                const nextVisible = entry.isIntersecting && ratio >= 0.45;
+                if (nextVisible !== activeCallButtonVisibleInViewport) {
+                    activeCallButtonVisibleInViewport = nextVisible;
+                    shouldRefresh = true;
+                }
+            }
+        });
+
+        if (shouldRefresh) {
+            scheduleFloatingControlsRefresh();
+        }
+    }, {
+        threshold: [0, 0.18, 0.45, 1]
+    });
+
+    floatingVisibilityObserver.observe(callControlsCard);
+    refreshFloatingVisibilityObservers();
+}
+
 function updateFloatingCallControls(flags = featureFlags) {
     if (!floatingCallControls || !floatingStartCallBtn || !floatingEndCallBtn || !callControlsCard) return;
+
+    refreshFloatingVisibilityObservers();
 
     const enabled = !!flags?.floatingCallControls;
     if (!enabled) {
@@ -2174,8 +2237,12 @@ function updateFloatingCallControls(flags = featureFlags) {
     }
 
     const activeMainButton = endCallBtn.style.display === 'none' ? startCallBtn : endCallBtn;
-    const controlsCardVisible = isElementVisibleInViewport(callControlsCard, 0.18);
-    const mainButtonVisible = isElementVisibleInViewport(activeMainButton, 0.45);
+    const controlsCardVisible = floatingVisibilityObserver
+        ? callControlsVisibleInViewport
+        : isElementVisibleInViewport(callControlsCard, 0.18);
+    const mainButtonVisible = floatingVisibilityObserver
+        ? activeCallButtonVisibleInViewport
+        : isElementVisibleInViewport(activeMainButton, 0.45);
 
     if (controlsCardVisible || mainButtonVisible) {
         floatingCallControls.style.display = 'none';
@@ -6870,6 +6937,7 @@ goalMinutesInput.addEventListener('input', () => {
         openOnboardingModalIfNeeded();
         void syncDesktopOverlayVisibility();
         void publishDesktopOverlayState(true);
+        setupFloatingVisibilityObservers();
         setInterval(updateLocalTime, 1000);
         window.addEventListener('scroll', scheduleFloatingControlsRefresh, { passive: true });
         window.addEventListener('resize', () => {
@@ -6881,7 +6949,6 @@ goalMinutesInput.addEventListener('input', () => {
         });
         window.addEventListener('orientationchange', scheduleAppShellRefresh);
         window.visualViewport?.addEventListener('resize', scheduleAppShellRefresh);
-        window.visualViewport?.addEventListener('scroll', scheduleAppShellRefresh);
 
         const today = getTodayDateString();
         statsDatePicker.value = today;
