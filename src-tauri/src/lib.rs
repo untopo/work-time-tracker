@@ -250,6 +250,37 @@ fn show_main_window(app: AppHandle) -> Result<(), String> {
     .map_err(|error| format!("Failed to focus main window: {error}"))
 }
 
+#[tauri::command]
+fn get_desktop_overlay_position(app: AppHandle) -> Result<Value, String> {
+  let overlay = app
+    .get_webview_window(DESKTOP_OVERLAY_LABEL)
+    .ok_or_else(|| "Desktop overlay window is not available".to_string())?;
+
+  let position = overlay
+    .outer_position()
+    .map_err(|error| format!("Failed to read desktop overlay position: {error}"))?;
+
+  Ok(json!({
+    "x": position.x,
+    "y": position.y
+  }))
+}
+
+#[tauri::command]
+fn set_desktop_overlay_position(app: AppHandle, x: i32, y: i32) -> Result<(), String> {
+  ensure_desktop_overlay_window(&app)?;
+  let overlay = app
+    .get_webview_window(DESKTOP_OVERLAY_LABEL)
+    .ok_or_else(|| "Desktop overlay window is not available".to_string())?;
+
+  let position = PhysicalPosition::new(x, y);
+  overlay
+    .set_position(Position::Physical(position))
+    .map_err(|error| format!("Failed to move desktop overlay: {error}"))?;
+  save_overlay_position(&app, position)?;
+  Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -262,7 +293,9 @@ pub fn run() {
       write_text_file,
       set_desktop_overlay_visible,
       update_desktop_overlay,
-      show_main_window
+      show_main_window,
+      get_desktop_overlay_position,
+      set_desktop_overlay_position
     ])
     .setup(|app| {
       let _ = ensure_desktop_overlay_window(&app.handle());
