@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.82-blue)
+![Version](https://img.shields.io/badge/version-1.1.83-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -78,6 +78,7 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - Export scope selector for all history, current filtered view, a specific date, or a custom range
 - Minimal Data Hub that separates backups from Call Log CSV actions
 - Automatic restore of active live calls when reopening the app
+- Desktop and mobile update notice when a newer packaged release is available
 - Safe backup merge import that preserves existing local data
 - Dark mode / light mode toggle
 - Floating call controls (optional)
@@ -278,8 +279,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.82`
+- Current Version: `v1.1.83`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.83`
+
+- Desktop and mobile builds now check a lightweight public update manifest and show a non-blocking banner when a newer release is available
+- Update notices can be dismissed per-version so users are only reminded again when a truly newer release exists
 
 ### Highlights in `v1.1.82`
 
