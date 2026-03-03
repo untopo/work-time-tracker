@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.77';
+    const APP_VERSION = '1.1.78';
     const CHANGELOG = [
+        { version: '1.1.78', date: '2026-03-03', changes: ['Hotfix: Removed the last broken desktop-overlay settings listener that was still throwing `openDesktopOverlaySettingsBtn is not defined` during app initialization', 'Web/Desktop: Restored normal startup so GitHub Pages and the Tauri app can boot again after the overlay removal cleanup'] },
         { version: '1.1.77', date: '2026-03-03', changes: ['Desktop: Removed the experimental always-on-top overlay controls after repeated reliability issues so the main app returns to a simpler, more dependable desktop experience', 'Desktop: Closing the Tauri main window now exits the app fully instead of leaving a lingering background process during reinstalls or updates', 'Maintenance: Cleaned the codebase and desktop packaging flow by removing overlay-specific windows, assets, and Rust commands'] },
         { version: '1.1.76', date: '2026-03-02', changes: ['Desktop: Rebuilt the always-on-top overlay to match the internal floating dock structure more closely, including the same active-call card and action stack instead of a separate mini-panel concept', 'Desktop: Overlay dragging now uses native window position commands so the user can move it freely around the screen instead of depending on the previous drag-region behavior', 'Desktop: The overlay keeps Start/End Call plus Add Call available in the same compact dock style while still supporting hide and disable controls'] },
         { version: '1.1.75', date: '2026-03-02', changes: ['Mobile: Reduced scroll-linked work by removing app-shell refreshes from visualViewport scroll events and moving Floating Call Controls visibility tracking toward IntersectionObserver-driven updates', 'Mobile: Floating controls now rely less on repeated viewport geometry checks during normal page scrolling, which should make the installed mobile app feel more responsive on touch scroll', 'Maintenance: Kept the dock visibility behavior aligned with the original Call Controls while reducing unnecessary layout reads on every scroll frame'] },
@@ -6137,9 +6138,6 @@ calls.push(callData);
             }
             if (openFloatingControlsSettingsBtn) {
                 openFloatingControlsSettingsBtn.addEventListener('click', (e) => openFloatingControlsSettingsModal(e.currentTarget));
-            }
-            if (openDesktopOverlaySettingsBtn) {
-                openDesktopOverlaySettingsBtn.addEventListener('click', (e) => openDesktopOverlaySettingsModal(e.currentTarget));
             }
             if (openPaymentCyclesSettingsBtn) {
                 openPaymentCyclesSettingsBtn.addEventListener('click', (e) => openPaymentCyclesSettingsModal(e.currentTarget));
