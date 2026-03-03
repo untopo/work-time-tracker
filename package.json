@@ -1,15 +1,16 @@
 {
   "name": "work-time-tracker",
-  "version": "1.1.68",
+  "version": "1.1.69",
   "description": "Privacy-first time tracker for interpreters and freelancers.",
   "main": "index.js",
   "scripts": {
     "dev:web": "serve . -l 1420 --no-clipboard",
     "build:web": "node scripts/prepare-dist.mjs",
+    "android:icons": "powershell -ExecutionPolicy Bypass -File scripts/generate-android-icons.ps1",
     "tauri:dev": "node scripts/tauri-win.mjs dev",
     "tauri:build": "node scripts/tauri-win.mjs build",
-    "cap:sync": "npm run build:web && npx cap sync",
-    "cap:sync:android": "npm run build:web && npx cap sync android",
+    "cap:sync": "npm run build:web && npm run android:icons && npx cap sync",
+    "cap:sync:android": "npm run build:web && npm run android:icons && npx cap sync android",
     "cap:open:android": "npx cap open android"
   },
   "keywords": [
