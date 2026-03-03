@@ -1653,6 +1653,7 @@
             align-items: center;
             justify-content: center;
             flex-wrap: nowrap;
+            gap: 0.5rem;
         }
 
         .support-action-form {
@@ -1664,12 +1665,13 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 152px;
-            height: 40px;
-            padding: 0 0.9rem;
+            width: 124px;
+            height: 36px;
+            padding: 0 0.7rem;
             border-radius: 9999px;
-            font-size: 0.9rem;
+            font-size: 0.78rem;
             font-weight: 700;
+            letter-spacing: -0.01em;
             line-height: 1;
             white-space: nowrap;
             text-decoration: none;
@@ -1767,10 +1769,10 @@
             }
 
             .support-action-btn {
-                width: 140px;
-                height: 38px;
-                padding: 0 0.75rem;
-                font-size: 0.86rem;
+                width: 120px;
+                height: 34px;
+                padding: 0 0.6rem;
+                font-size: 0.74rem;
             }
 
             html.native-app-shell header h1 {
