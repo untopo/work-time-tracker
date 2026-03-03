@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.84-blue)
+![Version](https://img.shields.io/badge/version-1.1.85-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -279,8 +279,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.84`
+- Current Version: `v1.1.85`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.85`
+
+- Fixed the desktop update banner so `View Release` opens the GitHub release page in the system browser instead of failing silently inside Tauri
+- Mobile keeps the existing normal browser-open flow, while desktop now uses a native command for external release links
 
 ### Highlights in `v1.1.84`
 
