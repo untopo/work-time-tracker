@@ -2,8 +2,8 @@ use std::fs;
 use std::path::PathBuf;
 
 use rfd::FileDialog;
-use serde_json::{Map, Value};
-use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, Position, WebviewUrl, WebviewWindowBuilder};
+use serde_json::{json, Map, Value};
+use tauri::{AppHandle, Emitter, Manager, PhysicalPosition, Position, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 
 const DESKTOP_OVERLAY_LABEL: &str = "desktop-overlay";
 
@@ -17,6 +17,49 @@ fn storage_snapshot_path(app: &AppHandle) -> Result<PathBuf, String> {
     .map_err(|error| format!("Failed to create app data directory: {error}"))?;
 
   Ok(app_data_dir.join("storage-snapshot.json"))
+}
+
+fn overlay_position_path(app: &AppHandle) -> Result<PathBuf, String> {
+  let app_data_dir = app
+    .path()
+    .app_data_dir()
+    .map_err(|error| format!("Failed to resolve app data directory: {error}"))?;
+
+  fs::create_dir_all(&app_data_dir)
+    .map_err(|error| format!("Failed to create app data directory: {error}"))?;
+
+  Ok(app_data_dir.join("desktop-overlay-position.json"))
+}
+
+fn load_overlay_position(app: &AppHandle) -> Result<Option<PhysicalPosition<i32>>, String> {
+  let file_path = overlay_position_path(app)?;
+  if !file_path.exists() {
+    return Ok(None);
+  }
+
+  let raw = fs::read_to_string(&file_path)
+    .map_err(|error| format!("Failed to read desktop overlay position: {error}"))?;
+  let parsed = serde_json::from_str::<Value>(&raw)
+    .map_err(|error| format!("Failed to parse desktop overlay position JSON: {error}"))?;
+  let x = parsed.get("x").and_then(|value| value.as_i64()).map(|value| value as i32);
+  let y = parsed.get("y").and_then(|value| value.as_i64()).map(|value| value as i32);
+
+  match (x, y) {
+    (Some(x), Some(y)) => Ok(Some(PhysicalPosition::new(x, y))),
+    _ => Ok(None)
+  }
+}
+
+fn save_overlay_position(app: &AppHandle, position: PhysicalPosition<i32>) -> Result<(), String> {
+  let file_path = overlay_position_path(app)?;
+  let payload = serde_json::to_string_pretty(&json!({
+    "x": position.x,
+    "y": position.y
+  }))
+  .map_err(|error| format!("Failed to serialize desktop overlay position: {error}"))?;
+
+  fs::write(file_path, payload)
+    .map_err(|error| format!("Failed to write desktop overlay position: {error}"))
 }
 
 fn ensure_desktop_overlay_window(app: &AppHandle) -> Result<(), String> {
@@ -36,7 +79,22 @@ fn ensure_desktop_overlay_window(app: &AppHandle) -> Result<(), String> {
     .build()
     .map_err(|error| format!("Failed to create desktop overlay window: {error}"))?;
 
-  let _ = dock_desktop_overlay_window(app);
+  if let Some(overlay) = app.get_webview_window(DESKTOP_OVERLAY_LABEL) {
+    let app_handle = app.clone();
+    overlay.on_window_event(move |event| {
+      if let WindowEvent::Moved(position) = event {
+        let _ = save_overlay_position(&app_handle, position.to_owned());
+      }
+    });
+  }
+
+  if let Some(saved_position) = load_overlay_position(app)? {
+    if let Some(overlay) = app.get_webview_window(DESKTOP_OVERLAY_LABEL) {
+      let _ = overlay.set_position(Position::Physical(saved_position));
+    }
+  } else {
+    let _ = dock_desktop_overlay_window(app);
+  }
 
   Ok(())
 }
