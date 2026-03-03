@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.71';
+    const APP_VERSION = '1.1.72';
     const CHANGELOG = [
+        { version: '1.1.72', date: '2026-03-02', changes: ['Desktop: Reworked the global overlay to match the internal floating call controls more closely with a compact active-card layout and a single circular primary action button', 'Desktop: Removed filler overlay text and extra actions so the mini window only shows the information and action that matter for the current call state', 'Desktop: Overlay windows now keep the position where the user drags them during the session instead of snapping back to the bottom-right every time they are shown'] },
         { version: '1.1.71', date: '2026-03-02', changes: ['Mobile: Prevented horizontal sideways scrolling by hardening the app shell and card containers against viewport overflow', 'Mobile: Floating Call Controls now stay expanded instead of auto-collapsing into the mini button, and only hide when the original Call Controls are actually visible', 'Android: Increased adaptive launcher foreground size so the installed app icon fills the launcher tile more like a normal native app icon'] },
         { version: '1.1.70', date: '2026-03-02', changes: ['Desktop: Added an optional always-on-top overlay window that keeps Start/End Call, live timer, and earnings visible outside the main app window', 'Desktop: Overlay actions now route back to the main Tauri window so you can start calls, end calls, add calls, or reopen the app from the mini control window', 'Prep: Added a dedicated overlay frontend and native desktop window bridge so multi-window desktop features ship without breaking the static web target'] },
         { version: '1.1.69', date: '2026-03-02', changes: ['Mobile: Added a more app-like native shell layout with safe-area-aware spacing, sticky action toolbar, and viewport-height syncing for Capacitor/standalone installs', 'Android: Unified launcher icons with the shared desktop icon source so the mobile install now uses the same product mark', 'Android: Added activity resize handling for the on-screen keyboard so forms behave more like a native app instead of a cramped browser view'] },
@@ -1246,34 +1247,65 @@ async function showMainWindowNative() {
     }
 }
 
+function getDesktopOverlayRateName() {
+    const selectedRateName = String(rateSelect?.value || '').trim();
+    if (selectedRateName && rates.some((rate) => rate.name === selectedRateName)) {
+        return selectedRateName;
+    }
+    if (lastSelectedRate && rates.some((rate) => rate.name === lastSelectedRate)) {
+        return lastSelectedRate;
+    }
+    return rates[0]?.name || '';
+}
+
+function ensureDesktopOverlayRateSelection() {
+    const rateName = getDesktopOverlayRateName();
+    if (!rateName) return '';
+    if (rateSelect && rateSelect.value !== rateName) {
+        rateSelect.value = rateName;
+        saveLastSelectedRate();
+    }
+    return rateName;
+}
+
 function buildDesktopOverlayState() {
     const liveCallActive = !!liveCallStart || endCallBtn.style.display !== 'none';
     const elapsed = liveCallActive && liveCallStart ? Math.max(0, Date.now() - liveCallStart) : 0;
-    const resolvedRate = currentCallRate || getSelectedRateAmount();
-    const selectedRateName = String(rateSelect?.value || '').trim();
+    const selectedRateName = getDesktopOverlayRateName();
+    const selectedRate = rates.find((rate) => rate.name === selectedRateName) || null;
+    const resolvedRate = currentCallRate || selectedRate?.amount || 0;
     let primaryAction = 'show-main';
-    let statusText = 'Rate required';
-    let noteText = 'Select a rate in the main app before starting a call.';
+    let statusText = 'Select Rate';
+    let mode = 'select';
+    let showRateName = true;
+    let showTimer = false;
+    let showEarnings = false;
 
     if (liveCallActive) {
         primaryAction = 'end-call';
         statusText = 'Active call';
-        noteText = 'End the current call instantly from the overlay.';
+        mode = 'active';
+        showRateName = false;
+        showTimer = true;
+        showEarnings = true;
     } else if (selectedRateName) {
         primaryAction = 'start-call';
-        statusText = 'Ready to start';
-        noteText = 'Start a call instantly while working in other windows.';
+        statusText = 'Ready to Start';
+        mode = 'ready';
     }
 
     return {
         theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
         liveCallActive,
+        mode,
         primaryAction,
         statusText,
-        rateName: selectedRateName || 'Select a rate in the main app',
+        rateName: selectedRateName || 'Open the main app and choose a rate.',
+        showRateName,
         timerText: formatTime(elapsed),
         earningsText: formatEarnings(calculateEarnings(elapsed, resolvedRate)),
-        noteText
+        showTimer,
+        showEarnings
     };
 }
 
@@ -1334,6 +1366,7 @@ async function handleDesktopOverlayAction(action) {
     }
 
     if (normalizedAction === 'start-call') {
+        ensureDesktopOverlayRateSelection();
         startLiveCall();
         return;
     }

@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.71-blue)
+![Version](https://img.shields.io/badge/version-1.1.72-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -281,8 +281,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.71`
+- Current Version: `v1.1.72`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.72`
+- Reworked the desktop always-on-top overlay so it matches the internal floating call controls more closely with a compact active-card layout and one primary circular action
+- Removed filler overlay copy and extra secondary buttons so the desktop mini-window only shows the current call state and the main action
+- Stopped re-docking the desktop overlay every time it is shown, so you can drag it to another part of the screen and keep using it there during the session
 
 ### Highlights in `v1.1.71`
 - Prevented horizontal sideways scrolling on mobile by hardening the app shell and main card containers against viewport overflow

@@ -1,11 +1,10 @@
+const infoCard = document.getElementById('overlay-info-card');
 const statusText = document.getElementById('overlay-status-text');
 const rateName = document.getElementById('overlay-rate-name');
 const timerText = document.getElementById('overlay-timer');
 const earningsText = document.getElementById('overlay-earnings');
-const noteText = document.getElementById('overlay-note');
 const primaryBtn = document.getElementById('overlay-primary-btn');
-const addCallBtn = document.getElementById('overlay-add-call-btn');
-const openAppBtn = document.getElementById('overlay-open-app-btn');
+const primaryIcon = document.getElementById('overlay-primary-icon');
 
 const tauriInvoke = typeof window.__TAURI_INTERNALS__?.invoke === 'function'
   ? window.__TAURI_INTERNALS__.invoke
@@ -47,26 +46,49 @@ function applyTheme(theme) {
   document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 }
 
-function applyState(payload = {}) {
-  const action = String(payload.primaryAction || 'show-main');
+function applyPrimaryAction(action) {
   currentPrimaryAction = action;
-  applyTheme(payload.theme === 'dark' ? 'dark' : 'light');
-  statusText.textContent = String(payload.statusText || 'Ready');
-  rateName.textContent = String(payload.rateName || 'Select a rate in the main app');
-  timerText.textContent = String(payload.timerText || '00:00:00');
-  earningsText.textContent = String(payload.earningsText || '$0.00');
-  noteText.textContent = String(payload.noteText || 'The overlay stays on top while you work in other windows.');
-
   if (action === 'end-call') {
-    primaryBtn.textContent = 'End Call';
     primaryBtn.dataset.mode = 'end';
-  } else if (action === 'start-call') {
-    primaryBtn.textContent = 'Start Call';
-    primaryBtn.dataset.mode = 'start';
-  } else {
-    primaryBtn.textContent = 'Select Rate';
-    primaryBtn.dataset.mode = 'select';
+    primaryBtn.setAttribute('aria-label', 'End Call');
+    primaryBtn.setAttribute('title', 'End Call');
+    primaryIcon.textContent = '■';
+    return;
   }
+
+  if (action === 'start-call') {
+    primaryBtn.dataset.mode = 'start';
+    primaryBtn.setAttribute('aria-label', 'Start Call');
+    primaryBtn.setAttribute('title', 'Start Call');
+    primaryIcon.textContent = '▶';
+    return;
+  }
+
+  primaryBtn.dataset.mode = 'select';
+  primaryBtn.setAttribute('aria-label', 'Open App');
+  primaryBtn.setAttribute('title', 'Open App');
+  primaryIcon.textContent = '↗';
+}
+
+function applyState(payload = {}) {
+  const mode = String(payload.mode || 'select');
+  applyTheme(payload.theme === 'dark' ? 'dark' : 'light');
+  infoCard.dataset.mode = mode;
+  statusText.textContent = String(payload.statusText || 'Select Rate');
+
+  const showRate = !!payload.showRateName;
+  rateName.textContent = String(payload.rateName || '');
+  rateName.style.display = showRate ? '' : 'none';
+
+  const showTimer = !!payload.showTimer;
+  timerText.textContent = String(payload.timerText || '00:00:00');
+  timerText.style.display = showTimer ? '' : 'none';
+
+  const showEarnings = !!payload.showEarnings;
+  earningsText.textContent = String(payload.earningsText || '$0.00');
+  earningsText.style.display = showEarnings ? '' : 'none';
+
+  applyPrimaryAction(String(payload.primaryAction || 'show-main'));
 }
 
 async function emitAction(action) {
@@ -75,14 +97,6 @@ async function emitAction(action) {
 
 primaryBtn?.addEventListener('click', () => {
   void emitAction(currentPrimaryAction);
-});
-
-addCallBtn?.addEventListener('click', () => {
-  void emitAction('add-call');
-});
-
-openAppBtn?.addEventListener('click', () => {
-  void emitAction('show-main');
 });
 
 window.addEventListener('DOMContentLoaded', async () => {
