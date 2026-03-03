@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.68-blue)
+![Version](https://img.shields.io/badge/version-1.1.69-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -279,8 +279,13 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.68`
+- Current Version: `v1.1.69`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.69`
+- Added a more app-like mobile shell for installed/standalone usage with safe-area-aware spacing, sticky top actions, and viewport-height syncing
+- Unified Android launcher icons with the same shared icon source used by the desktop build
+- Improved Android keyboard resize behavior so forms and modals feel less like a cramped browser view
 
 ### Highlights in `v1.1.68`
 - Fixed floating call controls on mobile so they now depend on real `Call Controls` visibility instead of disappearing incorrectly when scrolling upward

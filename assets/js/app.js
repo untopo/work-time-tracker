@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.68';
+    const APP_VERSION = '1.1.69';
     const CHANGELOG = [
+        { version: '1.1.69', date: '2026-03-02', changes: ['Mobile: Added a more app-like native shell layout with safe-area-aware spacing, sticky action toolbar, and viewport-height syncing for Capacitor/standalone installs', 'Android: Unified launcher icons with the shared desktop icon source so the mobile install now uses the same product mark', 'Android: Added activity resize handling for the on-screen keyboard so forms behave more like a native app instead of a cramped browser view'] },
         { version: '1.1.68', date: '2026-03-02', changes: ['Fixed: Floating call controls now stay available whenever the original Call Controls section is genuinely out of view on mobile, regardless of scroll direction', 'Release: Added Android APK output to the public release assets so the mobile preview can be downloaded directly'] },
         { version: '1.1.67', date: '2026-03-02', changes: ['Mobile: Added a dedicated card-based Call Log layout for narrow screens so call history no longer depends on a squeezed desktop table', 'Prep: Added Capacitor + Android project scaffolding in the same repository so the app can keep one shared codebase for web, desktop, and future mobile builds', 'Improved: Mobile form inputs and action sizing were tightened further to reduce keyboard zoom and touch friction on phones'] },
         { version: '1.1.66', date: '2026-03-02', changes: ['Improved: Quick notes now opens with a larger default textarea size for first-time use on mobile and web', 'Preserved: Notes textarea height persistence still remembers the last manual resize the user left in place'] },
@@ -165,6 +166,32 @@ function createRafScheduler(fn) {
 function closeChangelogModal() {
   ModalManager.close(changelogModal);
 }
+
+function isStandaloneDisplayMode() {
+    try {
+        return Boolean(window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true);
+    } catch (error) {
+        return false;
+    }
+}
+
+function isNativeAppShell() {
+    try {
+        const protocol = String(window.location?.protocol || '');
+        return Boolean(window.Capacitor) || protocol === 'capacitor:' || protocol === 'ionic:' || isStandaloneDisplayMode();
+    } catch (error) {
+        return isStandaloneDisplayMode();
+    }
+}
+
+function applyAppShellMode() {
+    const root = document.documentElement;
+    if (!root) return;
+    root.classList.toggle('native-app-shell', isNativeAppShell());
+    root.style.setProperty('--app-shell-vh', `${window.innerHeight * 0.01}px`);
+}
+
+const scheduleAppShellRefresh = createRafScheduler(applyAppShellMode);
 
     // ============================================
     // UTILITY FUNCTIONS
@@ -5644,6 +5671,7 @@ calls.push(callData);
     // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
         try {
+        applyAppShellMode();
         ModalManager.setupGlobalKeyboard();
         window.WTTModalQA = {
             report: getModalQaSnapshot
@@ -6594,10 +6622,14 @@ goalMinutesInput.addEventListener('input', () => {
         setInterval(updateLocalTime, 1000);
         window.addEventListener('scroll', scheduleFloatingControlsRefresh, { passive: true });
         window.addEventListener('resize', () => {
+            scheduleAppShellRefresh();
             scheduleModalLayoutRefresh();
             scheduleFloatingControlsRefresh();
             scheduleDetailPanelsReflow();
         });
+        window.addEventListener('orientationchange', scheduleAppShellRefresh);
+        window.visualViewport?.addEventListener('resize', scheduleAppShellRefresh);
+        window.visualViewport?.addEventListener('scroll', scheduleAppShellRefresh);
 
         const today = getTodayDateString();
         statsDatePicker.value = today;
