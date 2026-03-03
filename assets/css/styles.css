@@ -1651,26 +1651,31 @@
 
         .support-actions-row {
             align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
         }
 
         .support-action-form {
             margin: 0;
+            flex: 0 0 auto;
         }
 
         .support-action-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 164px;
-            height: 44px;
-            padding: 0 1.25rem;
+            width: 152px;
+            height: 40px;
+            padding: 0 0.9rem;
             border-radius: 9999px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 700;
             line-height: 1;
+            white-space: nowrap;
             text-decoration: none;
             transition: background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
             box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
+            box-sizing: border-box;
         }
 
         .support-action-btn:hover {
@@ -1762,10 +1767,10 @@
             }
 
             .support-action-btn {
-                min-width: 148px;
-                height: 42px;
-                padding: 0 1rem;
-                font-size: 0.9rem;
+                width: 140px;
+                height: 38px;
+                padding: 0 0.75rem;
+                font-size: 0.86rem;
             }
 
             html.native-app-shell header h1 {
