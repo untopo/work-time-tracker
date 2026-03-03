@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.82';
+    const APP_VERSION = '1.1.83';
     const CHANGELOG = [
+        { version: '1.1.83', date: '2026-03-03', changes: ['Added: Desktop and mobile builds now check a lightweight public update manifest and show a non-blocking banner when a newer release is available', 'Added: Update notices can be dismissed per-version so users are reminded only when a truly newer release exists', 'Prep: The shared static build now includes version.json so GitHub Pages, Tauri, and Capacitor can read the same release metadata source'] },
         { version: '1.1.82', date: '2026-03-03', changes: ['Mobile: Active calls now auto-restore cleanly after background/minimized states, while explicit close attempts still keep the recovery decision flow available on next launch', 'Mobile: Removed shell overflow rules that were making vertical dashboard scrolling feel sticky or dependent on sideways gestures first', 'Stability: Active-call close intent is now tracked separately from normal background persistence so recovery behavior is less intrusive'] },
         { version: '1.1.81', date: '2026-03-03', changes: ['UI: Replaced the embedded Ko-fi widget with a fixed button so support actions stay visually consistent and no external widget stretches the footer', 'Footer: Donate and Support me on Ko-fi now sit side by side with matching pill dimensions', 'Mobile/Desktop: Unified the support button layout instead of switching between separate Ko-fi desktop/mobile treatments'] },
         { version: '1.1.80', date: '2026-03-03', changes: ['Hotfix: Restored the missing `beginLiveCallWithRate(...)` path so Start Call works again in web, desktop, and mobile builds', 'Android: The APK now reads its visible version from `package.json` instead of staying stuck at `1.0`', 'Mobile: Simplified the footer support area on small screens and removed the over-aggressive body `touch-action` rule to reduce scroll friction and horizontal overflow'] },
@@ -477,6 +478,19 @@ const tauriTransformCallback = window.WTTEnv?.isTauri && typeof window.__TAURI_I
     ? window.__TAURI_INTERNALS__.transformCallback
     : null;
 const isDesktopTauri = !!(window.WTTEnv?.isTauri && !window.Capacitor);
+const UPDATE_MANIFEST_URLS = [
+    'https://untopo.github.io/work-time-tracker/version.json',
+    './version.json'
+];
+const UPDATE_DISMISSED_VERSION_KEY = 'dismissedUpdateVersion';
+const updateAvailableBanner = document.getElementById('update-available-banner');
+const updateCurrentVersionLabel = document.getElementById('update-current-version');
+const updateLatestVersionLabel = document.getElementById('update-latest-version');
+const updateNotesLabel = document.getElementById('update-notes');
+const openUpdateReleaseBtn = document.getElementById('open-update-release-btn');
+const laterUpdateBannerBtn = document.getElementById('later-update-banner-btn');
+const dismissUpdateBannerBtn = document.getElementById('dismiss-update-banner-btn');
+let pendingUpdateManifest = null;
 
 function createTauriEventTarget(label) {
     return typeof label === 'string' && label
@@ -505,6 +519,92 @@ async function tauriListen(event, handler, targetLabel) {
 function getFileNameFromPath(filePath) {
     const parts = String(filePath || '').split(/[\\/]/);
     return parts[parts.length - 1] || '';
+}
+
+function shouldCheckForInstalledAppUpdates() {
+    return isDesktopTauri || Boolean(window.Capacitor);
+}
+
+function normalizeVersionString(version) {
+    return String(version || '')
+        .trim()
+        .replace(/^v/i, '');
+}
+
+function parseVersionParts(version) {
+    return normalizeVersionString(version)
+        .split('.')
+        .map((part) => Number.parseInt(part, 10) || 0);
+}
+
+function isRemoteVersionNewer(remoteVersion, localVersion) {
+    const remoteParts = parseVersionParts(remoteVersion);
+    const localParts = parseVersionParts(localVersion);
+    const total = Math.max(remoteParts.length, localParts.length, 3);
+    for (let i = 0; i < total; i += 1) {
+        const remote = remoteParts[i] || 0;
+        const local = localParts[i] || 0;
+        if (remote !== local) return remote > local;
+    }
+    return false;
+}
+
+function hideUpdateAvailableBanner() {
+    if (!updateAvailableBanner) return;
+    updateAvailableBanner.classList.add('hidden');
+}
+
+function openExternalUrl(url) {
+    const safeUrl = String(url || '').trim();
+    if (!/^https?:\/\//i.test(safeUrl)) return;
+    window.open(safeUrl, '_blank', 'noopener,noreferrer');
+}
+
+async function fetchUpdateManifest() {
+    for (const baseUrl of UPDATE_MANIFEST_URLS) {
+        try {
+            const separator = baseUrl.includes('?') ? '&' : '?';
+            const response = await fetch(`${baseUrl}${separator}t=${Date.now()}`, {
+                cache: 'no-store'
+            });
+            if (!response.ok) continue;
+            const payload = await response.json();
+            if (payload && typeof payload === 'object' && payload.latestVersion) {
+                return payload;
+            }
+        } catch (error) {
+            console.debug('Update manifest fetch failed for', baseUrl, error);
+        }
+    }
+    return null;
+}
+
+function renderUpdateAvailableBanner(manifest) {
+    if (!updateAvailableBanner || !manifest) return;
+    pendingUpdateManifest = manifest;
+    if (updateCurrentVersionLabel) updateCurrentVersionLabel.textContent = `v${normalizeVersionString(APP_VERSION)}`;
+    if (updateLatestVersionLabel) updateLatestVersionLabel.textContent = `v${normalizeVersionString(manifest.latestVersion)}`;
+    if (updateNotesLabel) {
+        updateNotesLabel.textContent = String(manifest.notes || 'A newer installer is available for download.');
+    }
+    updateAvailableBanner.classList.remove('hidden');
+}
+
+function dismissUpdateAvailableBannerForVersion(version) {
+    const normalized = normalizeVersionString(version);
+    if (normalized) appStorage.setItem(UPDATE_DISMISSED_VERSION_KEY, normalized);
+    hideUpdateAvailableBanner();
+}
+
+async function checkForInstalledAppUpdates() {
+    if (!shouldCheckForInstalledAppUpdates()) return;
+    const manifest = await fetchUpdateManifest();
+    if (!manifest?.latestVersion) return;
+    if (!isRemoteVersionNewer(manifest.latestVersion, APP_VERSION)) return;
+    const dismissedVersion = normalizeVersionString(appStorage.getItem(UPDATE_DISMISSED_VERSION_KEY));
+    const latestVersion = normalizeVersionString(manifest.latestVersion);
+    if (dismissedVersion && dismissedVersion === latestVersion) return;
+    renderUpdateAvailableBanner(manifest);
 }
 
 async function pickNativeImportFile(mode) {
@@ -6771,6 +6871,22 @@ goalMinutesInput.addEventListener('input', () => {
         });
         
         document.getElementById('app-version').textContent = APP_VERSION;
+        if (openUpdateReleaseBtn) {
+            openUpdateReleaseBtn.addEventListener('click', () => {
+                const targetUrl = pendingUpdateManifest?.releaseUrl || pendingUpdateManifest?.downloadsUrl;
+                if (targetUrl) openExternalUrl(targetUrl);
+            });
+        }
+        if (laterUpdateBannerBtn) {
+            laterUpdateBannerBtn.addEventListener('click', () => {
+                dismissUpdateAvailableBannerForVersion(pendingUpdateManifest?.latestVersion);
+            });
+        }
+        if (dismissUpdateBannerBtn) {
+            dismissUpdateBannerBtn.addEventListener('click', () => {
+                dismissUpdateAvailableBannerForVersion(pendingUpdateManifest?.latestVersion);
+            });
+        }
         displayRates();
         populateRateSelects();
         populateTimeZones();
@@ -6784,6 +6900,7 @@ goalMinutesInput.addEventListener('input', () => {
         updateOnboardingCues();
         openOnboardingModalIfNeeded();
         setupFloatingVisibilityObservers();
+        void checkForInstalledAppUpdates();
         setInterval(updateLocalTime, 1000);
         window.addEventListener('scroll', scheduleFloatingControlsRefresh, { passive: true });
         window.addEventListener('resize', () => {

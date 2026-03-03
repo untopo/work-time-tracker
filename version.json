@@ -1,0 +1,6 @@
+{
+  "latestVersion": "1.1.83",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.1.83",
+  "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
+  "notes": "Desktop and mobile builds now warn when a newer release is available, using the same lightweight version manifest across packaged targets."
+}
