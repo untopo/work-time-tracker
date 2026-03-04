@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.1.86",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.1.86",
+  "latestVersion": "1.1.87",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.1.87",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "The footer support buttons are now smaller and fit side by side more reliably in narrow layouts."
+  "notes": "The footer now uses a single Donate button that opens a support modal with both PayPal and Ko-fi options."
 }

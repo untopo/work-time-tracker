@@ -1328,6 +1328,45 @@
     </div>
 </div>
 
+<div id="support-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal p-6 max-w-lg w-full relative">
+        <button id="close-support-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <i class="fas fa-heart text-red-500 mr-2"></i>Support Work Time Tracker
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-5">
+            Choose how you want to support the project. The payment page opens in your browser so checkout stays on the official provider site.
+        </p>
+        <div class="grid grid-cols-1 gap-3">
+            <div class="support-modal-card">
+                <div>
+                    <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">Donate with PayPal</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">One-time support through PayPal checkout.</div>
+                </div>
+                <button id="support-modal-paypal-btn" type="button" class="support-modal-action-btn support-modal-action-btn-paypal">
+                    Open PayPal
+                </button>
+            </div>
+            <div class="support-modal-card">
+                <div>
+                    <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">Support on Ko-fi</div>
+                    <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">Open the Ko-fi page to support the project there.</div>
+                </div>
+                <button id="support-modal-kofi-btn" type="button" class="support-modal-action-btn support-modal-action-btn-kofi">
+                    Open Ko-fi
+                </button>
+            </div>
+        </div>
+        <div class="mt-5 flex justify-end">
+            <button id="cancel-support-modal" type="button" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Confirmation Modal (Generic) -->
 <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
     <div class="modal p-6 max-w-sm w-full relative">
@@ -1409,19 +1448,9 @@
                 </p>
                 <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">Any help would be appreciated - thank you!</p>
                 <div class="mt-4 flex flex-wrap justify-center gap-3 support-actions-row">
-                    <form action="https://www.paypal.com/donate" method="post" target="_top" class="support-action-form">
-                        <input type="hidden" name="hosted_button_id" value="3YPGH7MTRMFTJ" />
-                        <button type="submit" class="support-action-btn support-action-btn-paypal">
-                            Donate
-                        </button>
-                        <img alt="" border="0" src="https://www.paypal.com/en_PE/i/scr/pixel.gif" width="1" height="1" />
-                    </form>
-                    <a href="https://ko-fi.com/C1C718BOD"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="support-action-btn support-action-btn-kofi">
-                        Support me on Ko-fi
-                    </a>
+                    <button type="button" id="support-donate-btn" class="support-action-btn support-action-btn-paypal">
+                        Donate
+                    </button>
                 </div>
             </div>
             <div class="text-center">

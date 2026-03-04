@@ -1702,12 +1702,88 @@
             background: linear-gradient(180deg, #41aff7 0%, #2698ef 100%);
         }
 
+        #support-modal .modal {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+            max-width: 520px;
+            width: min(92vw, 520px);
+        }
+
+        html.dark #support-modal .modal {
+            background-color: #1e293b;
+            border-color: #475569;
+            box-shadow: 0 12px 32px rgba(2, 6, 23, 0.34);
+        }
+
+        .support-modal-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            background: rgba(248, 250, 252, 0.9);
+        }
+
+        html.dark .support-modal-card {
+            border-color: #334155;
+            background: rgba(15, 23, 42, 0.75);
+        }
+
+        .support-modal-action-btn {
+            flex: 0 0 auto;
+            min-width: 122px;
+            height: 40px;
+            padding: 0 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            line-height: 1;
+            border: none;
+            cursor: pointer;
+            transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+        }
+
+        .support-modal-action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .support-modal-action-btn-paypal {
+            background: #facc15;
+            color: #111827;
+        }
+
+        .support-modal-action-btn-paypal:hover {
+            background: #fde047;
+        }
+
+        .support-modal-action-btn-kofi {
+            background: linear-gradient(180deg, #2ea2f4 0%, #238fe4 100%);
+            color: #ffffff;
+        }
+
+        .support-modal-action-btn-kofi:hover {
+            background: linear-gradient(180deg, #41aff7 0%, #2698ef 100%);
+        }
+
         @media (max-width: 640px) {
             .onboarding-cues {
                 left: 0.75rem;
                 right: 0.75rem;
                 width: auto;
                 bottom: 0.75rem;
+            }
+
+            .support-modal-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .support-modal-action-btn {
+                width: 100%;
             }
         }
 
