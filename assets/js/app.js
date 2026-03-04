@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.86';
+    const APP_VERSION = '1.1.87';
     const CHANGELOG = [
+        { version: '1.1.87', date: '2026-03-03', changes: ['UI: Replaced the footer support row with a single Donate button that opens a support modal instead of showing both provider buttons inline', 'Added: New support modal keeps both PayPal and Ko-fi options available while opening the official provider pages externally on web, desktop, and mobile'] },
         { version: '1.1.86', date: '2026-03-03', changes: ['UI: Tightened the footer support row again so Donate and Support me on Ko-fi fit side by side more reliably in narrow layouts', 'UI: Reduced support button width, height, and text size evenly so both actions stay visually identical while taking less space'] },
         { version: '1.1.85', date: '2026-03-03', changes: ['Fixed: Desktop update banner now opens the GitHub release page in the system browser instead of doing nothing inside the Tauri webview', 'Desktop: Installed builds now use a native Rust command for release links while mobile keeps using the normal browser open flow'] },
         { version: '1.1.84', date: '2026-03-03', changes: ['UI: Donate and Support me on Ko-fi now use identical fixed dimensions and stay side by side in the footer instead of wrapping unevenly on narrow screens', 'Polish: Both support buttons were slightly reduced in size so the footer support row feels tighter and more balanced on mobile and desktop'] },
@@ -5665,6 +5666,13 @@ calls.push(callData);
     const cancelFeedbackBtn = document.getElementById('cancel-feedback');
     const feedbackForm = document.getElementById('feedback-form');
     const contactUsBtn = document.getElementById('contact-us-btn');
+    const supportModal = document.getElementById('support-modal');
+    const closeSupportModalBtn = document.getElementById('close-support-modal');
+    const cancelSupportModalBtn = document.getElementById('cancel-support-modal');
+    const supportDonateBtn = document.getElementById('support-donate-btn');
+    const supportKofiBtn = document.getElementById('support-kofi-btn');
+    const supportModalPaypalBtn = document.getElementById('support-modal-paypal-btn');
+    const supportModalKofiBtn = document.getElementById('support-modal-kofi-btn');
     const onboardingModal = document.getElementById('onboarding-modal');
     const closeOnboardingModalBtn = document.getElementById('close-onboarding-modal');
     const onboardingDontShowToggle = document.getElementById('onboarding-dont-show-toggle');
@@ -5694,6 +5702,22 @@ calls.push(callData);
     function closeFeedbackModal() {
         ModalManager.close(feedbackModal);
         feedbackForm.reset();
+    }
+
+    const PAYPAL_DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=3YPGH7MTRMFTJ';
+    const KOFI_SUPPORT_URL = 'https://ko-fi.com/C1C718BOD';
+
+    function openSupportModal() {
+        ModalManager.open(supportModal, { focusSelector: '#support-modal-paypal-btn' });
+    }
+
+    function closeSupportModal() {
+        ModalManager.close(supportModal);
+    }
+
+    async function openSupportDestination(url) {
+        await openExternalUrl(url);
+        closeSupportModal();
     }
 
     function createDefaultOnboardingState() {
@@ -5866,6 +5890,12 @@ calls.push(callData);
     if (contactUsBtn) {
         contactUsBtn.addEventListener('click', openFeedbackModal);
     }
+    if (supportDonateBtn) {
+        supportDonateBtn.addEventListener('click', openSupportModal);
+    }
+    if (supportKofiBtn) {
+        supportKofiBtn.addEventListener('click', openSupportModal);
+    }
     if (achievementsToggleBtn) {
         achievementsToggleBtn.addEventListener('click', (e) => openAchievementsSettingsModal(e.currentTarget));
     }
@@ -5906,6 +5936,22 @@ calls.push(callData);
     if (cancelFeedbackBtn) {
         cancelFeedbackBtn.addEventListener('click', closeFeedbackModal);
     }
+    if (closeSupportModalBtn) {
+        closeSupportModalBtn.addEventListener('click', closeSupportModal);
+    }
+    if (cancelSupportModalBtn) {
+        cancelSupportModalBtn.addEventListener('click', closeSupportModal);
+    }
+    if (supportModalPaypalBtn) {
+        supportModalPaypalBtn.addEventListener('click', async () => {
+            await openSupportDestination(PAYPAL_DONATE_URL);
+        });
+    }
+    if (supportModalKofiBtn) {
+        supportModalKofiBtn.addEventListener('click', async () => {
+            await openSupportDestination(KOFI_SUPPORT_URL);
+        });
+    }
 
     if (feedbackForm) {
         feedbackForm.addEventListener('submit', async (e) => {
@@ -5945,6 +5991,7 @@ calls.push(callData);
         ModalManager.register(dataHubModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#data-hub-export-json-btn' });
         ModalManager.register(editCycleModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#cycle-start-date-input' });
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
+        ModalManager.register(supportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#support-modal-paypal-btn' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
         ModalManager.register(exportOptionsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-export-options-btn' });
         ModalManager.register(csvImportPreviewModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-csv-import-btn' });
