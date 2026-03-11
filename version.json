@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.1.87",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.1.87",
+  "latestVersion": "1.1.88",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.1.88",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "The footer now uses a single Donate button that opens a support modal with both PayPal and Ko-fi options."
+  "notes": "Floating Dock no longer jumps the viewport on Start/End Call, and the +/-1s mini buttons now stay correctly contained across all dock size modes."
 }

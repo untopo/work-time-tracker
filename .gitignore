@@ -3,6 +3,8 @@ dist/
 src-tauri/target/
 *_overlay-test_*.exe
 *_overlay-test_*.msi
+Work-Time-Tracker-*-android-debug.apk
+Work-Time-Tracker-*-widget-test-android-debug.apk
 android/.gradle/
 android/build/
 android/app/build/

@@ -4,4 +4,5 @@
     <string name="title_activity_main">Work Time Tracker</string>
     <string name="package_name">com.topo.worktimetracker</string>
     <string name="custom_url_scheme">com.topo.worktimetracker</string>
+    <string name="live_call_widget_label">Live Call Widget</string>
 </resources>

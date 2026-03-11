@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/live_call_widget_label"
+    android:initialLayout="@layout/live_call_widget_wide"
+    android:minWidth="120dp"
+    android:minHeight="72dp"
+    android:previewLayout="@layout/live_call_widget_wide"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" />

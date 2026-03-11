@@ -4,8 +4,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.87';
+    const APP_VERSION = '1.1.88';
     const CHANGELOG = [
+        { version: '1.1.88', date: '2026-03-11', changes: ['Floating Dock: Removed the remaining start/end viewport jump by deferring off-screen live-call panel layout changes until the Call Controls card is visible again', 'Floating Dock: Stabilized `-1/+1s` mini controls so they stay correctly contained and round across full/compact/icon modes on web, desktop, and mobile'] },
         { version: '1.1.87', date: '2026-03-03', changes: ['UI: Replaced the footer support row with a single Donate button that opens a support modal instead of showing both provider buttons inline', 'Added: New support modal keeps both PayPal and Ko-fi options available while opening the official provider pages externally on web, desktop, and mobile'] },
         { version: '1.1.86', date: '2026-03-03', changes: ['UI: Tightened the footer support row again so Donate and Support me on Ko-fi fit side by side more reliably in narrow layouts', 'UI: Reduced support button width, height, and text size evenly so both actions stay visually identical while taking less space'] },
         { version: '1.1.85', date: '2026-03-03', changes: ['Fixed: Desktop update banner now opens the GitHub release page in the system browser instead of doing nothing inside the Tauri webview', 'Desktop: Installed builds now use a native Rust command for release links while mobile keeps using the normal browser open flow'] },
@@ -487,6 +488,7 @@ const UPDATE_MANIFEST_URLS = [
     './version.json'
 ];
 const UPDATE_DISMISSED_VERSION_KEY = 'dismissedUpdateVersion';
+const RELEASE_SPOTLIGHT_SEEN_PREFIX = 'releaseSpotlightSeen:';
 const updateAvailableBanner = document.getElementById('update-available-banner');
 const updateCurrentVersionLabel = document.getElementById('update-current-version');
 const updateLatestVersionLabel = document.getElementById('update-latest-version');
@@ -495,6 +497,13 @@ const openUpdateReleaseBtn = document.getElementById('open-update-release-btn');
 const laterUpdateBannerBtn = document.getElementById('later-update-banner-btn');
 const dismissUpdateBannerBtn = document.getElementById('dismiss-update-banner-btn');
 let pendingUpdateManifest = null;
+let releaseSpotlightBannerEl = null;
+let androidWidgetBridgeTimerId = null;
+const NATIVE_WIDGET_CALLS_KEY = '__wtt_native_widget_calls';
+const NATIVE_WIDGET_ACTIVE_SESSION_KEY = '__wtt_native_widget_active_session';
+let lastAndroidWidgetDefaultRateSnapshot = null;
+let lastAndroidWidgetActiveSessionSnapshot = null;
+let androidWidgetBridgeInFlight = false;
 
 function createTauriEventTarget(label) {
     return typeof label === 'string' && label
@@ -528,6 +537,267 @@ function getFileNameFromPath(filePath) {
 function shouldCheckForInstalledAppUpdates() {
     return isDesktopTauri || Boolean(window.Capacitor);
 }
+
+function isAndroidCapacitorApp() {
+    try {
+        return Boolean(window.Capacitor)
+            && typeof window.Capacitor.getPlatform === 'function'
+            && window.Capacitor.getPlatform() === 'android';
+    } catch (error) {
+        return false;
+    }
+}
+
+function getLiveCallWidgetPlugin() {
+    if (!isAndroidCapacitorApp()) return null;
+    return window.Capacitor?.Plugins?.LiveCallWidget || null;
+}
+
+function resolvePreferredAndroidWidgetRate() {
+    if (!Array.isArray(rates) || rates.length === 0) return null;
+    const selectedRateName = String(rateSelect?.value || '').trim();
+    const selectedRate = rates.find((rate) => String(rate.name || '').trim() === selectedRateName);
+    if (selectedRate) return selectedRate;
+
+    const storedRateName = String(lastSelectedRate || '').trim();
+    const storedRate = rates.find((rate) => String(rate.name || '').trim() === storedRateName);
+    if (storedRate) return storedRate;
+
+    return rates[0] || null;
+}
+
+function buildAndroidWidgetDefaultRateSnapshot(preferredRate = resolvePreferredAndroidWidgetRate()) {
+    return JSON.stringify({
+        rateName: preferredRate?.name || '',
+        rateAmount: Number(preferredRate?.amount) || 0
+    });
+}
+
+function buildAndroidWidgetActiveSessionSnapshot(session = LiveCallSession.getState()) {
+    if (!session) return JSON.stringify({ active: false });
+    return JSON.stringify({
+        active: true,
+        start: Number(session.start) || 0,
+        rateName: String(session.rateName || rateSelect?.value || '').trim(),
+        rateAmount: Number(session.rate) || 0
+    });
+}
+
+async function syncAndroidWidgetDefaultRate() {
+    const plugin = getLiveCallWidgetPlugin();
+    if (!plugin?.setDefaultRate) return;
+    try {
+        const preferredRate = resolvePreferredAndroidWidgetRate();
+        const nextSnapshot = buildAndroidWidgetDefaultRateSnapshot(preferredRate);
+        if (nextSnapshot === lastAndroidWidgetDefaultRateSnapshot) return;
+        await plugin.setDefaultRate({
+            rateName: preferredRate?.name || '',
+            rateAmount: Number(preferredRate?.amount) || 0
+        });
+        lastAndroidWidgetDefaultRateSnapshot = nextSnapshot;
+    } catch (error) {
+        console.warn('Failed to sync Android widget default rate.', error);
+    }
+}
+
+async function syncAndroidWidgetActiveSession() {
+    const plugin = getLiveCallWidgetPlugin();
+    if (!plugin?.syncActiveSession) return;
+    try {
+        const session = LiveCallSession.getState();
+        if (!session) {
+            const inactiveSnapshot = buildAndroidWidgetActiveSessionSnapshot(null);
+            if (inactiveSnapshot === lastAndroidWidgetActiveSessionSnapshot) return;
+            await plugin.syncActiveSession({ active: false });
+            lastAndroidWidgetActiveSessionSnapshot = inactiveSnapshot;
+            return;
+        }
+
+        const rateName = String(session.rateName || rateSelect?.value || '').trim();
+        const rateAmount = Number(session.rate) || 0;
+        if (!rateName || rateAmount <= 0) {
+            const inactiveSnapshot = buildAndroidWidgetActiveSessionSnapshot(null);
+            if (inactiveSnapshot === lastAndroidWidgetActiveSessionSnapshot) return;
+            await plugin.syncActiveSession({ active: false });
+            lastAndroidWidgetActiveSessionSnapshot = inactiveSnapshot;
+            return;
+        }
+
+        const nextSnapshot = buildAndroidWidgetActiveSessionSnapshot({
+            ...session,
+            rateName,
+            rate: rateAmount
+        });
+        if (nextSnapshot === lastAndroidWidgetActiveSessionSnapshot) return;
+        await plugin.syncActiveSession({
+            active: true,
+            start: session.start,
+            rateName,
+            rateAmount
+        });
+        lastAndroidWidgetActiveSessionSnapshot = nextSnapshot;
+    } catch (error) {
+        console.warn('Failed to sync Android widget active session.', error);
+    }
+}
+
+async function consumeAndroidWidgetCompletedCalls() {
+    const plugin = getLiveCallWidgetPlugin();
+    if (!plugin?.consumeCompletedCalls) return;
+    try {
+        const result = await plugin.consumeCompletedCalls();
+        const rawCalls = String(result?.callsJson || '').trim();
+        if (!rawCalls) return;
+
+        let parsedCalls = [];
+        try {
+            parsedCalls = JSON.parse(rawCalls);
+        } catch (parseError) {
+            console.warn('Failed to parse Android widget completed calls.', parseError);
+            return;
+        }
+
+        if (!Array.isArray(parsedCalls) || parsedCalls.length === 0) return;
+
+        const importedCalls = parsedCalls.map(normalizeCall);
+        const existingCalls = readCallsFromStorage();
+        const mergeResult = mergeCallsWithExisting(existingCalls, importedCalls);
+        if (mergeResult.addedCount === 0) return;
+
+        // The widget has already stopped this session natively. If the app restored
+        // the same session while it was open, clear the local runtime state so it
+        // does not keep ticking or get re-synced back to Android.
+        LiveCallSession.clear();
+        clearActiveCallState();
+        clearActiveCallClosedExplicitly();
+        resetLiveCallUiToIdle();
+
+        calls = mergeResult.merged;
+        saveCalls();
+        showToast(`Imported ${mergeResult.addedCount} widget call${mergeResult.addedCount === 1 ? '' : 's'}.`);
+    } catch (error) {
+        console.warn('Failed to import completed calls from Android widget.', error);
+    }
+}
+
+async function processNativeAndroidWidgetSyncPayload() {
+    if (!isAndroidCapacitorApp()) return false;
+
+    const rawCalls = String(window.localStorage.getItem(NATIVE_WIDGET_CALLS_KEY) || '').trim();
+    const rawSession = String(window.localStorage.getItem(NATIVE_WIDGET_ACTIVE_SESSION_KEY) || '').trim();
+    if (!rawCalls && !rawSession) return false;
+
+    let importedAny = false;
+
+    if (rawCalls) {
+        try {
+            const parsedCalls = JSON.parse(rawCalls);
+            if (Array.isArray(parsedCalls) && parsedCalls.length > 0) {
+                const importedCalls = parsedCalls.map(normalizeCall);
+                const existingCalls = readCallsFromStorage();
+                const mergeResult = mergeCallsWithExisting(existingCalls, importedCalls);
+                if (mergeResult.addedCount > 0) {
+                    calls = mergeResult.merged;
+                    saveCalls();
+                    LiveCallSession.clear();
+                    clearActiveCallState();
+                    clearActiveCallClosedExplicitly();
+                    resetLiveCallUiToIdle();
+                    showToast(`Imported ${mergeResult.addedCount} widget call${mergeResult.addedCount === 1 ? '' : 's'}.`);
+                    importedAny = true;
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to process native Android widget calls payload.', error);
+        }
+    }
+
+    if (rawSession) {
+        try {
+            const parsedSession = JSON.parse(rawSession);
+            const normalizedSession = normalizeActiveCallSession(parsedSession);
+            if (normalizedSession && !LiveCallSession.isActive() && !readActiveCallState()) {
+                autoRestoreRecoveredActiveCall(normalizedSession);
+                importedAny = true;
+            }
+        } catch (error) {
+            console.warn('Failed to process native Android widget session payload.', error);
+        }
+    }
+
+    window.localStorage.removeItem(NATIVE_WIDGET_CALLS_KEY);
+    window.localStorage.removeItem(NATIVE_WIDGET_ACTIVE_SESSION_KEY);
+
+    try {
+        await consumeAndroidWidgetCompletedCalls();
+    } catch (error) {
+        console.warn('Failed to clear consumed Android widget payload.', error);
+    }
+
+    return importedAny;
+}
+
+async function reconcileAndroidWidgetSession() {
+    const plugin = getLiveCallWidgetPlugin();
+    if (!plugin?.getWidgetState) return;
+    try {
+        if (LiveCallSession.isActive()) {
+            await syncAndroidWidgetActiveSession();
+            return;
+        }
+
+        const currentStoredState = readActiveCallState();
+        if (currentStoredState) return;
+
+        const result = await plugin.getWidgetState();
+        const rawSession = String(result?.activeSessionJson || '').trim();
+        if (!rawSession) return;
+
+        let parsedSession = null;
+        try {
+            parsedSession = JSON.parse(rawSession);
+        } catch (parseError) {
+            console.warn('Failed to parse Android widget active session.', parseError);
+            return;
+        }
+
+        const normalizedSession = normalizeActiveCallSession(parsedSession);
+        if (!normalizedSession) return;
+
+        autoRestoreRecoveredActiveCall(normalizedSession);
+    } catch (error) {
+        console.warn('Failed to reconcile Android widget session.', error);
+    }
+}
+
+async function initializeAndroidWidgetBridge() {
+    if (!isAndroidCapacitorApp()) return;
+    if (androidWidgetBridgeInFlight) return;
+    androidWidgetBridgeInFlight = true;
+    try {
+    await processNativeAndroidWidgetSyncPayload();
+    await consumeAndroidWidgetCompletedCalls();
+    await reconcileAndroidWidgetSession();
+    await syncAndroidWidgetDefaultRate();
+    if (LiveCallSession.isActive()) {
+        await syncAndroidWidgetActiveSession();
+    }
+    } finally {
+        androidWidgetBridgeInFlight = false;
+    }
+}
+
+function scheduleAndroidWidgetBridgeRefresh(delayMs = 0) {
+    if (!isAndroidCapacitorApp()) return;
+    const normalizedDelay = Math.max(0, Number(delayMs) || 0);
+    window.setTimeout(() => {
+        void initializeAndroidWidgetBridge();
+    }, normalizedDelay);
+}
+
+window.addEventListener('wtt-live-call-widget-sync', () => {
+    void processNativeAndroidWidgetSyncPayload();
+});
 
 function normalizeVersionString(version) {
     return String(version || '')
@@ -617,6 +887,107 @@ async function checkForInstalledAppUpdates() {
     const latestVersion = normalizeVersionString(manifest.latestVersion);
     if (dismissedVersion && dismissedVersion === latestVersion) return;
     renderUpdateAvailableBanner(manifest);
+}
+
+function getReleaseSpotlightSeenKey(version = APP_VERSION) {
+    return `${RELEASE_SPOTLIGHT_SEEN_PREFIX}${normalizeVersionString(version)}`;
+}
+
+function hasSeenReleaseSpotlight(version = APP_VERSION) {
+    try {
+        return appStorage.getItem(getReleaseSpotlightSeenKey(version)) === '1';
+    } catch {
+        return false;
+    }
+}
+
+function markReleaseSpotlightSeen(version = APP_VERSION) {
+    try {
+        appStorage.setItem(getReleaseSpotlightSeenKey(version), '1');
+    } catch (error) {
+        console.warn('Could not persist release spotlight state', error);
+    }
+}
+
+function hideReleaseSpotlightBanner({ markSeen = true } = {}) {
+    if (releaseSpotlightBannerEl && releaseSpotlightBannerEl.parentNode) {
+        releaseSpotlightBannerEl.parentNode.removeChild(releaseSpotlightBannerEl);
+    }
+    releaseSpotlightBannerEl = null;
+    if (markSeen) markReleaseSpotlightSeen(APP_VERSION);
+}
+
+function getCurrentReleaseEntry() {
+    const currentVersion = normalizeVersionString(APP_VERSION);
+    return CHANGELOG.find((entry) => normalizeVersionString(entry?.version) === currentVersion) || null;
+}
+
+function shouldShowReleaseSpotlightBanner() {
+    if (isDesktopTauri || Boolean(window.Capacitor)) return false;
+    if (isNativeAppShell()) return false;
+    if (hasSeenReleaseSpotlight(APP_VERSION)) return false;
+    const releaseEntry = getCurrentReleaseEntry();
+    return !!releaseEntry;
+}
+
+function renderReleaseSpotlightBanner() {
+    if (releaseSpotlightBannerEl || !shouldShowReleaseSpotlightBanner()) return;
+    const releaseEntry = getCurrentReleaseEntry();
+    if (!releaseEntry) return;
+
+    const topChanges = Array.isArray(releaseEntry.changes) ? releaseEntry.changes.slice(0, 2) : [];
+    const summary = topChanges.length
+        ? topChanges.join(' ')
+        : 'This release includes improvements and fixes.';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'release-spotlight-banner';
+    wrapper.setAttribute('role', 'status');
+    wrapper.setAttribute('aria-live', 'polite');
+    wrapper.innerHTML = `
+        <div class="release-spotlight-content">
+            <div>
+                <div class="release-spotlight-title">What’s New in v${escapeHTML(normalizeVersionString(APP_VERSION))}</div>
+                <p class="release-spotlight-text">${escapeHTML(summary)}</p>
+                <div class="release-spotlight-actions">
+                    <button type="button" class="release-spotlight-btn release-spotlight-btn-primary" data-release-action="details">View details</button>
+                    <button type="button" class="release-spotlight-btn release-spotlight-btn-muted" data-release-action="dismiss">Got it</button>
+                </div>
+            </div>
+            <button type="button" class="release-spotlight-close" aria-label="Close release notice" data-release-action="close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+
+    const handleAction = (action) => {
+        if (action === 'details') {
+            hideReleaseSpotlightBanner({ markSeen: true });
+            openChangelogModal();
+            return;
+        }
+        hideReleaseSpotlightBanner({ markSeen: true });
+    };
+
+    wrapper.querySelectorAll('[data-release-action]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            handleAction(btn.getAttribute('data-release-action'));
+        });
+    });
+
+    document.body.appendChild(wrapper);
+    releaseSpotlightBannerEl = wrapper;
+}
+
+function scheduleReleaseSpotlightBanner() {
+    if (!shouldShowReleaseSpotlightBanner()) return;
+    window.setTimeout(() => {
+        if (onboardingModal && ModalManager.isOpen(onboardingModal)) {
+            window.setTimeout(() => renderReleaseSpotlightBanner(), 1400);
+            return;
+        }
+        renderReleaseSpotlightBanner();
+    }, 650);
 }
 
 async function pickNativeImportFile(mode) {
@@ -967,6 +1338,7 @@ async function confirmExportOptions() {
     const endCallBtn = document.getElementById('end-call-btn');
     const floatingCallControls = document.getElementById('floating-call-controls');
     const floatingCallDock = document.getElementById('floating-call-dock');
+    const floatingDockDragHandle = document.getElementById('floating-dock-drag-handle');
     const floatingDockMiniBtn = document.getElementById('floating-dock-mini-btn');
     const floatingDockMiniIcon = document.getElementById('floating-dock-mini-icon');
     const floatingStartCallBtn = document.getElementById('floating-start-call-btn');
@@ -978,13 +1350,19 @@ async function confirmExportOptions() {
     const floatingActiveRate = document.getElementById('floating-active-rate');
     const floatingActiveTimer = document.getElementById('floating-active-timer');
     const floatingActiveEarnings = document.getElementById('floating-active-earnings');
+    const floatingActiveAdjustControls = document.getElementById('floating-active-adjust-controls');
+    const floatingMinusSecondBtn = document.getElementById('floating-minus-second-btn');
+    const floatingPlusSecondBtn = document.getElementById('floating-plus-second-btn');
     const callControlsCard = document.getElementById('call-controls-card');
     const liveCallInfo = document.getElementById('live-call-info');
     const liveCallTimerDisplay = document.getElementById('live-call-timer');
     const liveCallEarningsDisplay = document.getElementById('live-call-earnings');
     const liveCallNotesInput = document.getElementById('live-call-notes');
+    const liveCallMinusSecondBtn = document.getElementById('live-call-minus-second-btn');
+    const liveCallPlusSecondBtn = document.getElementById('live-call-plus-second-btn');
     const callLogTableBody = document.getElementById('call-log');
     const callLogMobileList = document.getElementById('call-log-mobile');
+    const callLogSortableHeaders = Array.from(document.querySelectorAll('.call-log-sortable[data-sort-key]'));
     const callLogScrollContainer = callLogTableBody?.closest('.scrollable-table') || null;
     let floatingVisibilityObserver = null;
     let observedFloatingPrimaryButton = null;
@@ -1119,6 +1497,11 @@ async function confirmExportOptions() {
     const cycleStartDateInput = document.getElementById('cycle-start-date-input');
     const cycleEndDateInput = document.getElementById('cycle-end-date-input');
     const cyclePayDateInput = document.getElementById('cycle-pay-date-input');
+    const paymentCycleTemplateStartDateInput = document.getElementById('payment-cycle-template-start-date');
+    const paymentCycleTemplateCountInput = document.getElementById('payment-cycle-template-count');
+    const paymentCycleTemplatePayOffsetInput = document.getElementById('payment-cycle-template-pay-offset');
+    const paymentCycleTemplateReplaceToggle = document.getElementById('payment-cycle-template-replace');
+    const generatePaymentCyclesBtn = document.getElementById('generate-payment-cycles-btn');
     
     
     const filterTodayBtn = document.getElementById('filter-today');
@@ -1168,6 +1551,7 @@ const floatingActiveCardCustomization = document.getElementById('floating-active
 const floatingActiveShowTimerToggle = document.getElementById('floating-active-show-timer-toggle');
 const floatingActiveShowEarningsToggle = document.getElementById('floating-active-show-earnings-toggle');
 const floatingActiveShowRateToggle = document.getElementById('floating-active-show-rate-toggle');
+const floatingActiveShowAdjustToggle = document.getElementById('floating-active-show-adjust-toggle');
 const floatingOneHandedToggle = document.getElementById('floating-one-handed-toggle');
 const floatingPreviewEnabledToggle = document.getElementById('floating-preview-enabled-toggle');
 const floatingPreviewRandomizeBtn = document.getElementById('floating-preview-randomize-btn');
@@ -1197,6 +1581,7 @@ function loadFeatureFlags() {
             floatingActiveShowTimer: true,
             floatingActiveShowEarnings: true,
             floatingActiveShowRate: false,
+            floatingActiveShowAdjust: false,
             floatingOneHanded: false,
             floatingPreviewEnabled: true
         };
@@ -1213,6 +1598,7 @@ function loadFeatureFlags() {
             floatingActiveShowTimer: typeof parsed.floatingActiveShowTimer === 'boolean' ? parsed.floatingActiveShowTimer : true,
             floatingActiveShowEarnings: typeof parsed.floatingActiveShowEarnings === 'boolean' ? parsed.floatingActiveShowEarnings : true,
             floatingActiveShowRate: typeof parsed.floatingActiveShowRate === 'boolean' ? parsed.floatingActiveShowRate : false,
+            floatingActiveShowAdjust: typeof parsed.floatingActiveShowAdjust === 'boolean' ? parsed.floatingActiveShowAdjust : false,
             floatingOneHanded: typeof parsed.floatingOneHanded === 'boolean' ? parsed.floatingOneHanded : false,
             floatingPreviewEnabled: typeof parsed.floatingPreviewEnabled === 'boolean' ? parsed.floatingPreviewEnabled : true
         };
@@ -1229,6 +1615,7 @@ function loadFeatureFlags() {
             floatingActiveShowTimer: true,
             floatingActiveShowEarnings: true,
             floatingActiveShowRate: false,
+            floatingActiveShowAdjust: false,
             floatingOneHanded: false,
             floatingPreviewEnabled: true
         };
@@ -1326,6 +1713,8 @@ function updatePreviewDockElement(dockEl, flags, mode) {
     if (activeTimer) activeTimer.style.display = flags.floatingActiveShowTimer ? '' : 'none';
     if (activeEarnings) activeEarnings.style.display = flags.floatingActiveShowEarnings ? '' : 'none';
     if (activeRate) activeRate.style.display = flags.floatingActiveShowRate ? '' : 'none';
+    const activeAdjust = dockEl.querySelector('.floating-active-adjust-controls');
+    if (activeAdjust) activeAdjust.style.display = flags.floatingActiveShowAdjust ? '' : 'none';
 
     const sample = floatingPreviewSample || generateFloatingPreviewSample();
     if (activeRate) activeRate.textContent = `Rate: ${sample.rateLabel} - $${sample.ratePerMin.toFixed(2)}/min`;
@@ -1353,6 +1742,7 @@ function updateFloatingPreview(flags = featureFlags, options = {}) {
         if (flags.floatingActiveShowRate) visibleFields.push('rate');
         if (flags.floatingActiveShowTimer) visibleFields.push('timer');
         if (flags.floatingActiveShowEarnings) visibleFields.push('earnings');
+        if (flags.floatingActiveShowAdjust) visibleFields.push('adjust');
         const fieldsText = visibleFields.length ? visibleFields.join(', ') : 'none';
         const secondaryText = (flags.floatingSecondaryAction || 'add') === 'none' ? 'hidden' : (flags.floatingSecondaryAction || 'add');
         floatingPreviewHint.textContent = `Preview: size ${mode} | secondary ${secondaryText} | active fields ${fieldsText}`;
@@ -1559,6 +1949,9 @@ function applyFeatureFlags(flags) {
     if (floatingActiveShowRateToggle) {
         floatingActiveShowRateToggle.checked = !!flags.floatingActiveShowRate;
     }
+    if (floatingActiveShowAdjustToggle) {
+        floatingActiveShowAdjustToggle.checked = !!flags.floatingActiveShowAdjust;
+    }
     if (floatingOneHandedToggle) {
         floatingOneHandedToggle.checked = !!flags.floatingOneHanded;
     }
@@ -1593,6 +1986,7 @@ let featureFlags = {
     floatingActiveShowTimer: true,
     floatingActiveShowEarnings: true,
     floatingActiveShowRate: false,
+    floatingActiveShowAdjust: false,
     floatingOneHanded: false,
     floatingPreviewEnabled: true
 };
@@ -1967,6 +2361,118 @@ function isDockActuallyVisible() {
     return !!floatingCallControls && floatingCallControls.style.display === 'flex';
 }
 
+function clampFloatingDockManualPosition(pos) {
+    const fallback = { x: 16, y: 16 };
+    const candidateX = Number(pos?.x);
+    const candidateY = Number(pos?.y);
+    if (!Number.isFinite(candidateX) || !Number.isFinite(candidateY)) return fallback;
+    if (!floatingCallControls) return { x: candidateX, y: candidateY };
+
+    const viewportW = Math.max(window.innerWidth || 0, 320);
+    const viewportH = Math.max(window.innerHeight || 0, 320);
+    const rect = floatingCallControls.getBoundingClientRect();
+    const width = Math.max(rect.width || 0, 56);
+    const height = Math.max(rect.height || 0, 56);
+    const maxX = Math.max(8, viewportW - width - 8);
+    const maxY = Math.max(8, viewportH - height - 8);
+    return {
+        x: Math.min(maxX, Math.max(8, candidateX)),
+        y: Math.min(maxY, Math.max(8, candidateY))
+    };
+}
+
+function saveFloatingDockManualPosition(pos) {
+    try {
+        if (!pos) {
+            pendingStorageWrites.delete(FLOATING_DOCK_POSITION_KEY);
+            appStorage.removeItem(FLOATING_DOCK_POSITION_KEY);
+            return;
+        }
+        queueStorageWrite(FLOATING_DOCK_POSITION_KEY, JSON.stringify(pos));
+    } catch (error) {
+        console.warn('Could not save floating dock position', error);
+    }
+}
+
+function loadFloatingDockManualPosition() {
+    try {
+        const raw = appStorage.getItem(FLOATING_DOCK_POSITION_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        const clamped = clampFloatingDockManualPosition(parsed);
+        return Number.isFinite(clamped.x) && Number.isFinite(clamped.y) ? clamped : null;
+    } catch {
+        return null;
+    }
+}
+
+function applyFloatingDockManualPosition(pos) {
+    if (!floatingCallControls || !pos) return;
+    const clamped = clampFloatingDockManualPosition(pos);
+    floatingDockManualPosition = clamped;
+    floatingCallControls.style.left = `${Math.round(clamped.x)}px`;
+    floatingCallControls.style.top = `${Math.round(clamped.y)}px`;
+    floatingCallControls.style.right = 'auto';
+    floatingCallControls.style.bottom = 'auto';
+}
+
+function startFloatingDockDrag(event) {
+    if (!floatingCallControls || !event) return;
+    const pointerId = Number(event.pointerId);
+    if (!Number.isFinite(pointerId)) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    if (!isDockActuallyVisible()) return;
+
+    const rect = floatingCallControls.getBoundingClientRect();
+    floatingDockManualPosition = clampFloatingDockManualPosition({ x: rect.left, y: rect.top });
+    applyFloatingDockManualPosition(floatingDockManualPosition);
+
+    floatingDockDragState = {
+        pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: floatingDockManualPosition.x,
+        originY: floatingDockManualPosition.y
+    };
+
+    floatingCallControls.classList.add('dragging');
+    try {
+        event.currentTarget?.setPointerCapture?.(pointerId);
+    } catch {}
+    event.preventDefault();
+}
+
+function handleFloatingDockPointerMove(event) {
+    if (!floatingDockDragState || !floatingCallControls) return;
+    if (event.pointerId !== floatingDockDragState.pointerId) return;
+    const deltaX = event.clientX - floatingDockDragState.startX;
+    const deltaY = event.clientY - floatingDockDragState.startY;
+    const nextPos = clampFloatingDockManualPosition({
+        x: floatingDockDragState.originX + deltaX,
+        y: floatingDockDragState.originY + deltaY
+    });
+    applyFloatingDockManualPosition(nextPos);
+}
+
+function endFloatingDockDrag(event) {
+    if (!floatingDockDragState) return;
+    if (event && event.pointerId !== floatingDockDragState.pointerId) return;
+    floatingDockDragState = null;
+    if (floatingCallControls) floatingCallControls.classList.remove('dragging');
+    if (floatingDockManualPosition) {
+        const clamped = clampFloatingDockManualPosition(floatingDockManualPosition);
+        applyFloatingDockManualPosition(clamped);
+        saveFloatingDockManualPosition(clamped);
+    }
+}
+
+function clampFloatingDockPositionToViewport() {
+    if (!floatingDockManualPosition || !floatingCallControls) return;
+    const clamped = clampFloatingDockManualPosition(floatingDockManualPosition);
+    applyFloatingDockManualPosition(clamped);
+    saveFloatingDockManualPosition(clamped);
+}
+
 function shouldAutoCollapseFloatingDock() {
     return window.innerWidth > 768 && !isStandaloneDisplayMode();
 }
@@ -2026,6 +2532,10 @@ function updateFloatingActiveCard(flags, liveCallActive) {
     floatingActiveTimer.style.display = flags.floatingActiveShowTimer ? '' : 'none';
     floatingActiveEarnings.style.display = flags.floatingActiveShowEarnings ? '' : 'none';
     floatingActiveRate.style.display = flags.floatingActiveShowRate ? '' : 'none';
+    if (floatingActiveAdjustControls) {
+        const inIconMode = !!floatingCallControls?.classList.contains('floating-icon');
+        floatingActiveAdjustControls.style.display = (flags.floatingActiveShowAdjust && !inIconMode) ? '' : 'none';
+    }
 }
 
 function animateFloatingPrimaryTransition() {
@@ -2169,6 +2679,7 @@ function setupFloatingVisibilityObservers() {
 }
 
 function updateFloatingCallControls(flags = featureFlags) {
+    flushPendingLiveCallInfoVisibilityIfVisible();
     if (!floatingCallControls || !floatingStartCallBtn || !floatingEndCallBtn || !callControlsCard) return;
 
     refreshFloatingVisibilityObservers();
@@ -2210,16 +2721,21 @@ function updateFloatingCallControls(flags = featureFlags) {
     if (effectiveMode === 'icon') floatingCallControls.classList.add('floating-icon');
     floatingCallControls.classList.toggle('one-handed', !!flags.floatingOneHanded && window.innerWidth <= 900);
 
-    const preferredSide = flags?.floatingControlsSide === 'left' ? 'left' : 'right';
-    const side = avoidFocusedInputOverlap({ ...flags, floatingControlsSide: preferredSide });
-    const bottomOffset = computeFloatingDockOffset();
-    floatingCallControls.style.bottom = `${bottomOffset}px`;
-    if (side === 'left') {
-        floatingCallControls.style.left = '1rem';
-        floatingCallControls.style.right = 'auto';
+    if (floatingDockManualPosition) {
+        applyFloatingDockManualPosition(floatingDockManualPosition);
     } else {
-        floatingCallControls.style.right = '1rem';
-        floatingCallControls.style.left = 'auto';
+        const preferredSide = flags?.floatingControlsSide === 'left' ? 'left' : 'right';
+        const side = avoidFocusedInputOverlap({ ...flags, floatingControlsSide: preferredSide });
+        const bottomOffset = computeFloatingDockOffset();
+        floatingCallControls.style.top = 'auto';
+        floatingCallControls.style.bottom = `${bottomOffset}px`;
+        if (side === 'left') {
+            floatingCallControls.style.left = '1rem';
+            floatingCallControls.style.right = 'auto';
+        } else {
+            floatingCallControls.style.right = '1rem';
+            floatingCallControls.style.left = 'auto';
+        }
     }
 
     const liveCallActive = !!liveCallStart || endCallBtn.style.display !== 'none';
@@ -2358,10 +2874,13 @@ if (storedDailyGoal) {
     let floatingDockCollapsed = false;
     let floatingDockIdleTimer = null;
     let floatingDockExpandTimer = null;
+    let floatingDockManualPosition = null;
+    let floatingDockDragState = null;
     let lastActiveCallPersistAt = 0;
     let cachedTimeZoneFormatters = { tz: null, date: null, time: null };
     let callsDatasetVersion = 0;
     let filteredCallsCache = { key: '', rows: [] };
+    let callLogSort = { key: 'startTime', direction: 'desc' };
     let callLogRenderTicket = 0;
     let callLogRenderState = null;
     let pendingStorageWrites = new Map();
@@ -2372,6 +2891,7 @@ if (storedDailyGoal) {
     const CALL_LOG_RENDER_CHUNK_SIZE = 120;
     const CALL_LOG_RENDER_AHEAD_PX = 180;
     const RPG_CALL_ELIGIBILITY_MIGRATION_KEY = 'wtt_rpg_call_eligibility_migrated_v1';
+    const FLOATING_DOCK_POSITION_KEY = 'floatingDockManualPosition';
 
     // Helper Functions
     function formatTime(milliseconds) {
@@ -3969,25 +4489,61 @@ function importJsonBackup(importedData) {
 const ACTIVE_CALL_KEY = 'activeLiveCallState';
 const ACTIVE_CALL_CLOSE_INTENT_KEY = 'activeLiveCallClosedExplicitly';
 
-function saveActiveCallState(force = false) {
-  if (!liveCallStart) return;
-  const now = Date.now();
-  if (!force && now - lastActiveCallPersistAt < 5000) return;
-  const state = {
+function normalizeActiveCallSession(input) {
+  const start = Number(input?.start);
+  const rate = Number(input?.rate);
+  const rateName = String(input?.rateName || '').trim() || null;
+  const lastPing = Number(input?.lastPing);
+
+  if (!Number.isFinite(start) || start <= 0) return null;
+
+  return {
+    start,
+    rate: Number.isFinite(rate) && rate > 0 ? rate : 0,
+    rateName,
+    lastPing: Number.isFinite(lastPing) && lastPing > 0 ? lastPing : start
+  };
+}
+
+function buildCurrentActiveCallSession(now = Date.now()) {
+  if (!liveCallStart) return null;
+  return normalizeActiveCallSession({
     start: liveCallStart,
     rate: currentCallRate,
-    rateName: rateSelect.value || null,
+    rateName: rateSelect?.value || null,
     lastPing: now
-  };
+  });
+}
+
+function setLiveCallRuntimeState(session) {
+  const normalized = normalizeActiveCallSession(session);
+  if (!normalized) return null;
+  liveCallStart = normalized.start;
+  currentCallRate = normalized.rate > 0 ? normalized.rate : null;
+  return normalized;
+}
+
+function clearLiveCallRuntimeState() {
+  if (liveCallTimerId) {
+    clearInterval(liveCallTimerId);
+    liveCallTimerId = null;
+  }
+  liveCallStart = null;
+  currentCallRate = null;
+}
+
+function saveActiveCallState(force = false) {
+  const now = Date.now();
+  if (!force && now - lastActiveCallPersistAt < 5000) return;
+  const state = buildCurrentActiveCallSession(now);
+  if (!state) return;
   queueStorageWrite(ACTIVE_CALL_KEY, JSON.stringify(state));
   lastActiveCallPersistAt = now;
 }
 
 function readActiveCallState() {
   try {
-    const raw = JSON.parse(appStorage.getItem(ACTIVE_CALL_KEY));
-    if (!raw || !raw.start) return null;
-    return raw;
+    return normalizeActiveCallSession(JSON.parse(appStorage.getItem(ACTIVE_CALL_KEY)));
   } catch {
     return null;
   }
@@ -4014,6 +4570,82 @@ function clearActiveCallClosedExplicitly() {
   appStorage.removeItem(ACTIVE_CALL_CLOSE_INTENT_KEY);
 }
 
+function setLiveCallInfoVisibility(shouldShow) {
+  if (!liveCallInfo) return;
+  if (callControlsCard) {
+    const cardRect = callControlsCard.getBoundingClientRect();
+    const isFullyAboveViewport = cardRect.bottom <= 0;
+    if (isFullyAboveViewport) {
+      liveCallInfo.dataset.pendingVisibility = shouldShow ? 'show' : 'hide';
+      return;
+    }
+  }
+
+  if (liveCallInfo.dataset.pendingVisibility) {
+    delete liveCallInfo.dataset.pendingVisibility;
+  }
+
+  const shouldCompensate = !!callControlsCard && callControlsCard.getBoundingClientRect().top < 0;
+  let trackedCardHeight = shouldCompensate ? callControlsCard.getBoundingClientRect().height : 0;
+  liveCallInfo.style.display = shouldShow ? 'block' : 'none';
+  if (!shouldCompensate) return;
+
+  const adjustViewport = () => {
+    const currentCardHeight = callControlsCard.getBoundingClientRect().height;
+    const delta = currentCardHeight - trackedCardHeight;
+    trackedCardHeight = currentCardHeight;
+    if (Math.abs(delta) < 0.5) return;
+    const currentScroll = window.scrollY || window.pageYOffset || 0;
+    window.scrollTo({ top: Math.max(0, currentScroll + delta), behavior: 'auto' });
+  };
+
+  adjustViewport();
+  requestAnimationFrame(adjustViewport);
+}
+
+function flushPendingLiveCallInfoVisibilityIfVisible() {
+  if (!liveCallInfo || !callControlsCard) return;
+  const pending = liveCallInfo.dataset.pendingVisibility;
+  if (!pending) return;
+  const cardRect = callControlsCard.getBoundingClientRect();
+  const isFullyAboveViewport = cardRect.bottom <= 0;
+  if (isFullyAboveViewport) return;
+  liveCallInfo.style.display = pending === 'show' ? 'block' : 'none';
+  delete liveCallInfo.dataset.pendingVisibility;
+}
+
+function runWithViewportLock(actionFn, rafPasses = 6) {
+  if (typeof actionFn !== 'function') return;
+  const lockedX = window.scrollX || window.pageXOffset || 0;
+  const lockedY = window.scrollY || window.pageYOffset || 0;
+  actionFn();
+
+  let remainingPasses = Math.max(1, Number(rafPasses) || 1);
+  const restore = () => {
+    window.scrollTo({ left: lockedX, top: lockedY, behavior: 'auto' });
+    remainingPasses -= 1;
+    if (remainingPasses > 0) {
+      requestAnimationFrame(restore);
+    }
+  };
+  restore();
+}
+
+function resetLiveCallUiToIdle() {
+  setLiveCallInfoVisibility(false);
+  startCallBtn.style.display = 'block';
+  endCallBtn.style.display = 'none';
+  liveCallInfo.classList.remove('active-call-pulse');
+  liveCallTimerDisplay.textContent = '00:00:00';
+  liveCallEarningsDisplay.textContent = '$0.00';
+  if (liveCallNotesInput) liveCallNotesInput.value = '';
+  recoveredActiveCallState = null;
+  hideActiveCallRecoveryBanner();
+  updateFloatingCallControls(featureFlags);
+  scheduleDesktopOverlayRefresh();
+  animateFloatingPrimaryTransition();
+}
+
 function showActiveCallRecoveryBanner(message) {
   if (!activeCallRecoveryBanner) return;
   if (activeCallRecoveryMessage && message) {
@@ -4035,9 +4667,102 @@ function getRecoveredCallRate(state) {
   return Number(rates.find((rate) => rate.name === rateName)?.amount) || 0;
 }
 
+function getActiveCallComputedState(now = Date.now()) {
+  const session = buildCurrentActiveCallSession(now);
+  if (!session) return null;
+  const elapsedMs = Math.max(0, now - session.start);
+  const earnings = calculateEarnings(elapsedMs, session.rate);
+  return {
+    ...session,
+    elapsedMs,
+    elapsedLabel: formatTime(elapsedMs),
+    earnings,
+    earningsLabel: formatEarnings(earnings),
+    isActive: true
+  };
+}
+
+function finalizeActiveCallSession(session, endTime = Date.now()) {
+  const normalized = normalizeActiveCallSession(session);
+  if (!normalized) return null;
+  const elapsed = Math.max(0, endTime - normalized.start);
+  const earned = calculateEarnings(elapsed, normalized.rate);
+  return normalizeCall({
+    id: generateUUID(),
+    startTime: new Date(normalized.start).toISOString(),
+    endTime: new Date(endTime).toISOString(),
+    duration: elapsed,
+    rate: normalized.rate,
+    rpgEligible: isRpgEnabled(),
+    rateName: normalized.rateName,
+    earnings: Number(earned.toFixed(2))
+  });
+}
+
+const LiveCallSession = {
+  isActive() {
+    return Boolean(buildCurrentActiveCallSession());
+  },
+  getState(now = Date.now()) {
+    return getActiveCallComputedState(now);
+  },
+  start(rateName, rateAmount) {
+    const normalizedRateName = String(rateName || '').trim();
+    const normalizedRateAmount = Number(rateAmount) || 0;
+
+    if (!normalizedRateName || normalizedRateAmount <= 0) {
+      return { ok: false, reason: 'invalid_rate' };
+    }
+
+    clearLiveCallRuntimeState();
+
+    if (rateSelect && rateSelect.value !== normalizedRateName) {
+      rateSelect.value = normalizedRateName;
+    }
+
+    saveLastSelectedRate();
+    const session = setLiveCallRuntimeState({
+      start: Date.now(),
+      rateName: normalizedRateName,
+      rate: normalizedRateAmount,
+      lastPing: Date.now()
+    });
+
+    return session
+      ? { ok: true, session }
+      : { ok: false, reason: 'session_init_failed' };
+  },
+  stop(endTime = Date.now()) {
+    const session = buildCurrentActiveCallSession(endTime);
+    if (!session) return { ok: false, reason: 'no_active_call' };
+    const callData = finalizeActiveCallSession(session, endTime);
+    if (!callData) return { ok: false, reason: 'finalize_failed' };
+    return {
+      ok: true,
+      session,
+      callData,
+      endTime,
+      elapsedMs: Math.max(0, endTime - session.start),
+      earnings: Number(callData.earnings) || 0
+    };
+  },
+  restore(state) {
+    const recoveredSession = normalizeActiveCallSession(state);
+    if (!recoveredSession) return { ok: false, reason: 'invalid_state' };
+    const rate = getRecoveredCallRate(recoveredSession);
+    if (rate <= 0) return { ok: false, reason: 'invalid_rate' };
+    const session = setLiveCallRuntimeState({ ...recoveredSession, rate });
+    if (!session) return { ok: false, reason: 'session_init_failed' };
+    return { ok: true, session };
+  },
+  clear() {
+    clearLiveCallRuntimeState();
+  }
+};
+
 function restoreLiveCallUi() {
   if (!liveCallStart) return;
-  liveCallInfo.style.display = 'block';
+  setLiveCallInfoVisibility(true);
   startCallBtn.style.display = 'none';
   endCallBtn.style.display = 'block';
   liveCallInfo.classList.add('active-call-pulse');
@@ -4062,28 +4787,15 @@ function restoreLiveCallUi() {
   updateFloatingCallControls(featureFlags);
   scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
+  void syncAndroidWidgetActiveSession();
 }
 
 function beginLiveCallWithRate(rateName, rateAmount) {
-  const normalizedRateName = String(rateName || '').trim();
-  const normalizedRateAmount = Number(rateAmount) || 0;
-
-  if (!normalizedRateName || normalizedRateAmount <= 0) {
+  const result = LiveCallSession.start(rateName, rateAmount);
+  if (!result.ok) {
     showAlertModal('Select Rate', 'Please select a valid rate before starting a call.');
     return;
   }
-
-  if (liveCallTimerId) {
-    clearInterval(liveCallTimerId);
-  }
-
-  if (rateSelect && rateSelect.value !== normalizedRateName) {
-    rateSelect.value = normalizedRateName;
-  }
-
-  saveLastSelectedRate();
-  liveCallStart = Date.now();
-  currentCallRate = normalizedRateAmount;
   recoveredActiveCallState = null;
   clearActiveCallClosedExplicitly();
   hideActiveCallRecoveryBanner();
@@ -4093,19 +4805,17 @@ function beginLiveCallWithRate(rateName, rateAmount) {
 }
 
 function summarizeRecoveredActiveCall(state = recoveredActiveCallState) {
-  if (!state || !state.start) return;
-  if (liveCallTimerId) {
-    clearInterval(liveCallTimerId);
-  }
+  const recoveredSession = normalizeActiveCallSession(state);
+  if (!recoveredSession) return;
   const endTime = Date.now();
-  const elapsedMs = Math.max(0, endTime - state.start);
-  const rateName = state.rateName || rateSelect.value || null;
-  const ratePerMin = getRecoveredCallRate(state);
+  const elapsedMs = Math.max(0, endTime - recoveredSession.start);
+  const rateName = recoveredSession.rateName || rateSelect.value || null;
+  const ratePerMin = getRecoveredCallRate(recoveredSession);
   const earned = calculateEarnings(elapsedMs, ratePerMin);
 
   const callData = normalizeCall({
     id: generateUUID(),
-    startTime: new Date(state.start).toISOString(),
+    startTime: new Date(recoveredSession.start).toISOString(),
     endTime: new Date(endTime).toISOString(),
     duration: elapsedMs,
     rate: ratePerMin,
@@ -4118,68 +4828,40 @@ function summarizeRecoveredActiveCall(state = recoveredActiveCallState) {
   calls.push(callData);
   saveCalls();
 
-  liveCallInfo.style.display = 'none';
-  startCallBtn.style.display = 'block';
-  endCallBtn.style.display = 'none';
-  liveCallInfo.classList.remove('active-call-pulse');
-  liveCallTimerDisplay.textContent = '00:00:00';
-  liveCallEarningsDisplay.textContent = '$0.00';
-  if (liveCallNotesInput) liveCallNotesInput.value = '';
-  liveCallStart = null;
-  currentCallRate = null;
-  recoveredActiveCallState = null;
-  hideActiveCallRecoveryBanner();
+  clearLiveCallRuntimeState();
   clearActiveCallState();
   clearActiveCallClosedExplicitly();
-  updateFloatingCallControls(featureFlags);
-  scheduleDesktopOverlayRefresh();
-  animateFloatingPrimaryTransition();
+  resetLiveCallUiToIdle();
+  void syncAndroidWidgetActiveSession();
   showToast('Recovered live call summarized and saved.');
 }
 
 function discardRecoveredActiveCall() {
-  if (liveCallTimerId) {
-    clearInterval(liveCallTimerId);
-  }
-  liveCallInfo.style.display = 'none';
-  startCallBtn.style.display = 'block';
-  endCallBtn.style.display = 'none';
-  liveCallInfo.classList.remove('active-call-pulse');
-  liveCallTimerDisplay.textContent = '00:00:00';
-  liveCallEarningsDisplay.textContent = '$0.00';
-  if (liveCallNotesInput) liveCallNotesInput.value = '';
-  liveCallStart = null;
-  currentCallRate = null;
-  recoveredActiveCallState = null;
-  hideActiveCallRecoveryBanner();
+  clearLiveCallRuntimeState();
   clearActiveCallState();
   clearActiveCallClosedExplicitly();
-  updateFloatingCallControls(featureFlags);
-  scheduleDesktopOverlayRefresh();
-  animateFloatingPrimaryTransition();
+  resetLiveCallUiToIdle();
+  void syncAndroidWidgetActiveSession();
   showToast('Recovered live call discarded.');
 }
 
 function autoRestoreRecoveredActiveCall(state) {
-  const start = Number(state?.start);
-  const rate = getRecoveredCallRate(state);
-  if (!Number.isFinite(start) || start <= 0 || rate <= 0) return false;
+  const recoveredSession = normalizeActiveCallSession(state);
+  const restoreResult = LiveCallSession.restore(state);
+  if (!recoveredSession || !restoreResult.ok) return false;
 
-  if (state.rateName && rates.some((entry) => entry.name === state.rateName)) {
-    rateSelect.value = state.rateName;
+  if (recoveredSession.rateName && rates.some((entry) => entry.name === recoveredSession.rateName)) {
+    rateSelect.value = recoveredSession.rateName;
     saveLastSelectedRate();
   }
 
-  liveCallStart = start;
-  currentCallRate = rate;
   recoveredActiveCallState = {
-    ...state,
-    start,
-    rate
+    ...recoveredSession,
+    rate: restoreResult.session.rate
   };
   restoreLiveCallUi();
 
-  const elapsedHours = Math.floor(Math.max(0, Date.now() - start) / 3600000);
+  const elapsedHours = Math.floor(Math.max(0, Date.now() - recoveredSession.start) / 3600000);
   const message = elapsedHours >= 2
     ? 'Your live call resumed automatically. It has been active for a while, so review it before ending if needed.'
     : 'Your live call resumed automatically based on the saved start time.';
@@ -4233,6 +4915,7 @@ function normalizeCall(call) {
     duration: Math.max(0, end - start), // ms
     rate,
     earnings,
+    notes: String(call.notes ?? call.note ?? '').trim()
   };
 
   normalized.earned = normalized.earnings; // compat
@@ -4379,6 +5062,7 @@ function migrateLegacyRpgCallEligibility() {
         const endDisplay = endDate.toLocaleString(undefined, { timeZone: userTz });
         const durationStr = formatTime(call.duration);
         const earningsStr = formatEarnings(call.earned);
+        const safeNotes = escapeHTML(String(call.notes || '').trim());
 
         let safeRateName = escapeHTML(call.rateName || '');
         if (!safeRateName) {
@@ -4394,7 +5078,7 @@ function migrateLegacyRpgCallEligibility() {
             <td>${escapeHTML(endDisplay)}</td>
             <td>${durationStr}</td>
             <td>${safeRateName}</td>
-            <td class="notes-column"></td>
+            <td class="notes-column">${safeNotes || '<span class="text-gray-400">-</span>'}</td>
             <td>${earningsStr}</td>
             <td>
                 <button class="edit-call-btn" data-call-id="${safeId}">
@@ -4416,6 +5100,7 @@ function migrateLegacyRpgCallEligibility() {
         const endTime = endDate.toLocaleTimeString(undefined, { timeZone: userTz, hour: '2-digit', minute: '2-digit' });
         const durationStr = formatTime(call.duration);
         const earningsStr = formatEarnings(call.earned);
+        const safeNotes = escapeHTML(String(call.notes || '').trim());
 
         let safeRateName = escapeHTML(call.rateName || '');
         if (!safeRateName) {
@@ -4433,19 +5118,22 @@ function migrateLegacyRpgCallEligibility() {
                     <div class="call-log-mobile-date">${escapeHTML(callDate)}</div>
                     <div class="call-log-mobile-time">${escapeHTML(startTime)} - ${escapeHTML(endTime)}</div>
                 </div>
-                <div class="call-log-mobile-earnings">${earningsStr}</div>
+                <div class="call-log-mobile-earnings-block">
+                    <div class="call-log-mobile-earnings">${earningsStr}</div>
+                    <div class="call-log-mobile-actions">
+                        <button class="edit-call-btn" data-call-id="${safeId}" aria-label="Edit call">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}" aria-label="Delete call">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="call-log-mobile-meta">
-                <span><strong>Duration:</strong> ${durationStr}</span>
-                <span><strong>Rate:</strong> ${safeRateName}</span>
-            </div>
-            <div class="call-log-mobile-actions">
-                <button class="edit-call-btn" data-call-id="${safeId}">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
+                <span class="call-log-mobile-chip"><strong>Duration:</strong> ${durationStr}</span>
+                <span class="call-log-mobile-chip"><strong>Rate:</strong> ${safeRateName}</span>
+                ${safeNotes ? `<span class="call-log-mobile-chip"><strong>Notes:</strong> ${safeNotes}</span>` : ''}
             </div>
         `;
         return card;
@@ -4457,6 +5145,7 @@ function migrateLegacyRpgCallEligibility() {
         displayRates();
         populateRateSelects();
         updateStatistics();
+        void syncAndroidWidgetDefaultRate();
         if (rates.length > 0) markOnboardingStepComplete('rate');
         updateOnboardingCues();
     }
@@ -4508,6 +5197,7 @@ function saveCalls() {
         queueStorageWrite('lastSelectedRate', lastSelectedRate);
         syncDailyGoalInputs();
         updateStatistics();
+        void syncAndroidWidgetDefaultRate();
     }
 
     function updateStorageInfo() {
@@ -4878,17 +5568,69 @@ function saveCalls() {
         updateCallLogFilterButtons();
     }
 
+    function getCallSortValue(call, sortKey) {
+        if (sortKey === 'startTime') return getCallStartMs(call);
+        if (sortKey === 'endTime') return Number(Date.parse(call?.endTime || '')) || 0;
+        if (sortKey === 'duration') return Number(call?.duration) || 0;
+        if (sortKey === 'earned') return Number(call?.earned) || 0;
+        if (sortKey === 'rateName') return String(call?.rateName || '').toLowerCase();
+        if (sortKey === 'notes') return String(call?.notes || '').toLowerCase();
+        return getCallStartMs(call);
+    }
+
+    function sortCallsForView(rows) {
+        if (!Array.isArray(rows) || rows.length <= 1) return Array.isArray(rows) ? rows.slice() : [];
+        const key = callLogSort?.key || 'startTime';
+        const direction = callLogSort?.direction === 'asc' ? 1 : -1;
+        return rows.slice().sort((a, b) => {
+            const av = getCallSortValue(a, key);
+            const bv = getCallSortValue(b, key);
+            if (av === bv) {
+                return getCallStartMs(b) - getCallStartMs(a);
+            }
+            if (typeof av === 'string' || typeof bv === 'string') {
+                return String(av).localeCompare(String(bv), undefined, { numeric: true }) * direction;
+            }
+            return ((Number(av) || 0) - (Number(bv) || 0)) * direction;
+        });
+    }
+
+    function updateCallLogSortUi() {
+        if (!callLogSortableHeaders.length) return;
+        callLogSortableHeaders.forEach((headerEl) => {
+            const key = headerEl.getAttribute('data-sort-key');
+            const isActive = key === callLogSort.key;
+            headerEl.classList.toggle('sort-active', isActive);
+            headerEl.classList.toggle('sort-asc', isActive && callLogSort.direction === 'asc');
+            headerEl.classList.toggle('sort-desc', isActive && callLogSort.direction === 'desc');
+            headerEl.setAttribute('aria-sort', isActive ? (callLogSort.direction === 'asc' ? 'ascending' : 'descending') : 'none');
+        });
+    }
+
+    function setCallLogSort(nextKey) {
+        const normalizedKey = String(nextKey || '').trim();
+        if (!normalizedKey) return;
+        if (callLogSort.key === normalizedKey) {
+            callLogSort.direction = callLogSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            callLogSort.key = normalizedKey;
+            callLogSort.direction = ['duration', 'earned', 'startTime', 'endTime'].includes(normalizedKey) ? 'desc' : 'asc';
+        }
+        updateCallLogSortUi();
+        displayCalls();
+    }
+
     function displayCalls() {
         callLogRenderTicket += 1;
         const renderTicket = callLogRenderTicket;
-        const filteredCalls = getFilteredCallsCached();
+        const filteredCalls = sortCallsForView(getFilteredCallsCached());
         callLogTableBody.innerHTML = '';
         if (callLogMobileList) callLogMobileList.innerHTML = '';
         if (callLogScrollContainer) callLogScrollContainer.scrollTop = 0;
 
         if (filteredCalls.length === 0) {
             callLogRenderState = null;
-            callLogTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls recorded.</td></tr>`;
+            callLogTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500 dark:text-gray-400">No calls recorded.</td></tr>`;
             if (callLogMobileList) {
                 callLogMobileList.innerHTML = `<div class="call-log-mobile-empty text-center py-4 text-gray-500 dark:text-gray-400">No calls recorded.</div>`;
             }
@@ -5032,6 +5774,7 @@ function saveCalls() {
   const selectedRateName = callRateSelect.value;
   const selectedRate = rates.find(r => r.name === selectedRateName);
   const ratePerMin = selectedRate ? selectedRate.amount : 0;
+  const manualNotes = String(callNotesInput?.value || '').trim();
 
   const durationMs = finalEnd - finalStart;
   const earnings = Number(((durationMs / (1000 * 60)) * ratePerMin).toFixed(2));
@@ -5050,7 +5793,8 @@ function saveCalls() {
       rate: ratePerMin,
       rpgEligible: typeof calls[idx].rpgEligible === 'boolean' ? calls[idx].rpgEligible : rpgEligible,
       rateName: selectedRateName,
-            earnings
+            earnings,
+      notes: manualNotes
     });
 
     calls[idx] = updated;
@@ -5063,7 +5807,8 @@ function saveCalls() {
       rate: ratePerMin,
       rpgEligible,
       rateName: selectedRateName,
-            earnings
+            earnings,
+      notes: manualNotes
     }));
   }
 
@@ -5100,8 +5845,7 @@ function saveCalls() {
   const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
   const seconds = String(totalSeconds % 60).padStart(2, '0');
     callDurationInput.value = totalSeconds > 0 ? `${hours}:${minutes}:${seconds}` : '';
-    // For privacy, saved calls do not contain notes. Clear notes input when editing.
-    if (callNotesInput) callNotesInput.value = '';
+    if (callNotesInput) callNotesInput.value = String(callToEdit.notes || '');
 
   // Seleccionar la rate correcta
   if (callToEdit.rateName) {
@@ -5292,42 +6036,53 @@ function saveCalls() {
         beginLiveCallWithRate(rateSelect.value, selectedRate ? Number(selectedRate.amount) || 0 : 0);
     }
 
+    function adjustLiveCallElapsedByMs(deltaMs) {
+        if (!LiveCallSession.isActive()) return;
+        const currentSession = buildCurrentActiveCallSession();
+        if (!currentSession) return;
+        const now = Date.now();
+        const requestedStart = Math.round((currentSession.start || now) - Number(deltaMs || 0));
+        const clampedStart = Math.min(now, Math.max(1, requestedStart));
+        const updated = setLiveCallRuntimeState({
+            ...currentSession,
+            start: clampedStart,
+            lastPing: now
+        });
+        if (!updated) return;
+        saveActiveCallState(true);
+        const elapsedMs = Math.max(0, now - updated.start);
+        liveCallTimerDisplay.textContent = formatTime(elapsedMs);
+        liveCallEarningsDisplay.textContent = formatEarnings(calculateEarnings(elapsedMs, currentCallRate || getSelectedRateAmount()));
+        updateFloatingActiveCard(featureFlags, true);
+        void syncAndroidWidgetActiveSession();
+    }
+
     function endLiveCall() {
+        const stopResult = LiveCallSession.stop();
+        if (!stopResult.ok) return;
         if (liveCallTimerId) {
             clearInterval(liveCallTimerId);
+            liveCallTimerId = null;
         }
-        const endTime = Date.now();
-        const elapsed = endTime - liveCallStart;
-        const earned = calculateEarnings(elapsed, currentCallRate);
-const callData = normalizeCall({
-  id: generateUUID(),
-  startTime: new Date(liveCallStart).toISOString(),
-  endTime: new Date(endTime).toISOString(),
-  duration: elapsed,
-  rate: currentCallRate,
-  rpgEligible: isRpgEnabled(),
-  rateName: rateSelect.value,
-  earnings: Number(earned.toFixed(2))
-});
-calls.push(callData);
+        calls.push(stopResult.callData);
         saveCalls();
-        liveCallInfo.style.display = 'none';
+        setLiveCallInfoVisibility(false);
         startCallBtn.style.display = 'block';
         endCallBtn.style.display = 'none';
         liveCallInfo.classList.remove('active-call-pulse');
         liveCallTimerDisplay.textContent = '00:00:00';
         liveCallEarningsDisplay.textContent = '$0.00';
         if (liveCallNotesInput) liveCallNotesInput.value = '';
-        liveCallStart = null;
-        currentCallRate = null;
+        LiveCallSession.clear();
         if (isRpgEnabled()) {
             const statsAfterSave = computeAchievementStats();
-            const earnedXp = getCallXpForDurationWithStreak(elapsed, statsAfterSave.currentStreak);
+            const earnedXp = getCallXpForDurationWithStreak(stopResult.elapsedMs, statsAfterSave.currentStreak);
             showToast(`Live call saved! XP gained: +${earnedXp}`);
         } else {
             showToast('Live call saved!');
         }
         clearActiveCallState();
+        void syncAndroidWidgetActiveSession();
         updateFloatingCallControls(featureFlags);
         scheduleDesktopOverlayRefresh();
         animateFloatingPrimaryTransition();
@@ -5445,7 +6200,107 @@ calls.push(callData);
     }
 
     // Payment Cycle Management
+    function toLocalMidnightIso(dateObj) {
+        const localDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), 0, 0, 0, 0);
+        return localDate.toISOString();
+    }
+
+    function getBiweeklyTemplateAnchorDate(baseDate = parseDateInput(getTodayDateString())) {
+        const anchor = new Date(2025, 11, 13); // 2025-12-13 from the provided interpreter sheet
+        const safeBaseDate = baseDate instanceof Date && Number.isFinite(baseDate.getTime()) ? baseDate : new Date();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const deltaDays = Math.floor((safeBaseDate.getTime() - anchor.getTime()) / oneDayMs);
+        const periods = Math.floor(deltaDays / 14);
+        return addDays(anchor, periods * 14);
+    }
+
+    function ensurePaymentCycleTemplateDefaults(force = false) {
+        if (paymentCycleTemplateStartDateInput && (force || !paymentCycleTemplateStartDateInput.value)) {
+            const cycleStarts = (Array.isArray(paymentCycles) ? paymentCycles : [])
+                .map((cycle) => parseOptionalDate(cycle?.startDate))
+                .filter((date) => date instanceof Date && Number.isFinite(date.getTime()))
+                .sort((a, b) => a.getTime() - b.getTime());
+            const seedDate = cycleStarts.length > 0 ? cycleStarts[0] : getBiweeklyTemplateAnchorDate();
+            paymentCycleTemplateStartDateInput.value = formatDateForInput(seedDate);
+        }
+        if (paymentCycleTemplateCountInput && (force || !paymentCycleTemplateCountInput.value)) {
+            paymentCycleTemplateCountInput.value = '26';
+        }
+        if (paymentCycleTemplatePayOffsetInput && (force || !paymentCycleTemplatePayOffsetInput.value)) {
+            paymentCycleTemplatePayOffsetInput.value = '7';
+        }
+    }
+
+    function buildBiweeklyCyclesFromTemplate(startDate, count, payOffsetDays) {
+        const safeStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        const safeCount = Math.max(1, Math.min(120, Number(count) || 26));
+        const safePayOffset = Math.max(0, Math.min(30, Number(payOffsetDays) || 7));
+        const cycles = [];
+
+        for (let i = 0; i < safeCount; i += 1) {
+            const cycleStart = addDays(safeStart, i * 14);
+            const cycleEnd = addDays(cycleStart, 13);
+            const payDate = addDays(cycleEnd, safePayOffset);
+            cycles.push({
+                startDate: toLocalMidnightIso(cycleStart),
+                endDate: toLocalMidnightIso(cycleEnd),
+                payDate: toLocalMidnightIso(payDate)
+            });
+        }
+
+        return cycles;
+    }
+
+    function handleGeneratePaymentCyclesFromTemplate() {
+        const startDate = parseDateInput(paymentCycleTemplateStartDateInput?.value || '');
+        const count = Number(paymentCycleTemplateCountInput?.value || 26);
+        const payOffsetDays = Number(paymentCycleTemplatePayOffsetInput?.value || 7);
+        const replaceExisting = !!paymentCycleTemplateReplaceToggle?.checked;
+
+        if (!startDate) {
+            showAlertModal('Missing Start Date', 'Choose the first cycle start date before generating payment cycles.');
+            return;
+        }
+        if (!Number.isFinite(count) || count < 1) {
+            showAlertModal('Invalid Count', 'Choose a valid number of cycles (minimum 1).');
+            return;
+        }
+        if (!Number.isFinite(payOffsetDays) || payOffsetDays < 0) {
+            showAlertModal('Invalid Pay Offset', 'Pay offset must be 0 or higher.');
+            return;
+        }
+
+        const generated = buildBiweeklyCyclesFromTemplate(startDate, count, payOffsetDays);
+        if (!generated.length) {
+            showAlertModal('Nothing Generated', 'No payment cycles were generated. Check your template values.');
+            return;
+        }
+
+        const existing = Array.isArray(paymentCycles) ? paymentCycles.map((cycle) => ({ ...cycle })) : [];
+        if (replaceExisting) {
+            paymentCycles = generated;
+            savePaymentCycles();
+            showToast(`Generated ${generated.length} biweekly payment cycle${generated.length === 1 ? '' : 's'}.`);
+            return;
+        }
+
+        const seen = new Set(existing.map((cycle) => getPaymentCycleDuplicateKey(cycle)).filter(Boolean));
+        let added = 0;
+        generated.forEach((cycle) => {
+            const key = getPaymentCycleDuplicateKey(cycle);
+            if (!key || seen.has(key)) return;
+            seen.add(key);
+            existing.push(cycle);
+            added += 1;
+        });
+
+        paymentCycles = existing;
+        savePaymentCycles();
+        showToast(`Generated ${added} new cycle${added === 1 ? '' : 's'} (${generated.length - added} duplicate${generated.length - added === 1 ? '' : 's'} skipped).`);
+    }
+
     function renderPaymentCycles() {
+        ensurePaymentCycleTemplateDefaults();
         if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
             try { paymentCyclesToggle.checked = paymentCyclesEnabled; } catch (e) { /* ignore */ }
         }
@@ -6099,12 +6954,34 @@ calls.push(callData);
 
         startCallBtn.addEventListener('click', startLiveCall);
         endCallBtn.addEventListener('click', endLiveCall);
+        if (liveCallMinusSecondBtn) {
+            liveCallMinusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(-1000));
+        }
+        if (liveCallPlusSecondBtn) {
+            liveCallPlusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(1000));
+        }
+        if (floatingMinusSecondBtn) {
+            floatingMinusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(-1000));
+        }
+        if (floatingPlusSecondBtn) {
+            floatingPlusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(1000));
+        }
         if (floatingStartCallBtn) {
-            floatingStartCallBtn.addEventListener('click', startLiveCall);
+            floatingStartCallBtn.addEventListener('click', () => {
+                runWithViewportLock(startLiveCall);
+            });
         }
         if (floatingEndCallBtn) {
-            floatingEndCallBtn.addEventListener('click', endLiveCall);
+            floatingEndCallBtn.addEventListener('click', () => {
+                runWithViewportLock(endLiveCall);
+            });
         }
+        if (floatingDockDragHandle) {
+            floatingDockDragHandle.addEventListener('pointerdown', startFloatingDockDrag);
+        }
+        window.addEventListener('pointermove', handleFloatingDockPointerMove);
+        window.addEventListener('pointerup', endFloatingDockDrag);
+        window.addEventListener('pointercancel', endFloatingDockDrag);
         if (floatingDockMiniBtn) {
             floatingDockMiniBtn.addEventListener('click', expandFloatingDockWithAnimation);
         }
@@ -6158,6 +7035,16 @@ calls.push(callData);
 
         if (callLogMobileList) {
             callLogMobileList.addEventListener('click', handleCallLogActionClick);
+        }
+
+        if (callLogSortableHeaders.length) {
+            callLogSortableHeaders.forEach((headerEl) => {
+                headerEl.addEventListener('click', () => {
+                    const sortKey = headerEl.getAttribute('data-sort-key');
+                    if (sortKey) setCallLogSort(sortKey);
+                });
+            });
+            updateCallLogSortUi();
         }
 
         if (callLogScrollContainer) {
@@ -6283,6 +7170,7 @@ calls.push(callData);
 
         // Apply feature flags to show/hide optional UI
         featureFlags = loadFeatureFlags();
+            floatingDockManualPosition = loadFloatingDockManualPosition();
             migrateLegacyRpgCallEligibility();
             // set toggle states in settings modal if present
             if (featureNotesToggle) featureNotesToggle.checked = !!featureFlags.notes;
@@ -6293,6 +7181,7 @@ calls.push(callData);
             if (floatingActiveShowTimerToggle) floatingActiveShowTimerToggle.checked = !!featureFlags.floatingActiveShowTimer;
             if (floatingActiveShowEarningsToggle) floatingActiveShowEarningsToggle.checked = !!featureFlags.floatingActiveShowEarnings;
             if (floatingActiveShowRateToggle) floatingActiveShowRateToggle.checked = !!featureFlags.floatingActiveShowRate;
+            if (floatingActiveShowAdjustToggle) floatingActiveShowAdjustToggle.checked = !!featureFlags.floatingActiveShowAdjust;
             if (floatingOneHandedToggle) floatingOneHandedToggle.checked = !!featureFlags.floatingOneHanded;
             if (floatingSecondaryActionSelect) floatingSecondaryActionSelect.value = featureFlags.floatingSecondaryAction || 'add';
             if (floatingPreviewEnabledToggle) floatingPreviewEnabledToggle.checked = ENABLE_FLOATING_PREVIEW_TESTING && !!featureFlags.floatingPreviewEnabled;
@@ -6398,6 +7287,8 @@ calls.push(callData);
             if (floatingControlsSideSelect) {
                 floatingControlsSideSelect.addEventListener('change', (e) => {
                     featureFlags.floatingControlsSide = e.target.value === 'left' ? 'left' : 'right';
+                    floatingDockManualPosition = null;
+                    saveFloatingDockManualPosition(null);
                     saveFeatureFlags(featureFlags);
                     applyFeatureFlags(featureFlags);
                 });
@@ -6434,6 +7325,13 @@ calls.push(callData);
             if (floatingActiveShowRateToggle) {
                 floatingActiveShowRateToggle.addEventListener('change', (e) => {
                     featureFlags.floatingActiveShowRate = !!e.target.checked;
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                });
+            }
+            if (floatingActiveShowAdjustToggle) {
+                floatingActiveShowAdjustToggle.addEventListener('change', (e) => {
+                    featureFlags.floatingActiveShowAdjust = !!e.target.checked;
                     saveFeatureFlags(featureFlags);
                     applyFeatureFlags(featureFlags);
                 });
@@ -6496,15 +7394,18 @@ calls.push(callData);
         });
 
         document.addEventListener('visibilitychange', () => {
-            if (!liveCallStart) return;
             if (document.visibilityState === 'hidden') {
-                saveActiveCallState(true);
-                flushPendingStorageWrites();
+                if (liveCallStart) {
+                    saveActiveCallState(true);
+                    flushPendingStorageWrites();
+                }
                 return;
             }
-            if (!readActiveCallState()) {
+            if (liveCallStart && !readActiveCallState()) {
                 saveActiveCallState(true);
             }
+            scheduleAndroidWidgetBridgeRefresh(120);
+            scheduleAndroidWidgetBridgeRefresh(1200);
         });
 
         // v1.0.5: Recover unfinished live call (if any)
@@ -6579,6 +7480,9 @@ callStartTimeInput.addEventListener('input', syncCallDateFromDateTime);
 callEndTimeInput.addEventListener('input', syncCallDateFromDateTime);
         
         showAddCycleBtn.addEventListener('click', addPaymentCycle);
+        if (generatePaymentCyclesBtn) {
+            generatePaymentCyclesBtn.addEventListener('click', handleGeneratePaymentCyclesFromTemplate);
+        }
         const restoreBackupBtn = document.getElementById('restore-backup-cycles-btn');
         if (restoreBackupBtn) {
             restoreBackupBtn.addEventListener('click', restorePaymentCyclesFromBackup);
@@ -6958,17 +7862,36 @@ goalMinutesInput.addEventListener('input', () => {
         updateOnboardingCues();
         openOnboardingModalIfNeeded();
         setupFloatingVisibilityObservers();
+        scheduleAndroidWidgetBridgeRefresh(150);
+        scheduleAndroidWidgetBridgeRefresh(1800);
+        if (isAndroidCapacitorApp() && !androidWidgetBridgeTimerId) {
+            androidWidgetBridgeTimerId = window.setInterval(() => {
+                if (document.visibilityState === 'hidden') return;
+                void initializeAndroidWidgetBridge();
+            }, 10000);
+        }
         void checkForInstalledAppUpdates();
+        scheduleReleaseSpotlightBanner();
         setInterval(updateLocalTime, 1000);
-        window.addEventListener('scroll', scheduleFloatingControlsRefresh, { passive: true });
+        window.addEventListener('scroll', () => {
+            flushPendingLiveCallInfoVisibilityIfVisible();
+            scheduleFloatingControlsRefresh();
+        }, { passive: true });
         window.addEventListener('resize', () => {
             scheduleAppShellRefresh();
+            flushPendingLiveCallInfoVisibilityIfVisible();
             scheduleModalLayoutRefresh();
             scheduleFloatingControlsRefresh();
             scheduleDetailPanelsReflow();
+            clampFloatingDockPositionToViewport();
             scheduleDesktopOverlayRefresh();
         });
-        window.addEventListener('orientationchange', scheduleAppShellRefresh);
+        window.addEventListener('orientationchange', () => {
+            scheduleAppShellRefresh();
+            flushPendingLiveCallInfoVisibilityIfVisible();
+            clampFloatingDockPositionToViewport();
+            scheduleFloatingControlsRefresh();
+        });
         window.visualViewport?.addEventListener('resize', scheduleAppShellRefresh);
 
         const today = getTodayDateString();
@@ -7063,4 +7986,5 @@ goalMinutesInput.addEventListener('input', () => {
             }
         }
     });
+
 

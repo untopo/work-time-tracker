@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.87-blue)
+![Version](https://img.shields.io/badge/version-1.1.88-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -279,8 +279,12 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.87`
+- Current Version: `v1.1.88`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.1.88`
+- Floating Dock start/end no longer triggers viewport jumps when Call Controls is off-screen
+- The `-1/+1s` mini controls now stay contained and correctly rounded across full, compact, and icon dock modes on web, desktop, and mobile
 
 ### Highlights in `v1.1.87`
 - Footer support now uses a single `Donate` button that opens a support modal instead of showing multiple inline buttons
