@@ -310,6 +310,51 @@
             z-index: 2;
         }
 
+        .call-log-sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .call-log-sortable:hover {
+            color: #2563eb;
+        }
+
+        html.dark .call-log-sortable:hover {
+            color: #93c5fd;
+        }
+
+        .call-log-sort-indicator {
+            display: inline-block;
+            width: 0.75rem;
+            margin-left: 0.2rem;
+            text-align: center;
+            opacity: 0.45;
+            font-size: 0.72rem;
+            line-height: 1;
+        }
+
+        .call-log-sortable.sort-active {
+            color: #1d4ed8;
+        }
+
+        html.dark .call-log-sortable.sort-active {
+            color: #bfdbfe;
+        }
+
+        .call-log-sortable.sort-active .call-log-sort-indicator {
+            opacity: 1;
+        }
+
+        .call-log-sortable.sort-asc .call-log-sort-indicator::before {
+            content: "▲";
+        }
+
+        .call-log-sortable.sort-desc .call-log-sort-indicator::before {
+            content: "▼";
+        }
+
         html.dark .call-log-table th {
             background-color: #1e293b;
             color: #f1f5f9;
@@ -413,29 +458,30 @@
             border: 1px solid #dbeafe;
             border-radius: 0.95rem;
             background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
-            padding: 0.95rem;
-            margin-bottom: 0.85rem;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+            padding: 0.68rem;
+            margin-bottom: 0.55rem;
         }
 
         html.dark .call-log-mobile-card {
             border-color: #334155;
             background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            box-shadow: 0 16px 34px rgba(2, 6, 23, 0.34);
+            box-shadow: 0 12px 24px rgba(2, 6, 23, 0.26);
         }
 
         .call-log-mobile-top {
             display: flex;
             justify-content: space-between;
-            gap: 0.75rem;
-            align-items: flex-start;
-            margin-bottom: 0.75rem;
+            gap: 0.55rem;
+            align-items: center;
+            margin-bottom: 0.45rem;
         }
 
         .call-log-mobile-date {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: #0f172a;
+            line-height: 1.15;
         }
 
         html.dark .call-log-mobile-date {
@@ -443,17 +489,25 @@
         }
 
         .call-log-mobile-time {
-            font-size: 0.8rem;
+            font-size: 0.76rem;
             color: #64748b;
-            margin-top: 0.15rem;
+            margin-top: 0.1rem;
+            line-height: 1.15;
         }
 
         html.dark .call-log-mobile-time {
             color: #94a3b8;
         }
 
+        .call-log-mobile-earnings-block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+        }
+
         .call-log-mobile-earnings {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: #14532d;
             white-space: nowrap;
@@ -464,52 +518,74 @@
         }
 
         .call-log-mobile-meta {
-            display: grid;
+            display: flex;
+            flex-wrap: wrap;
             gap: 0.35rem;
-            font-size: 0.84rem;
+            font-size: 0.76rem;
             color: #334155;
-            margin-bottom: 0.85rem;
+            margin-bottom: 0;
         }
 
         html.dark .call-log-mobile-meta {
             color: #cbd5e1;
         }
 
+        .call-log-mobile-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+            min-height: 26px;
+            padding: 0.24rem 0.48rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            background: #f8fafc;
+            line-height: 1.1;
+            max-width: 100%;
+            word-break: break-word;
+        }
+
+        html.dark .call-log-mobile-chip {
+            border-color: rgba(71, 85, 105, 0.7);
+            background: rgba(15, 23, 42, 0.72);
+        }
+
         .call-log-mobile-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
         }
 
         .call-log-mobile-actions button {
-            min-height: 44px;
-            border-radius: 0.75rem;
+            width: 30px;
+            height: 30px;
+            min-height: 30px;
+            border-radius: 999px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.4rem;
             border: 1px solid #dbeafe;
-            background: #eff6ff;
-            color: #1d4ed8;
+            background: #f8fbff;
+            color: #2563eb;
+            padding: 0;
         }
 
         html.dark .call-log-mobile-actions button {
             border-color: #334155;
-            background: #0f172a;
-            color: #dbeafe;
+            background: rgba(15, 23, 42, 0.88);
+            color: #cbd5e1;
         }
 
         .call-log-mobile-actions .delete-call-btn {
-            background: #fef2f2;
-            border-color: #fecaca;
-            color: #dc2626 !important;
+            background: #fff5f5;
+            border-color: #fecdd3;
+            color: #e11d48 !important;
         }
 
         html.dark .call-log-mobile-actions .delete-call-btn {
-            background: rgba(127, 29, 29, 0.2);
-            border-color: rgba(127, 29, 29, 0.5);
-            color: #fca5a5 !important;
+            background: rgba(136, 19, 55, 0.18);
+            border-color: rgba(190, 24, 93, 0.35);
+            color: #fda4af !important;
         }
 
         .call-log-mobile-empty {
@@ -603,6 +679,23 @@
             .call-log-table {
                 min-width: 760px;
             }
+
+            .live-call-adjust-controls {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .live-call-adjust-btn {
+                flex: 1 1 118px;
+                min-width: 0;
+            }
+
+            .release-spotlight-banner {
+                width: min(95vw, 640px);
+                top: max(0.55rem, env(safe-area-inset-top));
+                padding: 0.8rem 0.85rem;
+            }
         }
 
         /* New Typography Styles */
@@ -654,6 +747,209 @@
 
         #live-call-info .flex {
             width: 100%;
+        }
+
+        .live-call-adjust-controls {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .live-call-adjust-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            min-width: 72px;
+            justify-content: center;
+            border-radius: 9999px;
+            border: 1px solid rgba(59, 130, 246, 0.28);
+            padding: 0.38rem 0.74rem;
+            font-size: 0.79rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
+            user-select: none;
+        }
+
+        .live-call-adjust-btn i {
+            font-size: 0.7rem;
+            opacity: 0.88;
+        }
+
+        .live-call-adjust-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.16);
+        }
+
+        .live-call-adjust-btn:active {
+            transform: translateY(0);
+        }
+
+        .live-call-adjust-minus {
+            background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+            color: #1e3a8a;
+            border-color: #93c5fd;
+        }
+
+        .live-call-adjust-minus:hover {
+            background: linear-gradient(180deg, #e0ecff 0%, #c7ddff 100%);
+        }
+
+        .live-call-adjust-plus {
+            background: linear-gradient(180deg, #ecfeff 0%, #ccfbf1 100%);
+            color: #0f766e;
+            border-color: #5eead4;
+        }
+
+        .live-call-adjust-plus:hover {
+            background: linear-gradient(180deg, #dffbf7 0%, #bdf6ea 100%);
+        }
+
+        html.dark .live-call-adjust-btn {
+            box-shadow: 0 8px 18px rgba(2, 6, 23, 0.34);
+        }
+
+        html.dark .live-call-adjust-minus {
+            background: linear-gradient(180deg, rgba(30, 58, 138, 0.34) 0%, rgba(30, 64, 175, 0.28) 100%);
+            color: #bfdbfe;
+            border-color: rgba(96, 165, 250, 0.48);
+        }
+
+        html.dark .live-call-adjust-plus {
+            background: linear-gradient(180deg, rgba(15, 118, 110, 0.34) 0%, rgba(13, 148, 136, 0.28) 100%);
+            color: #99f6e4;
+            border-color: rgba(45, 212, 191, 0.45);
+        }
+
+        .release-spotlight-banner {
+            position: fixed;
+            top: max(0.75rem, env(safe-area-inset-top));
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(92vw, 680px);
+            z-index: 88;
+            border: 1px solid rgba(59, 130, 246, 0.28);
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 20px 42px rgba(15, 23, 42, 0.18);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            padding: 0.9rem 1rem;
+            animation: release-spotlight-in 180ms ease-out;
+        }
+
+        .release-spotlight-hidden {
+            display: none !important;
+        }
+
+        .release-spotlight-content {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .release-spotlight-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .release-spotlight-text {
+            margin-top: 0.25rem;
+            font-size: 0.8rem;
+            color: #334155;
+            line-height: 1.35;
+        }
+
+        .release-spotlight-actions {
+            margin-top: 0.6rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+
+        .release-spotlight-btn {
+            border: 0;
+            border-radius: 9999px;
+            padding: 0.42rem 0.85rem;
+            font-size: 0.76rem;
+            font-weight: 600;
+            transition: background-color 0.14s ease, transform 0.14s ease;
+        }
+
+        .release-spotlight-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .release-spotlight-btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .release-spotlight-btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .release-spotlight-btn-muted {
+            background: #e2e8f0;
+            color: #1f2937;
+        }
+
+        .release-spotlight-btn-muted:hover {
+            background: #cbd5e1;
+        }
+
+        .release-spotlight-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 9999px;
+            border: 0;
+            background: #e2e8f0;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .release-spotlight-close:hover {
+            background: #cbd5e1;
+            color: #1f2937;
+        }
+
+        html.dark .release-spotlight-banner {
+            border-color: rgba(96, 165, 250, 0.28);
+            background: rgba(2, 6, 23, 0.92);
+            box-shadow: 0 22px 44px rgba(2, 6, 23, 0.46);
+        }
+
+        html.dark .release-spotlight-title {
+            color: #e2e8f0;
+        }
+
+        html.dark .release-spotlight-text {
+            color: #cbd5e1;
+        }
+
+        html.dark .release-spotlight-btn-muted {
+            background: #334155;
+            color: #e2e8f0;
+        }
+
+        html.dark .release-spotlight-btn-muted:hover,
+        html.dark .release-spotlight-close:hover {
+            background: #475569;
+        }
+
+        html.dark .release-spotlight-close {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        @keyframes release-spotlight-in {
+            from { opacity: 0; transform: translateX(-50%) translateY(-6px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
         #active-call-recovery-banner {
@@ -922,6 +1218,10 @@
             box-shadow: 0 20px 46px rgba(2, 6, 23, 0.34);
         }
 
+        #call-controls-card {
+            overflow-anchor: none;
+        }
+
         .metric-surface {
             border: 1px solid rgba(191, 219, 254, 0.65);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
@@ -1170,6 +1470,38 @@
             transition: transform var(--motion-base) var(--ease-standard), opacity var(--motion-fast) var(--ease-subtle);
         }
 
+        #floating-call-controls.dragging,
+        #floating-call-controls.dragging #floating-call-dock {
+            transition: none !important;
+            animation: none !important;
+            cursor: grabbing;
+        }
+
+        #floating-dock-drag-handle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 18px;
+            margin-bottom: 0.35rem;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .floating-dock-drag-pill {
+            display: inline-block;
+            width: 44px;
+            height: 6px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 1px solid #93c5fd;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7);
+        }
+
+        html.dark .floating-dock-drag-pill {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-color: #334155;
+        }
+
         #floating-call-controls.dock-collapsed #floating-call-dock {
             opacity: 0;
             transform: scale(0.92);
@@ -1184,6 +1516,78 @@
 
         #floating-call-dock button {
             min-width: 180px;
+        }
+
+        .floating-active-adjust-controls {
+            margin-top: 0.45rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.35rem;
+            flex-wrap: nowrap;
+            overflow: hidden;
+            width: max-content;
+            max-width: 100%;
+            margin-left: auto;
+        }
+
+        #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn {
+            width: 24px;
+            min-width: 24px;
+            max-width: 24px;
+            height: 24px;
+            min-height: 24px;
+            border-radius: 9999px;
+            border: 1px solid rgba(30, 64, 175, 0.25);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 24px;
+            padding: 0 !important;
+            box-sizing: border-box;
+            font-size: 0.62rem;
+            line-height: 1;
+            transition: transform 0.14s ease, background-color 0.14s ease, border-color 0.14s ease;
+        }
+
+        #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .floating-active-adjust-minus {
+            background: #dbeafe;
+            color: #1e3a8a;
+            border-color: #93c5fd;
+        }
+
+        .floating-active-adjust-plus {
+            background: #ccfbf1;
+            color: #0f766e;
+            border-color: #5eead4;
+        }
+
+        html.dark .floating-active-adjust-minus {
+            background: rgba(30, 64, 175, 0.32);
+            color: #bfdbfe;
+            border-color: rgba(96, 165, 250, 0.45);
+        }
+
+        html.dark .floating-active-adjust-plus {
+            background: rgba(15, 118, 110, 0.32);
+            color: #99f6e4;
+            border-color: rgba(45, 212, 191, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn {
+                width: 24px !important;
+                min-width: 24px !important;
+                max-width: 24px !important;
+                height: 24px !important;
+                min-height: 24px !important;
+                flex: 0 0 24px !important;
+                font-size: 0.62rem !important;
+            }
         }
 
         #floating-call-controls.one-handed #floating-call-dock button {
@@ -1305,6 +1709,19 @@
             #floating-call-controls.one-handed #floating-call-dock button {
                 min-height: 56px;
             }
+        }
+
+        #floating-call-controls #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn {
+            width: 24px !important;
+            min-width: 24px !important;
+            max-width: 24px !important;
+            height: 24px !important;
+            min-height: 24px !important;
+            flex: 0 0 24px !important;
+            padding: 0 !important;
+            border-radius: 9999px !important;
+            font-size: 0.62rem !important;
+            line-height: 1 !important;
         }
 
         @media (max-width: 1100px) {
@@ -1988,10 +2405,6 @@
 
             .call-log-mobile-list {
                 display: block;
-            }
-
-            .call-log-mobile-actions {
-                grid-template-columns: 1fr;
             }
 
             #floating-call-controls {

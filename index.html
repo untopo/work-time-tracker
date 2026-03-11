@@ -125,6 +125,14 @@
                 <span class="text-green-700 dark:text-green-300 font-semibold text-lg mb-2">Ongoing Call</span>
                 <span id="live-call-timer" class="font-mono text-3xl text-green-900 dark:text-green-200 font-bold mb-2">00:00:00</span>
                 <span id="live-call-earnings" class="font-mono text-2xl text-green-800 dark:text-green-100 font-bold">$0.00</span>
+                <div id="live-call-adjust-controls" class="live-call-adjust-controls mt-3">
+                    <button id="live-call-minus-second-btn" type="button" class="live-call-adjust-btn live-call-adjust-minus" aria-label="Subtract one second">
+                        <i class="fas fa-minus"></i><span>-1s</span>
+                    </button>
+                    <button id="live-call-plus-second-btn" type="button" class="live-call-adjust-btn live-call-adjust-plus" aria-label="Add one second">
+                        <i class="fas fa-plus"></i><span>+1s</span>
+                    </button>
+                </div>
                 <textarea id="live-call-notes" rows="4" placeholder="Quick notes" class="mt-3 w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-green-500"></textarea>
             </div>
         </div>
@@ -382,12 +390,12 @@
             <table class="call-log-table">
                 <thead>
                 <tr>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th>Duration</th>
-                    <th>Rate</th>
-                    <th class="notes-column">Notes</th>
-                    <th>Earnings</th>
+                    <th class="call-log-sortable" data-sort-key="startTime">Start Time <span class="call-log-sort-indicator"></span></th>
+                    <th class="call-log-sortable" data-sort-key="endTime">End Time <span class="call-log-sort-indicator"></span></th>
+                    <th class="call-log-sortable" data-sort-key="duration">Duration <span class="call-log-sort-indicator"></span></th>
+                    <th class="call-log-sortable" data-sort-key="rateName">Rate <span class="call-log-sort-indicator"></span></th>
+                    <th class="notes-column call-log-sortable" data-sort-key="notes">Notes <span class="call-log-sort-indicator"></span></th>
+                    <th class="call-log-sortable" data-sort-key="earned">Earnings <span class="call-log-sort-indicator"></span></th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -414,11 +422,22 @@
         <i id="floating-dock-mini-icon" class="fas fa-play"></i>
     </button>
     <div id="floating-call-dock" class="floating-dock-panel bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-3">
+        <div id="floating-dock-drag-handle" class="floating-dock-drag-handle" aria-label="Drag floating controls" title="Drag floating controls">
+            <span class="floating-dock-drag-pill"></span>
+        </div>
         <div id="floating-active-card" class="mb-2 p-2 rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-900" style="display:none;">
             <div class="text-xs font-semibold text-green-700 dark:text-green-300 mb-1">Active Call</div>
             <div id="floating-active-rate" class="text-xs text-green-800 dark:text-green-200" style="display:none;">Rate: --</div>
             <div id="floating-active-timer" class="text-sm font-mono font-bold text-green-800 dark:text-green-100">00:00:00</div>
             <div id="floating-active-earnings" class="text-sm font-semibold text-green-800 dark:text-green-100">$0.00</div>
+            <div id="floating-active-adjust-controls" class="floating-active-adjust-controls" style="display:none;">
+                <button id="floating-minus-second-btn" type="button" class="floating-active-adjust-btn floating-active-adjust-minus" aria-label="Subtract one second">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <button id="floating-plus-second-btn" type="button" class="floating-active-adjust-btn floating-active-adjust-plus" aria-label="Add one second">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
         </div>
 
         <div class="flex flex-col gap-2">
@@ -530,6 +549,13 @@
                     <div class="text-xs text-gray-700 dark:text-gray-300">Show Rate</div>
                     <label class="switch">
                         <input type="checkbox" id="floating-active-show-rate-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between mt-2">
+                    <div class="text-xs text-gray-700 dark:text-gray-300">Show +/-1s Buttons</div>
+                    <label class="switch">
+                        <input type="checkbox" id="floating-active-show-adjust-toggle">
                         <span class="slider round"></span>
                     </label>
                 </div>
@@ -692,7 +718,7 @@
                         <div class="flex items-center justify-between gap-4">
                             <div>
                                 <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Notes textbox</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">Show the small notes textarea when starting a live call and in the Add Call form. <span class="block mt-1 text-green-600 dark:text-green-400 font-semibold">Notes are volatile - never saved or exported.</span></div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400">Show the small notes textarea when starting a live call and in the Add Call form. <span class="block mt-1 text-green-600 dark:text-green-400 font-semibold">Quick Notes stay volatile; manual Add/Edit Call notes are saved in the Call Log.</span></div>
                             </div>
                             <label class="switch">
                                 <input type="checkbox" id="feature-notes-toggle">
@@ -1143,6 +1169,35 @@
         <div class="settings-modal-scroll">
             <div id="payment-cycles-section" class="mb-6 settings-section-card">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Payment Cycles</h3>
+                <div class="mb-4 rounded-lg border border-blue-100 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-900/20 p-3">
+                    <div class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1">Quick Setup (Biweekly Pattern)</div>
+                    <p class="text-xs text-blue-700 dark:text-blue-300 mb-3">
+                        Generate a full schedule automatically using 14-day cycles and a pay date offset (for your sheet pattern this is +7 days after cycle end).
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label for="payment-cycle-template-start-date" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">First Cycle Start</label>
+                            <input type="date" id="payment-cycle-template-start-date" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="payment-cycle-template-count" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Number of Cycles</label>
+                            <input type="number" id="payment-cycle-template-count" min="1" max="120" step="1" value="26" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="payment-cycle-template-pay-offset" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Pay Offset (days after cycle end)</label>
+                            <input type="number" id="payment-cycle-template-pay-offset" min="0" max="30" step="1" value="7" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div class="flex items-end">
+                            <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
+                                <input type="checkbox" id="payment-cycle-template-replace" checked>
+                                Replace existing cycles
+                            </label>
+                        </div>
+                    </div>
+                    <button id="generate-payment-cycles-btn" type="button" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition text-sm">
+                        <i class="fas fa-bolt mr-1"></i>Generate Biweekly Cycles
+                    </button>
+                </div>
                 <div id="payment-cycles-config" class="hidden">
                     <table class="w-full mb-4">
                         <thead>
