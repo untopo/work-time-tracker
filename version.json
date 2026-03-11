@@ -2,5 +2,5 @@
   "latestVersion": "1.1.88",
   "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.1.88",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Floating Dock no longer jumps the viewport on Start/End Call, and the +/-1s mini buttons now stay correctly contained across all dock size modes."
+  "notes": "Added movable Floating Dock placement, +/-1s live-call quick adjust buttons, sortable Call Log headers, and bulk biweekly Payment Cycle generation."
 }
