@@ -58,44 +58,71 @@
         </div>
     </div>
 </div>
-<div class="container mx-auto px-4 py-8 max-w-7xl">
-    <div id="app-toolbar" class="flex justify-end mb-4 gap-2">
-        <button id="achievements-toggle" aria-label="Open achievements"
-                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
-            <i class="fas fa-trophy text-gray-600 dark:text-gray-300 text-xl"></i>
-        </button>
-        <button id="settings-toggle" aria-label="Open settings"
-                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
-            <i class="fas fa-cog text-gray-600 dark:text-gray-300 transition-transform duration-300 text-xl"></i>
-        </button>
-        <button id="dark-toggle" aria-label="Toggle dark mode"
-                class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
-            <i class="fas fa-sun text-yellow-500 hidden dark:block text-xl"></i>
-            <i class="fas fa-moon text-gray-600 dark:text-gray-300 block dark:hidden text-xl"></i>
-        </button>
-    </div>
-
-    <header class="mb-12 text-center">
-        <h1 class="text-4xl md:text-5xl font-poppins bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3 animate-gradient">
-            Work Time Tracker
-        </h1>
-        <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 font-light tracking-wide mb-2">
-            <span class="inline-block">
-                <i class="fas fa-clock text-blue-500 dark:text-blue-400 mr-2 animate-pulse text-lg"></i>
-                Track Your Time
-            </span>
-            <span class="mx-2">&bull;</span>
-            <span class="inline-block">
-                <i class="fas fa-chart-line text-purple-500 dark:text-purple-400 mr-2 animate-pulse text-lg"></i>
-                Monitor Earnings
-            </span>
-        </p>
-        <p class="text-md md:text-lg font-poppins font-semibold bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-900 dark:to-black py-1 px-3 rounded-full inline-block shadow-sm slogan-text-color">
-            By Interpreters for Interpreters
-        </p>
+<div class="container mx-auto px-4 py-8 max-w-7xl" role="main" aria-label="Work Time Tracker main content">
+    <header id="app-header" class="app-header-shell mb-6 md:mb-8">
+        <div class="app-header-card">
+            <div class="app-header-main-row">
+                <div class="app-header-brand">
+                    <h1 class="app-header-title font-poppins bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
+                        Work Time Tracker
+                    </h1>
+                    <p class="app-header-subtitle text-gray-700 dark:text-gray-300">
+                        <span class="inline-flex items-center">
+                            <i class="fas fa-clock text-blue-500 dark:text-blue-400 mr-2 text-sm"></i>
+                            Track Your Time
+                        </span>
+                        <span class="mx-2 opacity-60">&bull;</span>
+                        <span class="inline-flex items-center">
+                            <i class="fas fa-chart-line text-purple-500 dark:text-purple-400 mr-2 text-sm"></i>
+                            Monitor Earnings
+                        </span>
+                    </p>
+                </div>
+                <div id="app-toolbar" class="app-toolbar">
+                    <button id="achievements-toggle" aria-label="Open achievements"
+                            class="w-11 h-11 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
+                        <i class="fas fa-trophy text-gray-600 dark:text-gray-300 text-lg"></i>
+                    </button>
+                    <button id="settings-toggle" aria-label="Open settings"
+                            class="w-11 h-11 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
+                        <i class="fas fa-cog text-gray-600 dark:text-gray-300 transition-transform duration-300 text-lg"></i>
+                    </button>
+                    <button id="dark-toggle" aria-label="Toggle dark mode"
+                            class="w-11 h-11 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 focus:outline-none">
+                        <i class="fas fa-sun text-yellow-500 hidden dark:block text-lg"></i>
+                        <i class="fas fa-moon text-gray-600 dark:text-gray-300 block dark:hidden text-lg"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="app-header-badge-row">
+                <p class="app-header-badge text-md font-poppins font-semibold bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-900 dark:to-black py-1 px-3 rounded-full inline-flex shadow-sm slogan-text-color">
+                    By Interpreters for Interpreters
+                </p>
+            </div>
+        </div>
     </header>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+<section id="post-call-review-strip" class="dashboard-surface rounded-xl shadow-lg p-4 md:p-5 mb-6" style="display:none;" aria-live="polite">
+    <div class="post-call-review-row">
+        <div>
+            <p class="post-call-review-title">Call Saved</p>
+            <p id="post-call-review-summary" class="post-call-review-summary">Duration 00:00:00 • Earnings $0.00</p>
+        </div>
+        <div class="post-call-review-actions">
+            <button id="post-call-undo-btn" type="button" class="post-call-review-btn post-call-review-btn-warning">
+                <i class="fas fa-rotate-left"></i> Undo
+            </button>
+            <button id="post-call-edit-btn" type="button" class="post-call-review-btn post-call-review-btn-primary">
+                <i class="fas fa-pen"></i> Quick Edit
+            </button>
+            <button id="post-call-dismiss-btn" type="button" class="post-call-review-btn post-call-review-btn-neutral">
+                Dismiss
+            </button>
+        </div>
+    </div>
+</section>
+
+<div id="primary-work-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
     <div id="call-controls-card" class="dashboard-surface rounded-xl shadow-lg p-6 w-full">
         <div class="flex flex-col items-center mb-4">
             <div class="panel-icon-shell bg-blue-100 dark:bg-blue-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
@@ -154,38 +181,67 @@
         </div>
     </div>
 
-    <div id="rates-card" class="dashboard-surface rounded-xl shadow-lg p-6 w-full">
+    <div id="session-tracker-card" class="dashboard-surface rounded-xl shadow-lg p-6 w-full">
         <div class="flex flex-col items-center mb-4">
-            <div class="panel-icon-shell bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
-                <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
+            <div class="panel-icon-shell bg-indigo-100 dark:bg-indigo-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                <i class="fas fa-business-time text-3xl text-indigo-500 dark:text-indigo-300"></i>
             </div>
-            <h2 class="section-heading text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Rates</h2>
+            <h2 class="section-heading text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Session Tracker</h2>
         </div>
-        <div id="rates-list" class="mb-4">
+        <p class="session-tracker-intro text-xs text-gray-500 dark:text-gray-400 mb-3">
+            Plan your shift, track live utilization, and understand dead time between calls.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <div>
+                <label for="session-start-time" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Shift Start</label>
+                <input type="time" id="session-start-time" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200">
+            </div>
+            <div>
+                <label for="session-end-time" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Shift End</label>
+                <input type="time" id="session-end-time" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200">
+            </div>
         </div>
-        <button id="show-rate-add" class="w-full flex items-center justify-center gap-2 py-1">
-            <i class="fas fa-plus"></i> Add Rate
-        </button>
-        <form id="rate-form" class="rate-edit-form" style="display: none;">
-            <input type="text" id="rate-name" placeholder="Rate Name" maxlength="50"
-                class="w-full mb-2 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-            <div class="flex items-center mb-2">
-                <span class="text-gray-600 dark:text-gray-300 mr-2 text-xl font-bold">$</span>
-                <input type="number" id="rate-amount" placeholder="Amount" step="0.01" min="0.01" max="999999"
-                    class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                <span class="text-gray-600 dark:text-gray-300 ml-2">/min</span>
+        <div class="session-action-row mb-4">
+            <button id="session-start-btn" type="button" class="session-action-btn session-action-start">
+                <i class="fas fa-play mr-1"></i> Start
+            </button>
+            <button id="session-pause-btn" type="button" class="session-action-btn session-action-pause">
+                <i class="fas fa-pause mr-1"></i> Pause
+            </button>
+            <button id="session-end-btn" type="button" class="session-action-btn session-action-end">
+                <i class="fas fa-stop mr-1"></i> End
+            </button>
+        </div>
+        <div id="session-live-panel" class="session-live-panel is-idle">
+            <div class="session-live-header">
+                <div id="session-live-state" class="session-state-pill is-idle">
+                    <span class="session-state-dot"></span>
+                    <span class="session-state-label">Idle</span>
+                </div>
+                <div class="session-live-clock">
+                    <span class="session-live-clock-label">Session</span>
+                    <span id="session-live-elapsed" class="session-live-clock-value">00:00:00</span>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button type="submit"
-                    class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
-                    Save
-                </button>
-                <button type="button" id="cancel-rate-add"
-                    class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
-                    Cancel
-                </button>
+            <div class="session-metrics-grid">
+                <div class="session-metric">
+                    <span class="session-metric-label">On calls</span>
+                    <span id="session-live-talk" class="session-metric-value">00:00:00</span>
+                </div>
+                <div class="session-metric">
+                    <span class="session-metric-label">Idle</span>
+                    <span id="session-live-idle" class="session-metric-value">00:00:00</span>
+                </div>
+                <div class="session-metric">
+                    <span class="session-metric-label">Utilization</span>
+                    <span id="session-live-utilization" class="session-metric-value">0.0%</span>
+                </div>
             </div>
-        </form>
+            <div class="session-utilization-track">
+                <div id="session-live-utilization-bar" class="session-utilization-fill" style="width:0%"></div>
+            </div>
+            <div id="session-live-utilization-hint" class="session-utilization-hint">Available 00:00:00 • Paused 00:00:00</div>
+        </div>
     </div>
 
     <div class="dashboard-surface rounded-xl shadow-lg p-6 w-full">
@@ -242,9 +298,43 @@
             </div>
         </div>
     </div>
+
+    <div id="rates-card" class="dashboard-surface rounded-xl shadow-lg p-6 w-full">
+        <div class="flex flex-col items-center mb-4">
+            <div class="panel-icon-shell bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
+                <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
+            </div>
+            <h2 class="section-heading text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Rates</h2>
+        </div>
+        <div id="rates-list" class="mb-4">
+        </div>
+        <button id="show-rate-add" class="w-full flex items-center justify-center gap-2 py-1">
+            <i class="fas fa-plus"></i> Add Rate
+        </button>
+        <form id="rate-form" class="rate-edit-form" style="display: none;">
+            <input type="text" id="rate-name" placeholder="Rate Name" maxlength="50"
+                class="w-full mb-2 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            <div class="flex items-center mb-2">
+                <span class="text-gray-600 dark:text-gray-300 mr-2 text-xl font-bold">$</span>
+                <input type="number" id="rate-amount" placeholder="Amount" step="0.01" min="0.01" max="999999"
+                    class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                <span class="text-gray-600 dark:text-gray-300 ml-2">/min</span>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit"
+                    class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
+                    Save
+                </button>
+                <button type="button" id="cancel-rate-add"
+                    class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
-<div class="dashboard-surface rounded-xl shadow-lg mb-8 p-6">
+    <div id="call-statistics-card" class="dashboard-surface rounded-xl shadow-lg mb-8 p-6">
     <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
         <i class="fas fa-chart-bar text-purple-500 mr-2"></i>Call Statistics
     </h2>
@@ -270,25 +360,111 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+    <div class="flex items-center justify-between mb-3">
+        <h3 id="stats-snapshot-heading" class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Today Snapshot</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-4">
         <div class="metric-surface bg-blue-50 dark:bg-blue-900/40 p-4 rounded-lg">
             <h3 class="text-blue-700 dark:text-blue-300 font-medium mb-2 text-xl">
                 <i class="fas fa-clock mr-2"></i>Average Call Duration
             </h3>
             <p id="avg-duration" class="text-2xl font-bold text-blue-800 dark:text-blue-200">00:00:00</p>
+            <p id="avg-duration-delta" class="text-xs text-blue-700 dark:text-blue-300 mt-2">Vs yesterday: --</p>
         </div>
         <div class="metric-surface bg-green-50 dark:bg-green-900/40 p-4 rounded-lg">
             <h3 class="text-green-700 dark:text-green-300 font-medium mb-2 text-xl">
                 <i class="fas fa-bullseye mr-2"></i>Goal Progress
             </h3>
             <p id="goal-estimate" class="text-2xl font-bold text-green-800 dark:text-green-200">-- mins to goal</p>
+            <p id="goal-estimate-delta" class="text-xs text-green-700 dark:text-green-300 mt-2">Pace vs yesterday: --</p>
         </div>
         <div class="metric-surface bg-yellow-50 dark:bg-yellow-900/40 p-4 rounded-lg">
-            <h3 class="text-yellow-700 dark:text-yellow-300 font-medium mb-2 text-xl">
+            <h3 id="today-earnings-title" class="text-yellow-700 dark:text-yellow-300 font-medium mb-2 text-xl">
                 <i class="fas fa-chart-line mr-2"></i>Today's Earnings
             </h3>
             <p id="today-earnings" class="text-2xl font-bold text-yellow-800 dark:text-yellow-200">$0.00</p>
+            <p id="today-earnings-delta" class="text-xs text-yellow-700 dark:text-yellow-300 mt-2">Vs yesterday: --</p>
         </div>
+        <div class="metric-surface bg-cyan-50 dark:bg-cyan-900/30 p-4 rounded-lg">
+            <h3 class="text-cyan-700 dark:text-cyan-300 font-medium mb-2 text-xl">
+                <i class="fas fa-wave-square mr-2"></i>Rhythm
+            </h3>
+            <p id="rhythm-avg-gap" class="text-sm font-semibold text-cyan-800 dark:text-cyan-200">Avg gap: --</p>
+            <p id="rhythm-fastest-gap" class="text-sm font-semibold text-cyan-800 dark:text-cyan-200 mt-1">Fastest turn: --</p>
+            <p id="rhythm-vs-previous-day" class="text-xs text-cyan-700 dark:text-cyan-300 mt-2">Vs previous day: --</p>
+        </div>
+    </div>
+
+    <div id="patterns-panel" class="metric-surface bg-slate-50 dark:bg-slate-900/35 p-4 rounded-lg mb-4">
+        <div class="patterns-panel-header">
+            <div>
+                <h3 class="text-slate-700 dark:text-slate-200 font-medium text-xl">
+                    <i class="fas fa-shapes mr-2"></i>Patterns
+                </h3>
+                <p id="patterns-panel-summary" class="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                    View call activity by hour, week, or month.
+                </p>
+            </div>
+            <div class="patterns-mode-toggle" role="group" aria-label="Pattern mode">
+                <button id="patterns-mode-hourly-btn" type="button" class="patterns-mode-btn is-active">Hourly</button>
+                <button id="trend-mode-weekly-btn" type="button" class="patterns-mode-btn">Weekly</button>
+                <button id="trend-mode-monthly-btn" type="button" class="patterns-mode-btn">Monthly</button>
+            </div>
+        </div>
+
+        <div id="trend-analytics-grid" class="trend-analytics-grid">
+            <div id="hourly-heatmap-card" class="metric-surface bg-slate-50 dark:bg-slate-900/40 p-4 rounded-lg">
+            <p id="hourly-heatmap-summary" class="text-xs text-slate-600 dark:text-slate-300 mb-3">Current month activity by start hour.</p>
+            <div id="hourly-heatmap-grid" class="hourly-heatmap-grid"></div>
+            <div class="trend-insight-wrap mt-3">
+                <div class="trend-insight-label text-slate-700 dark:text-slate-200">Top hours</div>
+                <div id="hourly-heatmap-top-hours" class="trend-insight-chips">--</div>
+                <div class="heatmap-scale heatmap-scale-emerald" aria-label="Hourly heatmap intensity scale">
+                    <span class="heatmap-scale-label">Less</span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-label">More</span>
+                </div>
+            </div>
+            </div>
+            <div id="trend-card" class="trend-card metric-surface bg-rose-50 dark:bg-rose-900/30 p-4 rounded-lg hidden">
+            <div class="trend-nav-row">
+                <button id="trend-prev-btn" type="button" class="trend-nav-btn" aria-label="Previous range">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div id="trend-range-label" class="trend-range-label">Last 7 days</div>
+                <button id="trend-next-btn" type="button" class="trend-nav-btn" aria-label="Next range">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div id="trend-summary-inline" class="trend-summary-inline">Total $0.00</div>
+            </div>
+            <p id="weekly-trend-summary" class="sr-only">Earnings over the last 7 days.</p>
+            <div id="trend-visual-canvas" class="trend-visual-canvas">
+                <div id="weekly-trend-bars" class="weekly-trend-bars"></div>
+                <div id="monthly-trend-canvas" class="monthly-trend-canvas hidden">
+                    <div id="monthly-trend-weekdays" class="monthly-trend-weekdays"></div>
+                    <div id="monthly-trend-heatmap" class="monthly-trend-heatmap"></div>
+                </div>
+            </div>
+            <div class="trend-insight-wrap trend-insight-wrap-rose mt-3">
+                <div class="trend-insight-label text-rose-700 dark:text-rose-200">Best day</div>
+                <div id="weekly-trend-best-day" class="trend-insight-chips trend-insight-chips-rose">--</div>
+                <div class="heatmap-scale heatmap-scale-rose" aria-label="Trend heatmap intensity scale">
+                    <span class="heatmap-scale-label">Less</span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-dot"></span>
+                    <span class="heatmap-scale-label">More</span>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <div id="rpg-progress-card" class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg mb-4">
@@ -309,6 +485,39 @@
             <div class="flex items-center gap-1">
                 <span id="rpg-level-next-text">100 XP to level 2</span>
                 <span class="hint-tooltip" data-tooltip="All XP is combined into one total. Sources can include calls and one-time achievement rewards.">?</span>
+            </div>
+        </div>
+        <div class="mt-3">
+            <button id="rpg-breakdown-toggle" type="button" class="rpg-breakdown-toggle">
+                <i class="fas fa-chevron-down mr-1"></i> Show XP breakdown
+            </button>
+        </div>
+        <div id="rpg-xp-breakdown-wrap" class="mt-2">
+            <div id="rpg-xp-breakdown" class="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
+                <div class="px-2 py-1 rounded bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200">
+                    Call XP: <span id="rpg-call-xp">0</span>
+                </div>
+                <div class="px-2 py-1 rounded bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200">
+                    Achievements: <span id="rpg-achievement-xp">0</span>
+                </div>
+                <div class="px-2 py-1 rounded bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200">
+                    Daily Quests: <span id="rpg-daily-quest-xp">0</span>
+                </div>
+                <div class="px-2 py-1 rounded bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-200">
+                    Streak Bonus: <span id="rpg-streak-multiplier">x1.00</span>
+                </div>
+            </div>
+        </div>
+        <div id="rpg-daily-focus-card" class="mt-3 p-3 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white/70 dark:bg-indigo-950/30">
+            <div class="flex items-center justify-between gap-2 mb-1">
+                <div class="text-xs font-semibold text-indigo-700 dark:text-indigo-200">Daily Focus</div>
+                <div id="rpg-daily-focus-meta" class="text-[11px] text-indigo-600 dark:text-indigo-300">Not started</div>
+            </div>
+            <div id="rpg-daily-focus-desc" class="text-[11px] text-indigo-700 dark:text-indigo-200 mb-2">
+                Complete one RPG quest to build momentum today.
+            </div>
+            <div class="w-full bg-indigo-200 dark:bg-indigo-900 rounded-full h-1.5 overflow-hidden">
+                <div id="rpg-daily-focus-bar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
             </div>
         </div>
     </div>
@@ -341,9 +550,12 @@
     </div>
     <div id="payment-cycle-earnings-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6 hidden">
         <div class="metric-surface bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
-            <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
-                <i class="fas fa-calendar-alt mr-2"></i>Current Cycle
-            </h3>
+            <div class="flex items-center justify-between gap-2 mb-2">
+                <h3 class="text-purple-700 dark:text-purple-300 font-medium text-xl">
+                    <i class="fas fa-calendar-alt mr-2"></i>Current Cycle
+                </h3>
+                <span id="cycle-state-chip" class="cycle-state-chip">--</span>
+            </div>
             <p class="text-sm text-gray-700 dark:text-gray-300">
                 <span class="font-semibold">Start:</span> <span id="cycle-start-date">--</span>
             </p>
@@ -353,6 +565,14 @@
             <p class="text-sm text-gray-700 dark:text-gray-300">
                 <span class="font-semibold">Days Left:</span> <span id="days-until-end">--</span>
             </p>
+            <div class="cycle-progress-track mt-3">
+                <div id="cycle-progress-bar" class="cycle-progress-fill" style="width:0%"></div>
+            </div>
+            <p id="cycle-progress-meta" class="text-xs text-purple-700 dark:text-purple-300 mt-1">--</p>
+            <button id="view-all-payment-cycles-btn" type="button"
+                    class="mt-3 px-3 py-2 rounded-lg text-sm bg-white/70 dark:bg-gray-800/70 text-purple-700 dark:text-purple-200 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition">
+                <i class="fas fa-table mr-1"></i>View All Cycles
+            </button>
         </div>
         <div class="metric-surface bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
@@ -361,30 +581,53 @@
             <p class="text-lg text-purple-800 dark:text-purple-200 font-bold">
                 <span id="cycle-earnings">$0.00</span>
             </p>
+            <p id="cycle-earnings-meta" class="text-sm text-gray-700 dark:text-gray-300 mt-1">--</p>
+            <p id="cycle-earnings-trend" class="text-xs text-purple-700 dark:text-purple-300 mt-2">--</p>
         </div>
         <div class="metric-surface bg-purple-50 dark:bg-purple-900/40 p-4 rounded-lg">
             <h3 class="text-purple-700 dark:text-purple-300 font-medium mb-2 text-xl">
                 <i class="fas fa-money-check-alt mr-2"></i>Next Pay Date
             </h3>
-            <p class="text-sm text-gray-700 dark:text-gray-300">
+            <p id="pay-countdown-headline" class="text-lg text-purple-800 dark:text-purple-200 font-bold">
+                Pay in --
+            </p>
+            <p class="text-sm text-gray-700 dark:text-gray-300 mt-1">
                 <span class="font-semibold">Pay Date:</span> <span id="pay-date">--</span>
             </p>
-            <p class="text-sm text-gray-700 dark:text-gray-300">
+            <p id="days-until-pay-row" class="hidden text-sm text-gray-700 dark:text-gray-300">
                 <span class="font-semibold">Days Until Pay:</span> <span id="days-until-pay">--</span>
             </p>
+            <p id="next-pay-cycle-context" class="text-xs text-purple-700 dark:text-purple-300 mt-2">--</p>
         </div>
     </div>
 </div>
 
-<div class="dashboard-surface rounded-xl shadow-lg overflow-hidden mb-8">
+<div id="call-log-section" class="dashboard-surface rounded-xl shadow-lg overflow-hidden mb-8">
     <div class="p-6">
         <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
             <i class="fas fa-list text-blue-500 mr-2"></i>Call Log
         </h2>
-        <div class="flex items-center gap-2 mb-4">
-            <button id="filter-today" class="px-3 py-1 rounded-lg bg-blue-500 text-white text-sm">Today</button>
-            <button id="filter-week" class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 text-sm dark:bg-gray-700 dark:text-gray-200">Week</button>
-            <button id="filter-month" class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 text-sm dark:bg-gray-700 dark:text-gray-200">Month</button>
+        <div class="call-log-toolbar mb-4">
+            <div class="call-log-toolbar-primary">
+                <button id="filter-today" class="px-3 py-1 rounded-lg bg-blue-500 text-white text-sm">Today</button>
+                <button id="filter-week" class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 text-sm dark:bg-gray-700 dark:text-gray-200">Week</button>
+                <button id="filter-month" class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 text-sm dark:bg-gray-700 dark:text-gray-200">Month</button>
+            </div>
+            <div class="call-log-toolbar-secondary">
+                <label for="call-log-search" class="sr-only">Search calls</label>
+                <input id="call-log-search" type="search" placeholder="Search notes, rate, amount..." autocomplete="off"
+                       class="call-log-search-input" />
+                <label for="call-log-rate-filter" class="sr-only">Filter by rate</label>
+                <select id="call-log-rate-filter" class="call-log-rate-filter">
+                    <option value="">All rates</option>
+                </select>
+                <button id="call-log-reset-view" type="button" class="call-log-reset-btn">
+                    Reset View
+                </button>
+            </div>
+            <div id="call-log-results-summary" class="call-log-results-summary text-xs text-gray-500 dark:text-gray-400">
+                Showing 0 calls
+            </div>
         </div>
         <div class="scrollable-table">
             <table class="call-log-table">
@@ -404,7 +647,7 @@
             </table>
         </div>
         <div id="call-log-mobile" class="call-log-mobile-list" aria-live="polite"></div>
-        <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
+        <div class="call-log-total-bar bg-gray-50 dark:bg-gray-700 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
             <div class="flex justify-between">
                 <span class="font-medium text-gray-700 dark:text-gray-300">Total:</span>
                 <span class="text-gray-900 dark:text-gray-100 font-semibold">
@@ -758,6 +1001,7 @@
                                 <span class="slider round"></span>
                             </label>
                         </div>
+
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1105,6 +1349,37 @@
                 <div id="daily-quests-summary" class="text-sm text-gray-700 dark:text-gray-300 font-semibold mb-3">0 / 0 completed</div>
                 <div id="daily-quests-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             </div>
+            <div id="rpg-weekly-arc-card" class="settings-section-card mb-4">
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Weekly Arc</h3>
+                    <span id="rpg-weekly-arc-range" class="text-xs text-gray-500 dark:text-gray-400">This week</span>
+                </div>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">Complete all 3 milestones this week to earn bonus XP and one streak shield.</p>
+                <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+                    <div class="px-2 py-1 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200">
+                        Weekly Arc XP: <span id="rpg-weekly-arc-xp">0</span>
+                    </div>
+                    <div class="px-2 py-1 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200">
+                        Shields: <span id="rpg-streak-shields">0</span>
+                    </div>
+                </div>
+                <div id="rpg-weekly-arc-steps" class="space-y-2"></div>
+                <div class="mt-2 flex items-center justify-between gap-2">
+                    <div id="rpg-weekly-arc-status" class="text-xs text-gray-700 dark:text-gray-300">0/3 milestones completed</div>
+                    <div class="text-xs text-indigo-600 dark:text-indigo-300">Reward: +90 XP +1 Shield</div>
+                </div>
+            </div>
+            <div id="rpg-streak-shield-row" class="settings-section-card mb-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <div class="text-sm font-semibold text-gray-800 dark:text-gray-100">Streak Shield</div>
+                        <div id="rpg-streak-shield-hint" class="text-xs text-gray-600 dark:text-gray-400">Protect one no-call day to keep continuity.</div>
+                    </div>
+                    <button id="rpg-use-shield-btn" type="button" class="px-3 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition text-xs">
+                        Protect Today
+                    </button>
+                </div>
+            </div>
             <div class="settings-section-card mb-4">
                 <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">All-Time Achievements</h3>
                 <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">Permanent milestones that never reset.</p>
@@ -1199,17 +1474,29 @@
                     </button>
                 </div>
                 <div id="payment-cycles-config" class="hidden">
-                    <table class="w-full mb-4">
-                        <thead>
-                        <tr>
-                            <th class="text-left py-2">Cycle Start</th>
-                            <th class="text-left py-2">Cycle End</th>
-                            <th class="text-left py-2">Pay Date</th>
-                            <th class="text-right py-2">Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody id="payment-cycles-list"></tbody>
-                    </table>
+                    <div id="payment-cycles-current-summary" class="mb-3 rounded-lg border border-purple-100 dark:border-purple-900/60 bg-purple-50/70 dark:bg-purple-900/20 p-3">
+                        <div class="text-sm font-semibold text-purple-800 dark:text-purple-200 mb-1">Current / Next Cycle</div>
+                        <p id="payment-cycles-current-range" class="text-xs text-purple-700 dark:text-purple-300">Range: --</p>
+                        <p id="payment-cycles-current-pay" class="text-xs text-purple-700 dark:text-purple-300">Pay Date: --</p>
+                        <p id="payment-cycles-current-days" class="text-xs text-purple-700 dark:text-purple-300">Countdown: --</p>
+                        <button id="payment-cycles-toggle-all-btn" type="button"
+                                class="mt-3 px-3 py-1.5 rounded-lg text-xs bg-white/80 dark:bg-gray-800/70 text-purple-700 dark:text-purple-200 border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition">
+                            View all cycles
+                        </button>
+                    </div>
+                    <div id="payment-cycles-all-list-wrap" style="display:none;">
+                        <table class="w-full mb-4">
+                            <thead>
+                            <tr>
+                                <th class="text-left py-2">Cycle Start</th>
+                                <th class="text-left py-2">Cycle End</th>
+                                <th class="text-left py-2">Pay Date</th>
+                                <th class="text-right py-2">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="payment-cycles-list"></tbody>
+                        </table>
+                    </div>
                     <div class="flex gap-2">
                         <button id="show-add-cycle-btn" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
                             <i class="fas fa-plus"></i> Add Payment Cycle
@@ -1483,49 +1770,79 @@
   </div>
 </div>
 
-<footer class="mt-10 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200">
-    <div class="container mx-auto px-6 py-8 text-center">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-10 items-start">
-            <div class="text-center">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Work Time Tracker</h3>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300 flex items-center justify-center gap-2">
+<footer id="app-footer" class="app-footer mt-10 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+    <div class="container mx-auto px-6 py-8">
+        <div class="app-footer-grid">
+            <section class="app-footer-panel app-footer-brand">
+                <h3 class="app-footer-heading text-lg font-semibold text-gray-900 dark:text-gray-100">Work Time Tracker</h3>
+                <p class="app-footer-text app-footer-text-summary text-sm text-gray-600 dark:text-gray-300">
+                    Track calls, earnings, goals, and shifts from one local workspace.
+                </p>
+                <p class="app-footer-text app-footer-text-creator text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
                     Made with
                     <span class="inline-block">
                         <i class="fas fa-heart text-red-500 animate-beat"></i>
                     </span>
                     by
                     <a href="https://www.instagram.com/otpo/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="app-footer-inline-link">
                         Topo
                     </a>
                 </p>
-                <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">Any help would be appreciated - thank you!</p>
-                <div class="mt-4 flex flex-wrap justify-center gap-3 support-actions-row">
+                <div class="mt-4 support-actions-row">
                     <button type="button" id="support-donate-btn" class="support-action-btn support-action-btn-paypal">
                         Donate
                     </button>
                 </div>
-            </div>
-            <div class="text-center">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Your Local Time</h3>
-                <p id="local-time" class="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100"></p>
-                <p class="text-sm text-gray-600 dark:text-gray-400" id="user-time-zone"></p>
-            </div>
-            <div class="text-center">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Support</h3>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                    <button id="contact-us-btn" class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition">Contact Us</button>
-                </p>
-            </div>
-            <div class="text-center">
-                <h3 class="text-sm text-gray-600 dark:text-gray-500">Version</h3>
-                <button id="open-changelog"
-  class="mt-2 text-sm font-mono text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 transition underline underline-offset-4">
-  v<span id="app-version"></span>
-</button>
-            </div>
+            </section>
+
+            <section class="app-footer-panel app-footer-collapsible app-footer-quicklinks is-open" data-footer-collapsible="quick-links">
+                <button type="button" class="app-footer-collapsible-toggle" aria-expanded="true">
+                    <h3 class="app-footer-heading text-lg font-semibold text-gray-900 dark:text-gray-100">Quick Links</h3>
+                    <i class="fas fa-chevron-down app-footer-collapsible-icon" aria-hidden="true"></i>
+                </button>
+                <div class="app-footer-collapsible-body">
+                    <nav aria-label="Quick Links">
+                        <ul class="app-footer-links">
+                            <li><a href="#call-controls-card" class="app-footer-link">Call Controls</a></li>
+                            <li><a href="#call-statistics-card" class="app-footer-link">Statistics</a></li>
+                            <li><a href="#call-log-section" class="app-footer-link">Call Log</a></li>
+                            <li><button id="footer-open-settings-btn" type="button" class="app-footer-link-btn">Settings</button></li>
+                        </ul>
+                    </nav>
+                </div>
+            </section>
+
+            <section class="app-footer-panel app-footer-collapsible app-footer-support-updates is-open" data-footer-collapsible="support-updates">
+                <button type="button" class="app-footer-collapsible-toggle" aria-expanded="true">
+                    <h3 class="app-footer-heading text-lg font-semibold text-gray-900 dark:text-gray-100">Support &amp; Updates</h3>
+                    <i class="fas fa-chevron-down app-footer-collapsible-icon" aria-hidden="true"></i>
+                </button>
+                <div class="app-footer-collapsible-body">
+                    <ul class="app-footer-links">
+                        <li><button id="contact-us-btn" type="button" class="app-footer-link-btn">Contact Us</button></li>
+                        <li><button id="open-changelog" type="button" class="app-footer-link-btn">What&apos;s New</button></li>
+                    </ul>
+                    <p class="app-footer-version-label text-xs text-gray-500 dark:text-gray-400">Current Version</p>
+                    <p class="app-footer-version-value text-sm text-gray-900 dark:text-gray-100">v<span id="app-version"></span></p>
+                </div>
+            </section>
+
+            <section class="app-footer-panel app-footer-collapsible app-footer-local-time is-open" data-footer-collapsible="local-time">
+                <button type="button" class="app-footer-collapsible-toggle" aria-expanded="true">
+                    <h3 class="app-footer-heading text-lg font-semibold text-gray-900 dark:text-gray-100">Your Local Time</h3>
+                    <i class="fas fa-chevron-down app-footer-collapsible-icon" aria-hidden="true"></i>
+                </button>
+                <div class="app-footer-collapsible-body">
+                    <p id="local-time" class="app-footer-time text-lg font-semibold text-gray-900 dark:text-gray-100"></p>
+                    <p class="app-footer-timezone text-sm text-gray-600 dark:text-gray-400" id="user-time-zone"></p>
+                    <p class="app-footer-data-note text-xs text-gray-500 dark:text-gray-400">
+                        <i class="fas fa-database mr-1"></i>Local-first data. Use Data Hub for backups.
+                    </p>
+                </div>
+            </section>
         </div>
     </div>
 </footer>

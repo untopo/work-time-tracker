@@ -14,6 +14,8 @@ import android.widget.RemoteViews;
 import java.util.Locale;
 
 final class LiveCallWidgetUi {
+    private static final String EXTRA_WIDGET_TOKEN = "com.topo.worktimetracker.widget.EXTRA_TOKEN";
+
     private LiveCallWidgetUi() {}
 
     static void updateAllWidgets(Context context) {
@@ -34,6 +36,11 @@ final class LiveCallWidgetUi {
 
     static void handleWidgetBroadcast(Context context, Intent intent) {
         String action = intent != null ? intent.getAction() : null;
+        if (LiveCallWidgetProvider.ACTION_START.equals(action)
+            || LiveCallWidgetProvider.ACTION_STOP.equals(action)
+            || LiveCallWidgetProvider.ACTION_REFRESH.equals(action)) {
+            if (!hasTrustedWidgetToken(context, intent)) return;
+        }
         if (LiveCallWidgetProvider.ACTION_START.equals(action)) {
             LiveCallWidgetService.startFromWidget(context);
             return;
@@ -99,12 +106,22 @@ final class LiveCallWidgetUi {
     ) {
         Intent intent = new Intent(context, providerClass);
         intent.setAction(action);
+        intent.setPackage(context.getPackageName());
+        intent.putExtra(EXTRA_WIDGET_TOKEN, LiveCallWidgetStore.getOrCreateBroadcastToken(context));
         return PendingIntent.getBroadcast(
             context,
             requestCode,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
+    }
+
+    private static boolean hasTrustedWidgetToken(Context context, Intent intent) {
+        if (intent == null) return false;
+        String provided = intent.getStringExtra(EXTRA_WIDGET_TOKEN);
+        if (provided == null || provided.trim().isEmpty()) return false;
+        String expected = LiveCallWidgetStore.getOrCreateBroadcastToken(context);
+        return provided.equals(expected);
     }
 
     private static PendingIntent buildLaunchAppIntent(Context context, int requestCode) {

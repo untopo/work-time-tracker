@@ -5450,7 +5450,7 @@ dependencies = [
 
 [[package]]
 name = "work_time_tracker"
-version = "1.1.88"
+version = "1.2.0"
 dependencies = [
  "log",
  "rfd",
@@ -5459,6 +5459,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-log",
+ "url",
 ]
 
 [[package]]

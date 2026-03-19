@@ -1,11 +1,15 @@
-
+﻿
     const appStorage = window.WTTStorage || window.localStorage;
+    const DISPLAY_LOCALE = 'en-US';
+    const SESSION_TRACKER_KEY = 'sessionTrackerStateV1';
+    const SESSION_RPG_STATS_KEY = 'wtt_session_rpg_stats_v1';
 
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.1.88';
+    const APP_VERSION = '1.2.0';
     const CHANGELOG = [
+        { version: '1.2.0', date: '2026-03-18', changes: ['Added Session Tracker with shift start/pause/end controls and live utilization metrics', 'Added Post-Call Review strip with Undo / Quick Edit / Dismiss right after saving calls', 'Added Patterns analytics modes (Hourly / Weekly / Monthly) with improved trend readability', 'Expanded RPG progression with Daily Focus, Weekly Arc, Streak Shield, and session-linked achievements', 'Improved Call Log workflow with search, rate filter, reset, and richer results summary', 'Improved Payment Cycles with clearer current/next payout context and stronger timeline visibility', 'Improved footer and mobile navigation UX with cleaner structure and collapsible sections', 'Security hardening across desktop and Android widget flows, plus general stability fixes'] },
         { version: '1.1.88', date: '2026-03-11', changes: ['Floating Dock: You can now drag and position the in-app dock where it fits your workflow best', 'Floating Dock: Added `-1/+1s` quick-adjust buttons for active calls, with consistent sizing across full, compact, and icon dock modes', 'Call Log: Added clickable sorting by key columns so you can reorder entries faster during review', 'Payment Cycles: Added a biweekly template generator so recurring cycle ranges can be created in bulk instead of one-by-one'] },
         { version: '1.1.87', date: '2026-03-03', changes: ['UI: Replaced the footer support row with a single Donate button that opens a support modal instead of showing both provider buttons inline', 'Added: New support modal keeps both PayPal and Ko-fi options available while opening the official provider pages externally on web, desktop, and mobile'] },
         { version: '1.1.86', date: '2026-03-03', changes: ['UI: Tightened the footer support row again so Donate and Support me on Ko-fi fit side by side more reliably in narrow layouts', 'UI: Reduced support button width, height, and text size evenly so both actions stay visually identical while taking less space'] },
@@ -100,7 +104,7 @@
         { version: '1.0.8', date: '2026-02-19', changes: ['Fix: Initialization ordering and DOM null-checks to prevent startup errors', 'Fix: Preserve and backup Payment Cycles to avoid accidental data loss', 'Fix: Prevent overwriting stored payment cycles with empty arrays', 'Fix: Various syntax and runtime errors found during debugging', 'Privacy: Notes UI is now volatile (not persisted) and removed from exports by default'] },
         { version: '1.0.7', date: '2026-02-19', changes: ['Added: Notes UI when starting a live call and in call form (no persistent storage)', 'Added: Notes column to Call Log (UI-only)', 'Improved: Date filtering ranges now use explicit end bounds'] },
         { version: '1.0.6', date: '2026-02-12', changes: ['Added: Previous/Next day arrows next to stats date picker', 'Added: Arrow navigation now switches to Custom Date view automatically', 'Added: Next-day navigation is blocked for future dates'] },
-        { version: '1.0.5', date: '2026-02-12', changes: ['Fixed: Footer version now always matches APP_VERSION', 'Fixed: Contact form email is now optional (no longer required)','Chore: Simplified dailyGoal storage to a single source of truth', 'Chore: Added legacy fallback read for old dailyGoal keys', 'Fixed: Call modal can now be closed via X and Cancel (no longer stuck)','Fixed: Saving a call no longer refreshes the page (form submit prevented)', 'Improved: Call edits/additions now update UI instantly without full page reload','Improved: Add Call now always opens in clean “Add” mode (resets editing state)'] },
+        { version: '1.0.5', date: '2026-02-12', changes: ['Fixed: Footer version now always matches APP_VERSION', 'Fixed: Contact form email is now optional (no longer required)','Chore: Simplified dailyGoal storage to a single source of truth', 'Chore: Added legacy fallback read for old dailyGoal keys', 'Fixed: Call modal can now be closed via X and Cancel (no longer stuck)','Fixed: Saving a call no longer refreshes the page (form submit prevented)', 'Improved: Call edits/additions now update UI instantly without full page reload','Improved: Add Call now always opens in clean "Add" mode (resets editing state)'] },
         { version: '1.0.4', date: '2026-02-12', changes: [ 'Fixed: Daily Goal now syncs bidirectionally between USD and Minutes', 'Fixed: Daily Goal persistence stores both USD and Minutes correctly', 'Improved: Goal calculation now updates instantly on input change' ] },
         { version: '1.0.3', date: '2026-02-11', changes: ['Fixed: Call edit form now displays exact stored startTime and endTime', 'Fixed: Call Log displays Start Time and End Time columns', 'Fixed: Daily Goal minutes now correctly calculates and updates equivalent earnings', 'Changed: Duration is now calculated from startTime and endTime instead of manual entry'] },
         { version: '1.0.2', date: '2026-02-11', changes: ['Fixed: Call editing now always edits the correct call regardless of filter view', 'Fixed: Edit form no longer creates duplicate calls', 'Added: Unique ID to each call for reliable tracking', 'Added: Version tracking in footer'] },
@@ -131,9 +135,9 @@ function renderChangelog() {
     return;
   }
 
-  // Más nuevo arriba (ya lo tienes así, pero lo reforzamos)
+  // MÃ¡s nuevo arriba (ya lo tienes asÃ­, pero lo reforzamos)
   const sorted = [...CHANGELOG].sort((a, b) => {
-    // Si hay fecha válida, ordena por fecha, si no por versión
+    // Si hay fecha vÃ¡lida, ordena por fecha, si no por versiÃ³n
     const da = Date.parse(a.date || '');
     const db = Date.parse(b.date || '');
     if (Number.isFinite(da) && Number.isFinite(db)) return db - da;
@@ -947,7 +951,7 @@ function renderReleaseSpotlightBanner() {
     wrapper.innerHTML = `
         <div class="release-spotlight-content">
             <div>
-                <div class="release-spotlight-title">What’s New in v${escapeHTML(normalizeVersionString(APP_VERSION))}</div>
+                <div class="release-spotlight-title">Whatâ€™s New in v${escapeHTML(normalizeVersionString(APP_VERSION))}</div>
                 <p class="release-spotlight-text">${escapeHTML(summary)}</p>
                 <div class="release-spotlight-actions">
                     <button type="button" class="release-spotlight-btn release-spotlight-btn-primary" data-release-action="details">View details</button>
@@ -1358,12 +1362,30 @@ async function confirmExportOptions() {
     const liveCallTimerDisplay = document.getElementById('live-call-timer');
     const liveCallEarningsDisplay = document.getElementById('live-call-earnings');
     const liveCallNotesInput = document.getElementById('live-call-notes');
+    const focusWorkstrip = document.getElementById('focus-workstrip');
+    const focusWorkstripStatus = document.getElementById('focus-workstrip-status');
+    const focusWorkstripRate = document.getElementById('focus-workstrip-rate');
+    const focusWorkstripTimer = document.getElementById('focus-workstrip-timer');
+    const focusWorkstripEarnings = document.getElementById('focus-workstrip-earnings');
+    const focusWorkstripReminder = document.getElementById('focus-workstrip-reminder');
+    const workstripAddCallBtn = document.getElementById('workstrip-add-call-btn');
+    const workstripStartCallBtn = document.getElementById('workstrip-start-call-btn');
+    const workstripEndCallBtn = document.getElementById('workstrip-end-call-btn');
+    const postCallReviewStrip = document.getElementById('post-call-review-strip');
+    const postCallReviewSummary = document.getElementById('post-call-review-summary');
+    const postCallUndoBtn = document.getElementById('post-call-undo-btn');
+    const postCallEditBtn = document.getElementById('post-call-edit-btn');
+    const postCallDismissBtn = document.getElementById('post-call-dismiss-btn');
     const liveCallMinusSecondBtn = document.getElementById('live-call-minus-second-btn');
     const liveCallPlusSecondBtn = document.getElementById('live-call-plus-second-btn');
     const callLogTableBody = document.getElementById('call-log');
     const callLogMobileList = document.getElementById('call-log-mobile');
     const callLogSortableHeaders = Array.from(document.querySelectorAll('.call-log-sortable[data-sort-key]'));
     const callLogScrollContainer = callLogTableBody?.closest('.scrollable-table') || null;
+    const callLogSearchInput = document.getElementById('call-log-search');
+    const callLogRateFilterSelect = document.getElementById('call-log-rate-filter');
+    const callLogResetViewBtn = document.getElementById('call-log-reset-view');
+    const callLogResultsSummary = document.getElementById('call-log-results-summary');
     let floatingVisibilityObserver = null;
     let observedFloatingPrimaryButton = null;
     let callControlsVisibleInViewport = false;
@@ -1389,6 +1411,8 @@ async function confirmExportOptions() {
     const cancelRateAddBtn = document.getElementById('cancel-rate-add');
     const achievementsToggleBtn = document.getElementById('achievements-toggle');
     const settingsToggleBtn = document.getElementById('settings-toggle');
+    const footerOpenSettingsBtn = document.getElementById('footer-open-settings-btn');
+    const footerCollapsiblePanels = Array.from(document.querySelectorAll('.app-footer-collapsible[data-footer-collapsible]'));
     const settingsModal = document.getElementById('settings-modal');
     const closeSettingsModalBtn = document.getElementById('close-settings-modal');
     const openDataHubBtn = document.getElementById('open-data-hub-btn');
@@ -1454,9 +1478,41 @@ async function confirmExportOptions() {
     const statsPrevDayBtn = document.getElementById('stats-prev-day-btn');
     const statsNextDayBtn = document.getElementById('stats-next-day-btn');
     const currentDateBtn = document.getElementById('current-date-btn');
+    const statsSnapshotHeading = document.getElementById('stats-snapshot-heading');
     const avgDurationDisplay = document.getElementById('avg-duration');
+    const avgDurationDeltaDisplay = document.getElementById('avg-duration-delta');
+    const todayEarningsTitleDisplay = document.getElementById('today-earnings-title');
     const todayEarningsDisplay = document.getElementById('today-earnings');
+    const todayEarningsDeltaDisplay = document.getElementById('today-earnings-delta');
     const goalEstimateDisplay = document.getElementById('goal-estimate');
+    const goalEstimateDeltaDisplay = document.getElementById('goal-estimate-delta');
+    const rhythmAvgGapDisplay = document.getElementById('rhythm-avg-gap');
+    const rhythmFastestGapDisplay = document.getElementById('rhythm-fastest-gap');
+    const rhythmVsPreviousDayDisplay = document.getElementById('rhythm-vs-previous-day');
+    const hourlyHeatmapGrid = document.getElementById('hourly-heatmap-grid');
+    const hourlyHeatmapSummary = document.getElementById('hourly-heatmap-summary');
+    const hourlyHeatmapTopHours = document.getElementById('hourly-heatmap-top-hours');
+    const trendAnalyticsGrid = document.getElementById('trend-analytics-grid');
+    const patternsPanelSummary = document.getElementById('patterns-panel-summary');
+    const hourlyHeatmapCard = document.getElementById('hourly-heatmap-card');
+    const trendCard = document.getElementById('trend-card');
+    const patternsModeHourlyBtn = document.getElementById('patterns-mode-hourly-btn');
+    const weeklyTrendBars = document.getElementById('weekly-trend-bars');
+    const weeklyTrendSummary = document.getElementById('weekly-trend-summary');
+    const weeklyTrendBestDay = document.getElementById('weekly-trend-best-day');
+    const monthlyTrendCanvas = document.getElementById('monthly-trend-canvas');
+    const monthlyTrendWeekdays = document.getElementById('monthly-trend-weekdays');
+    const monthlyTrendHeatmap = document.getElementById('monthly-trend-heatmap');
+    const trendModeWeeklyBtn = document.getElementById('trend-mode-weekly-btn');
+    const trendModeMonthlyBtn = document.getElementById('trend-mode-monthly-btn');
+    const trendPrevBtn = document.getElementById('trend-prev-btn');
+    const trendNextBtn = document.getElementById('trend-next-btn');
+    const trendRangeLabel = document.getElementById('trend-range-label');
+    const trendSummaryInline = document.getElementById('trend-summary-inline');
+    let heatmapHoverTooltipEl = null;
+    let heatmapHoverActiveTarget = null;
+    let heatmapHoverPinned = false;
+    let heatmapTooltipGlobalsBound = false;
     const firstHalfEarningsDisplay = document.getElementById('first-half-earnings');
     const secondHalfEarningsDisplay = document.getElementById('second-half-earnings');
     const monthlyTotalEarningsDisplay = document.getElementById('monthly-total-earnings');
@@ -1464,6 +1520,24 @@ async function confirmExportOptions() {
     const rpgLevelProgressBar = document.getElementById('rpg-level-progress-bar');
     const rpgLevelProgressText = document.getElementById('rpg-level-progress-text');
     const rpgLevelNextText = document.getElementById('rpg-level-next-text');
+    const rpgBreakdownToggleBtn = document.getElementById('rpg-breakdown-toggle');
+    const rpgXpBreakdownWrap = document.getElementById('rpg-xp-breakdown-wrap');
+    const rpgCallXpDisplay = document.getElementById('rpg-call-xp');
+    const rpgAchievementXpDisplay = document.getElementById('rpg-achievement-xp');
+    const rpgDailyQuestXpDisplay = document.getElementById('rpg-daily-quest-xp');
+    const rpgWeeklyArcXpDisplay = document.getElementById('rpg-weekly-arc-xp');
+    const rpgStreakMultiplierDisplay = document.getElementById('rpg-streak-multiplier');
+    const rpgStreakShieldsDisplay = document.getElementById('rpg-streak-shields');
+    const rpgDailyFocusMeta = document.getElementById('rpg-daily-focus-meta');
+    const rpgDailyFocusDesc = document.getElementById('rpg-daily-focus-desc');
+    const rpgDailyFocusBar = document.getElementById('rpg-daily-focus-bar');
+    const rpgWeeklyArcCard = document.getElementById('rpg-weekly-arc-card');
+    const rpgWeeklyArcRange = document.getElementById('rpg-weekly-arc-range');
+    const rpgWeeklyArcSteps = document.getElementById('rpg-weekly-arc-steps');
+    const rpgWeeklyArcStatus = document.getElementById('rpg-weekly-arc-status');
+    const rpgStreakShieldRow = document.getElementById('rpg-streak-shield-row');
+    const rpgStreakShieldHint = document.getElementById('rpg-streak-shield-hint');
+    const rpgUseShieldBtn = document.getElementById('rpg-use-shield-btn');
     const goalForm = document.getElementById('goal-form');
     const goalAmountInput = document.getElementById('goal-amount');
     const goalMinutesInput = document.getElementById('goal-minutes');
@@ -1477,11 +1551,18 @@ async function confirmExportOptions() {
     const paymentCyclesSection = document.getElementById('payment-cycles-section');
     const showAddCycleBtn = document.getElementById('show-add-cycle-btn');
     const cycleEarningsDisplay = document.getElementById('cycle-earnings');
+    const cycleEarningsMetaDisplay = document.getElementById('cycle-earnings-meta');
+    const cycleEarningsTrendDisplay = document.getElementById('cycle-earnings-trend');
+    const cycleStateChipDisplay = document.getElementById('cycle-state-chip');
+    const cycleProgressBarDisplay = document.getElementById('cycle-progress-bar');
+    const cycleProgressMetaDisplay = document.getElementById('cycle-progress-meta');
     const cycleStartDateDisplay = document.getElementById('cycle-start-date');
     const cycleEndDateDisplay = document.getElementById('cycle-end-date');
     const daysUntilEndDisplay = document.getElementById('days-until-end');
     const payDateDisplay = document.getElementById('pay-date');
     const daysUntilPayDisplay = document.getElementById('days-until-pay');
+    const payCountdownHeadlineDisplay = document.getElementById('pay-countdown-headline');
+    const nextPayCycleContextDisplay = document.getElementById('next-pay-cycle-context');
     const monthlyEarningsCards = document.getElementById('monthly-earnings-cards');
     const paymentCycleEarningsCards = document.getElementById('payment-cycle-earnings-cards');
     const storageUsedDisplay = document.getElementById('storage-used');
@@ -1502,6 +1583,26 @@ async function confirmExportOptions() {
     const paymentCycleTemplatePayOffsetInput = document.getElementById('payment-cycle-template-pay-offset');
     const paymentCycleTemplateReplaceToggle = document.getElementById('payment-cycle-template-replace');
     const generatePaymentCyclesBtn = document.getElementById('generate-payment-cycles-btn');
+    const paymentCyclesCurrentSummary = document.getElementById('payment-cycles-current-summary');
+    const paymentCyclesCurrentRange = document.getElementById('payment-cycles-current-range');
+    const paymentCyclesCurrentPay = document.getElementById('payment-cycles-current-pay');
+    const paymentCyclesCurrentDays = document.getElementById('payment-cycles-current-days');
+    const paymentCyclesToggleAllBtn = document.getElementById('payment-cycles-toggle-all-btn');
+    const paymentCyclesAllListWrap = document.getElementById('payment-cycles-all-list-wrap');
+    const viewAllPaymentCyclesBtn = document.getElementById('view-all-payment-cycles-btn');
+    const sessionStartTimeInput = document.getElementById('session-start-time');
+    const sessionEndTimeInput = document.getElementById('session-end-time');
+    const sessionStartBtn = document.getElementById('session-start-btn');
+    const sessionPauseBtn = document.getElementById('session-pause-btn');
+    const sessionEndBtn = document.getElementById('session-end-btn');
+    const sessionLivePanel = document.getElementById('session-live-panel');
+    const sessionLiveState = document.getElementById('session-live-state');
+    const sessionLiveElapsed = document.getElementById('session-live-elapsed');
+    const sessionLiveTalk = document.getElementById('session-live-talk');
+    const sessionLiveIdle = document.getElementById('session-live-idle');
+    const sessionLiveUtilization = document.getElementById('session-live-utilization');
+    const sessionLiveUtilizationBar = document.getElementById('session-live-utilization-bar');
+    const sessionLiveUtilizationHint = document.getElementById('session-live-utilization-hint');
     
     
     const filterTodayBtn = document.getElementById('filter-today');
@@ -1565,6 +1666,186 @@ let floatingPreviewSample = null;
 let floatingPreviewAutoRefreshTimer = null;
 let selectedAchievementId = null;
 let pendingCsvImport = null;
+const ACTIVE_CALL_IDLE_REMINDER_MS = 10 * 60 * 1000;
+const ACTIVE_CALL_REMINDER_COOLDOWN_MS = 8 * 60 * 1000;
+let lastUserActivityAt = Date.now();
+let lastActiveCallReminderAt = 0;
+let workstripSyncQueued = false;
+let postCallReviewState = null;
+
+function markUserActivity() {
+    lastUserActivityAt = Date.now();
+    if (focusWorkstripReminder) {
+        focusWorkstripReminder.style.display = 'none';
+    }
+}
+
+function isUiRefreshEnabled(flags) {
+    return true;
+}
+
+function queueWorkstripSync() {
+    if (workstripSyncQueued) return;
+    workstripSyncQueued = true;
+    requestAnimationFrame(() => {
+        workstripSyncQueued = false;
+        syncWorkstripSummary();
+    });
+}
+
+function hidePostCallReview(clearState = false) {
+    if (postCallReviewStrip) postCallReviewStrip.style.display = 'none';
+    if (clearState) postCallReviewState = null;
+}
+
+function showPostCallReview(callData, elapsedMs, earnedAmount) {
+    if (!postCallReviewStrip || !isUiRefreshEnabled(featureFlags) || !callData?.id) return;
+    const safeRateName = String(callData.rateName || 'Rate removed');
+    if (postCallReviewSummary) {
+        postCallReviewSummary.textContent = `Duration ${formatTime(elapsedMs)} | Earnings ${formatEarnings(earnedAmount)} | ${safeRateName}`;
+    }
+    postCallReviewState = {
+        callId: callData.id,
+        shownAt: Date.now()
+    };
+    postCallReviewStrip.style.display = '';
+}
+
+function getLatestCallId() {
+    if (!Array.isArray(calls) || !calls.length) return null;
+    let latest = null;
+    let latestMs = -Infinity;
+    for (let i = 0; i < calls.length; i += 1) {
+        const endMs = getCallEndMs(calls[i]);
+        if (!Number.isFinite(endMs)) continue;
+        if (endMs > latestMs) {
+            latestMs = endMs;
+            latest = calls[i];
+        }
+    }
+    return latest?.id || null;
+}
+
+function editLatestCallEntry(triggerEl = null) {
+    calls = readCallsFromStorage();
+    const callId = getLatestCallId();
+    if (!callId) {
+        showToast('No calls available to edit.', { variant: 'warning' });
+        return;
+    }
+    editCall(callId);
+    openCallModal(triggerEl);
+}
+
+function undoPostCallReviewEntry() {
+    const targetId = postCallReviewState?.callId;
+    if (!targetId) return;
+    calls = readCallsFromStorage();
+    const idx = calls.findIndex((call) => call.id === targetId);
+    if (idx < 0) {
+        hidePostCallReview(true);
+        showToast('That call was already changed.', { variant: 'warning' });
+        return;
+    }
+    calls.splice(idx, 1);
+    saveCalls();
+    hidePostCallReview(true);
+    showToast('Last saved call removed.');
+}
+
+function checkActiveCallIdleReminder(nowTs = Date.now()) {
+    if (!LiveCallSession.isActive()) {
+        lastActiveCallReminderAt = 0;
+        if (focusWorkstripReminder) focusWorkstripReminder.style.display = 'none';
+        return;
+    }
+
+    const idleFor = Math.max(0, nowTs - (lastUserActivityAt || nowTs));
+    const canNotifyAgain = (nowTs - lastActiveCallReminderAt) >= ACTIVE_CALL_REMINDER_COOLDOWN_MS;
+    if (idleFor >= ACTIVE_CALL_IDLE_REMINDER_MS && canNotifyAgain) {
+        lastActiveCallReminderAt = nowTs;
+        if (focusWorkstripReminder && isUiRefreshEnabled(featureFlags)) {
+            focusWorkstripReminder.style.display = '';
+        }
+        showToast('Active call is still running. Review before ending.', { variant: 'warning', durationMs: 5000 });
+    }
+}
+
+function syncWorkstripSummary() {
+    if (!focusWorkstrip) return;
+    const uiRefresh = isUiRefreshEnabled(featureFlags);
+    focusWorkstrip.style.display = uiRefresh ? '' : 'none';
+    if (!uiRefresh) {
+        hidePostCallReview(false);
+        return;
+    }
+
+    const currentRateName = String(rateSelect?.value || '').trim();
+    const selectedRate = rates.find((rate) => rate.name === currentRateName);
+    if (focusWorkstripRate) {
+        focusWorkstripRate.textContent = selectedRate
+            ? `${selectedRate.name} - $${Number(selectedRate.amount).toFixed(2)}/min`
+            : (currentRateName || 'No rate selected');
+    }
+
+    const activeState = LiveCallSession.getState(Date.now());
+    const isActive = !!activeState;
+    if (focusWorkstripStatus) {
+        focusWorkstripStatus.textContent = isActive ? 'Call Running' : 'Idle';
+        focusWorkstripStatus.classList.toggle('is-active', isActive);
+    }
+    if (focusWorkstripTimer) {
+        focusWorkstripTimer.textContent = isActive ? String(activeState.elapsedLabel || '00:00:00') : '00:00:00';
+    }
+    if (focusWorkstripEarnings) {
+        if (isActive) {
+            focusWorkstripEarnings.textContent = String(activeState.earningsLabel || '$0.00');
+        } else if (todayEarningsDisplay) {
+            focusWorkstripEarnings.textContent = todayEarningsDisplay.textContent || '$0.00';
+        } else {
+            focusWorkstripEarnings.textContent = '$0.00';
+        }
+    }
+    if (workstripStartCallBtn) workstripStartCallBtn.style.display = isActive ? 'none' : '';
+    if (workstripEndCallBtn) workstripEndCallBtn.style.display = isActive ? '' : 'none';
+
+    checkActiveCallIdleReminder(Date.now());
+}
+
+function isEditableShortcutTarget(target) {
+    if (!target) return false;
+    if (target.isContentEditable) return true;
+    const tagName = String(target.tagName || '').toLowerCase();
+    return tagName === 'input' || tagName === 'textarea' || tagName === 'select';
+}
+
+function handleGlobalProductivityShortcuts(event) {
+    if (!isUiRefreshEnabled(featureFlags)) return;
+    if (event.defaultPrevented) return;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (isEditableShortcutTarget(event.target)) return;
+    if (isAnyAppModalOpen()) return;
+
+    const key = String(event.key || '').toLowerCase();
+    if (key === 'n') {
+        event.preventDefault();
+        addCallBtn?.click();
+        return;
+    }
+    if (key === 's') {
+        event.preventDefault();
+        if (LiveCallSession.isActive()) {
+            endLiveCall();
+        } else {
+            startLiveCall();
+        }
+        return;
+    }
+    if (key === 'e') {
+        event.preventDefault();
+        editLatestCallEntry();
+    }
+}
 
 function loadFeatureFlags() {
     try {
@@ -1574,6 +1855,7 @@ function loadFeatureFlags() {
             paymentCycles: paymentCyclesEnabled,
             floatingCallControls: true,
             rpg: true,
+            uiRefresh: true,
             floatingControlsSizeMode: 'auto',
             floatingControlsSide: 'right',
             floatingSecondaryAction: 'add',
@@ -1591,6 +1873,7 @@ function loadFeatureFlags() {
             paymentCycles: typeof parsed.paymentCycles === 'boolean' ? parsed.paymentCycles : paymentCyclesEnabled,
             floatingCallControls: typeof parsed.floatingCallControls === 'boolean' ? parsed.floatingCallControls : true,
             rpg: typeof parsed.rpg === 'boolean' ? parsed.rpg : true,
+            uiRefresh: true,
             floatingControlsSizeMode: ['auto', 'full', 'compact', 'icon'].includes(parsed.floatingControlsSizeMode) ? parsed.floatingControlsSizeMode : 'auto',
             floatingControlsSide: parsed.floatingControlsSide === 'left' ? 'left' : 'right',
             floatingSecondaryAction: ['add', 'goto', 'none'].includes(parsed.floatingSecondaryAction) ? parsed.floatingSecondaryAction : 'add',
@@ -1608,6 +1891,7 @@ function loadFeatureFlags() {
             paymentCycles: paymentCyclesEnabled,
             floatingCallControls: true,
             rpg: true,
+            uiRefresh: true,
             floatingControlsSizeMode: 'auto',
             floatingControlsSide: 'right',
             floatingSecondaryAction: 'add',
@@ -1920,6 +2204,12 @@ function applyFeatureFlags(flags) {
         }
     }
 
+    flags.uiRefresh = true;
+    document.body.classList.add('ui-refresh-v1');
+    if (focusWorkstrip) {
+        focusWorkstrip.style.display = '';
+    }
+
     // Floating call controls feature
     if (openFloatingControlsSettingsBtn) {
         openFloatingControlsSettingsBtn.style.display = flags.floatingCallControls ? '' : 'none';
@@ -1969,6 +2259,7 @@ function applyFeatureFlags(flags) {
     updateFloatingCallControls(flags);
     renderAchievementsModal();
     updateRpgProgress();
+    queueWorkstripSync();
 }
 
 // initialize feature flags (will be applied on DOMContentLoaded too)
@@ -1979,6 +2270,7 @@ let featureFlags = {
     paymentCycles: false,
     floatingCallControls: true,
     rpg: true,
+    uiRefresh: true,
     floatingControlsSizeMode: 'auto',
     floatingControlsSide: 'right',
     floatingSecondaryAction: 'add',
@@ -2679,6 +2971,7 @@ function setupFloatingVisibilityObservers() {
 }
 
 function updateFloatingCallControls(flags = featureFlags) {
+    queueWorkstripSync();
     flushPendingLiveCallInfoVisibilityIfVisible();
     if (!floatingCallControls || !floatingStartCallBtn || !floatingEndCallBtn || !callControlsCard) return;
 
@@ -2864,6 +3157,7 @@ if (storedDailyGoal) {
 
     let activeTimers = new Set();
     let liveCallTimerId = null;
+    let sessionTrackerTimerId = null;
     let liveCallStart = null;
     let currentCallRate = null;
     let isEditingCall = false;
@@ -2881,6 +3175,10 @@ if (storedDailyGoal) {
     let callsDatasetVersion = 0;
     let filteredCallsCache = { key: '', rows: [] };
     let callLogSort = { key: 'startTime', direction: 'desc' };
+    let callLogSearchQuery = '';
+    let callLogRateFilter = '';
+    let callLogSearchDebounceTimer = null;
+    let openCallLogActionsMenu = null;
     let callLogRenderTicket = 0;
     let callLogRenderState = null;
     let pendingStorageWrites = new Map();
@@ -2888,6 +3186,15 @@ if (storedDailyGoal) {
     let pendingCsvImportFilter = 'all';
     let pendingExportFormat = null;
     let pendingImportMode = null;
+    let paymentCyclesListExpanded = false;
+    let trendMode = normalizeTrendMode(appStorage.getItem('trendMode'));
+    let patternsMode = normalizePatternsMode(appStorage.getItem('patternsMode') || trendMode || 'hourly');
+    let trendAnchorDate = getTrendAnchorStorageDate();
+    let rpgXpBreakdownExpanded = appStorage.getItem('rpgXpBreakdownExpanded') === '1';
+    if (trendMode === 'weekly') {
+        trendAnchorDate = clampTrendAnchorToToday(new Date());
+    }
+    let sessionTrackerState = loadSessionTrackerState();
     const CALL_LOG_RENDER_CHUNK_SIZE = 120;
     const CALL_LOG_RENDER_AHEAD_PX = 180;
     const RPG_CALL_ELIGIBILITY_MIGRATION_KEY = 'wtt_rpg_call_eligibility_migrated_v1';
@@ -2904,6 +3211,377 @@ if (storedDailyGoal) {
 
     function formatEarnings(amount) {
         return `$${amount.toFixed(2)}`;
+    }
+
+    function normalizeTrendMode(mode) {
+        return mode === 'monthly' ? 'monthly' : 'weekly';
+    }
+
+    function normalizePatternsMode(mode) {
+        return ['hourly', 'weekly', 'monthly'].includes(mode) ? mode : 'hourly';
+    }
+
+    function clampTrendAnchorToToday(dateObj) {
+        const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const candidate = dateObj instanceof Date && Number.isFinite(dateObj.getTime())
+            ? new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate())
+            : todayStart;
+        return candidate.getTime() > todayStart.getTime() ? todayStart : candidate;
+    }
+
+    function getTrendAnchorStorageDate() {
+        const raw = parseDateInput(appStorage.getItem('trendAnchorDate') || '');
+        return clampTrendAnchorToToday(raw || new Date());
+    }
+
+    function saveTrendPreferences() {
+        queueStorageWrite('trendMode', trendMode);
+        queueStorageWrite('trendAnchorDate', formatDateForInput(trendAnchorDate));
+    }
+
+    function savePatternsPreference() {
+        queueStorageWrite('patternsMode', patternsMode);
+    }
+
+    function getSessionDefaultState() {
+        return {
+            active: false,
+            paused: false,
+            startMs: 0,
+            pausedTotalMs: 0,
+            pauseStartedMs: 0,
+            pauseCount: 0,
+            scheduleStart: '',
+            scheduleEnd: ''
+        };
+    }
+
+    function normalizeSessionScheduleTime(value) {
+        const parsed = parseOptionalTime(value);
+        if (!parsed) return '';
+        return `${String(parsed.hours).padStart(2, '0')}:${String(parsed.minutes).padStart(2, '0')}`;
+    }
+
+    function normalizeSessionTrackerState(input) {
+        const base = getSessionDefaultState();
+        const source = input && typeof input === 'object' ? input : {};
+        const startMs = Number(source.startMs);
+        const pausedTotalMs = Number(source.pausedTotalMs);
+        const pauseStartedMs = Number(source.pauseStartedMs);
+        const pauseCount = Number(source.pauseCount);
+        const active = !!source.active && Number.isFinite(startMs) && startMs > 0;
+        const paused = active && !!source.paused;
+
+        return {
+            ...base,
+            active,
+            paused,
+            startMs: active ? startMs : 0,
+            pausedTotalMs: active ? Math.max(0, Number.isFinite(pausedTotalMs) ? pausedTotalMs : 0) : 0,
+            pauseStartedMs: active && paused && Number.isFinite(pauseStartedMs) && pauseStartedMs > 0 ? pauseStartedMs : 0,
+            pauseCount: active ? Math.max(0, Number.isFinite(pauseCount) ? pauseCount : 0) : 0,
+            scheduleStart: normalizeSessionScheduleTime(source.scheduleStart),
+            scheduleEnd: normalizeSessionScheduleTime(source.scheduleEnd)
+        };
+    }
+
+    function loadSessionTrackerState() {
+        try {
+            const raw = JSON.parse(appStorage.getItem(SESSION_TRACKER_KEY) || '{}');
+            return normalizeSessionTrackerState(raw);
+        } catch (error) {
+            return getSessionDefaultState();
+        }
+    }
+
+    function saveSessionTrackerState() {
+        const normalized = normalizeSessionTrackerState(sessionTrackerState);
+        sessionTrackerState = normalized;
+        queueStorageWrite(SESSION_TRACKER_KEY, JSON.stringify(normalized));
+    }
+
+    function clearSessionTrackerTimer() {
+        if (!sessionTrackerTimerId) return;
+        clearInterval(sessionTrackerTimerId);
+        activeTimers.delete(sessionTrackerTimerId);
+        sessionTrackerTimerId = null;
+    }
+
+    function ensureSessionTrackerTimer() {
+        if (!sessionTrackerState?.active) {
+            clearSessionTrackerTimer();
+            return;
+        }
+        if (sessionTrackerTimerId) return;
+        sessionTrackerTimerId = setInterval(() => {
+            renderSessionTracker();
+        }, 1000);
+        activeTimers.add(sessionTrackerTimerId);
+    }
+
+    function applySessionScheduleFromInputs() {
+        if (!sessionTrackerState) sessionTrackerState = getSessionDefaultState();
+        const normalizedStart = normalizeSessionScheduleTime(sessionStartTimeInput?.value || '');
+        const normalizedEnd = normalizeSessionScheduleTime(sessionEndTimeInput?.value || '');
+        const changed = sessionTrackerState.scheduleStart !== normalizedStart || sessionTrackerState.scheduleEnd !== normalizedEnd;
+        sessionTrackerState.scheduleStart = normalizedStart;
+        sessionTrackerState.scheduleEnd = normalizedEnd;
+        if (changed) saveSessionTrackerState();
+    }
+
+    function formatSessionPercent(value) {
+        const n = Number(value);
+        if (!Number.isFinite(n) || n <= 0) return '0.0%';
+        return `${Math.min(100, n).toFixed(1)}%`;
+    }
+
+    function getSessionTalkTimeMs(state, now = Date.now()) {
+        if (!state?.active || !Number.isFinite(state.startMs) || state.startMs <= 0) return 0;
+        const windowStart = state.startMs;
+        const windowEnd = Math.max(windowStart, now);
+        let talkMs = 0;
+
+        for (const call of calls) {
+            const callStartMs = getCallStartMs(call);
+            const callEndMs = getCallEndMs(call);
+            if (!Number.isFinite(callStartMs) || !Number.isFinite(callEndMs) || callEndMs <= callStartMs) continue;
+            const overlapStart = Math.max(windowStart, callStartMs);
+            const overlapEnd = Math.min(windowEnd, callEndMs);
+            if (overlapEnd > overlapStart) {
+                talkMs += overlapEnd - overlapStart;
+            }
+        }
+
+        const activeCallState = LiveCallSession.getState(now);
+        if (activeCallState && Number.isFinite(activeCallState.start) && activeCallState.start > 0) {
+            const overlapStart = Math.max(windowStart, activeCallState.start);
+            const overlapEnd = windowEnd;
+            if (overlapEnd > overlapStart) {
+                talkMs += overlapEnd - overlapStart;
+            }
+        }
+
+        return Math.max(0, talkMs);
+    }
+
+    function getSessionComputedMetrics(now = Date.now()) {
+        const state = normalizeSessionTrackerState(sessionTrackerState);
+        if (!state.active) {
+            return {
+                state,
+                status: 'idle',
+                elapsedMs: 0,
+                pausedMs: 0,
+                availableMs: 0,
+                talkMs: 0,
+                idleMs: 0,
+                utilization: 0
+            };
+        }
+
+        const elapsedMs = Math.max(0, now - state.startMs);
+        const pausedMs = Math.max(0, state.pausedTotalMs + (state.paused && state.pauseStartedMs > 0 ? (now - state.pauseStartedMs) : 0));
+        const availableMs = Math.max(0, elapsedMs - pausedMs);
+        const rawTalkMs = getSessionTalkTimeMs(state, now);
+        const talkMs = Math.max(0, Math.min(rawTalkMs, availableMs));
+        const idleMs = Math.max(0, availableMs - talkMs);
+        const utilization = availableMs > 0 ? (talkMs / availableMs) * 100 : 0;
+
+        return {
+            state,
+            status: state.paused ? 'paused' : 'active',
+            elapsedMs,
+            pausedMs,
+            availableMs,
+            talkMs,
+            idleMs,
+            utilization
+        };
+    }
+
+    function renderSessionTracker(now = Date.now()) {
+        if (!sessionLivePanel) return;
+        if (!sessionTrackerState) sessionTrackerState = loadSessionTrackerState();
+
+        if (sessionStartTimeInput && document.activeElement !== sessionStartTimeInput) {
+            sessionStartTimeInput.value = sessionTrackerState.scheduleStart || '';
+        }
+        if (sessionEndTimeInput && document.activeElement !== sessionEndTimeInput) {
+            sessionEndTimeInput.value = sessionTrackerState.scheduleEnd || '';
+        }
+
+        const metrics = getSessionComputedMetrics(now);
+        const isActive = metrics.status === 'active';
+        const isPaused = metrics.status === 'paused';
+        const statusLabel = isActive ? 'Active' : (isPaused ? 'Paused' : 'Idle');
+
+        sessionLivePanel.classList.remove('is-idle', 'is-active', 'is-paused');
+        sessionLivePanel.classList.add(isActive ? 'is-active' : (isPaused ? 'is-paused' : 'is-idle'));
+
+        if (sessionLiveState) {
+            sessionLiveState.classList.remove('is-idle', 'is-active', 'is-paused');
+            sessionLiveState.classList.add(isActive ? 'is-active' : (isPaused ? 'is-paused' : 'is-idle'));
+            const stateLabel = sessionLiveState.querySelector('.session-state-label');
+            if (stateLabel) stateLabel.textContent = statusLabel;
+        }
+
+        if (sessionLiveElapsed) sessionLiveElapsed.textContent = formatTime(metrics.elapsedMs);
+        if (sessionLiveTalk) sessionLiveTalk.textContent = formatTime(metrics.talkMs);
+        if (sessionLiveIdle) sessionLiveIdle.textContent = formatTime(metrics.idleMs);
+        if (sessionLiveUtilization) sessionLiveUtilization.textContent = formatSessionPercent(metrics.utilization);
+        if (sessionLiveUtilizationBar) {
+            const width = Math.max(0, Math.min(100, metrics.utilization));
+            sessionLiveUtilizationBar.style.width = `${width}%`;
+        }
+        if (sessionLiveUtilizationHint) {
+            sessionLiveUtilizationHint.textContent = `Available ${formatTime(metrics.availableMs)} | Paused ${formatTime(metrics.pausedMs)}`;
+        }
+
+        if (sessionStartBtn) sessionStartBtn.disabled = metrics.state.active;
+        if (sessionPauseBtn) {
+            sessionPauseBtn.disabled = !metrics.state.active;
+            sessionPauseBtn.innerHTML = metrics.state.paused
+                ? '<i class="fas fa-play mr-1"></i> Resume'
+                : '<i class="fas fa-pause mr-1"></i> Pause';
+        }
+        if (sessionEndBtn) sessionEndBtn.disabled = !metrics.state.active;
+        if (sessionStartTimeInput) sessionStartTimeInput.disabled = metrics.state.active;
+        if (sessionEndTimeInput) sessionEndTimeInput.disabled = metrics.state.active;
+    }
+
+    function startWorkSession() {
+        if (!sessionTrackerState) sessionTrackerState = getSessionDefaultState();
+        if (sessionTrackerState.active) return;
+        applySessionScheduleFromInputs();
+        sessionTrackerState.active = true;
+        sessionTrackerState.paused = false;
+        sessionTrackerState.startMs = Date.now();
+        sessionTrackerState.pausedTotalMs = 0;
+        sessionTrackerState.pauseStartedMs = 0;
+        sessionTrackerState.pauseCount = 0;
+        saveSessionTrackerState();
+        ensureSessionTrackerTimer();
+        renderSessionTracker();
+        showToast('Session started.');
+    }
+
+    function toggleWorkSessionPause() {
+        if (!sessionTrackerState?.active) return;
+        const now = Date.now();
+        if (!sessionTrackerState.paused && LiveCallSession.isActive()) {
+            showToast('End the active call before pausing your session.');
+            return;
+        }
+
+        if (sessionTrackerState.paused) {
+            if (sessionTrackerState.pauseStartedMs > 0) {
+                sessionTrackerState.pausedTotalMs += Math.max(0, now - sessionTrackerState.pauseStartedMs);
+            }
+            sessionTrackerState.paused = false;
+            sessionTrackerState.pauseStartedMs = 0;
+            showToast('Session resumed.');
+        } else {
+            sessionTrackerState.paused = true;
+            sessionTrackerState.pauseStartedMs = now;
+            sessionTrackerState.pauseCount = Math.max(0, Number(sessionTrackerState.pauseCount) || 0) + 1;
+            showToast('Session paused.');
+        }
+
+        saveSessionTrackerState();
+        ensureSessionTrackerTimer();
+        renderSessionTracker();
+    }
+
+    function endWorkSession() {
+        if (!sessionTrackerState?.active) return;
+        if (LiveCallSession.isActive()) {
+            showToast('End the active call before ending your session.');
+            return;
+        }
+
+        const now = Date.now();
+        const metrics = getSessionComputedMetrics(now);
+        recordCompletedSessionForRpg(metrics, now, Number(sessionTrackerState.pauseCount) || 0);
+        const scheduleStart = sessionTrackerState.scheduleStart;
+        const scheduleEnd = sessionTrackerState.scheduleEnd;
+        sessionTrackerState = getSessionDefaultState();
+        sessionTrackerState.scheduleStart = scheduleStart;
+        sessionTrackerState.scheduleEnd = scheduleEnd;
+        saveSessionTrackerState();
+        clearSessionTrackerTimer();
+        renderSessionTracker();
+        showToast(`Session ended. Talk ${formatTime(metrics.talkMs)} | Idle ${formatTime(metrics.idleMs)} | Utilization ${formatSessionPercent(metrics.utilization)}.`);
+        evaluateAchievements({ notify: true });
+    }
+
+    function getDefaultSessionRpgStatsState() {
+        return {
+            sessionsCompleted: 0,
+            totalTalkMs: 0,
+            totalIdleMs: 0,
+            totalAvailableMs: 0,
+            highUtilSessions: 0,
+            focusedSessions: 0,
+            longSessions4h: 0,
+            pauseAwareSessions: 0,
+            daysWorked: {}
+        };
+    }
+
+    function normalizeSessionRpgStatsState(input) {
+        const base = getDefaultSessionRpgStatsState();
+        const source = input && typeof input === 'object' ? input : {};
+        const daysWorked = source.daysWorked && typeof source.daysWorked === 'object' ? source.daysWorked : {};
+        return {
+            sessionsCompleted: Math.max(0, Number(source.sessionsCompleted) || 0),
+            totalTalkMs: Math.max(0, Number(source.totalTalkMs) || 0),
+            totalIdleMs: Math.max(0, Number(source.totalIdleMs) || 0),
+            totalAvailableMs: Math.max(0, Number(source.totalAvailableMs) || 0),
+            highUtilSessions: Math.max(0, Number(source.highUtilSessions) || 0),
+            focusedSessions: Math.max(0, Number(source.focusedSessions) || 0),
+            longSessions4h: Math.max(0, Number(source.longSessions4h) || 0),
+            pauseAwareSessions: Math.max(0, Number(source.pauseAwareSessions) || 0),
+            daysWorked: { ...daysWorked, ...base.daysWorked }
+        };
+    }
+
+    function getSessionRpgStatsState() {
+        try {
+            const raw = JSON.parse(appStorage.getItem(SESSION_RPG_STATS_KEY) || '{}');
+            return normalizeSessionRpgStatsState(raw);
+        } catch {
+            return getDefaultSessionRpgStatsState();
+        }
+    }
+
+    function saveSessionRpgStatsState(state) {
+        const normalized = normalizeSessionRpgStatsState(state);
+        queueStorageWrite(SESSION_RPG_STATS_KEY, JSON.stringify(normalized));
+    }
+
+    function clearSessionRpgStatsState() {
+        pendingStorageWrites.delete(SESSION_RPG_STATS_KEY);
+        appStorage.removeItem(SESSION_RPG_STATS_KEY);
+    }
+
+    function recordCompletedSessionForRpg(metrics, endedAtMs = Date.now(), pauseCount = 0) {
+        if (!metrics || !Number.isFinite(metrics.availableMs) || metrics.availableMs <= 0) return;
+        const state = getSessionRpgStatsState();
+        state.sessionsCompleted += 1;
+        state.totalTalkMs += Math.max(0, Number(metrics.talkMs) || 0);
+        state.totalIdleMs += Math.max(0, Number(metrics.idleMs) || 0);
+        state.totalAvailableMs += Math.max(0, Number(metrics.availableMs) || 0);
+        if ((Number(metrics.utilization) || 0) >= 70) state.highUtilSessions += 1;
+        if ((Number(metrics.availableMs) || 0) >= 30 * 60 * 1000 && (Number(metrics.idleMs) || 0) <= 5 * 60 * 1000) {
+            state.focusedSessions += 1;
+        }
+        if ((Number(metrics.availableMs) || 0) >= 4 * 60 * 60 * 1000) state.longSessions4h += 1;
+        if ((Number(pauseCount) || 0) > 0) state.pauseAwareSessions += 1;
+        if (!state.daysWorked || typeof state.daysWorked !== 'object') state.daysWorked = {};
+        const dayKey = formatDateForInput(new Date(endedAtMs));
+        state.daysWorked[dayKey] = true;
+        saveSessionRpgStatsState(state);
     }
 
     function getSelectedRateAmount() {
@@ -2925,10 +3603,12 @@ if (storedDailyGoal) {
         if (level < 5) return 100 + ((level - 1) * 25);       // 100, 125, 150, 175
         if (level < 10) return 200 + ((level - 5) * 35);      // 200..340
         if (level < 20) return 380 + ((level - 10) * 45);     // 380..785
-        return 850 + ((level - 20) * 60);                     // 850+
+        if (level <= 50) return 850 + ((level - 20) * 60);    // keep legacy pacing through 50
+        if (level <= 75) return 2710 + ((level - 51) * 70);   // mid-game extension
+        return 4460 + ((level - 76) * 85);                    // late-game extension to 100
     }
 
-    function buildLevelCurve(maxLevel = 50) {
+    function buildLevelCurve(maxLevel = 100) {
         const curve = [];
         let cumulative = 0;
         for (let level = 1; level <= maxLevel; level += 1) {
@@ -2943,7 +3623,7 @@ if (storedDailyGoal) {
         return curve;
     }
 
-    const LEVEL_CURVE = buildLevelCurve(50);
+    const LEVEL_CURVE = buildLevelCurve(100);
 
     function isRpgEnabled() {
         return !!featureFlags.rpg;
@@ -2979,6 +3659,31 @@ if (storedDailyGoal) {
     }
 
     const RPG_PROGRESS_STATE_KEY = 'wtt_rpg_progress_state_v1';
+    const STREAK_SHIELD_MAX = 2;
+    const WEEKLY_ARC_REWARD_XP = 90;
+    const WEEKLY_ARC_STEPS = [
+        {
+            id: 'calls',
+            label: 'Calls',
+            metric: 'calls',
+            target: 12,
+            format: (v) => `${Math.round(v)}`
+        },
+        {
+            id: 'minutes',
+            label: 'Minutes',
+            metric: 'minutes',
+            target: 180,
+            format: (v) => `${Math.round(v)} min`
+        },
+        {
+            id: 'earnings',
+            label: 'Earnings',
+            metric: 'earnings',
+            target: 60,
+            format: (v) => `$${Number(v).toFixed(2)}`
+        }
+    ];
 
     function getRpgProgressState() {
         try {
@@ -2987,11 +3692,24 @@ if (storedDailyGoal) {
             return {
                 achievementXp: Math.max(0, Number(raw.achievementXp) || legacyBonus),
                 dailyQuestXp: Math.max(0, Number(raw.dailyQuestXp) || 0),
+                weeklyArcXp: Math.max(0, Number(raw.weeklyArcXp) || 0),
+                streakShields: Math.max(0, Math.min(STREAK_SHIELD_MAX, Number(raw.streakShields) || 0)),
                 achievementRewards: raw.achievementRewards && typeof raw.achievementRewards === 'object' ? raw.achievementRewards : {},
-                dailyQuestRewards: raw.dailyQuestRewards && typeof raw.dailyQuestRewards === 'object' ? raw.dailyQuestRewards : {}
+                dailyQuestRewards: raw.dailyQuestRewards && typeof raw.dailyQuestRewards === 'object' ? raw.dailyQuestRewards : {},
+                weeklyArcRewards: raw.weeklyArcRewards && typeof raw.weeklyArcRewards === 'object' ? raw.weeklyArcRewards : {},
+                streakShieldUses: raw.streakShieldUses && typeof raw.streakShieldUses === 'object' ? raw.streakShieldUses : {}
             };
         } catch {
-            return { achievementXp: 0, dailyQuestXp: 0, achievementRewards: {}, dailyQuestRewards: {} };
+            return {
+                achievementXp: 0,
+                dailyQuestXp: 0,
+                weeklyArcXp: 0,
+                streakShields: 0,
+                achievementRewards: {},
+                dailyQuestRewards: {},
+                weeklyArcRewards: {},
+                streakShieldUses: {}
+            };
         }
     }
 
@@ -3021,16 +3739,18 @@ if (storedDailyGoal) {
                 callXp: 0,
                 achievementXp: 0,
                 dailyQuestXp: 0,
+                weeklyArcXp: 0,
                 totalXp: 0
             };
         }
         const callXp = computeCallXpTotal(callRows, currentStreak);
         const progressState = getRpgProgressState();
-        const rewardXp = progressState.achievementXp + progressState.dailyQuestXp;
+        const rewardXp = progressState.achievementXp + progressState.dailyQuestXp + progressState.weeklyArcXp;
         return {
             callXp,
             achievementXp: progressState.achievementXp,
             dailyQuestXp: progressState.dailyQuestXp,
+            weeklyArcXp: progressState.weeklyArcXp,
             totalXp: callXp + rewardXp
         };
     }
@@ -3042,14 +3762,18 @@ if (storedDailyGoal) {
             else break;
         }
         const currentLevel = levelState.level;
+        const maxLevel = LEVEL_CURVE.length;
+        const isMaxLevel = currentLevel >= maxLevel;
         const currentBaseXp = levelState.xpToReach;
-        const xpToNext = levelState.xpToNext;
+        const xpToNext = isMaxLevel ? 0 : levelState.xpToNext;
         const currentIntoLevel = Math.max(0, totalXp - currentBaseXp);
-        const progressPct = xpToNext > 0 ? Math.min((currentIntoLevel / xpToNext) * 100, 100) : 100;
-        const nextLevel = currentLevel + 1;
-        const remaining = Math.max(0, xpToNext - currentIntoLevel);
+        const progressPct = isMaxLevel ? 100 : (xpToNext > 0 ? Math.min((currentIntoLevel / xpToNext) * 100, 100) : 100);
+        const nextLevel = isMaxLevel ? currentLevel : currentLevel + 1;
+        const remaining = isMaxLevel ? 0 : Math.max(0, xpToNext - currentIntoLevel);
         return {
             currentLevel,
+            maxLevel,
+            isMaxLevel,
             totalXp,
             currentIntoLevel,
             xpToNext,
@@ -3059,16 +3783,322 @@ if (storedDailyGoal) {
         };
     }
 
+    function getWeekRangeLabelFromStartStamp(weekStartStamp) {
+        if (!Number.isFinite(weekStartStamp)) return 'This week';
+        const startDate = new Date(weekStartStamp);
+        const endDate = new Date(weekStartStamp + (6 * 24 * 60 * 60 * 1000));
+        const startLabel = startDate.toLocaleDateString(DISPLAY_LOCALE, { month: 'short', day: 'numeric' });
+        const endLabel = endDate.toLocaleDateString(DISPLAY_LOCALE, { month: 'short', day: 'numeric' });
+        return `${startLabel} - ${endLabel}`;
+    }
+
+    function getCurrentWeekRpgProgress(now = new Date()) {
+        if (!isRpgEnabled()) return null;
+        const weekStartStamp = getWeekStartStampFromDate(now);
+        const weekEndStamp = weekStartStamp + (6 * 24 * 60 * 60 * 1000);
+        const weekKey = formatDateForInput(new Date(weekStartStamp));
+
+        let callsCount = 0;
+        let minutesTotal = 0;
+        let earningsTotal = 0;
+        const eligibleCalls = getRpgEligibleCalls(calls);
+        eligibleCalls.forEach((call) => {
+            const stamp = getCallLocalDayStamp(call);
+            if (!Number.isFinite(stamp) || stamp < weekStartStamp || stamp > weekEndStamp) return;
+            callsCount += 1;
+            minutesTotal += Math.max(0, (Number(call.duration) || 0) / (1000 * 60));
+            earningsTotal += Number(call.earned) || Number(call.earnings) || 0;
+        });
+
+        const values = {
+            calls: callsCount,
+            minutes: minutesTotal,
+            earnings: earningsTotal
+        };
+
+        const steps = WEEKLY_ARC_STEPS.map((step) => {
+            const current = Math.max(0, Number(values[step.metric]) || 0);
+            const target = Math.max(1, Number(step.target) || 1);
+            const pct = Math.max(0, Math.min(100, (Math.min(current, target) / target) * 100));
+            return {
+                ...step,
+                current,
+                target,
+                pct,
+                done: current >= target
+            };
+        });
+
+        return {
+            weekKey,
+            weekStartStamp,
+            weekEndStamp,
+            rangeLabel: getWeekRangeLabelFromStartStamp(weekStartStamp),
+            steps,
+            completedCount: steps.filter((s) => s.done).length
+        };
+    }
+
+    function getShieldProtectedDayStamps() {
+        if (!isRpgEnabled()) return [];
+        const state = getRpgProgressState();
+        const uses = state.streakShieldUses && typeof state.streakShieldUses === 'object' ? state.streakShieldUses : {};
+        const todayStamp = parseDateInput(getCurrentLocalDayKey())?.getTime() || Date.now();
+        return Object.keys(uses)
+            .map((dayKey) => parseDateInput(dayKey))
+            .filter((dateObj) => dateObj instanceof Date && Number.isFinite(dateObj.getTime()))
+            .map((dateObj) => new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()).getTime())
+            .filter((stamp) => stamp <= todayStamp);
+    }
+
+    function getStreakShieldState(statsInput = null, stateInput = null) {
+        const stats = statsInput || computeAchievementStats();
+        const state = stateInput || getRpgProgressState();
+        const shields = Math.max(0, Number(state.streakShields) || 0);
+        const todayKey = getCurrentLocalDayKey();
+        const todayStamp = parseDateInput(todayKey)?.getTime();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const yesterdayStamp = Number.isFinite(todayStamp) ? todayStamp - oneDayMs : NaN;
+        let hasTodayCall = false;
+        let hasYesterdayCall = false;
+        const eligibleCalls = getRpgEligibleCalls(calls);
+        eligibleCalls.forEach((call) => {
+            const stamp = getCallLocalDayStamp(call);
+            if (!Number.isFinite(stamp)) return;
+            if (stamp === todayStamp) hasTodayCall = true;
+            if (stamp === yesterdayStamp) hasYesterdayCall = true;
+        });
+        const alreadyProtectedToday = !!(state.streakShieldUses && state.streakShieldUses[todayKey]);
+        const canUse = shields > 0 && !hasTodayCall && !alreadyProtectedToday && hasYesterdayCall;
+
+        let reason = 'Protect one no-call day to keep continuity.';
+        if (shields <= 0) reason = 'No shields available yet.';
+        else if (hasTodayCall) reason = 'You already have calls today.';
+        else if (alreadyProtectedToday) reason = 'Today is already protected.';
+        else if (!hasYesterdayCall) reason = 'Need at least one call yesterday to bridge continuity.';
+
+        return {
+            shields,
+            canUse,
+            reason,
+            todayKey
+        };
+    }
+
+    function renderWeeklyArcCard(arcInput = null, stateInput = null, statsInput = null) {
+        if (!rpgWeeklyArcSteps || !rpgWeeklyArcStatus || !rpgWeeklyArcRange) return;
+        const arc = arcInput || getCurrentWeekRpgProgress();
+        const state = stateInput || getRpgProgressState();
+        const stats = statsInput || computeAchievementStats();
+        if (!arc) return;
+
+        rpgWeeklyArcRange.textContent = arc.rangeLabel;
+        rpgWeeklyArcSteps.innerHTML = arc.steps.map((step) => {
+            const currentLabel = typeof step.format === 'function' ? step.format(step.current) : `${Math.round(step.current)}`;
+            const targetLabel = typeof step.format === 'function' ? step.format(step.target) : `${Math.round(step.target)}`;
+            return `
+                <div>
+                    <div class="flex items-center justify-between gap-2 text-[11px] mb-1">
+                        <span class="font-semibold text-indigo-700 dark:text-indigo-200">${step.label}</span>
+                        <span class="text-indigo-600 dark:text-indigo-300">${currentLabel} / ${targetLabel}</span>
+                    </div>
+                    <div class="w-full bg-indigo-200 dark:bg-indigo-900 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300 ease-out" style="width:${step.pct}%"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const completed = arc.completedCount;
+        const total = arc.steps.length;
+        const hasReward = !!(state.weeklyArcRewards && state.weeklyArcRewards[arc.weekKey]);
+        if (hasReward) {
+            rpgWeeklyArcStatus.textContent = `${completed}/${total} milestones completed â€¢ Reward claimed`;
+        } else {
+            rpgWeeklyArcStatus.textContent = `${completed}/${total} milestones completed`;
+        }
+
+        if (rpgStreakShieldsDisplay) {
+            rpgStreakShieldsDisplay.textContent = `${Math.max(0, Number(state.streakShields) || 0)}`;
+        }
+        const shieldState = getStreakShieldState(stats, state);
+        if (rpgStreakShieldHint) {
+            rpgStreakShieldHint.textContent = shieldState.reason;
+        }
+        if (rpgUseShieldBtn) {
+            rpgUseShieldBtn.disabled = !shieldState.canUse;
+            rpgUseShieldBtn.classList.toggle('opacity-60', !shieldState.canUse);
+            rpgUseShieldBtn.classList.toggle('cursor-not-allowed', !shieldState.canUse);
+        }
+    }
+
+    function grantWeeklyArcRewardIfEligible(arcInput = null, stateInput = null, { notify = true } = {}) {
+        const arc = arcInput || getCurrentWeekRpgProgress();
+        const state = stateInput || getRpgProgressState();
+        if (!arc || !state) return false;
+        if (!state.weeklyArcRewards || typeof state.weeklyArcRewards !== 'object') state.weeklyArcRewards = {};
+        if (!Number.isFinite(state.weeklyArcXp)) state.weeklyArcXp = 0;
+        if (!Number.isFinite(state.streakShields)) state.streakShields = 0;
+        if (!state.streakShieldUses || typeof state.streakShieldUses !== 'object') state.streakShieldUses = {};
+        if (arc.completedCount < arc.steps.length) return false;
+        if (state.weeklyArcRewards[arc.weekKey]) return false;
+
+        state.weeklyArcRewards[arc.weekKey] = {
+            xp: WEEKLY_ARC_REWARD_XP,
+            awardedAt: new Date().toISOString()
+        };
+        state.weeklyArcXp += WEEKLY_ARC_REWARD_XP;
+        state.streakShields = Math.min(STREAK_SHIELD_MAX, state.streakShields + 1);
+        if (notify) {
+            showToast(`Weekly arc completed â€¢ XP gained: +${WEEKLY_ARC_REWARD_XP}`);
+            showToast('Streak shield earned (+1)');
+        }
+        return true;
+    }
+
+    function evaluateWeeklyArc({ notify = true } = {}) {
+        if (!isRpgEnabled()) return;
+        const arc = getCurrentWeekRpgProgress();
+        const state = getRpgProgressState();
+        const changed = grantWeeklyArcRewardIfEligible(arc, state, { notify });
+        if (changed) {
+            saveRpgProgressState(state);
+        }
+        renderWeeklyArcCard(arc, state, computeAchievementStats());
+        if (changed) {
+            updateRpgProgress();
+        }
+    }
+
+    function applyStreakShieldForToday() {
+        if (!isRpgEnabled()) return;
+        const state = getRpgProgressState();
+        const stats = computeAchievementStats();
+        const shieldState = getStreakShieldState(stats, state);
+        if (!shieldState.canUse) {
+            showToast(shieldState.reason);
+            return;
+        }
+        if (!state.streakShieldUses || typeof state.streakShieldUses !== 'object') {
+            state.streakShieldUses = {};
+        }
+        state.streakShields = Math.max(0, (Number(state.streakShields) || 0) - 1);
+        state.streakShieldUses[shieldState.todayKey] = new Date().toISOString();
+        saveRpgProgressState(state);
+        showToast('Streak shield applied for today.');
+        evaluateAchievements({ notify: false });
+        updateRpgProgress();
+    }
+
+    function getDailyFocusQuest(statsInput = null) {
+        if (!isRpgEnabled()) return null;
+        const stats = statsInput || computeDailyQuestStats();
+        const dailyState = ensureDailyQuestRotation();
+        const dayKey = dailyState.activeDayKey || getCurrentLocalDayKey();
+        const activeQuests = getActiveDailyQuests();
+        const completedToday = dailyState.completedByDay?.[dayKey] || {};
+
+        const pending = activeQuests
+            .filter((q) => !completedToday[q.id])
+            .map((q) => {
+                const current = Math.max(0, Number(q.getCurrent(stats)) || 0);
+                const target = Math.max(1, Number(q.target) || 1);
+                const remaining = Math.max(0, target - current);
+                const pct = Math.max(0, Math.min(100, (Math.min(current, target) / target) * 100));
+                return { ...q, current, target, remaining, pct };
+            });
+
+        if (!pending.length) {
+            return {
+                dayKey,
+                done: true,
+                completedCount: activeQuests.length,
+                activeCount: activeQuests.length
+            };
+        }
+
+        pending.sort((a, b) => {
+            if (b.pct !== a.pct) return b.pct - a.pct;
+            if (a.remaining !== b.remaining) return a.remaining - b.remaining;
+            return (Number(b.rewardXp) || 0) - (Number(a.rewardXp) || 0);
+        });
+
+        return {
+            dayKey,
+            done: false,
+            completedCount: activeQuests.length - pending.length,
+            activeCount: activeQuests.length,
+            quest: pending[0]
+        };
+    }
+
     function updateRpgProgress() {
         if (!rpgLevelSummary || !rpgLevelProgressBar || !rpgLevelProgressText || !rpgLevelNextText) return;
         if (!isRpgEnabled()) return;
         const stats = computeAchievementStats();
-        const xpTotals = computeTotalXp(calls, stats.currentStreak);
+        const progressState = getRpgProgressState();
+        const arc = getCurrentWeekRpgProgress();
+        const arcChanged = grantWeeklyArcRewardIfEligible(arc, progressState, { notify: false });
+        if (arcChanged) {
+            saveRpgProgressState(progressState);
+        }
+        const callXp = computeCallXpTotal(calls, stats.currentStreak);
+        const xpTotals = {
+            callXp,
+            achievementXp: Math.max(0, Number(progressState.achievementXp) || 0),
+            dailyQuestXp: Math.max(0, Number(progressState.dailyQuestXp) || 0),
+            weeklyArcXp: Math.max(0, Number(progressState.weeklyArcXp) || 0),
+            totalXp: 0
+        };
+        xpTotals.totalXp = xpTotals.callXp + xpTotals.achievementXp + xpTotals.dailyQuestXp + xpTotals.weeklyArcXp;
+        const streakMult = getStreakRewardMultiplier(stats.currentStreak);
         const level = getLevelState(xpTotals.totalXp);
-        rpgLevelSummary.textContent = `Level ${level.currentLevel} - ${level.totalXp.toLocaleString()} XP total`;
+        rpgLevelSummary.textContent = `Level ${level.currentLevel} - ${level.totalXp.toLocaleString(DISPLAY_LOCALE)} XP total`;
         rpgLevelProgressBar.style.width = `${level.progressPct}%`;
-        rpgLevelProgressText.textContent = `${level.currentIntoLevel.toLocaleString()} / ${level.xpToNext.toLocaleString()} XP`;
-        rpgLevelNextText.textContent = `${level.remaining.toLocaleString()} XP to level ${level.nextLevel}`;
+        if (level.isMaxLevel) {
+            rpgLevelProgressText.textContent = 'Max level reached';
+            rpgLevelNextText.textContent = `Level cap: ${level.maxLevel}`;
+        } else {
+            rpgLevelProgressText.textContent = `${level.currentIntoLevel.toLocaleString(DISPLAY_LOCALE)} / ${level.xpToNext.toLocaleString(DISPLAY_LOCALE)} XP`;
+            rpgLevelNextText.textContent = `${level.remaining.toLocaleString(DISPLAY_LOCALE)} XP to level ${level.nextLevel}`;
+        }
+
+        if (rpgCallXpDisplay) {
+            rpgCallXpDisplay.textContent = xpTotals.callXp.toLocaleString(DISPLAY_LOCALE);
+        }
+        if (rpgAchievementXpDisplay) {
+            rpgAchievementXpDisplay.textContent = xpTotals.achievementXp.toLocaleString(DISPLAY_LOCALE);
+        }
+        if (rpgDailyQuestXpDisplay) {
+            rpgDailyQuestXpDisplay.textContent = xpTotals.dailyQuestXp.toLocaleString(DISPLAY_LOCALE);
+        }
+        if (rpgWeeklyArcXpDisplay) {
+            rpgWeeklyArcXpDisplay.textContent = xpTotals.weeklyArcXp.toLocaleString(DISPLAY_LOCALE);
+        }
+        if (rpgStreakMultiplierDisplay) {
+            const bonusPct = Math.round(Math.max(0, (streakMult - 1) * 100));
+            rpgStreakMultiplierDisplay.textContent = `x${streakMult.toFixed(2)} (+${bonusPct}%)`;
+        }
+        if (rpgStreakShieldsDisplay) {
+            rpgStreakShieldsDisplay.textContent = `${Math.max(0, Number(progressState.streakShields) || 0)}`;
+        }
+
+        const focus = getDailyFocusQuest(computeDailyQuestStats());
+        if (focus && rpgDailyFocusMeta && rpgDailyFocusDesc && rpgDailyFocusBar) {
+            if (focus.done) {
+                rpgDailyFocusMeta.textContent = `${focus.completedCount}/${focus.activeCount} completed`;
+                rpgDailyFocusDesc.textContent = 'All daily quests completed. Great consistency today.';
+                rpgDailyFocusBar.style.width = '100%';
+            } else if (focus.quest) {
+                const quest = focus.quest;
+                const formattedCurrent = typeof quest.format === 'function' ? quest.format(quest.current) : `${Math.round(quest.current)}`;
+                const formattedTarget = typeof quest.format === 'function' ? quest.format(quest.target) : `${Math.round(quest.target)}`;
+                rpgDailyFocusMeta.textContent = `${quest.label}: ${formattedCurrent} / ${formattedTarget}`;
+                rpgDailyFocusDesc.textContent = `${quest.name}: ${quest.description}`;
+                rpgDailyFocusBar.style.width = `${quest.pct}%`;
+            }
+        }
+        renderWeeklyArcCard(arc, progressState, stats);
     }
 
     // Achievements (passive)
@@ -3093,11 +4123,21 @@ if (storedDailyGoal) {
         { id: 'sixty_work_days', name: 'Ritual Master', icon: 'fa-crown', tier: 'Gold', description: 'Work on 60 unique days.', check: (s) => s.uniqueDaysWorked >= 60 },
         { id: 'goal_mastery_7', name: 'Goal Chaser', icon: 'fa-bullseye', tier: 'Silver', description: 'Hit your daily goal on 7 different days.', check: (s) => s.goalHitDays >= 7 },
         { id: 'goal_mastery_30', name: 'Goal Master', icon: 'fa-trophy', tier: 'Gold', description: 'Hit your daily goal on 30 different days.', check: (s) => s.goalHitDays >= 30 },
+        { id: 'session_first', name: 'First Shift', icon: 'fa-business-time', tier: 'Bronze', description: 'Complete your first session in Session Tracker.', check: (s) => s.sessionsCompleted >= 1 },
+        { id: 'session_five', name: 'Shift Builder', icon: 'fa-calendar-check', tier: 'Silver', description: 'Complete 5 tracked sessions.', check: (s) => s.sessionsCompleted >= 5 },
+        { id: 'session_focus', name: 'Flow Lock', icon: 'fa-crosshairs', tier: 'Silver', description: 'Complete a focused session (30+ min available with <=5 min idle).', check: (s) => s.focusedSessions >= 1 },
+        { id: 'session_util_high', name: 'High Utilization', icon: 'fa-gauge-high', tier: 'Gold', description: 'Complete 3 sessions with 70%+ utilization.', check: (s) => s.highUtilSessions >= 3 },
+        { id: 'session_long_4h', name: 'Full Block', icon: 'fa-hourglass-end', tier: 'Gold', description: 'Complete one 4+ hour tracked session.', check: (s) => s.longSessions4h >= 1 },
+        { id: 'session_pause_discipline', name: 'Break Discipline', icon: 'fa-pause-circle', tier: 'Silver', description: 'Complete 5 sessions where you used pause/resume.', check: (s) => s.pauseAwareSessions >= 5 },
+        { id: 'session_days_20', name: 'Shift Habit', icon: 'fa-calendar-days', tier: 'Gold', description: 'Track sessions on 20 different days.', check: (s) => s.sessionDaysWorked >= 20 },
         { id: 'level_10', name: 'Rookie Adventurer', icon: 'fa-hat-wizard', tier: 'Bronze', rpgOnly: true, description: 'Reach level 10 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 10 },
         { id: 'level_20', name: 'Seasoned Grinder', icon: 'fa-shield-halved', tier: 'Silver', rpgOnly: true, description: 'Reach level 20 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 20 },
         { id: 'level_30', name: 'Elite Specialist', icon: 'fa-dragon', tier: 'Gold', rpgOnly: true, description: 'Reach level 30 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 30 },
         { id: 'level_40', name: 'Legend in Progress', icon: 'fa-crown', tier: 'Gold', rpgOnly: true, description: 'Reach level 40 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 40 },
         { id: 'level_50', name: 'Max Momentum', icon: 'fa-star', tier: 'Gold', rpgOnly: true, description: 'Reach level 50 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 50 },
+        { id: 'level_60', name: 'Mythic Routine', icon: 'fa-hat-wizard', tier: 'Gold', rpgOnly: true, description: 'Reach level 60 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 60 },
+        { id: 'level_75', name: 'Grandmaster Grind', icon: 'fa-dragon', tier: 'Gold', rpgOnly: true, description: 'Reach level 75 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 75 },
+        { id: 'level_100', name: 'Legendary Cap', icon: 'fa-crown', tier: 'Gold', rpgOnly: true, description: 'Reach level 100 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 100 },
         { id: 'long_call_30', name: 'Steady Session', icon: 'fa-stopwatch', tier: 'Bronze', description: 'Complete a 30+ minute call.', check: (s) => s.longestCallMinutes >= 30 },
         { id: 'long_call_120', name: 'Iron Focus', icon: 'fa-medal', tier: 'Gold', description: 'Complete a 2+ hour call.', check: (s) => s.longestCallMinutes >= 120 }
     ];
@@ -3315,6 +4355,12 @@ if (storedDailyGoal) {
         });
 
         const sortedDays = Array.from(uniqueDayStamps).sort((a, b) => a - b);
+        const streakDayStamps = Array.from(new Set([
+            ...sortedDays,
+            ...getShieldProtectedDayStamps()
+        ])).sort((a, b) => a - b);
+        const sessionStats = getSessionRpgStatsState();
+        const sessionDaysWorked = Object.keys(sessionStats.daysWorked || {}).length;
         const maxDayEarnings = dayEarnings.size ? Math.max(...Array.from(dayEarnings.values())) : 0;
         const maxWeekEarnings = weekEarnings.size ? Math.max(...Array.from(weekEarnings.values())) : 0;
         const todayEarnings = dayEarnings.get(todayStamp) || 0;
@@ -3353,8 +4399,14 @@ if (storedDailyGoal) {
             goalHitDays,
             hasGoalConfigured,
             uniqueDaysWorked: uniqueDayStamps.size,
-            longestStreak: computeLongestStreak(sortedDays),
-            currentStreak: computeCurrentStreak(sortedDays),
+            sessionsCompleted: Math.max(0, Number(sessionStats.sessionsCompleted) || 0),
+            sessionDaysWorked,
+            highUtilSessions: Math.max(0, Number(sessionStats.highUtilSessions) || 0),
+            focusedSessions: Math.max(0, Number(sessionStats.focusedSessions) || 0),
+            longSessions4h: Math.max(0, Number(sessionStats.longSessions4h) || 0),
+            pauseAwareSessions: Math.max(0, Number(sessionStats.pauseAwareSessions) || 0),
+            longestStreak: computeLongestStreak(streakDayStamps),
+            currentStreak: computeCurrentStreak(streakDayStamps),
             longestCallMinutes
         };
     }
@@ -3462,7 +4514,7 @@ if (storedDailyGoal) {
             label: 'Progress',
             current: 0,
             target: 1,
-            formatter: (v) => `${Math.round(v).toLocaleString()}`
+            formatter: (v) => `${Math.round(v).toLocaleString(DISPLAY_LOCALE)}`
         };
 
         switch (achievement.id) {
@@ -3559,6 +4611,41 @@ if (storedDailyGoal) {
                 meta.target = 30;
                 meta.label = stats.hasGoalConfigured ? 'Days with goal reached' : 'Set a daily goal to track';
                 break;
+            case 'session_first':
+                meta.current = stats.sessionsCompleted;
+                meta.target = 1;
+                meta.label = 'Completed sessions';
+                break;
+            case 'session_five':
+                meta.current = stats.sessionsCompleted;
+                meta.target = 5;
+                meta.label = 'Completed sessions';
+                break;
+            case 'session_focus':
+                meta.current = stats.focusedSessions;
+                meta.target = 1;
+                meta.label = 'Focused sessions';
+                break;
+            case 'session_util_high':
+                meta.current = stats.highUtilSessions;
+                meta.target = 3;
+                meta.label = '70%+ utilization sessions';
+                break;
+            case 'session_long_4h':
+                meta.current = stats.longSessions4h;
+                meta.target = 1;
+                meta.label = '4+ hour sessions';
+                break;
+            case 'session_pause_discipline':
+                meta.current = stats.pauseAwareSessions;
+                meta.target = 5;
+                meta.label = 'Pause/resume sessions';
+                break;
+            case 'session_days_20':
+                meta.current = stats.sessionDaysWorked;
+                meta.target = 20;
+                meta.label = 'Session days tracked';
+                break;
             case 'level_10':
                 meta.current = getCurrentRpgLevel(stats.currentStreak);
                 meta.target = 10;
@@ -3586,6 +4673,24 @@ if (storedDailyGoal) {
             case 'level_50':
                 meta.current = getCurrentRpgLevel(stats.currentStreak);
                 meta.target = 50;
+                meta.label = 'Current level';
+                meta.formatter = (v) => `Lv ${Math.round(v)}`;
+                break;
+            case 'level_60':
+                meta.current = getCurrentRpgLevel(stats.currentStreak);
+                meta.target = 60;
+                meta.label = 'Current level';
+                meta.formatter = (v) => `Lv ${Math.round(v)}`;
+                break;
+            case 'level_75':
+                meta.current = getCurrentRpgLevel(stats.currentStreak);
+                meta.target = 75;
+                meta.label = 'Current level';
+                meta.formatter = (v) => `Lv ${Math.round(v)}`;
+                break;
+            case 'level_100':
+                meta.current = getCurrentRpgLevel(stats.currentStreak);
+                meta.target = 100;
                 meta.label = 'Current level';
                 meta.formatter = (v) => `Lv ${Math.round(v)}`;
                 break;
@@ -3618,7 +4723,7 @@ if (storedDailyGoal) {
         if (!iso) return '';
         const d = new Date(iso);
         if (!Number.isFinite(d.getTime())) return '';
-        return d.toLocaleDateString(undefined, {
+        return d.toLocaleDateString(DISPLAY_LOCALE, {
             weekday: 'short',
             year: 'numeric',
             month: 'short',
@@ -3634,12 +4739,14 @@ if (storedDailyGoal) {
         const streakMult = getStreakRewardMultiplier(stats.currentStreak);
         const rpgEnabled = isRpgEnabled();
         const visibleAchievements = getVisibleAchievements();
+        if (rpgWeeklyArcCard) rpgWeeklyArcCard.style.display = rpgEnabled ? '' : 'none';
+        if (rpgStreakShieldRow) rpgStreakShieldRow.style.display = rpgEnabled ? '' : 'none';
         renderDailyQuestsSection(computeDailyQuestStats());
         const unlockedCount = visibleAchievements.filter((a) => !!state.unlocked[a.id]).length;
         achievementsSummary.innerHTML = rpgEnabled
             ? `
             <span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s) | Call XP multiplier: x${streakMult.toFixed(2)}</span>
-            <span class="hint-tooltip ml-1" data-tooltip="Streak multiplier starts at 3 days (+5%), then +2% per extra day, capped at +35%. It boosts call XP. Achievement rewards scale by level only.">?</span>
+            <span class="hint-tooltip hint-tooltip-right ml-1" data-tooltip="Streak multiplier starts at 3 days (+5%), then +2% per extra day, capped at +35%. It boosts call XP. Achievement rewards scale by level only.">?</span>
         `
             : `<span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s)</span>`;
 
@@ -3671,7 +4778,7 @@ if (storedDailyGoal) {
                     </div>
                     ${rpgEnabled
                         ? (unlocked
-                            ? `<div class="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-semibold">XP earned: +${earnedXp.toLocaleString()} XP</div>
+                            ? `<div class="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-semibold">XP earned: +${earnedXp.toLocaleString(DISPLAY_LOCALE)} XP</div>
                                <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Earned on ${unlockedAt}</div>`
                             : `<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">XP reward hidden until unlocked</div>`)
                         : (unlocked
@@ -3789,11 +4896,12 @@ if (storedDailyGoal) {
             saveRpgProgressState(rpgState);
             updateRpgProgress();
             if (notify) {
-                rewards.forEach((r) => showToast(`Daily quest completed: ${r.name} • XP gained: +${r.xp}`));
+                rewards.forEach((r) => showToast(`Daily quest completed: ${r.name} â€¢ XP gained: +${r.xp}`));
             }
         }
 
         renderDailyQuestsSection(stats);
+        evaluateWeeklyArc({ notify });
     }
 
     function renderAchievementDetailModal(achievementId) {
@@ -3879,7 +4987,7 @@ if (storedDailyGoal) {
             }
             if (notify && isRpgEnabled()) {
                 rewardEvents.forEach((r) => {
-                    showToast(`Achievement unlocked: ${r.name} • XP gained: +${r.xp}`);
+                    showToast(`Achievement unlocked: ${r.name} â€¢ XP gained: +${r.xp}`);
                 });
             }
         }
@@ -4641,9 +5749,12 @@ function resetLiveCallUiToIdle() {
   if (liveCallNotesInput) liveCallNotesInput.value = '';
   recoveredActiveCallState = null;
   hideActiveCallRecoveryBanner();
+  lastActiveCallReminderAt = 0;
+  if (focusWorkstripReminder) focusWorkstripReminder.style.display = 'none';
   updateFloatingCallControls(featureFlags);
   scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
+  queueWorkstripSync();
 }
 
 function showActiveCallRecoveryBanner(message) {
@@ -4780,6 +5891,10 @@ function restoreLiveCallUi() {
     updateFloatingActiveCard(featureFlags, true);
     saveActiveCallState();
     scheduleDesktopOverlayRefresh();
+    if (sessionTrackerState?.active) {
+      renderSessionTracker();
+    }
+    queueWorkstripSync();
   }, 1000);
 
   saveActiveCallState(true);
@@ -4787,10 +5902,13 @@ function restoreLiveCallUi() {
   updateFloatingCallControls(featureFlags);
   scheduleDesktopOverlayRefresh();
   animateFloatingPrimaryTransition();
+  queueWorkstripSync();
   void syncAndroidWidgetActiveSession();
 }
 
 function beginLiveCallWithRate(rateName, rateAmount) {
+  hidePostCallReview(true);
+  markUserActivity();
   const result = LiveCallSession.start(rateName, rateAmount);
   if (!result.ok) {
     showAlertModal('Select Rate', 'Please select a valid rate before starting a call.');
@@ -4801,7 +5919,11 @@ function beginLiveCallWithRate(rateName, rateAmount) {
   hideActiveCallRecoveryBanner();
   if (liveCallNotesInput) liveCallNotesInput.value = '';
   restoreLiveCallUi();
+  if (sessionTrackerState?.active) {
+    renderSessionTracker();
+  }
   markOnboardingStepComplete('call');
+  queueWorkstripSync();
 }
 
 function summarizeRecoveredActiveCall(state = recoveredActiveCallState) {
@@ -4826,7 +5948,9 @@ function summarizeRecoveredActiveCall(state = recoveredActiveCallState) {
 
   calls = readCallsFromStorage();
   calls.push(callData);
+  hidePostCallReview(true);
   saveCalls();
+  showPostCallReview(callData, elapsedMs, earned);
 
   clearLiveCallRuntimeState();
   clearActiveCallState();
@@ -4840,6 +5964,7 @@ function discardRecoveredActiveCall() {
   clearLiveCallRuntimeState();
   clearActiveCallState();
   clearActiveCallClosedExplicitly();
+  hidePostCallReview(true);
   resetLiveCallUiToIdle();
   void syncAndroidWidgetActiveSession();
   showToast('Recovered live call discarded.');
@@ -4884,14 +6009,14 @@ function normalizeCall(call) {
   const start = call.startTime ? new Date(call.startTime) : new Date();
 
   // Si duration viene de usuario puede ser segundos (menor a 24h) o milisegundos.
-  // Tratamos cualquier número finito; asumimos que valores menores a un día están en segundos,
-  // los demás ya están en ms. Esta heurística evita resultados incorrectos cuando
-  // alguien guarda una sesión muy larga (>24h).
+  // Tratamos cualquier nÃºmero finito; asumimos que valores menores a un dÃ­a estÃ¡n en segundos,
+  // los demÃ¡s ya estÃ¡n en ms. Esta heurÃ­stica evita resultados incorrectos cuando
+  // alguien guarda una sesiÃ³n muy larga (>24h).
   const rawDuration = Number(call.duration ?? 0);
   let durationMs = 0;
   if (Number.isFinite(rawDuration) && rawDuration > 0) {
     const oneDaySeconds = 24 * 60 * 60;
-    // si es menor que un día en segundos, lo convertimos a ms
+    // si es menor que un dÃ­a en segundos, lo convertimos a ms
     if (rawDuration < oneDaySeconds) {
       durationMs = Math.round(rawDuration * 1000);
     } else {
@@ -4974,6 +6099,17 @@ function migrateLegacyRpgCallEligibility() {
         return Number.isFinite(value) ? value : 0;
     }
 
+    function getCallEndMs(call) {
+        const endValue = Date.parse(call?.endTime || '');
+        if (Number.isFinite(endValue)) return endValue;
+        const startValue = getCallStartMs(call);
+        const durationValue = Number(call?.duration);
+        if (Number.isFinite(startValue) && startValue > 0 && Number.isFinite(durationValue) && durationValue > 0) {
+            return startValue + durationValue;
+        }
+        return 0;
+    }
+
     function markCallsDatasetDirty() {
         callsDatasetVersion += 1;
         filteredCallsCache.key = '';
@@ -5006,7 +6142,7 @@ function migrateLegacyRpgCallEligibility() {
 
     function getFilterCacheKey() {
         const dateKey = callLogFilter === 'date' ? (statsDatePicker?.value || getTodayDateString()) : '';
-        return `${callsDatasetVersion}|${callLogFilter}|${dateKey}`;
+        return `${callsDatasetVersion}|${callLogFilter}|${dateKey}|q:${callLogSearchQuery}|r:${callLogRateFilter}`;
     }
 
     function getFilteredCallsCached() {
@@ -5044,25 +6180,138 @@ function migrateLegacyRpgCallEligibility() {
             endMs = end.getTime();
         }
 
-        const rows = (startMs === null)
+        let rows = (startMs === null)
             ? calls.slice()
             : calls.filter((call) => {
                 const t = getCallStartMs(call);
                 return t >= startMs && t < endMs;
             });
 
+        if (callLogRateFilter) {
+            rows = rows.filter((call) => String(call?.rateName || '') === callLogRateFilter);
+        }
+
+        if (callLogSearchQuery) {
+            const q = callLogSearchQuery.toLowerCase();
+            rows = rows.filter((call) => {
+                const notes = String(call?.notes || '').toLowerCase();
+                const rateName = String(call?.rateName || '').toLowerCase();
+                const start = new Date(call?.startTime || '').toLocaleString(DISPLAY_LOCALE).toLowerCase();
+                const end = new Date(call?.endTime || '').toLocaleString(DISPLAY_LOCALE).toLowerCase();
+                const earned = formatEarnings(Number(call?.earned) || 0).toLowerCase();
+                return notes.includes(q)
+                    || rateName.includes(q)
+                    || start.includes(q)
+                    || end.includes(q)
+                    || earned.includes(q);
+            });
+        }
+
         filteredCallsCache = { key: cacheKey, rows };
         return rows;
+    }
+
+    function getCallNoteCellHtml(rawNote) {
+        const normalized = String(rawNote || '').trim();
+        if (!normalized) return '<span class="text-gray-400">-</span>';
+        const safe = escapeHTML(normalized);
+        return `<span class="call-note-text" title="${safe}">${safe}</span>`;
+    }
+
+    function populateCallLogRateFilterOptions() {
+        if (!callLogRateFilterSelect) return;
+        const previousValue = String(callLogRateFilterSelect.value || callLogRateFilter || '');
+        const uniqueRates = Array.from(new Set((Array.isArray(rates) ? rates : []).map((rate) => String(rate?.name || '').trim()).filter(Boolean)));
+        callLogRateFilterSelect.innerHTML = '<option value="">All rates</option>' + uniqueRates.map((name) => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`).join('');
+
+        if (previousValue && uniqueRates.includes(previousValue)) {
+            callLogRateFilterSelect.value = previousValue;
+            callLogRateFilter = previousValue;
+        } else {
+            callLogRateFilterSelect.value = '';
+            callLogRateFilter = '';
+        }
+    }
+
+    function updateCallLogResultsSummary(totalCount) {
+        if (!callLogResultsSummary) return;
+        const count = Math.max(0, Number(totalCount) || 0);
+        const filterLabel = getCurrentCallLogViewLabel();
+        const extras = [];
+        if (callLogRateFilter) extras.push(`rate: ${callLogRateFilter}`);
+        if (callLogSearchQuery) extras.push(`search: "${callLogSearchQuery}"`);
+        const suffix = extras.length > 0 ? ` â€¢ ${extras.join(' â€¢ ')}` : '';
+        callLogResultsSummary.textContent = `Showing ${count} call${count === 1 ? '' : 's'} â€¢ ${filterLabel}${suffix}`;
+    }
+
+    function setCallLogSearchQuery(nextValue) {
+        callLogSearchQuery = String(nextValue || '').trim();
+        displayCalls();
+    }
+
+    function setCallLogRateFilter(nextValue) {
+        callLogRateFilter = String(nextValue || '').trim();
+        displayCalls();
+    }
+
+    function resetCallLogView() {
+        callLogFilter = 'today';
+        callLogSort = { key: 'startTime', direction: 'desc' };
+        callLogSearchQuery = '';
+        callLogRateFilter = '';
+        if (callLogSearchInput) callLogSearchInput.value = '';
+        if (callLogRateFilterSelect) callLogRateFilterSelect.value = '';
+        updateCallLogSortUi();
+        updateCallLogFilterButtons();
+        displayCalls();
+    }
+
+    function closeCallLogActionsMenu(force = false) {
+        if (!openCallLogActionsMenu) return;
+        openCallLogActionsMenu.classList.remove('is-open');
+        openCallLogActionsMenu.setAttribute('aria-hidden', 'true');
+        const ownerWrap = openCallLogActionsMenu.closest('.call-log-actions-wrap');
+        const ownerBtn = ownerWrap?.querySelector('.call-log-actions-menu-btn');
+        if (ownerBtn) ownerBtn.setAttribute('aria-expanded', 'false');
+        if (force || !ownerWrap) {
+            openCallLogActionsMenu = null;
+            return;
+        }
+        openCallLogActionsMenu = null;
+    }
+
+    function toggleCallLogActionsMenu(menuBtn) {
+        const wrap = menuBtn?.closest('.call-log-actions-wrap');
+        const menuEl = wrap?.querySelector('.call-log-actions-menu');
+        if (!menuEl) return;
+
+        const willOpen = !menuEl.classList.contains('is-open');
+        if (openCallLogActionsMenu && openCallLogActionsMenu !== menuEl) {
+            closeCallLogActionsMenu(true);
+        }
+
+        if (!willOpen) {
+            menuEl.classList.remove('is-open');
+            menuEl.setAttribute('aria-hidden', 'true');
+            menuBtn.setAttribute('aria-expanded', 'false');
+            openCallLogActionsMenu = null;
+            return;
+        }
+
+        menuEl.classList.add('is-open');
+        menuEl.setAttribute('aria-hidden', 'false');
+        menuBtn.setAttribute('aria-expanded', 'true');
+        openCallLogActionsMenu = menuEl;
     }
 
     function buildCallRow(call, userTz, rateNameSet) {
         const startDate = new Date(call.startTime);
         const endDate = new Date(call.endTime);
-        const startDisplay = startDate.toLocaleString(undefined, { timeZone: userTz });
-        const endDisplay = endDate.toLocaleString(undefined, { timeZone: userTz });
+        const startDisplay = startDate.toLocaleString(DISPLAY_LOCALE, { timeZone: userTz });
+        const endDisplay = endDate.toLocaleString(DISPLAY_LOCALE, { timeZone: userTz });
         const durationStr = formatTime(call.duration);
         const earningsStr = formatEarnings(call.earned);
-        const safeNotes = escapeHTML(String(call.notes || '').trim());
+        const noteCellHtml = getCallNoteCellHtml(call.notes);
 
         let safeRateName = escapeHTML(call.rateName || '');
         if (!safeRateName) {
@@ -5078,15 +6327,22 @@ function migrateLegacyRpgCallEligibility() {
             <td>${escapeHTML(endDisplay)}</td>
             <td>${durationStr}</td>
             <td>${safeRateName}</td>
-            <td class="notes-column">${safeNotes || '<span class="text-gray-400">-</span>'}</td>
+            <td class="notes-column">${noteCellHtml}</td>
             <td>${earningsStr}</td>
             <td>
-                <button class="edit-call-btn" data-call-id="${safeId}">
-<i class="fas fa-edit"></i> Edit
-</button>
-                <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="call-log-actions-wrap">
+                    <button type="button" class="edit-call-btn" data-call-id="${safeId}">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button type="button" class="call-log-actions-menu-btn" aria-label="More call actions" aria-haspopup="menu" aria-expanded="false">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <div class="call-log-actions-menu" role="menu" aria-hidden="true">
+                        <button type="button" class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}" role="menuitem">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
             </td>
         `;
         return row;
@@ -5095,12 +6351,13 @@ function migrateLegacyRpgCallEligibility() {
     function buildCallMobileCard(call, userTz, rateNameSet) {
         const startDate = new Date(call.startTime);
         const endDate = new Date(call.endTime);
-        const callDate = startDate.toLocaleDateString(undefined, { timeZone: userTz, year: 'numeric', month: 'short', day: 'numeric' });
-        const startTime = startDate.toLocaleTimeString(undefined, { timeZone: userTz, hour: '2-digit', minute: '2-digit' });
-        const endTime = endDate.toLocaleTimeString(undefined, { timeZone: userTz, hour: '2-digit', minute: '2-digit' });
+        const callDate = startDate.toLocaleDateString(DISPLAY_LOCALE, { timeZone: userTz, year: 'numeric', month: 'short', day: 'numeric' });
+        const startTime = startDate.toLocaleTimeString(DISPLAY_LOCALE, { timeZone: userTz, hour: '2-digit', minute: '2-digit' });
+        const endTime = endDate.toLocaleTimeString(DISPLAY_LOCALE, { timeZone: userTz, hour: '2-digit', minute: '2-digit' });
         const durationStr = formatTime(call.duration);
         const earningsStr = formatEarnings(call.earned);
-        const safeNotes = escapeHTML(String(call.notes || '').trim());
+        const noteText = String(call.notes || '').trim();
+        const safeNotes = escapeHTML(noteText);
 
         let safeRateName = escapeHTML(call.rateName || '');
         if (!safeRateName) {
@@ -5121,19 +6378,26 @@ function migrateLegacyRpgCallEligibility() {
                 <div class="call-log-mobile-earnings-block">
                     <div class="call-log-mobile-earnings">${earningsStr}</div>
                     <div class="call-log-mobile-actions">
-                        <button class="edit-call-btn" data-call-id="${safeId}" aria-label="Edit call">
+                        <button type="button" class="edit-call-btn" data-call-id="${safeId}" aria-label="Edit call">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}" aria-label="Delete call">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="call-log-actions-wrap call-log-actions-wrap-mobile">
+                            <button type="button" class="call-log-actions-menu-btn" aria-label="More call actions" aria-haspopup="menu" aria-expanded="false">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <div class="call-log-actions-menu call-log-actions-menu-mobile" role="menu" aria-hidden="true">
+                                <button type="button" class="delete-call-btn text-red-500 hover:text-red-700" data-call-id="${safeId}" role="menuitem">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="call-log-mobile-meta">
                 <span class="call-log-mobile-chip"><strong>Duration:</strong> ${durationStr}</span>
                 <span class="call-log-mobile-chip"><strong>Rate:</strong> ${safeRateName}</span>
-                ${safeNotes ? `<span class="call-log-mobile-chip"><strong>Notes:</strong> ${safeNotes}</span>` : ''}
+                ${safeNotes ? `<span class="call-log-mobile-chip" title="${safeNotes}"><strong>Notes:</strong> <span class="call-note-text">${safeNotes}</span></span>` : ''}
             </div>
         `;
         return card;
@@ -5156,9 +6420,11 @@ function saveCalls() {
   queueStorageWrite('calls', JSON.stringify(calls));
   displayCalls();
   updateStatistics();
+  renderSessionTracker();
   evaluateAchievements({ notify: true });
   if (calls.length > 0) markOnboardingStepComplete('call');
   updateOnboardingCues();
+  queueWorkstripSync();
 }
 
     function saveDailyGoal() {
@@ -5196,6 +6462,7 @@ function saveCalls() {
         lastSelectedRate = rateSelect.value;
         queueStorageWrite('lastSelectedRate', lastSelectedRate);
         syncDailyGoalInputs();
+        queueWorkstripSync();
         updateStatistics();
         void syncAndroidWidgetDefaultRate();
     }
@@ -5222,17 +6489,776 @@ function saveCalls() {
 
     const scheduleStorageInfoRefresh = createRafScheduler(() => updateStorageInfo());
 
+    function formatMinutesLabel(totalMinutes) {
+        if (!Number.isFinite(totalMinutes) || totalMinutes < 0) return '--';
+        if (totalMinutes < 1) return '<1 min';
+        if (totalMinutes < 60) return `${Math.round(totalMinutes)} min`;
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = Math.round(totalMinutes % 60);
+        return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
+
+    function formatSignedCurrencyDelta(value) {
+        if (!Number.isFinite(value) || Math.abs(value) < 0.005) return '$0.00';
+        const sign = value > 0 ? '+' : '-';
+        return `${sign}$${Math.abs(value).toFixed(2)}`;
+    }
+
+    function formatSignedDurationDelta(milliseconds) {
+        if (!Number.isFinite(milliseconds) || Math.abs(milliseconds) < 1000) return '00:00:00';
+        const sign = milliseconds > 0 ? '+' : '-';
+        return `${sign}${formatTime(Math.abs(milliseconds))}`;
+    }
+
+    function applyDeltaTone(element, deltaValue) {
+        if (!element) return;
+        element.classList.remove('stat-delta-positive', 'stat-delta-negative', 'stat-delta-neutral');
+        if (!Number.isFinite(deltaValue) || Math.abs(deltaValue) < 0.0001) {
+            element.classList.add('stat-delta-neutral');
+            return;
+        }
+        element.classList.add(deltaValue > 0 ? 'stat-delta-positive' : 'stat-delta-negative');
+    }
+
+    function applyRpgBreakdownVisibility() {
+        if (!rpgXpBreakdownWrap || !rpgBreakdownToggleBtn) return;
+        rpgXpBreakdownWrap.style.display = rpgXpBreakdownExpanded ? '' : 'none';
+        rpgBreakdownToggleBtn.innerHTML = rpgXpBreakdownExpanded
+            ? '<i class="fas fa-chevron-up mr-1"></i> Hide XP breakdown'
+            : '<i class="fas fa-chevron-down mr-1"></i> Show XP breakdown';
+        rpgBreakdownToggleBtn.setAttribute('aria-expanded', rpgXpBreakdownExpanded ? 'true' : 'false');
+    }
+
+    function getDayStartMs(dateObj) {
+        const date = dateObj instanceof Date && Number.isFinite(dateObj.getTime()) ? dateObj : new Date();
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    }
+
+    function getPaymentCyclesTimelineContext(nowMs = Date.now()) {
+        const normalized = (Array.isArray(paymentCycles) ? paymentCycles : [])
+            .map((cycle, originalIndex) => {
+                const startMs = Number(Date.parse(cycle?.startDate || ''));
+                const endMs = Number(Date.parse(cycle?.endDate || ''));
+                const payMs = Number(Date.parse(cycle?.payDate || ''));
+                if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return null;
+                return {
+                    ...cycle,
+                    _startMs: startMs,
+                    _endMs: endMs,
+                    _payMs: Number.isFinite(payMs) ? payMs : 0,
+                    _originalIndex: originalIndex
+                };
+            })
+            .filter(Boolean)
+            .sort((a, b) => a._startMs - b._startMs);
+
+        const todayStartMs = getDayStartMs(new Date(nowMs));
+        let current = null;
+        let next = null;
+        let closestUpcomingPayCycle = null;
+
+        for (let i = 0; i < normalized.length; i += 1) {
+            const cycle = normalized[i];
+            if (!current && nowMs >= cycle._startMs && nowMs <= cycle._endMs) {
+                current = cycle;
+            }
+            if (!next && cycle._startMs > nowMs) {
+                next = cycle;
+            }
+            if (Number.isFinite(cycle._payMs) && cycle._payMs >= todayStartMs) {
+                if (!closestUpcomingPayCycle || cycle._payMs < closestUpcomingPayCycle._payMs) {
+                    closestUpcomingPayCycle = cycle;
+                }
+            }
+        }
+
+        if (!current && !next && normalized.length && nowMs < normalized[0]._startMs) {
+            next = normalized[0];
+        }
+
+        return { normalized, current, next, closestUpcomingPayCycle };
+    }
+
+    function setPaymentCyclesListExpanded(shouldExpand, totalCycles = null) {
+        paymentCyclesListExpanded = !!shouldExpand;
+        if (paymentCyclesAllListWrap) {
+            paymentCyclesAllListWrap.style.display = paymentCyclesListExpanded ? '' : 'none';
+        }
+        if (paymentCyclesToggleAllBtn) {
+            const count = Number.isFinite(totalCycles) ? totalCycles : (Array.isArray(paymentCycles) ? paymentCycles.length : 0);
+            const safeCount = Math.max(0, count);
+            paymentCyclesToggleAllBtn.innerHTML = paymentCyclesListExpanded
+                ? `<i class="fas fa-eye-slash mr-1"></i>Hide full list (${safeCount})`
+                : `<i class="fas fa-table mr-1"></i>View all cycles (${safeCount})`;
+            paymentCyclesToggleAllBtn.disabled = safeCount === 0;
+            paymentCyclesToggleAllBtn.classList.toggle('opacity-60', safeCount === 0);
+            paymentCyclesToggleAllBtn.classList.toggle('cursor-not-allowed', safeCount === 0);
+        }
+    }
+
+    function renderPaymentCyclesCurrentSummary(nowMs = Date.now()) {
+        const context = getPaymentCyclesTimelineContext(nowMs);
+        const hasAnyCycles = context.normalized.length > 0;
+        const nextPayCycle = context.closestUpcomingPayCycle || context.next || null;
+
+        if (paymentCyclesCurrentSummary) {
+            paymentCyclesCurrentSummary.style.display = paymentCyclesEnabled ? '' : 'none';
+        }
+
+        if (viewAllPaymentCyclesBtn) {
+            viewAllPaymentCyclesBtn.style.display = paymentCyclesEnabled && hasAnyCycles ? '' : 'none';
+        }
+
+        if (!paymentCyclesCurrentRange || !paymentCyclesCurrentPay || !paymentCyclesCurrentDays) {
+            setPaymentCyclesListExpanded(paymentCyclesListExpanded, context.normalized.length);
+            return context;
+        }
+
+        if (!paymentCyclesEnabled || !hasAnyCycles) {
+            paymentCyclesCurrentRange.textContent = 'Range: --';
+            paymentCyclesCurrentPay.textContent = 'Next Pay Date: --';
+            paymentCyclesCurrentDays.textContent = 'Countdown: --';
+            setPaymentCyclesListExpanded(false, context.normalized.length);
+            return context;
+        }
+
+        if (context.current) {
+            const daysUntilEnd = Math.max(0, Math.ceil((context.current._endMs - nowMs) / (1000 * 60 * 60 * 24)));
+            const daysUntilPay = nextPayCycle && Number.isFinite(nextPayCycle._payMs)
+                ? Math.max(0, Math.ceil((nextPayCycle._payMs - nowMs) / (1000 * 60 * 60 * 24)))
+                : null;
+            paymentCyclesCurrentRange.textContent = `Current: ${formatDate(context.current.startDate)} -> ${formatDate(context.current.endDate)}`;
+            paymentCyclesCurrentPay.textContent = nextPayCycle
+                ? `Next Pay Date: ${formatDate(nextPayCycle.payDate)}`
+                : 'Next Pay Date: --';
+            paymentCyclesCurrentDays.textContent = daysUntilPay === null
+                ? `Ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}`
+                : `Ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'} | Next pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`;
+        } else if (context.next || nextPayCycle) {
+            const upcomingCycle = context.next || nextPayCycle;
+            const daysUntilStart = Math.max(0, Math.ceil((upcomingCycle._startMs - nowMs) / (1000 * 60 * 60 * 24)));
+            const daysUntilPay = Number.isFinite(upcomingCycle._payMs)
+                ? Math.max(0, Math.ceil((upcomingCycle._payMs - nowMs) / (1000 * 60 * 60 * 24)))
+                : null;
+            paymentCyclesCurrentRange.textContent = `Next: ${formatDate(upcomingCycle.startDate)} -> ${formatDate(upcomingCycle.endDate)}`;
+            paymentCyclesCurrentPay.textContent = `Next Pay Date: ${formatDate(upcomingCycle.payDate)}`;
+            paymentCyclesCurrentDays.textContent = daysUntilPay === null
+                ? `Starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'}`
+                : `Starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'} | Pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`;
+        } else {
+            paymentCyclesCurrentRange.textContent = 'No current cycle for today.';
+            paymentCyclesCurrentPay.textContent = 'Next Pay Date: --';
+            paymentCyclesCurrentDays.textContent = 'Countdown: --';
+        }
+
+        setPaymentCyclesListExpanded(paymentCyclesListExpanded, context.normalized.length);
+        return context;
+    }
+    function updateWorkRhythmInsights(nowMs = Date.now()) {
+        if (!rhythmAvgGapDisplay || !rhythmFastestGapDisplay || !rhythmVsPreviousDayDisplay) return;
+        const selectedDate = parseDateInput(statsDatePicker?.value) || new Date(nowMs);
+        const dayStartMs = getDayStartMs(selectedDate);
+        const dayEndMs = dayStartMs + (24 * 60 * 60 * 1000);
+        const previousDayStartMs = dayStartMs - (24 * 60 * 60 * 1000);
+        const previousDayEndMs = dayStartMs;
+        const todayStartMs = getDayStartMs(new Date(nowMs));
+        const comparisonLabel = dayStartMs === todayStartMs ? 'yesterday' : 'prior day';
+
+        const dayCalls = calls
+            .filter((call) => {
+                const start = getCallStartMs(call);
+                return start >= dayStartMs && start < dayEndMs;
+            })
+            .slice()
+            .sort((a, b) => getCallStartMs(a) - getCallStartMs(b));
+
+        const gapsMs = [];
+        for (let i = 1; i < dayCalls.length; i += 1) {
+            const prevEnd = Number(Date.parse(dayCalls[i - 1]?.endTime || ''));
+            const nextStart = getCallStartMs(dayCalls[i]);
+            if (!Number.isFinite(prevEnd) || !Number.isFinite(nextStart)) continue;
+            const gap = Math.max(0, nextStart - prevEnd);
+            gapsMs.push(gap);
+        }
+
+        if (gapsMs.length > 0) {
+            const avgGapMinutes = (gapsMs.reduce((sum, value) => sum + value, 0) / gapsMs.length) / (1000 * 60);
+            const fastestGapMinutes = Math.min(...gapsMs) / (1000 * 60);
+            rhythmAvgGapDisplay.textContent = `Avg gap: ${formatMinutesLabel(avgGapMinutes)}`;
+            rhythmFastestGapDisplay.textContent = `Fastest turn: ${formatMinutesLabel(fastestGapMinutes)}`;
+        } else {
+            rhythmAvgGapDisplay.textContent = 'Avg gap: --';
+            rhythmFastestGapDisplay.textContent = dayCalls.length > 0 ? 'Fastest turn: Back-to-back ready' : 'Fastest turn: --';
+        }
+
+        const selectedDayEarnings = calls.reduce((sum, call) => {
+            const start = getCallStartMs(call);
+            if (start < dayStartMs || start >= dayEndMs) return sum;
+            return sum + (Number(call.earned) || 0);
+        }, 0);
+        const previousDayEarnings = calls.reduce((sum, call) => {
+            const start = getCallStartMs(call);
+            if (start < previousDayStartMs || start >= previousDayEndMs) return sum;
+            return sum + (Number(call.earned) || 0);
+        }, 0);
+
+        if (selectedDayEarnings === 0 && previousDayEarnings === 0) {
+            rhythmVsPreviousDayDisplay.textContent = `Vs ${comparisonLabel}: --`;
+        } else if (previousDayEarnings === 0) {
+            rhythmVsPreviousDayDisplay.textContent = `Vs ${comparisonLabel}: +${formatEarnings(selectedDayEarnings)} (first active day)`;
+        } else {
+            const diff = selectedDayEarnings - previousDayEarnings;
+            const sign = diff >= 0 ? '+' : '-';
+            rhythmVsPreviousDayDisplay.textContent = `Vs ${comparisonLabel}: ${sign}${formatEarnings(Math.abs(diff))}`;
+        }
+    }
+
+    function ensureHeatmapHoverTooltip() {
+        if (heatmapHoverTooltipEl && document.body.contains(heatmapHoverTooltipEl)) return heatmapHoverTooltipEl;
+        const tooltip = document.createElement('div');
+        tooltip.className = 'heatmap-hover-tooltip hidden';
+        tooltip.setAttribute('role', 'tooltip');
+        tooltip.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(tooltip);
+        heatmapHoverTooltipEl = tooltip;
+        return tooltip;
+    }
+
+    function isTouchLikePointer() {
+        return !!window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
+    }
+
+    function positionHeatmapHoverTooltip(anchorX, anchorY) {
+        if (!heatmapHoverTooltipEl || heatmapHoverTooltipEl.classList.contains('hidden')) return;
+        const margin = 10;
+        const offset = 14;
+        const tipRect = heatmapHoverTooltipEl.getBoundingClientRect();
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+
+        let left = anchorX - (tipRect.width / 2);
+        left = Math.max(margin, Math.min(left, viewportWidth - tipRect.width - margin));
+
+        let top = anchorY - tipRect.height - offset;
+        if (top < margin) {
+            top = Math.min(viewportHeight - tipRect.height - margin, anchorY + offset);
+        }
+        top = Math.max(margin, top);
+
+        heatmapHoverTooltipEl.style.left = `${left}px`;
+        heatmapHoverTooltipEl.style.top = `${top}px`;
+    }
+
+    function showHeatmapHoverTooltip(text, options = {}) {
+        const tooltipText = String(text || '').trim();
+        if (!tooltipText) return;
+        const {
+            target = null,
+            pointerX = null,
+            pointerY = null,
+            pin = false
+        } = options;
+
+        const tooltip = ensureHeatmapHoverTooltip();
+        tooltip.textContent = tooltipText;
+        tooltip.classList.remove('hidden');
+        tooltip.setAttribute('aria-hidden', 'false');
+        heatmapHoverPinned = !!pin;
+        heatmapHoverActiveTarget = target || null;
+
+        if (Number.isFinite(pointerX) && Number.isFinite(pointerY)) {
+            positionHeatmapHoverTooltip(pointerX, pointerY);
+            return;
+        }
+        if (target) {
+            const rect = target.getBoundingClientRect();
+            positionHeatmapHoverTooltip(rect.left + (rect.width / 2), rect.top);
+        }
+    }
+
+    function hideHeatmapHoverTooltip(force = false) {
+        if (!heatmapHoverTooltipEl) return;
+        if (!force && heatmapHoverPinned) return;
+        heatmapHoverTooltipEl.classList.add('hidden');
+        heatmapHoverTooltipEl.setAttribute('aria-hidden', 'true');
+        heatmapHoverActiveTarget = null;
+        heatmapHoverPinned = false;
+    }
+
+    function bindHeatmapTooltipDelegation(containerEl) {
+        if (!containerEl || containerEl.dataset.heatmapTooltipBound === '1') return;
+        containerEl.dataset.heatmapTooltipBound = '1';
+
+        containerEl.addEventListener('pointerover', (event) => {
+            if (heatmapHoverPinned) return;
+            if (!event.pointerType || event.pointerType === 'touch') return;
+            const target = event.target instanceof Element ? event.target.closest('[data-heatmap-tooltip]') : null;
+            if (!target || !containerEl.contains(target)) return;
+            showHeatmapHoverTooltip(target.dataset.heatmapTooltip, {
+                target,
+                pointerX: event.clientX,
+                pointerY: event.clientY
+            });
+        });
+
+        containerEl.addEventListener('pointermove', (event) => {
+            if (heatmapHoverPinned || !heatmapHoverTooltipEl || heatmapHoverTooltipEl.classList.contains('hidden')) return;
+            if (!event.pointerType || event.pointerType === 'touch') return;
+            positionHeatmapHoverTooltip(event.clientX, event.clientY);
+        });
+
+        containerEl.addEventListener('pointerout', (event) => {
+            if (heatmapHoverPinned) return;
+            const target = event.target instanceof Element ? event.target.closest('[data-heatmap-tooltip]') : null;
+            if (!target || !containerEl.contains(target)) return;
+            const nextTarget = event.relatedTarget instanceof Element ? event.relatedTarget.closest('[data-heatmap-tooltip]') : null;
+            if (nextTarget && containerEl.contains(nextTarget)) return;
+            hideHeatmapHoverTooltip(true);
+        });
+
+        containerEl.addEventListener('click', (event) => {
+            if (!isTouchLikePointer()) return;
+            const target = event.target instanceof Element ? event.target.closest('[data-heatmap-tooltip]') : null;
+            if (!target || !containerEl.contains(target)) return;
+            const isSameTarget = heatmapHoverPinned && heatmapHoverActiveTarget === target;
+            if (isSameTarget) {
+                hideHeatmapHoverTooltip(true);
+                return;
+            }
+            showHeatmapHoverTooltip(target.dataset.heatmapTooltip, { target, pin: true });
+        });
+    }
+
+    function setupHeatmapTooltipGlobalBindings() {
+        if (heatmapTooltipGlobalsBound) return;
+        heatmapTooltipGlobalsBound = true;
+
+        document.addEventListener('click', (event) => {
+            if (!heatmapHoverPinned) return;
+            const target = event.target instanceof Element ? event.target : null;
+            if (!target) return;
+            if (target.closest('[data-heatmap-tooltip]')) return;
+            if (heatmapHoverTooltipEl && target.closest('.heatmap-hover-tooltip')) return;
+            hideHeatmapHoverTooltip(true);
+        }, true);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') hideHeatmapHoverTooltip(true);
+        });
+
+        window.addEventListener('resize', () => hideHeatmapHoverTooltip(true));
+        window.addEventListener('scroll', () => hideHeatmapHoverTooltip(true), { passive: true });
+    }
+
+    function updateHourlyHeatmap(nowMs = Date.now()) {
+        if (!hourlyHeatmapGrid || !hourlyHeatmapTopHours || !hourlyHeatmapSummary) return;
+        const currentDate = new Date(nowMs);
+        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const nextMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+        const startMs = monthStart.getTime();
+        const endMs = nextMonthStart.getTime();
+        const hourlyCounts = Array.from({ length: 24 }, () => 0);
+        const hourlyEarnings = Array.from({ length: 24 }, () => 0);
+        const hourlyDurationMs = Array.from({ length: 24 }, () => 0);
+
+        for (let i = 0; i < calls.length; i += 1) {
+            const start = getCallStartMs(calls[i]);
+            if (start < startMs || start >= endMs) continue;
+            const hour = new Date(start).getHours();
+            hourlyCounts[hour] += 1;
+            hourlyEarnings[hour] += Number(calls[i].earned) || 0;
+            hourlyDurationMs[hour] += Math.max(0, Number(calls[i].duration) || 0);
+        }
+
+        const maxCount = Math.max(1, ...hourlyCounts);
+        hideHeatmapHoverTooltip(true);
+        hourlyHeatmapGrid.innerHTML = '';
+        for (let hour = 0; hour < 24; hour += 1) {
+            const count = hourlyCounts[hour];
+            const intensity = count > 0 ? (count / maxCount) : 0;
+            const alpha = count > 0 ? (0.12 + (0.58 * intensity)) : 0.06;
+            const cell = document.createElement('div');
+            cell.className = 'hourly-heatmap-cell';
+            cell.style.background = `rgba(16, 185, 129, ${alpha.toFixed(3)})`;
+            cell.innerHTML = `
+                <span class="hourly-heatmap-hour">${String(hour).padStart(2, '0')}h</span>
+            `;
+            const tooltip = `${String(hour).padStart(2, '0')}:00 | ${count} call${count === 1 ? '' : 's'} | ${formatEarnings(hourlyEarnings[hour])} | ${formatTime(hourlyDurationMs[hour])}`;
+            cell.dataset.heatmapTooltip = tooltip;
+            cell.setAttribute('aria-label', tooltip);
+            cell.removeAttribute('title');
+            hourlyHeatmapGrid.appendChild(cell);
+        }
+        bindHeatmapTooltipDelegation(hourlyHeatmapGrid);
+
+        const topHours = hourlyCounts
+            .map((count, hour) => ({ hour, count }))
+            .filter((entry) => entry.count > 0)
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3);
+        if (topHours.length > 0) {
+            hourlyHeatmapTopHours.innerHTML = topHours
+                .map((entry) => `<span class="trend-insight-chip">${String(entry.hour).padStart(2, '0')}:00 - ${entry.count}</span>`)
+                .join('');
+        } else {
+            hourlyHeatmapTopHours.innerHTML = '<span class="trend-insight-chip trend-insight-chip-empty">No peak hour yet</span>';
+        }
+
+        const totalCallsInWindow = hourlyCounts.reduce((sum, value) => sum + value, 0);
+        const monthLabel = monthStart.toLocaleDateString(DISPLAY_LOCALE, { month: 'long', year: 'numeric' });
+        hourlyHeatmapSummary.textContent = `${monthLabel} activity by start hour - ${totalCallsInWindow} call${totalCallsInWindow === 1 ? '' : 's'}.`;
+    }
+    function getLocalDateKey(dateObj) {
+        const d = dateObj instanceof Date ? dateObj : new Date(dateObj);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function getEarningsByLocalDayMap() {
+        const byDay = new Map();
+        for (let i = 0; i < calls.length; i += 1) {
+            const startMs = getCallStartMs(calls[i]);
+            if (!Number.isFinite(startMs) || startMs <= 0) continue;
+            const key = getLocalDateKey(new Date(startMs));
+            const earned = Number(calls[i].earned) || 0;
+            byDay.set(key, (byDay.get(key) || 0) + earned);
+        }
+        return byDay;
+    }
+
+    function getCallStatsByLocalDayMap() {
+        const byDay = new Map();
+        for (let i = 0; i < calls.length; i += 1) {
+            const call = calls[i];
+            const startMs = getCallStartMs(call);
+            if (!Number.isFinite(startMs) || startMs <= 0) continue;
+            const key = getLocalDateKey(new Date(startMs));
+            const current = byDay.get(key) || { calls: 0, earnings: 0, durationMs: 0 };
+            current.calls += 1;
+            current.earnings += Number(call.earned) || 0;
+            current.durationMs += Math.max(0, Number(call.duration) || 0);
+            byDay.set(key, current);
+        }
+        return byDay;
+    }
+
+    function shiftTrendWindow(direction) {
+        const step = Number(direction) || 0;
+        if (!step) return;
+        const today = clampTrendAnchorToToday(new Date());
+        if (trendMode === 'monthly') {
+            const monthStart = new Date(trendAnchorDate.getFullYear(), trendAnchorDate.getMonth(), 1);
+            const shiftedMonth = new Date(monthStart.getFullYear(), monthStart.getMonth() + step, 1);
+            const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            trendAnchorDate = shiftedMonth.getTime() > currentMonthStart.getTime() ? currentMonthStart : shiftedMonth;
+        } else {
+            trendAnchorDate = clampTrendAnchorToToday(addDays(trendAnchorDate, step * 7));
+        }
+        saveTrendPreferences();
+        updateWeeklyTrendVisualization();
+    }
+
+    function updatePatternsPanelUi() {
+        patternsMode = normalizePatternsMode(patternsMode);
+        const isHourly = patternsMode === 'hourly';
+        const isWeekly = patternsMode === 'weekly';
+        const isMonthly = patternsMode === 'monthly';
+
+        if (patternsModeHourlyBtn) patternsModeHourlyBtn.classList.toggle('is-active', isHourly);
+        if (trendModeWeeklyBtn) trendModeWeeklyBtn.classList.toggle('is-active', isWeekly);
+        if (trendModeMonthlyBtn) trendModeMonthlyBtn.classList.toggle('is-active', isMonthly);
+
+        if (hourlyHeatmapCard) hourlyHeatmapCard.classList.toggle('hidden', !isHourly);
+        if (trendCard) trendCard.classList.toggle('hidden', isHourly);
+        if (trendAnalyticsGrid) trendAnalyticsGrid.classList.toggle('patterns-hourly-active', isHourly);
+
+        if (patternsPanelSummary) {
+            if (isHourly) {
+                patternsPanelSummary.textContent = 'Current month call starts by hour.';
+            } else if (isWeekly) {
+                patternsPanelSummary.textContent = '7-day earnings pattern for the current week window.';
+            } else {
+                patternsPanelSummary.textContent = 'Month-wide earnings distribution by day.';
+            }
+        }
+    }
+
+    function setPatternsMode(mode) {
+        const normalized = normalizePatternsMode(mode);
+        if (normalized === 'hourly') {
+            patternsMode = 'hourly';
+            savePatternsPreference();
+            updatePatternsPanelUi();
+            return;
+        }
+        setTrendMode(normalized);
+    }
+
+    function setTrendMode(mode) {
+        const normalized = normalizeTrendMode(mode);
+        if (trendMode === normalized && patternsMode === normalized) {
+            if (normalized === 'weekly') {
+                trendAnchorDate = clampTrendAnchorToToday(new Date());
+                saveTrendPreferences();
+                updateWeeklyTrendVisualization();
+            }
+            return;
+        }
+        trendMode = normalized;
+        patternsMode = normalized;
+        if (trendMode === 'monthly') {
+            trendAnchorDate = new Date(trendAnchorDate.getFullYear(), trendAnchorDate.getMonth(), 1);
+        } else {
+            trendAnchorDate = clampTrendAnchorToToday(new Date());
+        }
+        trendAnchorDate = clampTrendAnchorToToday(trendAnchorDate);
+        saveTrendPreferences();
+        savePatternsPreference();
+        updatePatternsPanelUi();
+        updateWeeklyTrendVisualization();
+    }
+
+    function syncTrendCardHeightToHourlyCard() {
+        if (!trendCard || !hourlyHeatmapCard) return;
+        if (trendCard.classList.contains('hidden') || hourlyHeatmapCard.classList.contains('hidden')) {
+            trendCard.style.height = '';
+            trendCard.style.minHeight = '';
+            return;
+        }
+        const baseHeight = hourlyHeatmapCard.getBoundingClientRect().height;
+        if (!Number.isFinite(baseHeight) || baseHeight <= 0) {
+            trendCard.style.height = '';
+            trendCard.style.minHeight = '';
+            return;
+        }
+        const extraTrendHeight = window.matchMedia('(min-width: 900px)').matches ? 48 : 32;
+        const targetHeight = Math.round(baseHeight + extraTrendHeight);
+        if (!Number.isFinite(targetHeight) || targetHeight <= 0) return;
+        trendCard.style.height = `${targetHeight}px`;
+        trendCard.style.minHeight = `${targetHeight}px`;
+    }
+
+    function applyTrendLayoutMode(mode) {
+        const normalized = normalizeTrendMode(mode);
+        if (trendAnalyticsGrid) {
+            trendAnalyticsGrid.classList.toggle('trend-layout-weekly', normalized === 'weekly');
+            trendAnalyticsGrid.classList.toggle('trend-layout-monthly', normalized === 'monthly');
+        }
+        if (hourlyHeatmapCard) {
+            hourlyHeatmapCard.classList.toggle('trend-heatmap-card-muted', normalized === 'monthly');
+        }
+        if (trendCard) {
+            trendCard.classList.toggle('is-weekly', normalized === 'weekly');
+            trendCard.classList.toggle('is-monthly', normalized === 'monthly');
+        }
+    }
+
+    function updateWeeklyTrendVisualization(nowMs = Date.now()) {
+        if (!weeklyTrendBars || !weeklyTrendSummary || !weeklyTrendBestDay || !trendRangeLabel) return;
+
+        trendMode = normalizeTrendMode(trendMode);
+        patternsMode = normalizePatternsMode(patternsMode);
+        trendAnchorDate = clampTrendAnchorToToday(trendAnchorDate || new Date(nowMs));
+        updatePatternsPanelUi();
+        applyTrendLayoutMode(trendMode);
+        syncTrendCardHeightToHourlyCard();
+
+        const dayEarningsMap = getEarningsByLocalDayMap();
+        const dayStatsMap = getCallStatsByLocalDayMap();
+        const today = clampTrendAnchorToToday(new Date(nowMs));
+
+        if (trendMode === 'monthly') {
+            weeklyTrendBars.classList.add('hidden');
+            if (monthlyTrendCanvas) monthlyTrendCanvas.classList.remove('hidden');
+
+            const monthYear = trendAnchorDate.getFullYear();
+            const monthIndex = trendAnchorDate.getMonth();
+            const monthStart = new Date(monthYear, monthIndex, 1);
+            const daysInMonth = new Date(monthYear, monthIndex + 1, 0).getDate();
+            const firstWeekday = (monthStart.getDay() + 6) % 7;
+            const dailyRows = [];
+            let total = 0;
+            let activeDays = 0;
+            let bestDayValue = 0;
+            let bestDayDate = null;
+
+            for (let day = 1; day <= daysInMonth; day += 1) {
+                const dateObj = new Date(monthStart.getFullYear(), monthStart.getMonth(), day);
+                const key = getLocalDateKey(dateObj);
+                const earnings = dayEarningsMap.get(key) || 0;
+                const stats = dayStatsMap.get(key) || { calls: 0, earnings: 0, durationMs: 0 };
+                total += earnings;
+                if (earnings > 0) activeDays += 1;
+                if (earnings > bestDayValue) {
+                    bestDayValue = earnings;
+                    bestDayDate = dateObj;
+                }
+                dailyRows.push({
+                    day,
+                    dateObj,
+                    earnings,
+                    callCount: stats.calls || 0,
+                    durationMs: Math.max(0, Number(stats.durationMs) || 0)
+                });
+            }
+
+            const maxDayEarnings = Math.max(1, ...dailyRows.map((entry) => entry.earnings));
+            if (monthlyTrendWeekdays) {
+                monthlyTrendWeekdays.innerHTML = '';
+                const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                weekdayLabels.forEach((label) => {
+                    const el = document.createElement('div');
+                    el.className = 'monthly-trend-weekday';
+                    el.textContent = label;
+                    monthlyTrendWeekdays.appendChild(el);
+                });
+            }
+            if (monthlyTrendHeatmap) {
+                hideHeatmapHoverTooltip(true);
+                monthlyTrendHeatmap.innerHTML = '';
+                for (let i = 0; i < firstWeekday; i += 1) {
+                    const empty = document.createElement('div');
+                    empty.className = 'monthly-trend-cell is-empty';
+                    empty.setAttribute('aria-hidden', 'true');
+                    monthlyTrendHeatmap.appendChild(empty);
+                }
+
+                dailyRows.forEach((entry) => {
+                    const intensity = entry.earnings > 0 ? (entry.earnings / maxDayEarnings) : 0;
+                    const alpha = entry.earnings > 0 ? (0.12 + (0.58 * intensity)) : 0.06;
+                    const cell = document.createElement('div');
+                    cell.className = 'monthly-trend-cell';
+                    cell.style.background = `rgba(244, 63, 94, ${alpha.toFixed(3)})`;
+                    cell.innerHTML = `
+                        <span class="monthly-trend-day">${entry.day}</span>
+                        <span class="monthly-trend-amount">${formatEarnings(entry.earnings)}</span>
+                    `;
+                    const tooltip = `${entry.dateObj.toLocaleDateString(DISPLAY_LOCALE)} | ${formatEarnings(entry.earnings)} | ${entry.callCount} call${entry.callCount === 1 ? '' : 's'} | ${formatTime(entry.durationMs)}`;
+                    cell.dataset.heatmapTooltip = tooltip;
+                    cell.setAttribute('aria-label', tooltip);
+                    monthlyTrendHeatmap.appendChild(cell);
+                });
+                const usedSlots = firstWeekday + dailyRows.length;
+                const trailingEmptySlots = Math.max(0, 42 - usedSlots);
+                for (let i = 0; i < trailingEmptySlots; i += 1) {
+                    const emptyTail = document.createElement('div');
+                    emptyTail.className = 'monthly-trend-cell is-empty';
+                    emptyTail.setAttribute('aria-hidden', 'true');
+                    monthlyTrendHeatmap.appendChild(emptyTail);
+                }
+                bindHeatmapTooltipDelegation(monthlyTrendHeatmap);
+            }
+
+            const monthLabel = monthStart.toLocaleDateString(DISPLAY_LOCALE, { month: 'long', year: 'numeric' });
+            trendRangeLabel.textContent = monthLabel;
+            weeklyTrendSummary.textContent = `Monthly earnings in ${monthLabel} | Total ${formatEarnings(total)} across ${activeDays} active day${activeDays === 1 ? '' : 's'}.`;
+            if (trendSummaryInline) {
+                trendSummaryInline.textContent = `Total ${formatEarnings(total)} â€¢ ${activeDays} active day${activeDays === 1 ? '' : 's'}`;
+            }
+            if (bestDayDate) {
+                weeklyTrendBestDay.innerHTML = `<span class="trend-insight-chip trend-insight-chip-best">${bestDayDate.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'short', month: 'short', day: 'numeric' })} - ${formatEarnings(bestDayValue)}</span>`;
+            } else {
+                weeklyTrendBestDay.innerHTML = '<span class="trend-insight-chip trend-insight-chip-empty">No best day yet</span>';
+            }
+
+            if (trendPrevBtn) trendPrevBtn.disabled = false;
+            if (trendNextBtn) {
+                const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                trendNextBtn.disabled = monthStart.getTime() >= currentMonthStart.getTime();
+            }
+            return;
+        }
+
+        weeklyTrendBars.classList.remove('hidden');
+        if (monthlyTrendCanvas) monthlyTrendCanvas.classList.add('hidden');
+
+        const dayMs = 24 * 60 * 60 * 1000;
+        const referenceDayStartMs = getDayStartMs(trendAnchorDate);
+        const referenceDate = new Date(referenceDayStartMs);
+        const mondayOffsetDays = (referenceDate.getDay() + 6) % 7;
+        const weekStartMs = referenceDayStartMs - (mondayOffsetDays * dayMs);
+        const dayWindow = Array.from({ length: 7 }, (_, index) => {
+            const dayStartMs = weekStartMs + (index * dayMs);
+            const dayDate = new Date(dayStartMs);
+            const key = getLocalDateKey(dayDate);
+            return {
+                dayStartMs,
+                dayDate,
+                earnings: dayEarningsMap.get(key) || 0
+            };
+        });
+
+        const maxEarnings = Math.max(1, ...dayWindow.map((entry) => entry.earnings));
+        hideHeatmapHoverTooltip(true);
+        weeklyTrendBars.innerHTML = '';
+        dayWindow.forEach((entry) => {
+            const intensity = entry.earnings > 0 ? (entry.earnings / maxEarnings) : 0;
+            const alpha = entry.earnings > 0 ? (0.12 + (0.58 * intensity)) : 0.06;
+            const dayLabel = entry.dayDate.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'short' }).toUpperCase();
+            const tooltip = `${entry.dayDate.toLocaleDateString(DISPLAY_LOCALE)} | ${formatEarnings(entry.earnings)}`;
+            const wrapper = document.createElement('div');
+            wrapper.className = 'weekly-trend-day';
+            wrapper.innerHTML = `
+                <div class="weekly-trend-bar" style="background: rgba(244, 63, 94, ${alpha.toFixed(3)})">
+                    <span class="weekly-trend-bar-day">${escapeHTML(dayLabel)}</span>
+                </div>
+                <div class="weekly-trend-day-value">${formatEarnings(entry.earnings)}</div>
+            `;
+            wrapper.dataset.heatmapTooltip = tooltip;
+            wrapper.setAttribute('aria-label', tooltip);
+            weeklyTrendBars.appendChild(wrapper);
+        });
+        bindHeatmapTooltipDelegation(weeklyTrendBars);
+
+        const bestDay = dayWindow.reduce((best, entry) => (entry.earnings > best.earnings ? entry : best), dayWindow[0] || { earnings: 0, dayDate: trendAnchorDate });
+        const bestDayLabel = bestDay.dayDate.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'long', month: 'short', day: 'numeric' });
+        weeklyTrendBestDay.innerHTML = `<span class="trend-insight-chip trend-insight-chip-best">${bestDayLabel} - ${formatEarnings(bestDay.earnings)}</span>`;
+        const weekTotal = dayWindow.reduce((sum, entry) => sum + entry.earnings, 0);
+        weeklyTrendSummary.textContent = `Earnings over this 7-day window | Total ${formatEarnings(weekTotal)}`;
+        if (trendSummaryInline) trendSummaryInline.textContent = `7-day total ${formatEarnings(weekTotal)}`;
+
+        const rangeStart = dayWindow[0]?.dayDate || trendAnchorDate;
+        const rangeEnd = dayWindow[6]?.dayDate || trendAnchorDate;
+        trendRangeLabel.textContent = `${rangeStart.toLocaleDateString(DISPLAY_LOCALE, { month: 'short', day: 'numeric' })} - ${rangeEnd.toLocaleDateString(DISPLAY_LOCALE, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+        if (trendPrevBtn) trendPrevBtn.disabled = false;
+        if (trendNextBtn) {
+            const todayStartMs = getDayStartMs(today);
+            const todayDate = new Date(todayStartMs);
+            const currentWeekStartMs = todayStartMs - (((todayDate.getDay() + 6) % 7) * dayMs);
+            trendNextBtn.disabled = weekStartMs >= currentWeekStartMs;
+        }
+    }
     function updateStatistics() {
         const now = new Date();
         const nowMs = now.getTime();
-        const todayStartMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        const tomorrowStartMs = todayStartMs + (24 * 60 * 60 * 1000);
-        const monthStartMs = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-        const nextMonthStartMs = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+        const dayMs = 24 * 60 * 60 * 1000;
+        const selectedDate = parseDateInput(statsDatePicker?.value) || new Date(nowMs);
+        const selectedDayStartMs = getDayStartMs(selectedDate);
+        const selectedDayEndMs = selectedDayStartMs + dayMs;
+        const priorDayStartMs = selectedDayStartMs - dayMs;
+        const currentDayStartMs = getDayStartMs(now);
+        const isViewingToday = selectedDayStartMs === currentDayStartMs;
+        const comparisonLabel = isViewingToday ? 'yesterday' : 'prior day';
+        const monthStartMs = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1).getTime();
+        const nextMonthStartMs = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1).getTime();
+
+        if (statsSnapshotHeading) {
+            statsSnapshotHeading.textContent = isViewingToday
+                ? 'Today Snapshot'
+                : `${selectedDate.toLocaleDateString(DISPLAY_LOCALE, { month: 'short', day: 'numeric', year: 'numeric' })} Snapshot`;
+        }
+        if (todayEarningsTitleDisplay) {
+            const earningsTitle = isViewingToday ? "Today's Earnings" : 'Selected Day Earnings';
+            todayEarningsTitleDisplay.innerHTML = `<i class="fas fa-chart-line mr-2"></i>${earningsTitle}`;
+        }
 
         let todaysEarnings = 0;
         let todaysDuration = 0;
         let todaysCount = 0;
+
+        let yesterdaysEarnings = 0;
+        let yesterdaysDuration = 0;
+        let yesterdaysCount = 0;
+
         let firstHalfEarnings = 0;
         let secondHalfEarnings = 0;
 
@@ -5240,16 +7266,14 @@ function saveCalls() {
         let cycleStartMs = 0;
         let cycleEndMs = 0;
         let cycleEarnings = 0;
+        let cycleCallCount = 0;
 
-        if (paymentCyclesEnabled && paymentCycles.length > 0) {
-            currentCycle = paymentCycles.find((cycle) => {
-                const start = new Date(cycle.startDate).getTime();
-                const end = new Date(cycle.endDate).getTime();
-                return nowMs >= start && nowMs <= end;
-            }) || null;
+        const cycleContext = getPaymentCyclesTimelineContext(nowMs);
+        if (paymentCyclesEnabled && cycleContext.normalized.length > 0) {
+            currentCycle = cycleContext.current;
             if (currentCycle) {
-                cycleStartMs = new Date(currentCycle.startDate).getTime();
-                cycleEndMs = new Date(currentCycle.endDate).getTime();
+                cycleStartMs = currentCycle._startMs;
+                cycleEndMs = currentCycle._endMs;
             }
         }
 
@@ -5259,10 +7283,14 @@ function saveCalls() {
             const earned = Number(call.earned) || 0;
             const duration = Number(call.duration) || 0;
 
-            if (startMs >= todayStartMs && startMs < tomorrowStartMs) {
+            if (startMs >= selectedDayStartMs && startMs < selectedDayEndMs) {
                 todaysEarnings += earned;
                 todaysDuration += duration;
                 todaysCount += 1;
+            } else if (startMs >= priorDayStartMs && startMs < selectedDayStartMs) {
+                yesterdaysEarnings += earned;
+                yesterdaysDuration += duration;
+                yesterdaysCount += 1;
             }
 
             if (startMs >= monthStartMs && startMs < nextMonthStartMs) {
@@ -5273,18 +7301,54 @@ function saveCalls() {
 
             if (currentCycle && startMs >= cycleStartMs && startMs <= cycleEndMs) {
                 cycleEarnings += earned;
+                cycleCallCount += 1;
             }
         }
 
+        const sumCycleEarnings = (cycle, endMsOverride = null) => {
+            if (!cycle) return 0;
+            const windowEndMs = Number.isFinite(endMsOverride)
+                ? Math.min(endMsOverride, cycle._endMs)
+                : cycle._endMs;
+            let total = 0;
+            for (let i = 0; i < calls.length; i += 1) {
+                const callStartMs = getCallStartMs(calls[i]);
+                if (callStartMs >= cycle._startMs && callStartMs <= windowEndMs) {
+                    total += Number(calls[i].earned) || 0;
+                }
+            }
+            return total;
+        };
+
         const todaysMinutes = todaysDuration / (1000 * 60);
+        const yesterdaysMinutes = yesterdaysDuration / (1000 * 60);
 
         todayEarningsDisplay.textContent = formatEarnings(todaysEarnings);
 
+        const todaysAvgDuration = todaysCount > 0 ? (todaysDuration / todaysCount) : 0;
+        const yesterdaysAvgDuration = yesterdaysCount > 0 ? (yesterdaysDuration / yesterdaysCount) : 0;
+
         if (todaysCount > 0) {
-            const avgDuration = todaysDuration / todaysCount;
-            avgDurationDisplay.textContent = formatTime(avgDuration);
+            avgDurationDisplay.textContent = formatTime(todaysAvgDuration);
         } else {
             avgDurationDisplay.textContent = '00:00:00';
+        }
+
+        if (avgDurationDeltaDisplay) {
+            if (todaysCount === 0 && yesterdaysCount === 0) {
+                avgDurationDeltaDisplay.textContent = `Vs ${comparisonLabel}: --`;
+                applyDeltaTone(avgDurationDeltaDisplay, 0);
+            } else {
+                const avgDurationDelta = todaysAvgDuration - yesterdaysAvgDuration;
+                avgDurationDeltaDisplay.textContent = `Vs ${comparisonLabel}: ${formatSignedDurationDelta(avgDurationDelta)}`;
+                applyDeltaTone(avgDurationDeltaDisplay, avgDurationDelta);
+            }
+        }
+
+        if (todayEarningsDeltaDisplay) {
+            const earningsDelta = todaysEarnings - yesterdaysEarnings;
+            todayEarningsDeltaDisplay.textContent = `Vs ${comparisonLabel}: ${formatSignedCurrencyDelta(earningsDelta)}`;
+            applyDeltaTone(todayEarningsDeltaDisplay, earningsDelta);
         }
 
         const hasAmountGoal = dailyGoal.amount > 0;
@@ -5293,7 +7357,7 @@ function saveCalls() {
         const derivedGoalMinutes = hasAmountGoal && selectedRateAmount > 0
             ? Math.ceil(dailyGoal.amount / selectedRateAmount)
             : dailyGoal.minutes;
-        
+
         if (hasAmountGoal || hasMinutesGoal) {
             const goalSummary = [];
             const ratePerMinute = todaysMinutes > 0 ? todaysEarnings / todaysMinutes : 0;
@@ -5344,45 +7408,174 @@ function saveCalls() {
             goalMinutesDisplay.textContent = '0 / 0 Min';
         }
 
+        if (goalEstimateDeltaDisplay) {
+            if (hasAmountGoal || hasMinutesGoal) {
+                const goalTarget = hasAmountGoal ? dailyGoal.amount : derivedGoalMinutes;
+                if (goalTarget > 0) {
+                    const todayProgressValue = hasAmountGoal ? todaysEarnings : todaysMinutes;
+                    const yesterdayProgressValue = hasAmountGoal ? yesterdaysEarnings : yesterdaysMinutes;
+                    const todayPct = Math.min((todayProgressValue / goalTarget) * 100, 100);
+                    const yesterdayPct = Math.min((yesterdayProgressValue / goalTarget) * 100, 100);
+                    const paceDeltaPct = todayPct - yesterdayPct;
+                    goalEstimateDeltaDisplay.textContent = `Pace vs ${comparisonLabel}: ${paceDeltaPct >= 0 ? '+' : ''}${paceDeltaPct.toFixed(0)}%`;
+                    applyDeltaTone(goalEstimateDeltaDisplay, paceDeltaPct);
+                } else {
+                    goalEstimateDeltaDisplay.textContent = `Pace vs ${comparisonLabel}: --`;
+                    applyDeltaTone(goalEstimateDeltaDisplay, 0);
+                }
+            } else {
+                goalEstimateDeltaDisplay.textContent = `Pace vs ${comparisonLabel}: --`;
+                applyDeltaTone(goalEstimateDeltaDisplay, 0);
+            }
+        }
+
         const monthlyEarnings = firstHalfEarnings + secondHalfEarnings;
 
         firstHalfEarningsDisplay.textContent = formatEarnings(firstHalfEarnings);
         secondHalfEarningsDisplay.textContent = formatEarnings(secondHalfEarnings);
         monthlyTotalEarningsDisplay.textContent = formatEarnings(monthlyEarnings);
 
+        const nearestPayCycle = cycleContext.closestUpcomingPayCycle || cycleContext.next || null;
+        const hasUpcomingPay = !!(nearestPayCycle && Number.isFinite(nearestPayCycle._payMs));
+        const daysUntilNearestPay = hasUpcomingPay
+            ? Math.max(0, Math.ceil((nearestPayCycle._payMs - nowMs) / dayMs))
+            : null;
+
+        const endedCycles = cycleContext.normalized.filter((cycle) => cycle._endMs < nowMs);
+        const lastClosedCycle = endedCycles.length ? endedCycles[endedCycles.length - 1] : null;
+        const lastClosedCycleEarnings = sumCycleEarnings(lastClosedCycle);
+
+        let previousCycle = null;
         if (currentCycle) {
-                cycleEarningsDisplay.textContent = formatEarnings(cycleEarnings);
+            const currentIndex = cycleContext.normalized.findIndex((cycle) => (
+                cycle._startMs === currentCycle._startMs
+                && cycle._endMs === currentCycle._endMs
+                && cycle._payMs === currentCycle._payMs
+            ));
+            if (currentIndex > 0) {
+                previousCycle = cycleContext.normalized[currentIndex - 1];
+            }
+        }
+        const previousCycleEarnings = sumCycleEarnings(previousCycle);
 
-                cycleStartDateDisplay.textContent = formatDate(currentCycle.startDate);
-                cycleEndDateDisplay.textContent = formatDate(currentCycle.endDate);
+        if (currentCycle) {
+            cycleEarningsDisplay.textContent = formatEarnings(cycleEarnings);
+            cycleStartDateDisplay.textContent = formatDate(currentCycle.startDate);
+            cycleEndDateDisplay.textContent = formatDate(currentCycle.endDate);
 
-                const cycleEnd = new Date(currentCycle.endDate);
-                const daysLeft = Math.ceil((cycleEnd.getTime() - nowMs) / (1000 * 60 * 60 * 24));
-                daysUntilEndDisplay.textContent = `${daysLeft} days`;
+            const daysLeft = Math.max(0, Math.ceil((currentCycle._endMs - nowMs) / dayMs));
+            daysUntilEndDisplay.textContent = `${daysLeft} day${daysLeft === 1 ? '' : 's'}`;
 
-                const payDate = new Date(currentCycle.payDate);
-                payDateDisplay.textContent = formatDate(currentCycle.payDate);
+            const cycleDurationMs = Math.max(dayMs, (currentCycle._endMs - currentCycle._startMs) + dayMs);
+            const elapsedMs = Math.max(0, Math.min(cycleDurationMs, nowMs - currentCycle._startMs));
+            const cycleProgressPct = (elapsedMs / cycleDurationMs) * 100;
 
-                const daysUntilPay = Math.ceil((payDate.getTime() - nowMs) / (1000 * 60 * 60 * 24));
-                daysUntilPayDisplay.textContent = `${daysUntilPay} days`;
+            if (cycleStateChipDisplay) cycleStateChipDisplay.textContent = 'Active';
+            if (cycleProgressBarDisplay) cycleProgressBarDisplay.style.width = `${cycleProgressPct.toFixed(1)}%`;
+            if (cycleProgressMetaDisplay) {
+                cycleProgressMetaDisplay.textContent = `${cycleProgressPct.toFixed(0)}% elapsed | ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`;
+            }
+            if (cycleEarningsMetaDisplay) {
+                cycleEarningsMetaDisplay.textContent = `${cycleCallCount} call${cycleCallCount === 1 ? '' : 's'} in current cycle`;
+            }
+            if (cycleEarningsTrendDisplay) {
+                if (previousCycle) {
+                    const cycleDelta = cycleEarnings - previousCycleEarnings;
+                    const deltaPrefix = cycleDelta >= 0 ? '+' : '-';
+                    cycleEarningsTrendDisplay.textContent = `Vs previous cycle: ${deltaPrefix}$${Math.abs(cycleDelta).toFixed(2)}`;
+                    applyDeltaTone(cycleEarningsTrendDisplay, cycleDelta);
+                } else {
+                    cycleEarningsTrendDisplay.textContent = 'No previous cycle to compare yet.';
+                    applyDeltaTone(cycleEarningsTrendDisplay, 0);
+                }
+            }
         } else if (paymentCyclesEnabled) {
             cycleEarningsDisplay.textContent = '$0.00';
             cycleStartDateDisplay.textContent = '--';
             cycleEndDateDisplay.textContent = '--';
             daysUntilEndDisplay.textContent = '--';
-            payDateDisplay.textContent = '--';
-            daysUntilPayDisplay.textContent = '--';
+
+            if (cycleStateChipDisplay) {
+                cycleStateChipDisplay.textContent = cycleContext.next ? 'Upcoming' : 'No cycle';
+            }
+            if (cycleProgressBarDisplay) cycleProgressBarDisplay.style.width = '0%';
+            if (cycleProgressMetaDisplay) {
+                if (cycleContext.next) {
+                    const daysUntilNextStart = Math.max(0, Math.ceil((cycleContext.next._startMs - nowMs) / dayMs));
+                    cycleProgressMetaDisplay.textContent = `Starts in ${daysUntilNextStart} day${daysUntilNextStart === 1 ? '' : 's'}`;
+                } else {
+                    cycleProgressMetaDisplay.textContent = 'No active cycle.';
+                }
+            }
+            if (cycleEarningsMetaDisplay) {
+                cycleEarningsMetaDisplay.textContent = 'No active cycle yet.';
+            }
+            if (cycleEarningsTrendDisplay) {
+                if (lastClosedCycle) {
+                    cycleEarningsTrendDisplay.textContent = `Last closed cycle: ${formatEarnings(lastClosedCycleEarnings)}`;
+                } else {
+                    cycleEarningsTrendDisplay.textContent = '--';
+                }
+                applyDeltaTone(cycleEarningsTrendDisplay, 0);
+            }
         }
 
+        if (!paymentCyclesEnabled) {
+            if (cycleStateChipDisplay) cycleStateChipDisplay.textContent = '--';
+            if (cycleProgressBarDisplay) cycleProgressBarDisplay.style.width = '0%';
+            if (cycleProgressMetaDisplay) cycleProgressMetaDisplay.textContent = '--';
+            if (cycleEarningsMetaDisplay) cycleEarningsMetaDisplay.textContent = '--';
+            if (cycleEarningsTrendDisplay) {
+                cycleEarningsTrendDisplay.textContent = '--';
+                applyDeltaTone(cycleEarningsTrendDisplay, 0);
+            }
+            payDateDisplay.textContent = '--';
+            daysUntilPayDisplay.textContent = '--';
+            if (payCountdownHeadlineDisplay) payCountdownHeadlineDisplay.textContent = 'Pay in --';
+            if (nextPayCycleContextDisplay) nextPayCycleContextDisplay.textContent = '--';
+        } else {
+            payDateDisplay.textContent = hasUpcomingPay ? formatDate(nearestPayCycle.payDate) : '--';
+            daysUntilPayDisplay.textContent = daysUntilNearestPay === null
+                ? '--'
+                : `${daysUntilNearestPay} day${daysUntilNearestPay === 1 ? '' : 's'}`;
+
+            if (payCountdownHeadlineDisplay) {
+                if (daysUntilNearestPay === null) {
+                    payCountdownHeadlineDisplay.textContent = 'Pay in --';
+                } else if (daysUntilNearestPay === 0) {
+                    payCountdownHeadlineDisplay.textContent = 'Pay today';
+                } else {
+                    payCountdownHeadlineDisplay.textContent = `Pay in ${daysUntilNearestPay} day${daysUntilNearestPay === 1 ? '' : 's'}`;
+                }
+            }
+
+            if (nextPayCycleContextDisplay) {
+                if (!hasUpcomingPay) {
+                    nextPayCycleContextDisplay.textContent = 'No upcoming pay date.';
+                } else {
+                    const isCurrentCyclePay = currentCycle
+                        && nearestPayCycle._startMs === currentCycle._startMs
+                        && nearestPayCycle._endMs === currentCycle._endMs;
+                    nextPayCycleContextDisplay.textContent = isCurrentCyclePay
+                        ? 'Current cycle payout'
+                        : 'Upcoming cycle payout';
+                }
+            }
+        }
+
+        renderPaymentCyclesCurrentSummary(nowMs);
+        updateWorkRhythmInsights(nowMs);
+        updateHourlyHeatmap(nowMs);
+        updateWeeklyTrendVisualization(nowMs);
         updateRpgProgress();
+        queueWorkstripSync();
         scheduleStorageInfoRefresh();
     }
-    
     // Time zone helpers
     function getUserTimeZone() {
         const tz = appStorage.getItem('timeZone');
         if (tz && tz.length > 0) return tz;
-        // fallback explícito al valor del navegador para evitar pasar undefined a Intl
+        // Explicit fallback to the browser time zone to avoid passing undefined to Intl
         return Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 
@@ -5443,7 +7636,7 @@ function saveCalls() {
 
     function formatDate(dateStr) {
         const date = new Date(dateStr);
-        return date.toLocaleDateString();
+        return date.toLocaleDateString(DISPLAY_LOCALE);
     }
 
     function calculateEarnings(durationMs, ratePerMin) {
@@ -5496,6 +7689,7 @@ function saveCalls() {
             callRateSelect.value = rateSelect.value;
         }
 
+        populateCallLogRateFilterOptions();
         scheduleDesktopOverlayRefresh();
     }
 
@@ -5621,6 +7815,7 @@ function saveCalls() {
     }
 
     function displayCalls() {
+        closeCallLogActionsMenu(true);
         callLogRenderTicket += 1;
         const renderTicket = callLogRenderTicket;
         const filteredCalls = sortCallsForView(getFilteredCallsCached());
@@ -5636,6 +7831,7 @@ function saveCalls() {
             }
             totalMinutesDisplay.textContent = '0 min';
             totalEarningsDisplay.textContent = '$0.00';
+            updateCallLogResultsSummary(0);
             return;
         }
 
@@ -5644,6 +7840,7 @@ function saveCalls() {
         const totalEarnings = filteredCalls.reduce((sum, call) => sum + call.earned, 0);
         totalMinutesDisplay.textContent = `${Math.round(totalMinutes)} min`;
         totalEarningsDisplay.textContent = formatEarnings(totalEarnings);
+        updateCallLogResultsSummary(filteredCalls.length);
 
         const userTz = getUserTimeZone();
         const rateNameSet = new Set(rates.map((r) => r.name));
@@ -5737,7 +7934,7 @@ function saveCalls() {
     return;
   }
 
-  // Validación mínima: al menos (start+end) o minutes
+  // ValidaciÃ³n mÃ­nima: al menos (start+end) o minutes
   if ((!start || !end) && !durationMsFromMinutes) {
     showAlertModal('Invalid Call Data', 'Please enter Start & End time, or a valid Duration.');
     return;
@@ -5765,7 +7962,7 @@ function saveCalls() {
     }
   }
 
-  // Si al final no hay ambos, algo falló
+  // Si al final no hay ambos, algo fallÃ³
   if (!finalStart || !finalEnd || finalEnd <= finalStart) {
     showAlertModal('Invalid Call Data', 'Please enter valid values (End must be after Start).');
     return;
@@ -5855,7 +8052,7 @@ function saveCalls() {
     callRateSelect.value = rateSelect.value || callRateSelect.value;
   }
 
-  // Cambiar título del modal (opcional)
+  // Cambiar tÃ­tulo del modal (opcional)
   document.getElementById('modal-title').innerHTML =
     `<i class="fas fa-edit text-blue-500 mr-2"></i>Edit Call`;
 }
@@ -6013,6 +8210,9 @@ function saveCalls() {
                 calls = readCallsFromStorage();
                 calls = calls.filter(call => call.id !== callId);
                 saveCalls();
+                if (postCallReviewState?.callId === callId) {
+                    hidePostCallReview(true);
+                }
             }
         );
     }
@@ -6032,11 +8232,25 @@ function saveCalls() {
 
     // Live call functions
     function startLiveCall() {
+        markUserActivity();
+        if (sessionTrackerState?.active && sessionTrackerState.paused) {
+            const now = Date.now();
+            if (sessionTrackerState.pauseStartedMs > 0) {
+                sessionTrackerState.pausedTotalMs += Math.max(0, now - sessionTrackerState.pauseStartedMs);
+            }
+            sessionTrackerState.paused = false;
+            sessionTrackerState.pauseStartedMs = 0;
+            saveSessionTrackerState();
+            ensureSessionTrackerTimer();
+            renderSessionTracker();
+            showToast('Session resumed automatically.');
+        }
         const selectedRate = rates.find(rate => rate.name === rateSelect.value);
         beginLiveCallWithRate(rateSelect.value, selectedRate ? Number(selectedRate.amount) || 0 : 0);
     }
 
     function adjustLiveCallElapsedByMs(deltaMs) {
+        markUserActivity();
         if (!LiveCallSession.isActive()) return;
         const currentSession = buildCurrentActiveCallSession();
         if (!currentSession) return;
@@ -6054,10 +8268,12 @@ function saveCalls() {
         liveCallTimerDisplay.textContent = formatTime(elapsedMs);
         liveCallEarningsDisplay.textContent = formatEarnings(calculateEarnings(elapsedMs, currentCallRate || getSelectedRateAmount()));
         updateFloatingActiveCard(featureFlags, true);
+        queueWorkstripSync();
         void syncAndroidWidgetActiveSession();
     }
 
     function endLiveCall() {
+        markUserActivity();
         const stopResult = LiveCallSession.stop();
         if (!stopResult.ok) return;
         if (liveCallTimerId) {
@@ -6081,6 +8297,7 @@ function saveCalls() {
         } else {
             showToast('Live call saved!');
         }
+        showPostCallReview(stopResult.callData, stopResult.elapsedMs, stopResult.earnings);
         clearActiveCallState();
         void syncAndroidWidgetActiveSession();
         updateFloatingCallControls(featureFlags);
@@ -6088,6 +8305,10 @@ function saveCalls() {
         animateFloatingPrimaryTransition();
         hideActiveCallRecoveryBanner();
         recoveredActiveCallState = null;
+        if (sessionTrackerState?.active) {
+            renderSessionTracker();
+        }
+        queueWorkstripSync();
     }
 
     // Settings modal functions
@@ -6113,7 +8334,7 @@ function saveCalls() {
         ModalManager.close(settingsModal);
     }
 
-    function openPaymentCyclesSettingsModal(triggerEl = null) {
+    function openPaymentCyclesSettingsModal(triggerEl = null, options = {}) {
         if (!featureFlags.paymentCycles) return;
         closeOtherDetailModals(paymentCyclesSettingsModal);
         settingsModal?.classList.add('settings-split-active');
@@ -6124,7 +8345,19 @@ function saveCalls() {
         setDetailPanelOrigin(paymentCyclesSettingsModal, triggerEl);
         updateSettingsSplitState();
         updateStorageInfo();
+        paymentCyclesListExpanded = !!options?.expandList;
         renderPaymentCycles();
+    }
+
+    function openPaymentCyclesManagerFromDashboard(triggerEl = null) {
+        if (!featureFlags.paymentCycles) {
+            showToast('Enable Payment Cycles in Settings first.');
+            return;
+        }
+        if (settingsModal && !ModalManager.isOpen(settingsModal)) {
+            openSettingsModal(settingsToggleBtn || triggerEl);
+        }
+        openPaymentCyclesSettingsModal(triggerEl || openPaymentCyclesSettingsBtn, { expandList: true });
     }
 
     function openAchievementsSettingsModal(triggerEl = null) {
@@ -6334,21 +8567,34 @@ function saveCalls() {
             }
         }
 
+        renderPaymentCyclesCurrentSummary();
+
+        if (!paymentCyclesEnabled) {
+            monthlyEarningsCards.classList.remove('hidden');
+            paymentCycleEarningsCards.classList.add('hidden');
+            setPaymentCyclesListExpanded(false, 0);
+            return;
+        }
+
         if (!Array.isArray(paymentCycles) || paymentCycles.length === 0) {
             paymentCyclesList.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">No cycles configured.</td></tr>`;
+            setPaymentCyclesListExpanded(false, 0);
+            monthlyEarningsCards.classList.add('hidden');
+            paymentCycleEarningsCards.classList.remove('hidden');
             return;
         }
         
         const sortedCycles = [...paymentCycles].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+        setPaymentCyclesListExpanded(paymentCyclesListExpanded, sortedCycles.length);
 
         sortedCycles.forEach((cycle, index) => {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors';
             const originalIndex = paymentCycles.findIndex(c => c.startDate === cycle.startDate && c.endDate === cycle.endDate);
             
-            const startDisplay = new Date(cycle.startDate).toLocaleDateString();
-            const endDisplay = new Date(cycle.endDate).toLocaleDateString();
-            const payDisplay = new Date(cycle.payDate).toLocaleDateString();
+            const startDisplay = new Date(cycle.startDate).toLocaleDateString(DISPLAY_LOCALE);
+            const endDisplay = new Date(cycle.endDate).toLocaleDateString(DISPLAY_LOCALE);
+            const payDisplay = new Date(cycle.payDate).toLocaleDateString(DISPLAY_LOCALE);
 
             row.innerHTML = `
                 <td class="px-2 py-2">${startDisplay}</td>
@@ -6366,13 +8612,8 @@ function saveCalls() {
             paymentCyclesList.appendChild(row);
         });
 
-        if (paymentCyclesEnabled) {
-            monthlyEarningsCards.classList.add('hidden');
-            paymentCycleEarningsCards.classList.remove('hidden');
-        } else {
-            monthlyEarningsCards.classList.remove('hidden');
-            paymentCycleEarningsCards.classList.add('hidden');
-        }
+        monthlyEarningsCards.classList.add('hidden');
+        paymentCycleEarningsCards.classList.remove('hidden');
     }
 
     function addPaymentCycle() {
@@ -6478,41 +8719,79 @@ function saveCalls() {
         updateDateNavigationButtons();
     }
 
-    function showToast(message) {
-        const existing = document.querySelector('.app-toast');
-        if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    function getOrCreateToastStack() {
+        let stack = document.getElementById('app-toast-stack');
+        if (stack) return stack;
+        stack = document.createElement('div');
+        stack.id = 'app-toast-stack';
+        stack.className = 'app-toast-stack';
+        stack.setAttribute('aria-live', 'polite');
+        stack.setAttribute('aria-atomic', 'false');
+        document.body.appendChild(stack);
+        return stack;
+    }
+
+    function inferToastVariant(message) {
+        const msg = String(message || '').toLowerCase();
+        if (msg.includes('error') || msg.includes('invalid') || msg.includes('could not') || msg.includes('failed')) return 'error';
+        if (msg.includes('warning') || msg.includes('enable') || msg.includes('missing')) return 'warning';
+        if (msg.includes('saved') || msg.includes('completed') || msg.includes('imported') || msg.includes('restored') || msg.includes('generated') || msg.includes('started') || msg.includes('resumed') || msg.includes('reached') || msg.includes('unlocked')) return 'success';
+        return 'info';
+    }
+
+    function showToast(message, options = {}) {
+        const text = String(message ?? '').trim();
+        if (!text) return;
+
+        const stack = getOrCreateToastStack();
+        const variant = ['success', 'error', 'warning', 'info'].includes(options.variant)
+            ? options.variant
+            : inferToastVariant(text);
+        const durationMs = Number.isFinite(options.durationMs) ? Math.max(1200, options.durationMs) : 3200;
+        const iconByVariant = {
+            success: 'fa-check-circle',
+            error: 'fa-triangle-exclamation',
+            warning: 'fa-circle-exclamation',
+            info: 'fa-circle-info'
+        };
+
         const toast = document.createElement('div');
-        toast.className = 'app-toast';
-        toast.textContent = message;
+        toast.className = `app-toast app-toast-${variant}`;
         toast.setAttribute('role', 'status');
         toast.setAttribute('aria-live', 'polite');
         toast.setAttribute('aria-atomic', 'true');
-        toast.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.5s, transform 0.5s;
-            font-family: sans-serif;
+        toast.innerHTML = `
+            <span class="app-toast-icon"><i class="fas ${iconByVariant[variant] || iconByVariant.info}"></i></span>
+            <span class="app-toast-message"></span>
+            <button type="button" class="app-toast-close" aria-label="Dismiss notification">&times;</button>
         `;
-        document.body.appendChild(toast);
-        setTimeout(() => {
-            toast.style.opacity = '1';
-            toast.style.transform = 'translate(-50%, -10px)';
-        }, 10);
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translate(-50%, 0)';
-        }, 2500);
-        setTimeout(() => {
-            document.body.removeChild(toast);
-        }, 3000);
+        const messageEl = toast.querySelector('.app-toast-message');
+        if (messageEl) messageEl.textContent = text;
+
+        const closeToast = () => {
+            if (!toast.parentNode || toast.dataset.closing === '1') return;
+            toast.dataset.closing = '1';
+            if (toast._closeTimer) clearTimeout(toast._closeTimer);
+            toast.classList.remove('is-visible');
+            toast.classList.add('is-exiting');
+            window.setTimeout(() => {
+                toast.remove();
+                if (!stack.childElementCount) stack.remove();
+            }, 220);
+        };
+
+        const closeBtn = toast.querySelector('.app-toast-close');
+        if (closeBtn) closeBtn.addEventListener('click', closeToast);
+
+        stack.prepend(toast);
+        while (stack.childElementCount > 4) {
+            const oldest = stack.lastElementChild;
+            if (!oldest) break;
+            oldest.remove();
+        }
+
+        requestAnimationFrame(() => toast.classList.add('is-visible'));
+        toast._closeTimer = window.setTimeout(closeToast, durationMs);
     }
 
     // Feedback Modal Functions
@@ -6561,6 +8840,48 @@ function saveCalls() {
 
     const PAYPAL_DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=3YPGH7MTRMFTJ';
     const KOFI_SUPPORT_URL = 'https://ko-fi.com/C1C718BOD';
+    const FOOTER_COLLAPSIBLE_MOBILE_MEDIA_QUERY = '(max-width: 768px)';
+    let footerCollapsibleIsMobile = null;
+
+    function isFooterInMobileViewport() {
+        return window.matchMedia(FOOTER_COLLAPSIBLE_MOBILE_MEDIA_QUERY).matches;
+    }
+
+    function setFooterPanelExpanded(panelEl, expanded) {
+        if (!panelEl) return;
+        panelEl.classList.toggle('is-open', !!expanded);
+        const toggleBtn = panelEl.querySelector('.app-footer-collapsible-toggle');
+        if (toggleBtn) {
+            toggleBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        }
+    }
+
+    function syncFooterCollapsiblePanelsForViewport() {
+        if (!footerCollapsiblePanels.length) return;
+        const isMobile = isFooterInMobileViewport();
+        if (footerCollapsibleIsMobile === isMobile) return;
+        footerCollapsibleIsMobile = isMobile;
+
+        footerCollapsiblePanels.forEach((panelEl) => {
+            setFooterPanelExpanded(panelEl, !isMobile);
+        });
+    }
+
+    function initializeFooterCollapsiblePanels() {
+        if (!footerCollapsiblePanels.length) return;
+        footerCollapsiblePanels.forEach((panelEl) => {
+            const toggleBtn = panelEl.querySelector('.app-footer-collapsible-toggle');
+            if (!toggleBtn) return;
+            toggleBtn.addEventListener('click', () => {
+                if (!isFooterInMobileViewport()) return;
+                const isOpen = panelEl.classList.contains('is-open');
+                setFooterPanelExpanded(panelEl, !isOpen);
+            });
+        });
+
+        syncFooterCollapsiblePanelsForViewport();
+        window.addEventListener('resize', syncFooterCollapsiblePanelsForViewport, { passive: true });
+    }
 
     function openSupportModal() {
         ModalManager.open(supportModal, { focusSelector: '#support-modal-paypal-btn' });
@@ -6751,6 +9072,12 @@ function saveCalls() {
     if (supportKofiBtn) {
         supportKofiBtn.addEventListener('click', openSupportModal);
     }
+    initializeFooterCollapsiblePanels();
+    if (footerOpenSettingsBtn) {
+        footerOpenSettingsBtn.addEventListener('click', () => {
+            openSettingsModal(footerOpenSettingsBtn);
+        });
+    }
     if (achievementsToggleBtn) {
         achievementsToggleBtn.addEventListener('click', (e) => openAchievementsSettingsModal(e.currentTarget));
     }
@@ -6838,6 +9165,7 @@ function saveCalls() {
         try {
         applyAppShellMode();
         ModalManager.setupGlobalKeyboard();
+        setupHeatmapTooltipGlobalBindings();
         window.WTTModalQA = {
             report: getModalQaSnapshot
         };
@@ -6954,6 +9282,75 @@ function saveCalls() {
 
         startCallBtn.addEventListener('click', startLiveCall);
         endCallBtn.addEventListener('click', endLiveCall);
+        if (workstripStartCallBtn) {
+            workstripStartCallBtn.addEventListener('click', () => {
+                runWithViewportLock(startLiveCall);
+            });
+        }
+        if (workstripEndCallBtn) {
+            workstripEndCallBtn.addEventListener('click', () => {
+                runWithViewportLock(endLiveCall);
+            });
+        }
+        if (workstripAddCallBtn) {
+            workstripAddCallBtn.addEventListener('click', () => {
+                addCallBtn?.click();
+            });
+        }
+        if (postCallUndoBtn) {
+            postCallUndoBtn.addEventListener('click', undoPostCallReviewEntry);
+        }
+        if (postCallEditBtn) {
+            postCallEditBtn.addEventListener('click', () => {
+                const targetId = postCallReviewState?.callId;
+                if (!targetId) {
+                    editLatestCallEntry(postCallEditBtn);
+                    return;
+                }
+                calls = readCallsFromStorage();
+                const found = calls.some((call) => call.id === targetId);
+                if (!found) {
+                    showToast('That call is no longer available to edit.', { variant: 'warning' });
+                    hidePostCallReview(true);
+                    return;
+                }
+                editCall(targetId);
+                hidePostCallReview(true);
+                openCallModal(postCallEditBtn);
+            });
+        }
+        if (postCallDismissBtn) {
+            postCallDismissBtn.addEventListener('click', () => hidePostCallReview(true));
+        }
+        document.addEventListener('keydown', handleGlobalProductivityShortcuts);
+        document.addEventListener('pointerdown', markUserActivity, true);
+        document.addEventListener('focusin', markUserActivity, true);
+        document.addEventListener('keydown', markUserActivity, true);
+        window.addEventListener('focus', markUserActivity);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) markUserActivity();
+        });
+        if (sessionStartBtn) {
+            sessionStartBtn.addEventListener('click', startWorkSession);
+        }
+        if (sessionPauseBtn) {
+            sessionPauseBtn.addEventListener('click', toggleWorkSessionPause);
+        }
+        if (sessionEndBtn) {
+            sessionEndBtn.addEventListener('click', endWorkSession);
+        }
+        if (sessionStartTimeInput) {
+            sessionStartTimeInput.addEventListener('change', () => {
+                applySessionScheduleFromInputs();
+                renderSessionTracker();
+            });
+        }
+        if (sessionEndTimeInput) {
+            sessionEndTimeInput.addEventListener('change', () => {
+                applySessionScheduleFromInputs();
+                renderSessionTracker();
+            });
+        }
         if (liveCallMinusSecondBtn) {
             liveCallMinusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(-1000));
         }
@@ -7013,8 +9410,16 @@ function saveCalls() {
         }
 
         const handleCallLogActionClick = (e) => {
+            const menuBtn = e.target.closest('.call-log-actions-menu-btn');
+            if (menuBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleCallLogActionsMenu(menuBtn);
+                return;
+            }
             const editBtn = e.target.closest('.edit-call-btn');
             if (editBtn) {
+                closeCallLogActionsMenu(true);
                 const callId = String(editBtn.dataset.callId || '');
                 if (callId) {
                     editCall(callId);
@@ -7024,6 +9429,7 @@ function saveCalls() {
             }
             const deleteBtn = e.target.closest('.delete-call-btn');
             if (deleteBtn) {
+                closeCallLogActionsMenu(true);
                 const callId = String(deleteBtn.dataset.callId || '');
                 if (callId) deleteCall(callId);
             }
@@ -7036,6 +9442,20 @@ function saveCalls() {
         if (callLogMobileList) {
             callLogMobileList.addEventListener('click', handleCallLogActionClick);
         }
+
+        document.addEventListener('click', (event) => {
+            if (!openCallLogActionsMenu) return;
+            const target = event.target instanceof Element ? event.target : null;
+            if (!target) return;
+            if (target.closest('.call-log-actions-wrap')) return;
+            closeCallLogActionsMenu(true);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') return;
+            if (!openCallLogActionsMenu) return;
+            closeCallLogActionsMenu(true);
+        });
 
         if (callLogSortableHeaders.length) {
             callLogSortableHeaders.forEach((headerEl) => {
@@ -7108,19 +9528,19 @@ function saveCalls() {
         openCallModal(addCallBtn);
 });
 
-// ✅ X (cerrar)
+// âœ… X (cerrar)
         closeModalBtn.addEventListener('click', (e) => {
             e.preventDefault();
             closeCallModal();
         });
 
-// ✅ Cancel (cerrar)
+// âœ… Cancel (cerrar)
         cancelCallBtn.addEventListener('click', (e) => {
             e.preventDefault();
             closeCallModal();
         });
 
-// ✅ Save (evita refresh + actualiza en vivo porque tu handleCallFormSubmit ya llama saveCalls())
+// âœ… Save (evita refresh + actualiza en vivo porque tu handleCallFormSubmit ya llama saveCalls())
         callForm.addEventListener('submit', handleCallFormSubmit);
 
         // Restore saved textarea heights for notes (persist across refreshes)
@@ -7187,6 +9607,7 @@ function saveCalls() {
             if (floatingPreviewEnabledToggle) floatingPreviewEnabledToggle.checked = ENABLE_FLOATING_PREVIEW_TESTING && !!featureFlags.floatingPreviewEnabled;
             // apply the flags immediately
             applyFeatureFlags(featureFlags);
+            queueWorkstripSync();
 
             // Wire toggle changes
             if (featureNotesToggle) {
@@ -7243,6 +9664,15 @@ function saveCalls() {
             if (openPaymentCyclesSettingsBtn) {
                 openPaymentCyclesSettingsBtn.addEventListener('click', (e) => openPaymentCyclesSettingsModal(e.currentTarget));
             }
+            if (viewAllPaymentCyclesBtn) {
+                viewAllPaymentCyclesBtn.addEventListener('click', (e) => openPaymentCyclesManagerFromDashboard(e.currentTarget));
+            }
+            if (paymentCyclesToggleAllBtn) {
+                paymentCyclesToggleAllBtn.addEventListener('click', () => {
+                    if (!Array.isArray(paymentCycles) || paymentCycles.length === 0) return;
+                    setPaymentCyclesListExpanded(!paymentCyclesListExpanded, paymentCycles.length);
+                });
+            }
             if (closeFloatingControlsSettingsBtn) {
                 closeFloatingControlsSettingsBtn.addEventListener('click', closeFloatingControlsSettingsModal);
             }
@@ -7274,6 +9704,12 @@ function saveCalls() {
                     const achievementId = target.getAttribute('data-achievement-id');
                     if (!achievementId) return;
                     openAchievementDetailModal(achievementId, target);
+                });
+            }
+            if (rpgUseShieldBtn) {
+                rpgUseShieldBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    applyStreakShieldForToday();
                 });
             }
             if (floatingControlsSizeModeSelect) {
@@ -7627,6 +10063,31 @@ goalMinutesInput.addEventListener('input', () => {
             if (statsNextDayBtn.disabled) return;
             shiftStatsDate(1);
         });
+        if (patternsModeHourlyBtn) {
+            patternsModeHourlyBtn.addEventListener('click', () => setPatternsMode('hourly'));
+        }
+        if (trendModeWeeklyBtn) {
+            trendModeWeeklyBtn.addEventListener('click', () => setPatternsMode('weekly'));
+        }
+        if (trendModeMonthlyBtn) {
+            trendModeMonthlyBtn.addEventListener('click', () => setPatternsMode('monthly'));
+        }
+        if (rpgBreakdownToggleBtn) {
+            rpgBreakdownToggleBtn.addEventListener('click', () => {
+                rpgXpBreakdownExpanded = !rpgXpBreakdownExpanded;
+                queueStorageWrite('rpgXpBreakdownExpanded', rpgXpBreakdownExpanded ? '1' : '0');
+                applyRpgBreakdownVisibility();
+            });
+        }
+        if (trendPrevBtn) {
+            trendPrevBtn.addEventListener('click', () => shiftTrendWindow(-1));
+        }
+        if (trendNextBtn) {
+            trendNextBtn.addEventListener('click', () => {
+                if (trendNextBtn.disabled) return;
+                shiftTrendWindow(1);
+            });
+        }
         currentDateBtn.addEventListener('click', () => {
             const today = getTodayDateString();
             statsDatePicker.value = today;
@@ -7767,6 +10228,7 @@ goalMinutesInput.addEventListener('input', () => {
                 clearAchievementState();
                 clearDailyQuestState();
                 clearRpgProgressState();
+                clearSessionRpgStatsState();
                 saveCalls();
                 renderAchievementsModal();
                 showToast('All call history erased.');
@@ -7790,10 +10252,15 @@ goalMinutesInput.addEventListener('input', () => {
                 dailyGoal = { amount: 0, minutes: 0 };
                 paymentCyclesEnabled = false;
                 paymentCycles = [];
+                sessionTrackerState = getSessionDefaultState();
+                clearSessionRpgStatsState();
                 saveRates();
                 saveCalls();
                 saveDailyGoal();
                 savePaymentCycles();
+                saveSessionTrackerState();
+                clearSessionTrackerTimer();
+                renderSessionTracker();
                 syncDailyGoalInputs();
                 populateRateSelects();
                 showToast('All data reset.');
@@ -7851,11 +10318,14 @@ goalMinutesInput.addEventListener('input', () => {
         }
         displayRates();
         populateRateSelects();
+        applyRpgBreakdownVisibility();
         populateTimeZones();
         updateLocalTime();
         displayCalls();
         syncDailyGoalInputs();
         updateStatistics();
+        renderSessionTracker();
+        ensureSessionTrackerTimer();
         evaluateAchievements({ notify: false });
         updateStorageInfo();
         renderPaymentCycles();
@@ -7913,6 +10383,26 @@ goalMinutesInput.addEventListener('input', () => {
             displayCalls();
             updateCallLogFilterButtons();
         });
+        if (callLogSearchInput) {
+            callLogSearchInput.addEventListener('input', (e) => {
+                const nextValue = String(e?.target?.value || '');
+                if (callLogSearchDebounceTimer) clearTimeout(callLogSearchDebounceTimer);
+                callLogSearchDebounceTimer = setTimeout(() => {
+                    setCallLogSearchQuery(nextValue);
+                }, 140);
+            });
+        }
+        if (callLogRateFilterSelect) {
+            callLogRateFilterSelect.addEventListener('change', (e) => {
+                const nextValue = String(e?.target?.value || '');
+                setCallLogRateFilter(nextValue);
+            });
+        }
+        if (callLogResetViewBtn) {
+            callLogResetViewBtn.addEventListener('click', () => {
+                resetCallLogView();
+            });
+        }
         updateCallLogFilterButtons();
         scheduleFloatingControlsRefresh();
 
@@ -7986,5 +10476,6 @@ goalMinutesInput.addEventListener('input', () => {
             }
         }
     });
+
 
 

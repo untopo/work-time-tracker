@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.1.88-blue)
+![Version](https://img.shields.io/badge/version-1.2.0-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -279,8 +279,18 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.1.88`
+- Current Version: `v1.2.0`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.2.0`
+- Added a new Session Tracker with shift start/pause/end controls and live utilization metrics
+- Added a Post-Call Review strip with Undo / Quick Edit / Dismiss after each saved call
+- Added Patterns analytics mode switching (Hourly / Weekly / Monthly) with cleaner trend presentation
+- Expanded RPG progression with Daily Focus, Weekly Arc, Streak Shield, and session-linked achievements
+- Upgraded Call Log workflow with search, rate filtering, reset controls, and richer result summaries
+- Improved Payment Cycle insights with stronger current/next payout context and timeline clarity
+- Refined footer and mobile navigation UX with cleaner structure and collapsible sections
+- Added desktop and Android security hardening for external links and widget action handling
 
 ### Highlights in `v1.1.88`
 - Floating Dock can now be moved freely inside the app so each user can place it where it is most comfortable
