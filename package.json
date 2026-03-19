@@ -1,6 +1,6 @@
 {
   "name": "work-time-tracker",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Privacy-first time tracker for interpreters and freelancers.",
   "main": "index.js",
   "scripts": {

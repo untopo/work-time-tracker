@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.2.1-blue)
+![Version](https://img.shields.io/badge/version-1.2.2-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -279,8 +279,14 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.2.1`
+- Current Version: `v1.2.2`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.2.2`
+- Synced web, desktop, and Android release packaging so all published channels match the latest code state
+- Moved `Session History` trigger inline with the live session status row to keep Session Tracker compact
+- Kept Session History content in a dedicated modal with full details and clear action
+- Refreshed desktop installer and APK release artifacts from the same current source
 
 ### Highlights in `v1.2.1`
 - Session Tracker now auto-captures `Shift Start` and `Shift End` timestamps with a one-click Start/End workflow
