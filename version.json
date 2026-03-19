@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.1.88",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.1.88",
+  "latestVersion": "1.2.0",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.0",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Added movable Floating Dock placement, +/-1s live-call quick adjust buttons, sortable Call Log headers, and bulk biweekly Payment Cycle generation."
+  "notes": "Major UX refresh: Session Tracker, Patterns analytics modes, richer RPG progression, Call Log workflow upgrades, smarter payment-cycle insights, and platform security hardening."
 }

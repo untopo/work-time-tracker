@@ -5,6 +5,7 @@ use std::process::Command;
 use rfd::FileDialog;
 use serde_json::{Map, Value};
 use tauri::{AppHandle, Manager, WindowEvent};
+use url::Url;
 
 fn storage_snapshot_path(app: &AppHandle) -> Result<PathBuf, String> {
   let app_data_dir = app
@@ -108,14 +109,31 @@ fn show_main_window(app: AppHandle) -> Result<(), String> {
 #[tauri::command]
 fn open_external_url(url: String) -> Result<(), String> {
   let trimmed = url.trim();
-  if !(trimmed.starts_with("http://") || trimmed.starts_with("https://")) {
+  if trimmed.is_empty() {
+    return Err("URL cannot be empty".to_string());
+  }
+
+  if trimmed.len() > 2048 {
+    return Err("URL is too long".to_string());
+  }
+
+  let parsed = Url::parse(trimmed).map_err(|_| "Invalid URL format".to_string())?;
+  if parsed.scheme() != "http" && parsed.scheme() != "https" {
     return Err("Only http/https URLs are allowed".to_string());
   }
+  if parsed.host_str().is_none() {
+    return Err("URL host is required".to_string());
+  }
+  if !parsed.username().is_empty() || parsed.password().is_some() {
+    return Err("URL with credentials is not allowed".to_string());
+  }
+
+  let safe_url = parsed.as_str();
 
   #[cfg(target_os = "windows")]
   {
-    Command::new("cmd")
-      .args(["/C", "start", "", trimmed])
+    Command::new("explorer")
+      .arg(safe_url)
       .spawn()
       .map_err(|error| format!("Failed to open external URL: {error}"))?;
     return Ok(());
@@ -124,7 +142,7 @@ fn open_external_url(url: String) -> Result<(), String> {
   #[cfg(target_os = "macos")]
   {
     Command::new("open")
-      .arg(trimmed)
+      .arg(safe_url)
       .spawn()
       .map_err(|error| format!("Failed to open external URL: {error}"))?;
     return Ok(());
@@ -133,7 +151,7 @@ fn open_external_url(url: String) -> Result<(), String> {
   #[cfg(all(unix, not(target_os = "macos")))]
   {
     Command::new("xdg-open")
-      .arg(trimmed)
+      .arg(safe_url)
       .spawn()
       .map_err(|error| format!("Failed to open external URL: {error}"))?;
     return Ok(());

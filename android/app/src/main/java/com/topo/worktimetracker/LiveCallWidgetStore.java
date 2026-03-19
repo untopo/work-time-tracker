@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.UUID;
+
 final class LiveCallWidgetStore {
     static final String PREFS_NAME = "wtt_live_call_widget";
     static final String KEY_DEFAULT_RATE_NAME = "default_rate_name";
@@ -17,6 +19,7 @@ final class LiveCallWidgetStore {
     static final String KEY_ACTIVE_LAST_PING = "active_last_ping";
     static final String KEY_ACTIVE_SOURCE = "active_source";
     static final String KEY_COMPLETED_CALLS = "completed_calls";
+    static final String KEY_BROADCAST_TOKEN = "broadcast_token";
 
     static final class RateInfo {
         final String name;
@@ -139,5 +142,16 @@ final class LiveCallWidgetStore {
         JSONArray calls = readCompletedCalls(context);
         prefs(context).edit().remove(KEY_COMPLETED_CALLS).commit();
         return calls;
+    }
+
+    static String getOrCreateBroadcastToken(Context context) {
+        SharedPreferences preferences = prefs(context);
+        String existing = preferences.getString(KEY_BROADCAST_TOKEN, "");
+        if (existing != null && !existing.trim().isEmpty()) {
+            return existing;
+        }
+        String generated = UUID.randomUUID().toString();
+        preferences.edit().putString(KEY_BROADCAST_TOKEN, generated).commit();
+        return generated;
     }
 }
