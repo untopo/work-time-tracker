@@ -2151,6 +2151,41 @@
             font-weight: 600;
         }
 
+        .session-history-cta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .session-history-open-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(99, 102, 241, 0.38);
+            background: rgba(99, 102, 241, 0.12);
+            color: #3730a3;
+            font-size: 0.74rem;
+            font-weight: 700;
+            line-height: 1;
+            padding: 0.52rem 0.86rem;
+            transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+        }
+
+        .session-history-open-btn:hover {
+            transform: translateY(-1px);
+            background: rgba(99, 102, 241, 0.18);
+            border-color: rgba(79, 70, 229, 0.52);
+        }
+
+        .session-history-count-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
         .session-history-wrap {
             border: 1px solid rgba(99, 102, 241, 0.24);
             border-radius: 0.9rem;
@@ -2198,6 +2233,10 @@
             max-height: 172px;
             overflow: auto;
             padding-right: 0.18rem;
+        }
+
+        #session-history-modal .session-history-list {
+            max-height: min(56vh, 440px);
         }
 
         .session-history-item {
@@ -2313,6 +2352,21 @@
         html.dark .session-metric {
             border-color: rgba(100, 116, 139, 0.52);
             background: rgba(15, 23, 42, 0.58);
+        }
+
+        html.dark .session-history-open-btn {
+            border-color: rgba(129, 140, 248, 0.46);
+            background: rgba(49, 46, 129, 0.36);
+            color: #c7d2fe;
+        }
+
+        html.dark .session-history-open-btn:hover {
+            background: rgba(67, 56, 202, 0.45);
+            border-color: rgba(165, 180, 252, 0.6);
+        }
+
+        html.dark .session-history-count-label {
+            color: #94a3b8;
         }
 
         html.dark .session-history-wrap {
