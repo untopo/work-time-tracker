@@ -1957,6 +1957,12 @@
             gap: 0.5rem;
         }
 
+        #session-start-time[readonly],
+        #session-end-time[readonly] {
+            cursor: default;
+            background: rgba(255, 255, 255, 0.78);
+        }
+
         .session-action-btn {
             border-radius: 0.85rem;
             border: 1px solid rgba(148, 163, 184, 0.25);
@@ -2092,7 +2098,7 @@
 
         .session-metrics-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 0.45rem;
             margin-bottom: 0.72rem;
         }
@@ -2145,8 +2151,114 @@
             font-weight: 600;
         }
 
+        .session-history-wrap {
+            border: 1px solid rgba(99, 102, 241, 0.24);
+            border-radius: 0.9rem;
+            background: rgba(248, 250, 252, 0.82);
+            padding: 0.65rem;
+        }
+
+        .session-history-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .session-history-title {
+            font-size: 0.74rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #334155;
+        }
+
+        .session-history-clear-btn {
+            border-radius: 9999px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            background: rgba(255, 255, 255, 0.9);
+            color: #334155;
+            font-size: 0.66rem;
+            font-weight: 700;
+            padding: 0.2rem 0.58rem;
+            transition: background-color 0.14s ease, border-color 0.14s ease, transform 0.14s ease;
+        }
+
+        .session-history-clear-btn:hover:not(:disabled) {
+            background: rgba(241, 245, 249, 0.95);
+            border-color: rgba(100, 116, 139, 0.55);
+            transform: translateY(-1px);
+        }
+
+        .session-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.38rem;
+            max-height: 172px;
+            overflow: auto;
+            padding-right: 0.18rem;
+        }
+
+        .session-history-item {
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            border-radius: 0.72rem;
+            background: rgba(255, 255, 255, 0.78);
+            padding: 0.45rem 0.5rem;
+        }
+
+        .session-history-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.28rem;
+        }
+
+        .session-history-row + .session-history-row {
+            margin-top: 0.32rem;
+        }
+
+        .session-history-date {
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .session-history-range {
+            font-size: 0.66rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .session-history-chip {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: rgba(241, 245, 249, 0.92);
+            color: #334155;
+            font-size: 0.62rem;
+            font-weight: 700;
+            line-height: 1;
+            padding: 0.22rem 0.44rem;
+        }
+
+        .session-history-empty {
+            font-size: 0.68rem;
+            color: #64748b;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.42rem 0.2rem;
+        }
+
         html.dark .session-action-btn {
             box-shadow: 0 10px 22px rgba(2, 6, 23, 0.36);
+        }
+
+        html.dark #session-start-time[readonly],
+        html.dark #session-end-time[readonly] {
+            background: rgba(30, 41, 59, 0.78);
         }
 
         html.dark .session-action-pause {
@@ -2201,6 +2313,49 @@
         html.dark .session-metric {
             border-color: rgba(100, 116, 139, 0.52);
             background: rgba(15, 23, 42, 0.58);
+        }
+
+        html.dark .session-history-wrap {
+            border-color: rgba(99, 102, 241, 0.34);
+            background: rgba(15, 23, 42, 0.62);
+        }
+
+        html.dark .session-history-title {
+            color: #cbd5e1;
+        }
+
+        html.dark .session-history-clear-btn {
+            border-color: rgba(100, 116, 139, 0.55);
+            background: rgba(30, 41, 59, 0.82);
+            color: #e2e8f0;
+        }
+
+        html.dark .session-history-clear-btn:hover:not(:disabled) {
+            background: rgba(51, 65, 85, 0.9);
+            border-color: rgba(148, 163, 184, 0.6);
+        }
+
+        html.dark .session-history-item {
+            border-color: rgba(100, 116, 139, 0.48);
+            background: rgba(30, 41, 59, 0.7);
+        }
+
+        html.dark .session-history-date {
+            color: #e2e8f0;
+        }
+
+        html.dark .session-history-range {
+            color: #94a3b8;
+        }
+
+        html.dark .session-history-chip {
+            border-color: rgba(100, 116, 139, 0.6);
+            background: rgba(15, 23, 42, 0.75);
+            color: #cbd5e1;
+        }
+
+        html.dark .session-history-empty {
+            color: #94a3b8;
         }
 
         /* Session-style visual system for action buttons across the app */
@@ -3161,7 +3316,8 @@
             margin-left: auto;
         }
 
-        #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn {
+        #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn,
+        .preview-floating-dock .floating-active-adjust-controls .floating-active-adjust-btn {
             width: 24px;
             min-width: 24px;
             max-width: 24px;
@@ -3180,7 +3336,8 @@
             transition: transform 0.14s ease, background-color 0.14s ease, border-color 0.14s ease;
         }
 
-        #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn:hover {
+        #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn:hover,
+        .preview-floating-dock .floating-active-adjust-controls .floating-active-adjust-btn:hover {
             transform: translateY(-1px);
         }
 
@@ -3208,8 +3365,13 @@
             border-color: rgba(45, 212, 191, 0.4);
         }
 
+        .preview-floating-dock .floating-active-adjust-controls {
+            margin-top: 0.35rem;
+        }
+
         @media (max-width: 640px) {
-            #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn {
+            #floating-call-dock .floating-active-adjust-controls .floating-active-adjust-btn,
+            .preview-floating-dock .floating-active-adjust-controls .floating-active-adjust-btn {
                 width: 24px !important;
                 min-width: 24px !important;
                 max-width: 24px !important;
@@ -4434,7 +4596,7 @@
         }
 
         .stat-delta-negative {
-            color: #dc2626 !important;
+            color: #b45309 !important;
         }
 
         .stat-delta-neutral {
@@ -4446,7 +4608,7 @@
         }
 
         html.dark .stat-delta-negative {
-            color: #f87171 !important;
+            color: #fbbf24 !important;
         }
 
         html.dark .stat-delta-neutral {

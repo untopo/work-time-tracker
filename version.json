@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.2.0",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.0",
+  "latestVersion": "1.2.1",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.1",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Major UX refresh: Session Tracker, Patterns analytics modes, richer RPG progression, Call Log workflow upgrades, smarter payment-cycle insights, and platform security hardening."
+  "notes": "Session flow polish update: one-click auto session timestamps, session history + call count, supportive stat comparisons, floating preview parity, and text cleanup."
 }

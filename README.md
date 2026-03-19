@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+![Version](https://img.shields.io/badge/version-1.2.1-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -279,8 +279,16 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.2.0`
+- Current Version: `v1.2.1`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.2.1`
+- Session Tracker now auto-captures `Shift Start` and `Shift End` timestamps with a one-click Start/End workflow
+- Added a new Session History panel with per-session timeline, call count, talk/idle/utilization summary, earnings snapshot, and clear action
+- Added live in-session call counting so users can see how many calls happened during the active shift
+- Refined comparison messaging in Call Statistics to be more supportive and less punitive (`no baseline`, `first active day`, `ahead/behind`)
+- Floating Controls preview now correctly mirrors the `Show +/-1s Buttons` setting in active-card samples
+- Cleaned text/encoding artifacts across release spotlight, summaries, and toast messaging
 
 ### Highlights in `v1.2.0`
 - Added a new Session Tracker with shift start/pause/end controls and live utilization metrics
