@@ -2034,6 +2034,14 @@
             margin-bottom: 0.75rem;
         }
 
+        .session-live-left {
+            display: flex;
+            align-items: center;
+            gap: 0.42rem;
+            min-width: 0;
+            flex-wrap: wrap;
+        }
+
         .session-state-pill {
             display: inline-flex;
             align-items: center;
@@ -2151,26 +2159,19 @@
             font-weight: 600;
         }
 
-        .session-history-cta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.65rem;
-            flex-wrap: wrap;
-        }
-
         .session-history-open-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 0.75rem;
+            gap: 0.28rem;
+            border-radius: 9999px;
             border: 1px solid rgba(99, 102, 241, 0.38);
             background: rgba(99, 102, 241, 0.12);
             color: #3730a3;
-            font-size: 0.74rem;
+            font-size: 0.66rem;
             font-weight: 700;
             line-height: 1;
-            padding: 0.52rem 0.86rem;
+            padding: 0.28rem 0.62rem;
             transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
         }
 
@@ -2181,9 +2182,15 @@
         }
 
         .session-history-count-label {
-            font-size: 0.68rem;
+            font-size: 0.62rem;
             font-weight: 700;
+            border-radius: 9999px;
+            border: 1px solid rgba(148, 163, 184, 0.32);
+            background: rgba(241, 245, 249, 0.76);
+            padding: 0.2rem 0.48rem;
             color: #475569;
+            line-height: 1;
+            white-space: nowrap;
         }
 
         .session-history-wrap {
@@ -2366,7 +2373,23 @@
         }
 
         html.dark .session-history-count-label {
+            border-color: rgba(100, 116, 139, 0.56);
+            background: rgba(15, 23, 42, 0.66);
             color: #94a3b8;
+        }
+
+        @media (max-width: 640px) {
+            .session-live-header {
+                align-items: flex-start;
+            }
+
+            .session-live-clock {
+                margin-left: auto;
+            }
+
+            .session-history-count-label {
+                display: none;
+            }
         }
 
         html.dark .session-history-wrap {
