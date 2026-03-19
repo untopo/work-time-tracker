@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.2.2-blue)
+![Version](https://img.shields.io/badge/version-1.2.3-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -279,8 +279,14 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Release Notes
-- Current Version: `v1.2.2`
+- Current Version: `v1.2.3`
 - Full history is available in-app via the footer version button (`What's New` modal).
+
+### Highlights in `v1.2.3`
+- Embedded the app font locally so web, desktop, and Android render typography consistently without relying on remote font providers
+- Added stronger text-fit rules for card content and labels to reduce overflow/clipping on Android layouts
+- Normalized text scaling behavior to keep UI dimensions more stable on mobile WebView rendering
+- Synced release packaging so all channels are published from the same current source/version
 
 ### Highlights in `v1.2.2`
 - Synced web, desktop, and Android release packaging so all published channels match the latest code state

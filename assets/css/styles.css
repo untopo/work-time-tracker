@@ -1,10 +1,26 @@
+        @font-face {
+            font-family: "WTT Mono";
+            src: url("../fonts/WTTMono-Regular.ttf") format("truetype");
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: "WTT Mono";
+            src: url("../fonts/WTTMono-Bold.ttf") format("truetype");
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+        }
+
         :root {
             --motion-fast: 0.16s;
             --motion-base: 0.2s;
             --motion-slow: 0.24s;
             --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
             --ease-subtle: ease-out;
-            --app-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            --app-font-family: "WTT Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
 
         @keyframes heartbeat {
@@ -36,6 +52,8 @@
             max-width: 100%;
             overflow-x: hidden;
             font-family: var(--app-font-family);
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
         }
 
         body {
@@ -69,6 +87,33 @@
             max-height: 400px;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
+        }
+
+        .dashboard-surface,
+        .metric-surface,
+        .session-metric,
+        .session-history-item,
+        .app-footer-panel,
+        .call-log-mobile-card,
+        .call-log-mobile-meta,
+        .call-log-mobile-summary {
+            min-width: 0;
+        }
+
+        .dashboard-surface p,
+        .metric-surface p,
+        .session-metric-value,
+        .session-history-chip,
+        .session-history-date,
+        .session-history-range,
+        .call-log-mobile-card,
+        .call-log-mobile-meta,
+        .call-log-mobile-summary,
+        .trend-insight-chip,
+        .weekly-trend-day-label,
+        .weekly-trend-day-amount,
+        .app-footer-panel {
+            overflow-wrap: anywhere;
         }
         .fade-in-out { animation: fadeInOut 2.5s forwards; }
         @keyframes fadeInOut {
