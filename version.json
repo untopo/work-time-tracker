@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.2.2",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.2",
+  "latestVersion": "1.2.3",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.3",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Platform parity release: web, desktop, and Android builds synced to latest UI flow, with Session History moved into a dedicated modal trigger near live session status."
+  "notes": "Android/readability sync release: unified embedded font across platforms, tighter text-fit guards, and fully aligned web+desktop+Android version packaging."
 }
