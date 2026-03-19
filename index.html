@@ -214,9 +214,15 @@
         </div>
         <div id="session-live-panel" class="session-live-panel is-idle">
             <div class="session-live-header">
-                <div id="session-live-state" class="session-state-pill is-idle">
-                    <span class="session-state-dot"></span>
-                    <span class="session-state-label">Idle</span>
+                <div class="session-live-left">
+                    <div id="session-live-state" class="session-state-pill is-idle">
+                        <span class="session-state-dot"></span>
+                        <span class="session-state-label">Idle</span>
+                    </div>
+                    <button id="open-session-history-btn" type="button" class="session-history-open-btn" aria-label="Open Session History">
+                        <i class="fas fa-clock-rotate-left"></i><span>History</span>
+                    </button>
+                    <span id="session-history-count-label" class="session-history-count-label">No sessions yet</span>
                 </div>
                 <div class="session-live-clock">
                     <span class="session-live-clock-label">Session</span>
@@ -245,12 +251,6 @@
                 <div id="session-live-utilization-bar" class="session-utilization-fill" style="width:0%"></div>
             </div>
             <div id="session-live-utilization-hint" class="session-utilization-hint">Available 00:00:00 | Paused 00:00:00</div>
-        </div>
-        <div class="session-history-cta mt-4">
-            <button id="open-session-history-btn" type="button" class="session-history-open-btn">
-                <i class="fas fa-clock-rotate-left mr-2"></i>Session History
-            </button>
-            <span id="session-history-count-label" class="session-history-count-label">No sessions yet</span>
         </div>
     </div>
 
