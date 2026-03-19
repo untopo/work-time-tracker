@@ -493,6 +493,9 @@ const UPDATE_MANIFEST_URLS = [
 ];
 const UPDATE_DISMISSED_VERSION_KEY = 'dismissedUpdateVersion';
 const RELEASE_SPOTLIGHT_SEEN_PREFIX = 'releaseSpotlightSeen:';
+const GOATCOUNTER_SITE_CODE_KEY = 'wtt_goatcounter_site_code';
+const GOATCOUNTER_SCRIPT_ID = 'wtt-goatcounter-script';
+const GOATCOUNTER_DEFAULT_SITE_CODE = 'untopo';
 const updateAvailableBanner = document.getElementById('update-available-banner');
 const updateCurrentVersionLabel = document.getElementById('update-current-version');
 const updateLatestVersionLabel = document.getElementById('update-latest-version');
@@ -891,6 +894,88 @@ async function checkForInstalledAppUpdates() {
     const latestVersion = normalizeVersionString(manifest.latestVersion);
     if (dismissedVersion && dismissedVersion === latestVersion) return;
     renderUpdateAvailableBanner(manifest);
+}
+
+function sanitizeGoatCounterSiteCode(value) {
+    const code = String(value || '').trim().toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]{1,62}$/.test(code)) return '';
+    return code;
+}
+
+function readGoatCounterSiteCode() {
+    const stored = sanitizeGoatCounterSiteCode(appStorage.getItem(GOATCOUNTER_SITE_CODE_KEY));
+    if (stored) return stored;
+    return sanitizeGoatCounterSiteCode(GOATCOUNTER_DEFAULT_SITE_CODE);
+}
+
+function persistGoatCounterSiteCode(code) {
+    const safeCode = sanitizeGoatCounterSiteCode(code);
+    if (!safeCode) {
+        appStorage.removeItem(GOATCOUNTER_SITE_CODE_KEY);
+        return '';
+    }
+    appStorage.setItem(GOATCOUNTER_SITE_CODE_KEY, safeCode);
+    return safeCode;
+}
+
+function applyGoatCounterUrlOverrides() {
+    let changed = false;
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const setSite = params.get('wtt_gc_site');
+
+        if (setSite !== null) {
+            persistGoatCounterSiteCode(setSite);
+            changed = true;
+        }
+    } catch (error) {
+        console.warn('Could not parse GoatCounter URL overrides', error);
+    }
+    return changed;
+}
+
+function loadGoatCounterScript(siteCode) {
+    if (!siteCode) return false;
+    if (document.getElementById(GOATCOUNTER_SCRIPT_ID)) return true;
+
+    const script = document.createElement('script');
+    script.id = GOATCOUNTER_SCRIPT_ID;
+    script.async = true;
+    script.src = 'https://gc.zgo.at/count.js';
+    script.dataset.goatcounter = `https://${siteCode}.goatcounter.com/count`;
+    script.onerror = () => {
+        console.warn('GoatCounter script failed to load.');
+    };
+    document.head.appendChild(script);
+    return true;
+}
+
+function setupGoatCounterAnalytics() {
+    if (isDesktopTauri || Boolean(window.Capacitor)) return;
+    applyGoatCounterUrlOverrides();
+    const siteCode = readGoatCounterSiteCode();
+    if (!siteCode) return;
+    loadGoatCounterScript(siteCode);
+}
+
+function registerGoatCounterDebugApi() {
+    if (window.WTTGoatCounter) return;
+    window.WTTGoatCounter = {
+        setSiteCode(siteCode) {
+            const safeCode = persistGoatCounterSiteCode(siteCode);
+            if (!safeCode) {
+                throw new Error('Invalid GoatCounter site code. Example: "untopo"');
+            }
+            loadGoatCounterScript(safeCode);
+            return this.status();
+        },
+        status() {
+            return {
+                siteCode: readGoatCounterSiteCode(),
+                activeInPage: !!document.getElementById(GOATCOUNTER_SCRIPT_ID)
+            };
+        }
+    };
 }
 
 function getReleaseSpotlightSeenKey(version = APP_VERSION) {
@@ -10340,6 +10425,8 @@ goalMinutesInput.addEventListener('input', () => {
                 void initializeAndroidWidgetBridge();
             }, 10000);
         }
+        registerGoatCounterDebugApi();
+        setupGoatCounterAnalytics();
         void checkForInstalledAppUpdates();
         scheduleReleaseSpotlightBanner();
         setInterval(updateLocalTime, 1000);
