@@ -1691,8 +1691,13 @@ async function confirmExportOptions() {
     const sessionLiveUtilization = document.getElementById('session-live-utilization');
     const sessionLiveUtilizationBar = document.getElementById('session-live-utilization-bar');
     const sessionLiveUtilizationHint = document.getElementById('session-live-utilization-hint');
+    const openSessionHistoryBtn = document.getElementById('open-session-history-btn');
+    const sessionHistoryCountLabel = document.getElementById('session-history-count-label');
     const sessionHistoryList = document.getElementById('session-history-list');
     const sessionHistoryClearBtn = document.getElementById('session-history-clear-btn');
+    const sessionHistoryModal = document.getElementById('session-history-modal');
+    const closeSessionHistoryModalBtn = document.getElementById('close-session-history-modal');
+    const doneSessionHistoryBtn = document.getElementById('done-session-history-btn');
     
     
     const filterTodayBtn = document.getElementById('filter-today');
@@ -3488,9 +3493,14 @@ if (storedDailyGoal) {
     }
 
     function renderSessionHistory() {
-        if (!sessionHistoryList) return;
         const entries = normalizeSessionHistoryEntries(sessionHistoryEntries);
         sessionHistoryEntries = entries;
+        if (sessionHistoryCountLabel) {
+            sessionHistoryCountLabel.textContent = entries.length === 0
+                ? 'No sessions yet'
+                : `${entries.length} session${entries.length === 1 ? '' : 's'} logged`;
+        }
+        if (!sessionHistoryList) return;
         if (sessionHistoryClearBtn) {
             sessionHistoryClearBtn.disabled = entries.length === 0;
             sessionHistoryClearBtn.classList.toggle('opacity-60', entries.length === 0);
@@ -9174,6 +9184,20 @@ function saveCalls() {
         ModalManager.close(supportModal);
     }
 
+    function openSessionHistoryModal(triggerEl = null) {
+        if (!sessionHistoryModal) return;
+        renderSessionHistory();
+        ModalManager.open(sessionHistoryModal, {
+            focusSelector: '#session-history-clear-btn',
+            triggerEl
+        });
+    }
+
+    function closeSessionHistoryModal() {
+        if (!sessionHistoryModal) return;
+        ModalManager.close(sessionHistoryModal);
+    }
+
     async function openSupportDestination(url) {
         await openExternalUrl(url);
         closeSupportModal();
@@ -9355,6 +9379,15 @@ function saveCalls() {
     if (supportKofiBtn) {
         supportKofiBtn.addEventListener('click', openSupportModal);
     }
+    if (openSessionHistoryBtn) {
+        openSessionHistoryBtn.addEventListener('click', () => openSessionHistoryModal(openSessionHistoryBtn));
+    }
+    if (closeSessionHistoryModalBtn) {
+        closeSessionHistoryModalBtn.addEventListener('click', closeSessionHistoryModal);
+    }
+    if (doneSessionHistoryBtn) {
+        doneSessionHistoryBtn.addEventListener('click', closeSessionHistoryModal);
+    }
     initializeFooterCollapsiblePanels();
     if (footerOpenSettingsBtn) {
         footerOpenSettingsBtn.addEventListener('click', () => {
@@ -9458,6 +9491,7 @@ function saveCalls() {
         ModalManager.register(editCycleModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#cycle-start-date-input' });
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(supportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#support-modal-paypal-btn' });
+        ModalManager.register(sessionHistoryModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-clear-btn' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
         ModalManager.register(exportOptionsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-export-options-btn' });
         ModalManager.register(csvImportPreviewModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-csv-import-btn' });
