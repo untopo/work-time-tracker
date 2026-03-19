@@ -2,13 +2,15 @@
     const appStorage = window.WTTStorage || window.localStorage;
     const DISPLAY_LOCALE = 'en-US';
     const SESSION_TRACKER_KEY = 'sessionTrackerStateV1';
+    const SESSION_HISTORY_KEY = 'sessionHistoryV1';
     const SESSION_RPG_STATS_KEY = 'wtt_session_rpg_stats_v1';
 
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.2.0';
+    const APP_VERSION = '1.2.1';
     const CHANGELOG = [
+        { version: '1.2.1', date: '2026-03-19', changes: ['Session Tracker now captures shift start/end time automatically with one-click Start/End flow', 'Added Session History with per-session timeline, calls count, talk/idle/utilization breakdown, earnings snapshot, and quick clear action', 'Added live Calls metric inside Session Tracker to show how many calls occurred in the active session window', 'Improved stats comparison language with supportive wording and calmer tone colors (no baseline / first active day / ahead-behind phrasing)', 'Floating Controls settings preview now reflects +/-1s adjust-button configuration inside active card samples', 'Text and encoding cleanup across release spotlights, log summaries, toasts, and separators for clearer in-app copy'] },
         { version: '1.2.0', date: '2026-03-18', changes: ['Added Session Tracker with shift start/pause/end controls and live utilization metrics', 'Added Post-Call Review strip with Undo / Quick Edit / Dismiss right after saving calls', 'Added Patterns analytics modes (Hourly / Weekly / Monthly) with improved trend readability', 'Expanded RPG progression with Daily Focus, Weekly Arc, Streak Shield, and session-linked achievements', 'Improved Call Log workflow with search, rate filter, reset, and richer results summary', 'Improved Payment Cycles with clearer current/next payout context and stronger timeline visibility', 'Improved footer and mobile navigation UX with cleaner structure and collapsible sections', 'Security hardening across desktop and Android widget flows, plus general stability fixes'] },
         { version: '1.1.88', date: '2026-03-11', changes: ['Floating Dock: You can now drag and position the in-app dock where it fits your workflow best', 'Floating Dock: Added `-1/+1s` quick-adjust buttons for active calls, with consistent sizing across full, compact, and icon dock modes', 'Call Log: Added clickable sorting by key columns so you can reorder entries faster during review', 'Payment Cycles: Added a biweekly template generator so recurring cycle ranges can be created in bulk instead of one-by-one'] },
         { version: '1.1.87', date: '2026-03-03', changes: ['UI: Replaced the footer support row with a single Donate button that opens a support modal instead of showing both provider buttons inline', 'Added: New support modal keeps both PayPal and Ko-fi options available while opening the official provider pages externally on web, desktop, and mobile'] },
@@ -135,9 +137,9 @@ function renderChangelog() {
     return;
   }
 
-  // MÃ¡s nuevo arriba (ya lo tienes asÃ­, pero lo reforzamos)
+  // Newest entries first.
   const sorted = [...CHANGELOG].sort((a, b) => {
-    // Si hay fecha vÃ¡lida, ordena por fecha, si no por versiÃ³n
+    // Prefer release date when available; otherwise sort by version.
     const da = Date.parse(a.date || '');
     const db = Date.parse(b.date || '');
     if (Number.isFinite(da) && Number.isFinite(db)) return db - da;
@@ -1036,7 +1038,7 @@ function renderReleaseSpotlightBanner() {
     wrapper.innerHTML = `
         <div class="release-spotlight-content">
             <div>
-                <div class="release-spotlight-title">Whatâ€™s New in v${escapeHTML(normalizeVersionString(APP_VERSION))}</div>
+                <div class="release-spotlight-title">What's New in v${escapeHTML(normalizeVersionString(APP_VERSION))}</div>
                 <p class="release-spotlight-text">${escapeHTML(summary)}</p>
                 <div class="release-spotlight-actions">
                     <button type="button" class="release-spotlight-btn release-spotlight-btn-primary" data-release-action="details">View details</button>
@@ -1684,10 +1686,13 @@ async function confirmExportOptions() {
     const sessionLiveState = document.getElementById('session-live-state');
     const sessionLiveElapsed = document.getElementById('session-live-elapsed');
     const sessionLiveTalk = document.getElementById('session-live-talk');
+    const sessionLiveCallCount = document.getElementById('session-live-call-count');
     const sessionLiveIdle = document.getElementById('session-live-idle');
     const sessionLiveUtilization = document.getElementById('session-live-utilization');
     const sessionLiveUtilizationBar = document.getElementById('session-live-utilization-bar');
     const sessionLiveUtilizationHint = document.getElementById('session-live-utilization-hint');
+    const sessionHistoryList = document.getElementById('session-history-list');
+    const sessionHistoryClearBtn = document.getElementById('session-history-clear-btn');
     
     
     const filterTodayBtn = document.getElementById('filter-today');
@@ -3280,6 +3285,7 @@ if (storedDailyGoal) {
         trendAnchorDate = clampTrendAnchorToToday(new Date());
     }
     let sessionTrackerState = loadSessionTrackerState();
+    let sessionHistoryEntries = loadSessionHistoryState();
     const CALL_LOG_RENDER_CHUNK_SIZE = 120;
     const CALL_LOG_RENDER_AHEAD_PX = 180;
     const RPG_CALL_ELIGIBILITY_MIGRATION_KEY = 'wtt_rpg_call_eligibility_migrated_v1';
@@ -3348,6 +3354,13 @@ if (storedDailyGoal) {
         return `${String(parsed.hours).padStart(2, '0')}:${String(parsed.minutes).padStart(2, '0')}`;
     }
 
+    function getCurrentSessionClockTime(nowMs = Date.now()) {
+        const now = new Date(nowMs);
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+
     function normalizeSessionTrackerState(input) {
         const base = getSessionDefaultState();
         const source = input && typeof input === 'object' ? input : {};
@@ -3386,6 +3399,136 @@ if (storedDailyGoal) {
         queueStorageWrite(SESSION_TRACKER_KEY, JSON.stringify(normalized));
     }
 
+    function normalizeSessionHistoryEntries(input) {
+        const source = Array.isArray(input) ? input : [];
+        return source
+            .map((entry, index) => {
+                const startedAtMs = Number(entry?.startedAtMs);
+                const endedAtMs = Number(entry?.endedAtMs);
+                if (!Number.isFinite(startedAtMs) || !Number.isFinite(endedAtMs) || endedAtMs < startedAtMs) return null;
+                const safeCallCount = Math.max(0, Math.round(Number(entry?.callCount) || 0));
+                const safePauseCount = Math.max(0, Math.round(Number(entry?.pauseCount) || 0));
+                return {
+                    id: String(entry?.id || `${endedAtMs}-${index}`),
+                    startedAtMs,
+                    endedAtMs,
+                    talkMs: Math.max(0, Number(entry?.talkMs) || 0),
+                    idleMs: Math.max(0, Number(entry?.idleMs) || 0),
+                    availableMs: Math.max(0, Number(entry?.availableMs) || 0),
+                    utilization: Math.max(0, Math.min(100, Number(entry?.utilization) || 0)),
+                    callCount: safeCallCount,
+                    pauseCount: safePauseCount,
+                    earned: Math.max(0, Number(entry?.earned) || 0)
+                };
+            })
+            .filter(Boolean)
+            .sort((a, b) => b.endedAtMs - a.endedAtMs)
+            .slice(0, 60);
+    }
+
+    function loadSessionHistoryState() {
+        try {
+            const raw = JSON.parse(appStorage.getItem(SESSION_HISTORY_KEY) || '[]');
+            return normalizeSessionHistoryEntries(raw);
+        } catch {
+            return [];
+        }
+    }
+
+    function saveSessionHistoryState() {
+        sessionHistoryEntries = normalizeSessionHistoryEntries(sessionHistoryEntries);
+        queueStorageWrite(SESSION_HISTORY_KEY, JSON.stringify(sessionHistoryEntries));
+    }
+
+    function clearSessionHistoryState() {
+        sessionHistoryEntries = [];
+        saveSessionHistoryState();
+    }
+
+    function getSessionEarningsBetween(startMs, endMs) {
+        if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return 0;
+        let total = 0;
+        for (const call of calls) {
+            const callStartMs = getCallStartMs(call);
+            const callEndMs = getCallEndMs(call);
+            if (!Number.isFinite(callStartMs) || !Number.isFinite(callEndMs) || callEndMs <= callStartMs) continue;
+            if (callEndMs > startMs && callStartMs < endMs) {
+                total += Number(call?.earned) || 0;
+            }
+        }
+        return Math.max(0, total);
+    }
+
+    function buildCompletedSessionHistoryEntry(metrics, endedAtMs = Date.now(), pauseCount = 0) {
+        const startedFromState = Number(sessionTrackerState?.startMs);
+        const fallbackStart = endedAtMs - Math.max(0, Number(metrics?.elapsedMs) || 0);
+        const startedAtMs = Number.isFinite(startedFromState) && startedFromState > 0
+            ? startedFromState
+            : Math.max(0, fallbackStart);
+        const safeEndedAtMs = Math.max(startedAtMs, endedAtMs);
+        const earned = getSessionEarningsBetween(startedAtMs, safeEndedAtMs);
+        return {
+            id: `${safeEndedAtMs}-${Math.random().toString(16).slice(2, 8)}`,
+            startedAtMs,
+            endedAtMs: safeEndedAtMs,
+            talkMs: Math.max(0, Number(metrics?.talkMs) || 0),
+            idleMs: Math.max(0, Number(metrics?.idleMs) || 0),
+            availableMs: Math.max(0, Number(metrics?.availableMs) || 0),
+            utilization: Math.max(0, Math.min(100, Number(metrics?.utilization) || 0)),
+            callCount: Math.max(0, Math.round(Number(metrics?.callCount) || 0)),
+            pauseCount: Math.max(0, Math.round(Number(pauseCount) || 0)),
+            earned
+        };
+    }
+
+    function appendSessionHistoryEntry(entry) {
+        if (!entry || typeof entry !== 'object') return;
+        sessionHistoryEntries = [entry, ...(Array.isArray(sessionHistoryEntries) ? sessionHistoryEntries : [])];
+        saveSessionHistoryState();
+    }
+
+    function renderSessionHistory() {
+        if (!sessionHistoryList) return;
+        const entries = normalizeSessionHistoryEntries(sessionHistoryEntries);
+        sessionHistoryEntries = entries;
+        if (sessionHistoryClearBtn) {
+            sessionHistoryClearBtn.disabled = entries.length === 0;
+            sessionHistoryClearBtn.classList.toggle('opacity-60', entries.length === 0);
+            sessionHistoryClearBtn.classList.toggle('cursor-not-allowed', entries.length === 0);
+        }
+
+        if (entries.length === 0) {
+            sessionHistoryList.innerHTML = '<p class="session-history-empty">No completed sessions yet.</p>';
+            return;
+        }
+
+        const rows = entries.slice(0, 12).map((entry) => {
+            const started = new Date(entry.startedAtMs);
+            const ended = new Date(entry.endedAtMs);
+            const dateLabel = started.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'short', month: 'short', day: 'numeric' });
+            const startTime = started.toLocaleTimeString(DISPLAY_LOCALE, { hour: '2-digit', minute: '2-digit' });
+            const endTime = ended.toLocaleTimeString(DISPLAY_LOCALE, { hour: '2-digit', minute: '2-digit' });
+            const sessionLength = Math.max(0, entry.endedAtMs - entry.startedAtMs);
+            return `
+                <div class="session-history-item">
+                    <div class="session-history-row">
+                        <span class="session-history-date">${escapeHTML(dateLabel)}</span>
+                        <span class="session-history-range">${escapeHTML(startTime)} - ${escapeHTML(endTime)}</span>
+                    </div>
+                    <div class="session-history-row">
+                        <span class="session-history-chip">Len ${formatTime(sessionLength)}</span>
+                        <span class="session-history-chip">Calls ${entry.callCount}</span>
+                        <span class="session-history-chip">Talk ${formatTime(entry.talkMs)}</span>
+                        <span class="session-history-chip">Idle ${formatTime(entry.idleMs)}</span>
+                        <span class="session-history-chip">Util ${formatSessionPercent(entry.utilization)}</span>
+                        <span class="session-history-chip">Earned ${formatEarnings(entry.earned)}</span>
+                    </div>
+                </div>
+            `;
+        });
+        sessionHistoryList.innerHTML = rows.join('');
+    }
+
     function clearSessionTrackerTimer() {
         if (!sessionTrackerTimerId) return;
         clearInterval(sessionTrackerTimerId);
@@ -3405,20 +3548,35 @@ if (storedDailyGoal) {
         activeTimers.add(sessionTrackerTimerId);
     }
 
-    function applySessionScheduleFromInputs() {
-        if (!sessionTrackerState) sessionTrackerState = getSessionDefaultState();
-        const normalizedStart = normalizeSessionScheduleTime(sessionStartTimeInput?.value || '');
-        const normalizedEnd = normalizeSessionScheduleTime(sessionEndTimeInput?.value || '');
-        const changed = sessionTrackerState.scheduleStart !== normalizedStart || sessionTrackerState.scheduleEnd !== normalizedEnd;
-        sessionTrackerState.scheduleStart = normalizedStart;
-        sessionTrackerState.scheduleEnd = normalizedEnd;
-        if (changed) saveSessionTrackerState();
-    }
-
     function formatSessionPercent(value) {
         const n = Number(value);
         if (!Number.isFinite(n) || n <= 0) return '0.0%';
         return `${Math.min(100, n).toFixed(1)}%`;
+    }
+
+    function getSessionCallCount(state, now = Date.now()) {
+        if (!state?.active || !Number.isFinite(state.startMs) || state.startMs <= 0) return 0;
+        const windowStart = state.startMs;
+        const windowEnd = Math.max(windowStart, now);
+        let count = 0;
+
+        for (const call of calls) {
+            const callStartMs = getCallStartMs(call);
+            const callEndMs = getCallEndMs(call);
+            if (!Number.isFinite(callStartMs) || !Number.isFinite(callEndMs) || callEndMs <= callStartMs) continue;
+            if (callEndMs > windowStart && callStartMs < windowEnd) {
+                count += 1;
+            }
+        }
+
+        const activeCallState = LiveCallSession.getState(now);
+        if (activeCallState && Number.isFinite(activeCallState.start) && activeCallState.start > 0) {
+            if (now > windowStart && activeCallState.start < windowEnd) {
+                count += 1;
+            }
+        }
+
+        return Math.max(0, count);
     }
 
     function getSessionTalkTimeMs(state, now = Date.now()) {
@@ -3460,6 +3618,7 @@ if (storedDailyGoal) {
                 pausedMs: 0,
                 availableMs: 0,
                 talkMs: 0,
+                callCount: 0,
                 idleMs: 0,
                 utilization: 0
             };
@@ -3469,6 +3628,7 @@ if (storedDailyGoal) {
         const pausedMs = Math.max(0, state.pausedTotalMs + (state.paused && state.pauseStartedMs > 0 ? (now - state.pauseStartedMs) : 0));
         const availableMs = Math.max(0, elapsedMs - pausedMs);
         const rawTalkMs = getSessionTalkTimeMs(state, now);
+        const callCount = getSessionCallCount(state, now);
         const talkMs = Math.max(0, Math.min(rawTalkMs, availableMs));
         const idleMs = Math.max(0, availableMs - talkMs);
         const utilization = availableMs > 0 ? (talkMs / availableMs) * 100 : 0;
@@ -3480,6 +3640,7 @@ if (storedDailyGoal) {
             pausedMs,
             availableMs,
             talkMs,
+            callCount,
             idleMs,
             utilization
         };
@@ -3513,6 +3674,7 @@ if (storedDailyGoal) {
 
         if (sessionLiveElapsed) sessionLiveElapsed.textContent = formatTime(metrics.elapsedMs);
         if (sessionLiveTalk) sessionLiveTalk.textContent = formatTime(metrics.talkMs);
+        if (sessionLiveCallCount) sessionLiveCallCount.textContent = `${metrics.callCount}`;
         if (sessionLiveIdle) sessionLiveIdle.textContent = formatTime(metrics.idleMs);
         if (sessionLiveUtilization) sessionLiveUtilization.textContent = formatSessionPercent(metrics.utilization);
         if (sessionLiveUtilizationBar) {
@@ -3531,14 +3693,24 @@ if (storedDailyGoal) {
                 : '<i class="fas fa-pause mr-1"></i> Pause';
         }
         if (sessionEndBtn) sessionEndBtn.disabled = !metrics.state.active;
-        if (sessionStartTimeInput) sessionStartTimeInput.disabled = metrics.state.active;
-        if (sessionEndTimeInput) sessionEndTimeInput.disabled = metrics.state.active;
+        if (sessionStartTimeInput) {
+            sessionStartTimeInput.disabled = false;
+            sessionStartTimeInput.readOnly = true;
+        }
+        if (sessionEndTimeInput) {
+            sessionEndTimeInput.disabled = false;
+            sessionEndTimeInput.readOnly = true;
+        }
     }
 
     function startWorkSession() {
         if (!sessionTrackerState) sessionTrackerState = getSessionDefaultState();
         if (sessionTrackerState.active) return;
-        applySessionScheduleFromInputs();
+        const autoStart = getCurrentSessionClockTime();
+        sessionTrackerState.scheduleStart = autoStart;
+        sessionTrackerState.scheduleEnd = '';
+        if (sessionStartTimeInput) sessionStartTimeInput.value = autoStart;
+        if (sessionEndTimeInput) sessionEndTimeInput.value = '';
         sessionTrackerState.active = true;
         sessionTrackerState.paused = false;
         sessionTrackerState.startMs = Date.now();
@@ -3585,9 +3757,16 @@ if (storedDailyGoal) {
             return;
         }
 
+        const autoEnd = getCurrentSessionClockTime();
+        sessionTrackerState.scheduleEnd = autoEnd;
+        if (sessionEndTimeInput) sessionEndTimeInput.value = autoEnd;
+
         const now = Date.now();
         const metrics = getSessionComputedMetrics(now);
-        recordCompletedSessionForRpg(metrics, now, Number(sessionTrackerState.pauseCount) || 0);
+        const pauseCount = Number(sessionTrackerState.pauseCount) || 0;
+        const historyEntry = buildCompletedSessionHistoryEntry(metrics, now, pauseCount);
+        recordCompletedSessionForRpg(metrics, now, pauseCount);
+        appendSessionHistoryEntry(historyEntry);
         const scheduleStart = sessionTrackerState.scheduleStart;
         const scheduleEnd = sessionTrackerState.scheduleEnd;
         sessionTrackerState = getSessionDefaultState();
@@ -3596,6 +3775,7 @@ if (storedDailyGoal) {
         saveSessionTrackerState();
         clearSessionTrackerTimer();
         renderSessionTracker();
+        renderSessionHistory();
         showToast(`Session ended. Talk ${formatTime(metrics.talkMs)} | Idle ${formatTime(metrics.idleMs)} | Utilization ${formatSessionPercent(metrics.utilization)}.`);
         evaluateAchievements({ notify: true });
     }
@@ -3998,7 +4178,7 @@ if (storedDailyGoal) {
         const total = arc.steps.length;
         const hasReward = !!(state.weeklyArcRewards && state.weeklyArcRewards[arc.weekKey]);
         if (hasReward) {
-            rpgWeeklyArcStatus.textContent = `${completed}/${total} milestones completed â€¢ Reward claimed`;
+            rpgWeeklyArcStatus.textContent = `${completed}/${total} milestones completed | Reward claimed`;
         } else {
             rpgWeeklyArcStatus.textContent = `${completed}/${total} milestones completed`;
         }
@@ -4035,7 +4215,7 @@ if (storedDailyGoal) {
         state.weeklyArcXp += WEEKLY_ARC_REWARD_XP;
         state.streakShields = Math.min(STREAK_SHIELD_MAX, state.streakShields + 1);
         if (notify) {
-            showToast(`Weekly arc completed â€¢ XP gained: +${WEEKLY_ARC_REWARD_XP}`);
+            showToast(`Weekly arc completed | XP gained: +${WEEKLY_ARC_REWARD_XP}`);
             showToast('Streak shield earned (+1)');
         }
         return true;
@@ -4981,7 +5161,7 @@ if (storedDailyGoal) {
             saveRpgProgressState(rpgState);
             updateRpgProgress();
             if (notify) {
-                rewards.forEach((r) => showToast(`Daily quest completed: ${r.name} â€¢ XP gained: +${r.xp}`));
+                rewards.forEach((r) => showToast(`Daily quest completed: ${r.name} | XP gained: +${r.xp}`));
             }
         }
 
@@ -5072,7 +5252,7 @@ if (storedDailyGoal) {
             }
             if (notify && isRpgEnabled()) {
                 rewardEvents.forEach((r) => {
-                    showToast(`Achievement unlocked: ${r.name} â€¢ XP gained: +${r.xp}`);
+                    showToast(`Achievement unlocked: ${r.name} | XP gained: +${r.xp}`);
                 });
             }
         }
@@ -6093,15 +6273,14 @@ function msToHMS(ms) {
 function normalizeCall(call) {
   const start = call.startTime ? new Date(call.startTime) : new Date();
 
-  // Si duration viene de usuario puede ser segundos (menor a 24h) o milisegundos.
-  // Tratamos cualquier nÃºmero finito; asumimos que valores menores a un dÃ­a estÃ¡n en segundos,
-  // los demÃ¡s ya estÃ¡n en ms. Esta heurÃ­stica evita resultados incorrectos cuando
-  // alguien guarda una sesiÃ³n muy larga (>24h).
+  // `duration` can be in seconds (<24h) or milliseconds.
+  // For finite values, treat anything under one day as seconds and larger values as milliseconds.
+  // This avoids incorrect totals for long sessions.
   const rawDuration = Number(call.duration ?? 0);
   let durationMs = 0;
   if (Number.isFinite(rawDuration) && rawDuration > 0) {
     const oneDaySeconds = 24 * 60 * 60;
-    // si es menor que un dÃ­a en segundos, lo convertimos a ms
+    // If under one day in seconds, convert to ms.
     if (rawDuration < oneDaySeconds) {
       durationMs = Math.round(rawDuration * 1000);
     } else {
@@ -6325,8 +6504,8 @@ function migrateLegacyRpgCallEligibility() {
         const extras = [];
         if (callLogRateFilter) extras.push(`rate: ${callLogRateFilter}`);
         if (callLogSearchQuery) extras.push(`search: "${callLogSearchQuery}"`);
-        const suffix = extras.length > 0 ? ` â€¢ ${extras.join(' â€¢ ')}` : '';
-        callLogResultsSummary.textContent = `Showing ${count} call${count === 1 ? '' : 's'} â€¢ ${filterLabel}${suffix}`;
+        const suffix = extras.length > 0 ? ` | ${extras.join(' | ')}` : '';
+        callLogResultsSummary.textContent = `Showing ${count} call${count === 1 ? '' : 's'} | ${filterLabel}${suffix}`;
     }
 
     function setCallLogSearchQuery(nextValue) {
@@ -6559,6 +6738,7 @@ function saveCalls() {
             dailyGoal,
             paymentCyclesEnabled,
             paymentCycles,
+            sessionHistoryEntries,
             theme: appStorage.getItem('theme'),
             timeZone: appStorage.getItem('timeZone')
         };
@@ -6583,16 +6763,25 @@ function saveCalls() {
         return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
     }
 
-    function formatSignedCurrencyDelta(value) {
-        if (!Number.isFinite(value) || Math.abs(value) < 0.005) return '$0.00';
-        const sign = value > 0 ? '+' : '-';
-        return `${sign}$${Math.abs(value).toFixed(2)}`;
+    function formatSupportiveCurrencyDelta(value) {
+        if (!Number.isFinite(value)) return 'no baseline yet';
+        if (Math.abs(value) < 0.005) return 'on par';
+        if (value > 0) return `${formatEarnings(value)} ahead`;
+        return `${formatEarnings(Math.abs(value))} behind`;
     }
 
-    function formatSignedDurationDelta(milliseconds) {
-        if (!Number.isFinite(milliseconds) || Math.abs(milliseconds) < 1000) return '00:00:00';
-        const sign = milliseconds > 0 ? '+' : '-';
-        return `${sign}${formatTime(Math.abs(milliseconds))}`;
+    function formatSupportiveDurationDelta(milliseconds) {
+        if (!Number.isFinite(milliseconds)) return 'no baseline yet';
+        if (Math.abs(milliseconds) < 1000) return 'on par';
+        const value = formatTime(Math.abs(milliseconds));
+        return milliseconds > 0 ? `${value} longer` : `${value} shorter`;
+    }
+
+    function formatSupportivePercentDelta(value) {
+        if (!Number.isFinite(value)) return 'no baseline yet';
+        if (Math.abs(value) < 0.5) return 'on par';
+        const rounded = Math.round(Math.abs(value));
+        return value > 0 ? `${rounded}% ahead` : `${rounded}% behind`;
     }
 
     function applyDeltaTone(element, deltaValue) {
@@ -6747,7 +6936,7 @@ function saveCalls() {
         const previousDayStartMs = dayStartMs - (24 * 60 * 60 * 1000);
         const previousDayEndMs = dayStartMs;
         const todayStartMs = getDayStartMs(new Date(nowMs));
-        const comparisonLabel = dayStartMs === todayStartMs ? 'yesterday' : 'prior day';
+        const comparisonLabel = dayStartMs === todayStartMs ? 'yesterday' : 'the prior day';
 
         const dayCalls = calls
             .filter((call) => {
@@ -6788,13 +6977,15 @@ function saveCalls() {
         }, 0);
 
         if (selectedDayEarnings === 0 && previousDayEarnings === 0) {
-            rhythmVsPreviousDayDisplay.textContent = `Vs ${comparisonLabel}: --`;
+            rhythmVsPreviousDayDisplay.textContent = `Compared with ${comparisonLabel}: no baseline yet`;
+            applyDeltaTone(rhythmVsPreviousDayDisplay, 0);
         } else if (previousDayEarnings === 0) {
-            rhythmVsPreviousDayDisplay.textContent = `Vs ${comparisonLabel}: +${formatEarnings(selectedDayEarnings)} (first active day)`;
+            rhythmVsPreviousDayDisplay.textContent = `Compared with ${comparisonLabel}: first active day (+${formatEarnings(selectedDayEarnings)})`;
+            applyDeltaTone(rhythmVsPreviousDayDisplay, selectedDayEarnings);
         } else {
             const diff = selectedDayEarnings - previousDayEarnings;
-            const sign = diff >= 0 ? '+' : '-';
-            rhythmVsPreviousDayDisplay.textContent = `Vs ${comparisonLabel}: ${sign}${formatEarnings(Math.abs(diff))}`;
+            rhythmVsPreviousDayDisplay.textContent = `Compared with ${comparisonLabel}: ${formatSupportiveCurrencyDelta(diff)}`;
+            applyDeltaTone(rhythmVsPreviousDayDisplay, diff);
         }
     }
 
@@ -7237,7 +7428,7 @@ function saveCalls() {
             trendRangeLabel.textContent = monthLabel;
             weeklyTrendSummary.textContent = `Monthly earnings in ${monthLabel} | Total ${formatEarnings(total)} across ${activeDays} active day${activeDays === 1 ? '' : 's'}.`;
             if (trendSummaryInline) {
-                trendSummaryInline.textContent = `Total ${formatEarnings(total)} â€¢ ${activeDays} active day${activeDays === 1 ? '' : 's'}`;
+                trendSummaryInline.textContent = `Total ${formatEarnings(total)} | ${activeDays} active day${activeDays === 1 ? '' : 's'}`;
             }
             if (bestDayDate) {
                 weeklyTrendBestDay.innerHTML = `<span class="trend-insight-chip trend-insight-chip-best">${bestDayDate.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'short', month: 'short', day: 'numeric' })} - ${formatEarnings(bestDayValue)}</span>`;
@@ -7322,7 +7513,7 @@ function saveCalls() {
         const priorDayStartMs = selectedDayStartMs - dayMs;
         const currentDayStartMs = getDayStartMs(now);
         const isViewingToday = selectedDayStartMs === currentDayStartMs;
-        const comparisonLabel = isViewingToday ? 'yesterday' : 'prior day';
+        const comparisonLabel = isViewingToday ? 'yesterday' : 'the prior day';
         const monthStartMs = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1).getTime();
         const nextMonthStartMs = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1).getTime();
 
@@ -7421,19 +7612,27 @@ function saveCalls() {
 
         if (avgDurationDeltaDisplay) {
             if (todaysCount === 0 && yesterdaysCount === 0) {
-                avgDurationDeltaDisplay.textContent = `Vs ${comparisonLabel}: --`;
+                avgDurationDeltaDisplay.textContent = `Compared with ${comparisonLabel}: no baseline yet`;
                 applyDeltaTone(avgDurationDeltaDisplay, 0);
             } else {
                 const avgDurationDelta = todaysAvgDuration - yesterdaysAvgDuration;
-                avgDurationDeltaDisplay.textContent = `Vs ${comparisonLabel}: ${formatSignedDurationDelta(avgDurationDelta)}`;
+                avgDurationDeltaDisplay.textContent = `Compared with ${comparisonLabel}: ${formatSupportiveDurationDelta(avgDurationDelta)}`;
                 applyDeltaTone(avgDurationDeltaDisplay, avgDurationDelta);
             }
         }
 
         if (todayEarningsDeltaDisplay) {
             const earningsDelta = todaysEarnings - yesterdaysEarnings;
-            todayEarningsDeltaDisplay.textContent = `Vs ${comparisonLabel}: ${formatSignedCurrencyDelta(earningsDelta)}`;
-            applyDeltaTone(todayEarningsDeltaDisplay, earningsDelta);
+            if (todaysEarnings === 0 && yesterdaysEarnings === 0) {
+                todayEarningsDeltaDisplay.textContent = `Compared with ${comparisonLabel}: no baseline yet`;
+                applyDeltaTone(todayEarningsDeltaDisplay, 0);
+            } else if (yesterdaysEarnings === 0 && todaysEarnings > 0) {
+                todayEarningsDeltaDisplay.textContent = `Compared with ${comparisonLabel}: first active day (+${formatEarnings(todaysEarnings)})`;
+                applyDeltaTone(todayEarningsDeltaDisplay, todaysEarnings);
+            } else {
+                todayEarningsDeltaDisplay.textContent = `Compared with ${comparisonLabel}: ${formatSupportiveCurrencyDelta(earningsDelta)}`;
+                applyDeltaTone(todayEarningsDeltaDisplay, earningsDelta);
+            }
         }
 
         const hasAmountGoal = dailyGoal.amount > 0;
@@ -7502,14 +7701,14 @@ function saveCalls() {
                     const todayPct = Math.min((todayProgressValue / goalTarget) * 100, 100);
                     const yesterdayPct = Math.min((yesterdayProgressValue / goalTarget) * 100, 100);
                     const paceDeltaPct = todayPct - yesterdayPct;
-                    goalEstimateDeltaDisplay.textContent = `Pace vs ${comparisonLabel}: ${paceDeltaPct >= 0 ? '+' : ''}${paceDeltaPct.toFixed(0)}%`;
+                    goalEstimateDeltaDisplay.textContent = `Pace compared with ${comparisonLabel}: ${formatSupportivePercentDelta(paceDeltaPct)}`;
                     applyDeltaTone(goalEstimateDeltaDisplay, paceDeltaPct);
                 } else {
-                    goalEstimateDeltaDisplay.textContent = `Pace vs ${comparisonLabel}: --`;
+                    goalEstimateDeltaDisplay.textContent = `Pace compared with ${comparisonLabel}: no baseline yet`;
                     applyDeltaTone(goalEstimateDeltaDisplay, 0);
                 }
             } else {
-                goalEstimateDeltaDisplay.textContent = `Pace vs ${comparisonLabel}: --`;
+                goalEstimateDeltaDisplay.textContent = `Pace compared with ${comparisonLabel}: no baseline yet`;
                 applyDeltaTone(goalEstimateDeltaDisplay, 0);
             }
         }
@@ -7566,8 +7765,7 @@ function saveCalls() {
             if (cycleEarningsTrendDisplay) {
                 if (previousCycle) {
                     const cycleDelta = cycleEarnings - previousCycleEarnings;
-                    const deltaPrefix = cycleDelta >= 0 ? '+' : '-';
-                    cycleEarningsTrendDisplay.textContent = `Vs previous cycle: ${deltaPrefix}$${Math.abs(cycleDelta).toFixed(2)}`;
+                    cycleEarningsTrendDisplay.textContent = `Compared with previous cycle: ${formatSupportiveCurrencyDelta(cycleDelta)}`;
                     applyDeltaTone(cycleEarningsTrendDisplay, cycleDelta);
                 } else {
                     cycleEarningsTrendDisplay.textContent = 'No previous cycle to compare yet.';
@@ -8019,7 +8217,7 @@ function saveCalls() {
     return;
   }
 
-  // ValidaciÃ³n mÃ­nima: al menos (start+end) o minutes
+  // Minimum validation: either start+end, or duration input.
   if ((!start || !end) && !durationMsFromMinutes) {
     showAlertModal('Invalid Call Data', 'Please enter Start & End time, or a valid Duration.');
     return;
@@ -8047,7 +8245,7 @@ function saveCalls() {
     }
   }
 
-  // Si al final no hay ambos, algo fallÃ³
+  // If we still do not have both start and end, input is invalid.
   if (!finalStart || !finalEnd || finalEnd <= finalStart) {
     showAlertModal('Invalid Call Data', 'Please enter valid values (End must be after Start).');
     return;
@@ -8137,7 +8335,7 @@ function saveCalls() {
     callRateSelect.value = rateSelect.value || callRateSelect.value;
   }
 
-  // Cambiar tÃ­tulo del modal (opcional)
+  // Update modal title.
   document.getElementById('modal-title').innerHTML =
     `<i class="fas fa-edit text-blue-500 mr-2"></i>Edit Call`;
 }
@@ -9424,16 +9622,23 @@ function saveCalls() {
         if (sessionEndBtn) {
             sessionEndBtn.addEventListener('click', endWorkSession);
         }
-        if (sessionStartTimeInput) {
-            sessionStartTimeInput.addEventListener('change', () => {
-                applySessionScheduleFromInputs();
-                renderSessionTracker();
-            });
-        }
-        if (sessionEndTimeInput) {
-            sessionEndTimeInput.addEventListener('change', () => {
-                applySessionScheduleFromInputs();
-                renderSessionTracker();
+        if (sessionHistoryClearBtn) {
+            sessionHistoryClearBtn.addEventListener('click', () => {
+                if (!Array.isArray(sessionHistoryEntries) || sessionHistoryEntries.length === 0) return;
+                showConfirmation(
+                    'Clear Session History',
+                    'This will remove all completed session entries.',
+                    'Clear',
+                    () => {
+                        clearSessionHistoryState();
+                        renderSessionHistory();
+                        showToast('Session history cleared.');
+                    },
+                    {
+                        loadingText: 'Clearing session history...',
+                        successText: 'Session history cleared.'
+                    }
+                );
             });
         }
         if (liveCallMinusSecondBtn) {
@@ -9613,19 +9818,19 @@ function saveCalls() {
         openCallModal(addCallBtn);
 });
 
-// âœ… X (cerrar)
+// X button (close)
         closeModalBtn.addEventListener('click', (e) => {
             e.preventDefault();
             closeCallModal();
         });
 
-// âœ… Cancel (cerrar)
+// Cancel button (close)
         cancelCallBtn.addEventListener('click', (e) => {
             e.preventDefault();
             closeCallModal();
         });
 
-// âœ… Save (evita refresh + actualiza en vivo porque tu handleCallFormSubmit ya llama saveCalls())
+// Save button (no page refresh; handleCallFormSubmit handles persistence)
         callForm.addEventListener('submit', handleCallFormSubmit);
 
         // Restore saved textarea heights for notes (persist across refreshes)
@@ -10314,7 +10519,9 @@ goalMinutesInput.addEventListener('input', () => {
                 clearDailyQuestState();
                 clearRpgProgressState();
                 clearSessionRpgStatsState();
+                clearSessionHistoryState();
                 saveCalls();
+                renderSessionHistory();
                 renderAchievementsModal();
                 showToast('All call history erased.');
                 },
@@ -10339,6 +10546,7 @@ goalMinutesInput.addEventListener('input', () => {
                 paymentCycles = [];
                 sessionTrackerState = getSessionDefaultState();
                 clearSessionRpgStatsState();
+                clearSessionHistoryState();
                 saveRates();
                 saveCalls();
                 saveDailyGoal();
@@ -10346,6 +10554,7 @@ goalMinutesInput.addEventListener('input', () => {
                 saveSessionTrackerState();
                 clearSessionTrackerTimer();
                 renderSessionTracker();
+                renderSessionHistory();
                 syncDailyGoalInputs();
                 populateRateSelects();
                 showToast('All data reset.');
@@ -10410,6 +10619,7 @@ goalMinutesInput.addEventListener('input', () => {
         syncDailyGoalInputs();
         updateStatistics();
         renderSessionTracker();
+        renderSessionHistory();
         ensureSessionTrackerTimer();
         evaluateAchievements({ notify: false });
         updateStorageInfo();
