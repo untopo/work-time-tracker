@@ -5,6 +5,13 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.2.7 - 2026-03-21
+
+### Highlights
+- Test release to validate the new in-app updater flow end to end.
+- Synced release metadata and in-app version surfaces to `v1.2.7` across web, desktop, and Android packaging.
+- Kept fallback behavior to the GitHub release page when direct in-app update install is unavailable.
+
 ## v1.2.6 - 2026-03-21
 
 ### Highlights

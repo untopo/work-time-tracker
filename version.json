@@ -1,6 +1,7 @@
 {
-    "latestVersion":  "1.2.6",
-    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.6",
+    "latestVersion":  "1.2.7",
+    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.7",
     "downloadsUrl":  "https://github.com/untopo/work-time-tracker/releases",
-    "notes":  "In-app update release: desktop now downloads and launches installer directly from the app, and Android now downloads APK and opens installer in-app with fallback to release page when needed."
+    "notes":  "Test release: validating in-app updater behavior on desktop and Android, with fallback to the GitHub release page when direct install is unavailable."
 }
+

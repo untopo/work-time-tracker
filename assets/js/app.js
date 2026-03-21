@@ -8,8 +8,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.2.6';
+    const APP_VERSION = '1.2.7';
     const CHANGELOG = [
+        { version: '1.2.7', date: '2026-03-21', changes: ['Test release to validate in-app updates across desktop and Android', 'Aligned release metadata to v1.2.7 across web, desktop, and mobile targets', 'Retained release-page fallback when direct in-app update cannot proceed'] },
         { version: '1.2.6', date: '2026-03-21', changes: ['Added in-app updater flow for desktop (Tauri): update banner can now download and launch the Windows installer directly without opening the GitHub Releases page', 'Added in-app updater flow for Android app shell: update banner can now download the APK and open the Android installer directly inside the app flow', 'Update action now auto-falls back to release page if in-app update cannot be completed on the current platform', 'Android update bridge added with strict official release URL validation, FileProvider handoff, and installer intent launch'] },
         { version: '1.2.5', date: '2026-03-21', changes: ['Version alignment hotfix: in-app Current Version and What\'s New now match the published release number across web, desktop, and Android', 'Added release guard in build flow to block publishing when package, manifest, Tauri, Cargo, or app frontend versions are out of sync', 'Maintained Patterns detail modal improvements with left/right navigation and polished header spacing'] },
         { version: '1.2.4', date: '2026-03-21', changes: ['Added detailed drill-down modal for Patterns cells (hourly, weekly, and monthly) with per-slot calls and session context', 'Added in-modal left/right navigation to move between adjacent hours/days without leaving the detail view', 'Heatmap/trend cells now open details directly on click while preserving hover tooltip behavior', 'Refined patterns detail modal header spacing so navigation buttons no longer conflict with the close icon'] },
