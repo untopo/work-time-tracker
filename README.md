@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.2.6-blue)
+![Version](https://img.shields.io/badge/version-1.2.7-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -279,7 +279,7 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Changelog
-- Current Version: `v1.2.6`
+- Current Version: `v1.2.7`
 - In-app history: footer version link (`What's New` modal)
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - Published release entries and assets: [GitHub Releases](https://github.com/untopo/work-time-tracker/releases)
@@ -296,6 +296,7 @@ Direct contact reference: `worktimetrackertool@gmail.com`
 Built for interpreters by interpreters.
 
 Made by [Topo](https://www.instagram.com/otpo/)
+
 
 
 
