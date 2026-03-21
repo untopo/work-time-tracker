@@ -5,6 +5,17 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.2.6 - 2026-03-21
+
+### Highlights
+- Added in-app updater flow for Windows desktop (Tauri): the update banner now downloads and launches the installer directly without leaving the app.
+- Added in-app updater flow for Android app shell: the update banner now downloads the APK and opens the Android installer directly.
+- Added safe fallback behavior to open the release URL when in-app installation cannot proceed.
+
+### Platform Integration
+- Desktop: introduced native command for secure release-asset download + installer launch.
+- Android: introduced native `InAppUpdater` plugin, installer intent bridge, and provider path updates for APK handoff.
+
 ## v1.2.5 - 2026-03-21
 
 ### Highlights
