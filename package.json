@@ -1,11 +1,12 @@
 {
   "name": "work-time-tracker",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Privacy-first time tracker for interpreters and freelancers.",
   "main": "index.js",
   "scripts": {
     "dev:web": "serve . -l 1420 --no-clipboard",
-    "build:web": "node scripts/prepare-dist.mjs",
+    "verify:version-sync": "node scripts/verify-version-sync.mjs",
+    "build:web": "npm run verify:version-sync && node scripts/prepare-dist.mjs",
     "android:icons": "powershell -ExecutionPolicy Bypass -File scripts/generate-android-icons.ps1",
     "tauri:dev": "node scripts/tauri-win.mjs dev",
     "tauri:build": "node scripts/tauri-win.mjs build",
@@ -34,4 +35,5 @@
     "serve": "^14.2.5"
   }
 }
+
 
