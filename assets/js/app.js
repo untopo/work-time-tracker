@@ -1700,6 +1700,18 @@ async function confirmExportOptions() {
     const sessionHistoryModal = document.getElementById('session-history-modal');
     const closeSessionHistoryModalBtn = document.getElementById('close-session-history-modal');
     const doneSessionHistoryBtn = document.getElementById('done-session-history-btn');
+    const patternsDetailModal = document.getElementById('patterns-detail-modal');
+    const closePatternsDetailModalBtn = document.getElementById('close-patterns-detail-modal');
+    const donePatternsDetailBtn = document.getElementById('done-patterns-detail-btn');
+    const patternsDetailTitle = document.getElementById('patterns-detail-title');
+    const patternsDetailSubtitle = document.getElementById('patterns-detail-subtitle');
+    const patternsDetailPrevBtn = document.getElementById('patterns-detail-prev-btn');
+    const patternsDetailNextBtn = document.getElementById('patterns-detail-next-btn');
+    const patternsDetailSummary = document.getElementById('patterns-detail-summary');
+    const patternsDetailCallsTitle = document.getElementById('patterns-detail-calls-title');
+    const patternsDetailSessionsTitle = document.getElementById('patterns-detail-sessions-title');
+    const patternsDetailCallsList = document.getElementById('patterns-detail-calls-list');
+    const patternsDetailSessionsList = document.getElementById('patterns-detail-sessions-list');
     
     
     const filterTodayBtn = document.getElementById('filter-today');
@@ -3287,6 +3299,9 @@ if (storedDailyGoal) {
     let trendMode = normalizeTrendMode(appStorage.getItem('trendMode'));
     let patternsMode = normalizePatternsMode(appStorage.getItem('patternsMode') || trendMode || 'hourly');
     let trendAnchorDate = getTrendAnchorStorageDate();
+    let patternsDetailState = null;
+    let hourlyHeatmapWindowStartMs = 0;
+    let hourlyHeatmapWindowEndMs = 0;
     let rpgXpBreakdownExpanded = appStorage.getItem('rpgXpBreakdownExpanded') === '1';
     if (trendMode === 'weekly') {
         trendAnchorDate = clampTrendAnchorToToday(new Date());
@@ -7105,9 +7120,14 @@ function saveCalls() {
         });
 
         containerEl.addEventListener('click', (event) => {
-            if (!isTouchLikePointer()) return;
             const target = event.target instanceof Element ? event.target.closest('[data-heatmap-tooltip]') : null;
             if (!target || !containerEl.contains(target)) return;
+            const hasDetail = String(target.dataset.patternDetailType || '').trim() !== '';
+            if (hasDetail) {
+                openPatternsDetailFromElement(target);
+                return;
+            }
+            if (!isTouchLikePointer()) return;
             const isSameTarget = heatmapHoverPinned && heatmapHoverActiveTarget === target;
             if (isSameTarget) {
                 hideHeatmapHoverTooltip(true);
@@ -7145,6 +7165,8 @@ function saveCalls() {
         const nextMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
         const startMs = monthStart.getTime();
         const endMs = nextMonthStart.getTime();
+        hourlyHeatmapWindowStartMs = startMs;
+        hourlyHeatmapWindowEndMs = endMs;
         const hourlyCounts = Array.from({ length: 24 }, () => 0);
         const hourlyEarnings = Array.from({ length: 24 }, () => 0);
         const hourlyDurationMs = Array.from({ length: 24 }, () => 0);
@@ -7173,6 +7195,10 @@ function saveCalls() {
             `;
             const tooltip = `${String(hour).padStart(2, '0')}:00 | ${count} call${count === 1 ? '' : 's'} | ${formatEarnings(hourlyEarnings[hour])} | ${formatTime(hourlyDurationMs[hour])}`;
             cell.dataset.heatmapTooltip = tooltip;
+            cell.dataset.patternDetailType = 'hourly';
+            cell.dataset.patternHour = String(hour);
+            cell.dataset.patternMonthStartMs = String(startMs);
+            cell.dataset.patternMonthEndMs = String(endMs);
             cell.setAttribute('aria-label', tooltip);
             cell.removeAttribute('title');
             hourlyHeatmapGrid.appendChild(cell);
@@ -7227,6 +7253,323 @@ function saveCalls() {
             byDay.set(key, current);
         }
         return byDay;
+    }
+
+    function getPatternDetailSourceLabel(sourceMode) {
+        if (sourceMode === 'weekly') return 'Weekly pattern';
+        if (sourceMode === 'monthly') return 'Monthly pattern';
+        return 'Hourly pattern';
+    }
+
+    function getSessionEntriesForPatternDetails(nowMs = Date.now()) {
+        const completed = normalizeSessionHistoryEntries(sessionHistoryEntries).map((entry) => ({
+            ...entry,
+            _active: false
+        }));
+        const metrics = getSessionComputedMetrics(nowMs);
+        const state = metrics?.state;
+        if (state?.active && Number.isFinite(state.startMs) && state.startMs > 0) {
+            const startedAtMs = state.startMs;
+            const endedAtMs = Math.max(startedAtMs, nowMs);
+            completed.unshift({
+                id: `active-${startedAtMs}`,
+                startedAtMs,
+                endedAtMs,
+                talkMs: Math.max(0, Number(metrics.talkMs) || 0),
+                idleMs: Math.max(0, Number(metrics.idleMs) || 0),
+                availableMs: Math.max(0, Number(metrics.availableMs) || 0),
+                utilization: Math.max(0, Math.min(100, Number(metrics.utilization) || 0)),
+                callCount: Math.max(0, Number(metrics.callCount) || 0),
+                pauseCount: Math.max(0, Number(state.pauseCount) || 0),
+                earned: getSessionEarningsBetween(startedAtMs, endedAtMs),
+                _active: true
+            });
+        }
+        return completed;
+    }
+
+    function getCallsInRange(startMs, endMs) {
+        if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return [];
+        return calls
+            .filter((call) => {
+                const callStart = getCallStartMs(call);
+                return callStart >= startMs && callStart < endMs;
+            })
+            .sort((a, b) => getCallStartMs(b) - getCallStartMs(a));
+    }
+
+    function buildPatternDetailSummaryCard(label, value) {
+        return `
+            <div class="pattern-detail-summary-card">
+                <span class="pattern-detail-summary-label">${escapeHTML(label)}</span>
+                <span class="pattern-detail-summary-value">${escapeHTML(value)}</span>
+            </div>
+        `;
+    }
+
+    function buildPatternDetailCallItem(call) {
+        const startMs = getCallStartMs(call);
+        const endMs = getCallEndMs(call);
+        const startLabel = Number.isFinite(startMs) && startMs > 0
+            ? new Date(startMs).toLocaleTimeString(DISPLAY_LOCALE, { hour: '2-digit', minute: '2-digit' })
+            : '--';
+        const endLabel = Number.isFinite(endMs) && endMs > 0
+            ? new Date(endMs).toLocaleTimeString(DISPLAY_LOCALE, { hour: '2-digit', minute: '2-digit' })
+            : '--';
+        const rateName = String(call?.rateName || 'Rate removed').trim();
+        const note = String(call?.notes || '').trim();
+        const earned = Number(call?.earned) || 0;
+        const durationMs = Math.max(0, Number(call?.duration) || 0);
+
+        return `
+            <article class="pattern-detail-item">
+                <div class="pattern-detail-item-row">
+                    <span class="pattern-detail-item-main">${escapeHTML(startLabel)} - ${escapeHTML(endLabel)}</span>
+                    <span class="pattern-detail-item-amount">${escapeHTML(formatEarnings(earned))}</span>
+                </div>
+                <div class="pattern-detail-item-row">
+                    <span class="pattern-detail-item-meta">Rate: ${escapeHTML(rateName)}</span>
+                    <span class="pattern-detail-item-meta">Duration: ${escapeHTML(formatTime(durationMs))}</span>
+                </div>
+                ${note ? `<p class="pattern-detail-item-note">Notes: ${escapeHTML(note)}</p>` : ''}
+            </article>
+        `;
+    }
+
+    function buildPatternDetailSessionItem(session, options = {}) {
+        const startMs = Number(session?.startedAtMs) || 0;
+        const endMs = Number(session?.endedAtMs) || startMs;
+        const overlapMs = Math.max(0, Number(options?.overlapMs) || 0);
+        const startLabel = new Date(startMs).toLocaleTimeString(DISPLAY_LOCALE, { hour: '2-digit', minute: '2-digit' });
+        const endLabel = new Date(endMs).toLocaleTimeString(DISPLAY_LOCALE, { hour: '2-digit', minute: '2-digit' });
+        const dayLabel = new Date(startMs).toLocaleDateString(DISPLAY_LOCALE, { weekday: 'short', month: 'short', day: 'numeric' });
+        const callsCount = Math.max(0, Number(session?.callCount) || 0);
+        const earned = Number(session?.earned) || 0;
+        const activeTag = session?._active ? ' | Active' : '';
+
+        return `
+            <article class="pattern-detail-item">
+                <div class="pattern-detail-item-row">
+                    <span class="pattern-detail-item-main">${escapeHTML(dayLabel)} ${escapeHTML(startLabel)} - ${escapeHTML(endLabel)}${escapeHTML(activeTag)}</span>
+                    <span class="pattern-detail-item-amount">${escapeHTML(formatEarnings(earned))}</span>
+                </div>
+                <div class="pattern-detail-item-row">
+                    <span class="pattern-detail-item-meta">Calls: ${callsCount}</span>
+                    <span class="pattern-detail-item-meta">Talk: ${escapeHTML(formatTime(Math.max(0, Number(session?.talkMs) || 0)))}</span>
+                </div>
+                <div class="pattern-detail-item-row">
+                    <span class="pattern-detail-item-meta">Utilization: ${escapeHTML(formatSessionPercent(Number(session?.utilization) || 0))}</span>
+                    ${overlapMs > 0 ? `<span class="pattern-detail-item-meta">Overlap: ${escapeHTML(formatTime(overlapMs))}</span>` : '<span class="pattern-detail-item-meta">Overlap: --</span>'}
+                </div>
+            </article>
+        `;
+    }
+
+    function renderPatternsDetailModal() {
+        if (!patternsDetailState || !patternsDetailTitle || !patternsDetailSubtitle || !patternsDetailSummary || !patternsDetailCallsList || !patternsDetailSessionsList) return;
+
+        const state = patternsDetailState;
+        const dayMs = 24 * 60 * 60 * 1000;
+        const todayStartMs = getDayStartMs(new Date());
+        const allSessions = getSessionEntriesForPatternDetails();
+
+        if (state.scope === 'hour') {
+            const monthStartMs = Number(state.monthStartMs) || hourlyHeatmapWindowStartMs;
+            const monthEndMs = Number(state.monthEndMs) || hourlyHeatmapWindowEndMs;
+            const hour = Math.max(0, Math.min(23, Number(state.hour) || 0));
+            const monthStart = new Date(monthStartMs);
+            const monthLabel = Number.isFinite(monthStartMs) && monthStartMs > 0
+                ? monthStart.toLocaleDateString(DISPLAY_LOCALE, { month: 'long', year: 'numeric' })
+                : 'Current month';
+
+            const callsInHour = getCallsInRange(monthStartMs, monthEndMs).filter((call) => {
+                const startMs = getCallStartMs(call);
+                return Number.isFinite(startMs) && new Date(startMs).getHours() === hour;
+            });
+
+            const totalEarnings = callsInHour.reduce((sum, call) => sum + (Number(call?.earned) || 0), 0);
+            const totalDuration = callsInHour.reduce((sum, call) => sum + Math.max(0, Number(call?.duration) || 0), 0);
+            const uniqueDayCount = new Set(callsInHour.map((call) => getLocalDateKey(new Date(getCallStartMs(call))))).size;
+
+            const sessionsById = new Map();
+            callsInHour.forEach((call) => {
+                const callStartMs = getCallStartMs(call);
+                const match = allSessions.find((session) => callStartMs >= session.startedAtMs && callStartMs <= session.endedAtMs);
+                if (match) sessionsById.set(match.id, match);
+            });
+            const matchingSessions = Array.from(sessionsById.values()).sort((a, b) => b.startedAtMs - a.startedAtMs);
+
+            patternsDetailTitle.innerHTML = `<i class="fas fa-clock text-indigo-500 mr-2"></i>Hour ${String(hour).padStart(2, '0')}:00 Detail`;
+            patternsDetailSubtitle.textContent = `Aggregated activity across ${monthLabel}.`;
+            patternsDetailSummary.innerHTML = [
+                buildPatternDetailSummaryCard('Calls', `${callsInHour.length}`),
+                buildPatternDetailSummaryCard('Earnings', formatEarnings(totalEarnings)),
+                buildPatternDetailSummaryCard('Talk time', formatTime(totalDuration)),
+                buildPatternDetailSummaryCard('Active days', `${uniqueDayCount}`),
+            ].join('');
+
+            if (patternsDetailCallsTitle) patternsDetailCallsTitle.textContent = `Calls in ${String(hour).padStart(2, '0')}:00`;
+            if (patternsDetailSessionsTitle) patternsDetailSessionsTitle.textContent = 'Sessions with this hour activity';
+
+            patternsDetailCallsList.innerHTML = callsInHour.length
+                ? callsInHour.map((call) => buildPatternDetailCallItem(call)).join('')
+                : '<p class="pattern-detail-empty">No calls were logged in this hour slot.</p>';
+
+            patternsDetailSessionsList.innerHTML = matchingSessions.length
+                ? matchingSessions.map((session) => buildPatternDetailSessionItem(session)).join('')
+                : '<p class="pattern-detail-empty">No completed sessions matched this hour slot yet.</p>';
+
+            if (patternsDetailPrevBtn) {
+                patternsDetailPrevBtn.disabled = false;
+                patternsDetailPrevBtn.setAttribute('aria-label', 'Previous hour');
+                patternsDetailPrevBtn.setAttribute('title', 'Previous hour');
+            }
+            if (patternsDetailNextBtn) {
+                patternsDetailNextBtn.disabled = false;
+                patternsDetailNextBtn.setAttribute('aria-label', 'Next hour');
+                patternsDetailNextBtn.setAttribute('title', 'Next hour');
+            }
+            return;
+        }
+
+        const dayStartMs = Number(state.dayStartMs) || todayStartMs;
+        const safeDayStartMs = Math.min(dayStartMs, todayStartMs);
+        const dayEndMs = safeDayStartMs + dayMs;
+        const sourceMode = state.sourceMode === 'monthly' ? 'monthly' : 'weekly';
+        const slotDate = new Date(safeDayStartMs);
+        const dateLabel = slotDate.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+        const callsInDay = getCallsInRange(safeDayStartMs, dayEndMs);
+        const totalEarnings = callsInDay.reduce((sum, call) => sum + (Number(call?.earned) || 0), 0);
+        const totalDuration = callsInDay.reduce((sum, call) => sum + Math.max(0, Number(call?.duration) || 0), 0);
+        const overlappingSessions = allSessions
+            .filter((session) => session.endedAtMs > safeDayStartMs && session.startedAtMs < dayEndMs)
+            .map((session) => {
+                const overlapStart = Math.max(safeDayStartMs, session.startedAtMs);
+                const overlapEnd = Math.min(dayEndMs, session.endedAtMs);
+                return {
+                    session,
+                    overlapMs: Math.max(0, overlapEnd - overlapStart)
+                };
+            })
+            .sort((a, b) => b.session.startedAtMs - a.session.startedAtMs);
+
+        patternsDetailTitle.innerHTML = `<i class="fas fa-calendar-day text-indigo-500 mr-2"></i>${escapeHTML(dateLabel)}`;
+        patternsDetailSubtitle.textContent = `Detailed day breakdown from ${getPatternDetailSourceLabel(sourceMode)}.`;
+        patternsDetailSummary.innerHTML = [
+            buildPatternDetailSummaryCard('Calls', `${callsInDay.length}`),
+            buildPatternDetailSummaryCard('Earnings', formatEarnings(totalEarnings)),
+            buildPatternDetailSummaryCard('Talk time', formatTime(totalDuration)),
+            buildPatternDetailSummaryCard('Sessions', `${overlappingSessions.length}`),
+        ].join('');
+
+        if (patternsDetailCallsTitle) patternsDetailCallsTitle.textContent = 'Calls on this day';
+        if (patternsDetailSessionsTitle) patternsDetailSessionsTitle.textContent = 'Sessions touching this day';
+
+        patternsDetailCallsList.innerHTML = callsInDay.length
+            ? callsInDay.map((call) => buildPatternDetailCallItem(call)).join('')
+            : '<p class="pattern-detail-empty">No calls were logged on this day.</p>';
+
+        patternsDetailSessionsList.innerHTML = overlappingSessions.length
+            ? overlappingSessions.map((entry) => buildPatternDetailSessionItem(entry.session, { overlapMs: entry.overlapMs })).join('')
+            : '<p class="pattern-detail-empty">No session overlaps found for this day.</p>';
+
+        if (patternsDetailPrevBtn) {
+            patternsDetailPrevBtn.disabled = false;
+            patternsDetailPrevBtn.setAttribute('aria-label', 'Previous day');
+            patternsDetailPrevBtn.setAttribute('title', 'Previous day');
+        }
+        if (patternsDetailNextBtn) {
+            patternsDetailNextBtn.disabled = safeDayStartMs >= todayStartMs;
+            patternsDetailNextBtn.setAttribute('aria-label', 'Next day');
+            patternsDetailNextBtn.setAttribute('title', 'Next day');
+        }
+    }
+
+    function openPatternsDetailModalForState(nextState, triggerEl = null) {
+        if (!patternsDetailModal || !nextState) return;
+        patternsDetailState = nextState;
+        renderPatternsDetailModal();
+        ModalManager.open(patternsDetailModal, {
+            focusSelector: '#patterns-detail-prev-btn',
+            sourceEl: triggerEl
+        });
+    }
+
+    function closePatternsDetailModal() {
+        if (!patternsDetailModal) return;
+        ModalManager.close(patternsDetailModal);
+        patternsDetailState = null;
+    }
+
+    function shiftPatternsDetail(step) {
+        if (!patternsDetailState) return;
+        const stepValue = Number(step) || 0;
+        if (!stepValue) return;
+
+        if (patternsDetailState.scope === 'hour') {
+            const currentHour = Math.max(0, Math.min(23, Number(patternsDetailState.hour) || 0));
+            const nextHour = ((currentHour + stepValue) % 24 + 24) % 24;
+            patternsDetailState = { ...patternsDetailState, hour: nextHour };
+            renderPatternsDetailModal();
+            return;
+        }
+
+        const dayMs = 24 * 60 * 60 * 1000;
+        const todayStartMs = getDayStartMs(new Date());
+        const currentDayStartMs = Number(patternsDetailState.dayStartMs) || todayStartMs;
+        const shiftedDayStartMs = Math.min(todayStartMs, currentDayStartMs + (stepValue * dayMs));
+        patternsDetailState = { ...patternsDetailState, dayStartMs: shiftedDayStartMs };
+
+        if (patternsDetailState.sourceMode === 'monthly') {
+            const shiftedDate = new Date(shiftedDayStartMs);
+            trendAnchorDate = clampTrendAnchorToToday(new Date(shiftedDate.getFullYear(), shiftedDate.getMonth(), 1));
+            saveTrendPreferences();
+            updateWeeklyTrendVisualization();
+        } else if (patternsDetailState.sourceMode === 'weekly') {
+            trendAnchorDate = clampTrendAnchorToToday(new Date(shiftedDayStartMs));
+            saveTrendPreferences();
+            updateWeeklyTrendVisualization();
+        }
+
+        renderPatternsDetailModal();
+    }
+
+    function openPatternsDetailFromElement(targetEl) {
+        if (!targetEl) return;
+        const detailType = String(targetEl.dataset.patternDetailType || '').trim();
+        if (!detailType) return;
+
+        if (detailType === 'hourly') {
+            const hour = Math.max(0, Math.min(23, Number(targetEl.dataset.patternHour) || 0));
+            const monthStartMs = Number(targetEl.dataset.patternMonthStartMs) || hourlyHeatmapWindowStartMs;
+            const monthEndMs = Number(targetEl.dataset.patternMonthEndMs) || hourlyHeatmapWindowEndMs;
+            hideHeatmapHoverTooltip(true);
+            openPatternsDetailModalForState({
+                scope: 'hour',
+                sourceMode: 'hourly',
+                hour,
+                monthStartMs,
+                monthEndMs
+            }, targetEl);
+            return;
+        }
+
+        if (detailType === 'day') {
+            const dayStartMs = Number(targetEl.dataset.patternDayStartMs) || getDayStartMs(new Date());
+            const sourceMode = targetEl.dataset.patternSourceMode === 'monthly' ? 'monthly' : 'weekly';
+            hideHeatmapHoverTooltip(true);
+            openPatternsDetailModalForState({
+                scope: 'day',
+                sourceMode,
+                dayStartMs
+            }, targetEl);
+        }
+    }
+
+    function refreshPatternsDetailModalIfOpen() {
+        if (!patternsDetailModal || !patternsDetailState) return;
+        if (!ModalManager.isOpen(patternsDetailModal)) return;
+        renderPatternsDetailModal();
     }
 
     function shiftTrendWindow(direction) {
@@ -7422,6 +7765,9 @@ function saveCalls() {
                     `;
                     const tooltip = `${entry.dateObj.toLocaleDateString(DISPLAY_LOCALE)} | ${formatEarnings(entry.earnings)} | ${entry.callCount} call${entry.callCount === 1 ? '' : 's'} | ${formatTime(entry.durationMs)}`;
                     cell.dataset.heatmapTooltip = tooltip;
+                    cell.dataset.patternDetailType = 'day';
+                    cell.dataset.patternDayStartMs = String(getDayStartMs(entry.dateObj));
+                    cell.dataset.patternSourceMode = 'monthly';
                     cell.setAttribute('aria-label', tooltip);
                     monthlyTrendHeatmap.appendChild(cell);
                 });
@@ -7492,6 +7838,9 @@ function saveCalls() {
                 <div class="weekly-trend-day-value">${formatEarnings(entry.earnings)}</div>
             `;
             wrapper.dataset.heatmapTooltip = tooltip;
+            wrapper.dataset.patternDetailType = 'day';
+            wrapper.dataset.patternDayStartMs = String(entry.dayStartMs);
+            wrapper.dataset.patternSourceMode = 'weekly';
             wrapper.setAttribute('aria-label', tooltip);
             weeklyTrendBars.appendChild(wrapper);
         });
@@ -7863,6 +8212,7 @@ function saveCalls() {
         updateHourlyHeatmap(nowMs);
         updateWeeklyTrendVisualization(nowMs);
         updateRpgProgress();
+        refreshPatternsDetailModalIfOpen();
         queueWorkstripSync();
         scheduleStorageInfoRefresh();
     }
@@ -9390,6 +9740,18 @@ function saveCalls() {
     if (doneSessionHistoryBtn) {
         doneSessionHistoryBtn.addEventListener('click', closeSessionHistoryModal);
     }
+    if (closePatternsDetailModalBtn) {
+        closePatternsDetailModalBtn.addEventListener('click', closePatternsDetailModal);
+    }
+    if (donePatternsDetailBtn) {
+        donePatternsDetailBtn.addEventListener('click', closePatternsDetailModal);
+    }
+    if (patternsDetailPrevBtn) {
+        patternsDetailPrevBtn.addEventListener('click', () => shiftPatternsDetail(-1));
+    }
+    if (patternsDetailNextBtn) {
+        patternsDetailNextBtn.addEventListener('click', () => shiftPatternsDetail(1));
+    }
     initializeFooterCollapsiblePanels();
     if (footerOpenSettingsBtn) {
         footerOpenSettingsBtn.addEventListener('click', () => {
@@ -9494,6 +9856,7 @@ function saveCalls() {
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(supportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#support-modal-paypal-btn' });
         ModalManager.register(sessionHistoryModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-clear-btn' });
+        ModalManager.register(patternsDetailModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#patterns-detail-prev-btn' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
         ModalManager.register(exportOptionsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-export-options-btn' });
         ModalManager.register(csvImportPreviewModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-csv-import-btn' });

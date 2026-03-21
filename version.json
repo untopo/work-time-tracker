@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.2.3",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.3",
-  "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Android/readability sync release: unified embedded font across platforms, tighter text-fit guards, and fully aligned web+desktop+Android version packaging."
+    "latestVersion":  "1.2.4",
+    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.4",
+    "downloadsUrl":  "https://github.com/untopo/work-time-tracker/releases",
+    "notes":  "Patterns detail modal release: click hourly/weekly/monthly cells to view per-slot calls and sessions with left/right navigation, plus modal header spacing polish."
 }

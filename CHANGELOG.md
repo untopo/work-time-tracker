@@ -5,6 +5,19 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.2.4 - 2026-03-21
+
+### Highlights
+- Added detailed drill-down modal for Patterns cells (hourly, weekly, and monthly) with per-slot calls and session context.
+- Added in-modal left/right navigation to move between adjacent hours/days without leaving the detail view.
+- Heatmap/trend cells now open details directly on click, keeping hover tooltip behavior intact.
+
+### UX Polish
+- Refined patterns detail modal header spacing so navigation buttons no longer conflict with the close icon.
+
+### Stability
+- General cross-platform polish and release packaging alignment for web, desktop, and Android.
+
 ## v1.2.3 - 2026-03-19
 
 ### Highlights
@@ -61,3 +74,4 @@ For downloadable installers/APKs and release metadata, use:
 For older release history (including pre-v1.2.0), see:
 - In-app `What's New`
 - GitHub Releases page
+
