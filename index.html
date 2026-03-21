@@ -1760,6 +1760,53 @@
     </div>
 </div>
 
+<div id="patterns-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal modal-wide p-6 max-w-4xl w-full relative">
+        <button id="close-patterns-detail-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <div class="pattern-detail-header">
+            <div>
+                <h2 id="patterns-detail-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                    <i class="fas fa-chart-area text-indigo-500 mr-2"></i>Pattern Detail
+                </h2>
+                <p id="patterns-detail-subtitle" class="text-sm text-gray-600 dark:text-gray-300">Detailed breakdown for this selected slot.</p>
+            </div>
+            <div class="pattern-detail-nav">
+                <button id="patterns-detail-prev-btn" type="button" class="pattern-detail-nav-btn" aria-label="Previous detail">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="patterns-detail-next-btn" type="button" class="pattern-detail-nav-btn" aria-label="Next detail">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="patterns-detail-summary" class="pattern-detail-summary-grid"></div>
+
+        <div class="pattern-detail-grid mt-4">
+            <section class="pattern-detail-section">
+                <div class="pattern-detail-section-header">
+                    <h3 id="patterns-detail-calls-title" class="pattern-detail-section-title">Calls</h3>
+                </div>
+                <div id="patterns-detail-calls-list" class="pattern-detail-list"></div>
+            </section>
+            <section class="pattern-detail-section">
+                <div class="pattern-detail-section-header">
+                    <h3 id="patterns-detail-sessions-title" class="pattern-detail-section-title">Sessions</h3>
+                </div>
+                <div id="patterns-detail-sessions-list" class="pattern-detail-list"></div>
+            </section>
+        </div>
+
+        <div class="mt-5 flex justify-end">
+            <button id="done-patterns-detail-btn" type="button" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                Done
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Confirmation Modal (Generic) -->
 <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
     <div class="modal p-6 max-w-sm w-full relative">

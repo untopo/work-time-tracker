@@ -2327,6 +2327,173 @@
             padding: 0.42rem 0.2rem;
         }
 
+        .pattern-detail-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            padding-right: 3.1rem;
+        }
+
+        .pattern-detail-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .pattern-detail-nav-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 9999px;
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            background: rgba(99, 102, 241, 0.12);
+            color: #3730a3;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease, opacity 0.16s ease;
+        }
+
+        .pattern-detail-nav-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            background: rgba(99, 102, 241, 0.18);
+            border-color: rgba(79, 70, 229, 0.5);
+        }
+
+        .pattern-detail-nav-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .pattern-detail-summary-grid {
+            margin-top: 0.72rem;
+            display: grid;
+            gap: 0.5rem;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .pattern-detail-summary-card {
+            border-radius: 0.72rem;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background: rgba(248, 250, 252, 0.86);
+            padding: 0.45rem 0.6rem;
+        }
+
+        .pattern-detail-summary-label {
+            display: block;
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.045em;
+            color: #64748b;
+        }
+
+        .pattern-detail-summary-value {
+            display: block;
+            margin-top: 0.16rem;
+            font-size: 0.84rem;
+            font-weight: 800;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+
+        .pattern-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+
+        .pattern-detail-section {
+            border-radius: 0.85rem;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            background: rgba(248, 250, 252, 0.78);
+            padding: 0.65rem;
+            min-height: 0;
+        }
+
+        .pattern-detail-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.45rem;
+            gap: 0.5rem;
+        }
+
+        .pattern-detail-section-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.045em;
+            text-transform: uppercase;
+            color: #334155;
+        }
+
+        .pattern-detail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.42rem;
+            max-height: min(46vh, 380px);
+            overflow: auto;
+            padding-right: 0.12rem;
+        }
+
+        .pattern-detail-item {
+            border-radius: 0.7rem;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 0.46rem 0.52rem;
+        }
+
+        .pattern-detail-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .pattern-detail-item-row + .pattern-detail-item-row {
+            margin-top: 0.2rem;
+        }
+
+        .pattern-detail-item-main {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .pattern-detail-item-amount {
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: #0f766e;
+        }
+
+        .pattern-detail-item-meta {
+            font-size: 0.64rem;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .pattern-detail-item-note {
+            margin-top: 0.28rem;
+            font-size: 0.62rem;
+            color: #64748b;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .pattern-detail-empty {
+            border-radius: 0.7rem;
+            border: 1px dashed rgba(148, 163, 184, 0.34);
+            background: rgba(241, 245, 249, 0.65);
+            padding: 0.62rem 0.5rem;
+            text-align: center;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #64748b;
+        }
+
         html.dark .session-action-btn {
             box-shadow: 0 10px 22px rgba(2, 6, 23, 0.36);
         }
@@ -2462,6 +2629,66 @@
 
         html.dark .session-history-empty {
             color: #94a3b8;
+        }
+
+        html.dark .pattern-detail-nav-btn {
+            border-color: rgba(129, 140, 248, 0.44);
+            background: rgba(49, 46, 129, 0.34);
+            color: #c7d2fe;
+        }
+
+        html.dark .pattern-detail-nav-btn:hover:not(:disabled) {
+            background: rgba(67, 56, 202, 0.44);
+            border-color: rgba(165, 180, 252, 0.6);
+        }
+
+        html.dark .pattern-detail-summary-card,
+        html.dark .pattern-detail-section,
+        html.dark .pattern-detail-item {
+            border-color: rgba(100, 116, 139, 0.5);
+            background: rgba(15, 23, 42, 0.66);
+        }
+
+        html.dark .pattern-detail-summary-label {
+            color: #94a3b8;
+        }
+
+        html.dark .pattern-detail-summary-value,
+        html.dark .pattern-detail-item-main {
+            color: #f8fafc;
+        }
+
+        html.dark .pattern-detail-section-title {
+            color: #cbd5e1;
+        }
+
+        html.dark .pattern-detail-item-amount {
+            color: #5eead4;
+        }
+
+        html.dark .pattern-detail-item-meta,
+        html.dark .pattern-detail-item-note {
+            color: #94a3b8;
+        }
+
+        html.dark .pattern-detail-empty {
+            border-color: rgba(100, 116, 139, 0.56);
+            background: rgba(30, 41, 59, 0.48);
+            color: #94a3b8;
+        }
+
+        @media (max-width: 640px) {
+            .pattern-detail-header {
+                padding-right: 2.6rem;
+            }
+
+            .pattern-detail-summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pattern-detail-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Session-style visual system for action buttons across the app */
