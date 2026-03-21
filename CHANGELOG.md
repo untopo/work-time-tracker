@@ -5,6 +5,20 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.2.5 - 2026-03-21
+
+### Highlights
+- Fixed version alignment so in-app `Current Version` and `What's New` now match the published release version across web, desktop, and Android.
+- Kept the Patterns detail modal feature set (hourly/weekly/monthly drill-down + left/right navigation + header spacing polish).
+
+### Reliability
+- Added a release guard in the build pipeline that blocks packaging when version values are out of sync across:
+  - `package.json`
+  - `version.json`
+  - `src-tauri/tauri.conf.json`
+  - `src-tauri/Cargo.toml`
+  - `assets/js/app.js` (`APP_VERSION` and changelog head entry)
+
 ## v1.2.4 - 2026-03-21
 
 ### Highlights

@@ -1,6 +1,6 @@
 {
-    "latestVersion":  "1.2.4",
-    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.4",
+    "latestVersion":  "1.2.5",
+    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.5",
     "downloadsUrl":  "https://github.com/untopo/work-time-tracker/releases",
-    "notes":  "Patterns detail modal release: click hourly/weekly/monthly cells to view per-slot calls and sessions with left/right navigation, plus modal header spacing polish."
+    "notes":  "Version alignment hotfix: in-app Current Version and What\u0027s New now match v1.2.5 across web, desktop, and Android, with a new build guard to prevent future version drift."
 }
