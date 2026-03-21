@@ -1,6 +1,6 @@
 {
-    "latestVersion":  "1.2.5",
-    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.5",
+    "latestVersion":  "1.2.6",
+    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.2.6",
     "downloadsUrl":  "https://github.com/untopo/work-time-tracker/releases",
-    "notes":  "Version alignment hotfix: in-app Current Version and What\u0027s New now match v1.2.5 across web, desktop, and Android, with a new build guard to prevent future version drift."
+    "notes":  "In-app update release: desktop now downloads and launches installer directly from the app, and Android now downloads APK and opens installer in-app with fallback to release page when needed."
 }

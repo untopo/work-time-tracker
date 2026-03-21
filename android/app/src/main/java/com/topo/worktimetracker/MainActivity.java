@@ -11,6 +11,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(LiveCallWidgetPlugin.class);
+        registerPlugin(InAppUpdaterPlugin.class);
         super.onCreate(savedInstanceState);
     }
 

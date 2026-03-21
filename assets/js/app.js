@@ -8,8 +8,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.2.5';
+    const APP_VERSION = '1.2.6';
     const CHANGELOG = [
+        { version: '1.2.6', date: '2026-03-21', changes: ['Added in-app updater flow for desktop (Tauri): update banner can now download and launch the Windows installer directly without opening the GitHub Releases page', 'Added in-app updater flow for Android app shell: update banner can now download the APK and open the Android installer directly inside the app flow', 'Update action now auto-falls back to release page if in-app update cannot be completed on the current platform', 'Android update bridge added with strict official release URL validation, FileProvider handoff, and installer intent launch'] },
         { version: '1.2.5', date: '2026-03-21', changes: ['Version alignment hotfix: in-app Current Version and What\'s New now match the published release number across web, desktop, and Android', 'Added release guard in build flow to block publishing when package, manifest, Tauri, Cargo, or app frontend versions are out of sync', 'Maintained Patterns detail modal improvements with left/right navigation and polished header spacing'] },
         { version: '1.2.4', date: '2026-03-21', changes: ['Added detailed drill-down modal for Patterns cells (hourly, weekly, and monthly) with per-slot calls and session context', 'Added in-modal left/right navigation to move between adjacent hours/days without leaving the detail view', 'Heatmap/trend cells now open details directly on click while preserving hover tooltip behavior', 'Refined patterns detail modal header spacing so navigation buttons no longer conflict with the close icon'] },
         { version: '1.2.3', date: '2026-03-19', changes: ['Embedded app font locally and unified typography rendering across web, desktop, and Android builds', 'Added stronger text-fit safeguards (overflow wrapping + text size adjust normalization) for tighter Android card/layout consistency', 'Removed dependency on remote Google Fonts for core UI font loading', 'Packaging parity pass: web, desktop, and Android artifacts aligned to the same current version build'] },
@@ -497,6 +498,8 @@ const UPDATE_MANIFEST_URLS = [
     'https://untopo.github.io/work-time-tracker/version.json',
     './version.json'
 ];
+const RELEASES_API_BASE = 'https://api.github.com/repos/untopo/work-time-tracker/releases';
+const OFFICIAL_RELEASE_ASSET_PREFIX = 'https://github.com/untopo/work-time-tracker/releases/download/';
 const UPDATE_DISMISSED_VERSION_KEY = 'dismissedUpdateVersion';
 const RELEASE_SPOTLIGHT_SEEN_PREFIX = 'releaseSpotlightSeen:';
 const GOATCOUNTER_SITE_CODE_KEY = 'wtt_goatcounter_site_code';
@@ -510,6 +513,7 @@ const openUpdateReleaseBtn = document.getElementById('open-update-release-btn');
 const laterUpdateBannerBtn = document.getElementById('later-update-banner-btn');
 const dismissUpdateBannerBtn = document.getElementById('dismiss-update-banner-btn');
 let pendingUpdateManifest = null;
+let updateActionInFlight = false;
 let releaseSpotlightBannerEl = null;
 let androidWidgetBridgeTimerId = null;
 const NATIVE_WIDGET_CALLS_KEY = '__wtt_native_widget_calls';
@@ -564,6 +568,11 @@ function isAndroidCapacitorApp() {
 function getLiveCallWidgetPlugin() {
     if (!isAndroidCapacitorApp()) return null;
     return window.Capacitor?.Plugins?.LiveCallWidget || null;
+}
+
+function getAndroidInAppUpdaterPlugin() {
+    if (!isAndroidCapacitorApp()) return null;
+    return window.Capacitor?.Plugins?.InAppUpdater || null;
 }
 
 function resolvePreferredAndroidWidgetRate() {
@@ -874,6 +883,108 @@ async function fetchUpdateManifest() {
     return null;
 }
 
+function extractReleaseTag(manifest) {
+    const explicit = normalizeVersionString(manifest?.latestVersion);
+    const releaseUrl = String(manifest?.releaseUrl || '').trim();
+    if (releaseUrl) {
+        const match = releaseUrl.match(/\/tag\/([^/?#]+)/i);
+        if (match?.[1]) return String(match[1]);
+    }
+    return explicit ? `v${explicit}` : '';
+}
+
+function isOfficialReleaseAssetUrl(url) {
+    const value = String(url || '').trim();
+    return value.startsWith(OFFICIAL_RELEASE_ASSET_PREFIX);
+}
+
+async function fetchReleaseByTag(tag) {
+    const safeTag = String(tag || '').trim();
+    if (!safeTag) return null;
+    try {
+        const response = await fetch(`${RELEASES_API_BASE}/tags/${encodeURIComponent(safeTag)}?t=${Date.now()}`, {
+            cache: 'no-store'
+        });
+        if (!response.ok) return null;
+        const payload = await response.json();
+        if (!payload || typeof payload !== 'object' || !Array.isArray(payload.assets)) return null;
+        return payload;
+    } catch (error) {
+        console.warn('Failed to fetch release metadata for in-app update:', error);
+        return null;
+    }
+}
+
+function pickDesktopInstallerAsset(releasePayload) {
+    const assets = Array.isArray(releasePayload?.assets) ? releasePayload.assets : [];
+    const byName = assets.filter((asset) => typeof asset?.name === 'string' && typeof asset?.browser_download_url === 'string');
+    const preferred = byName.find((asset) => /_x64-setup\.exe$/i.test(asset.name));
+    if (preferred && isOfficialReleaseAssetUrl(preferred.browser_download_url)) return preferred;
+    const fallbackExe = byName.find((asset) => /\.exe$/i.test(asset.name));
+    if (fallbackExe && isOfficialReleaseAssetUrl(fallbackExe.browser_download_url)) return fallbackExe;
+    const fallbackMsi = byName.find((asset) => /\.msi$/i.test(asset.name));
+    if (fallbackMsi && isOfficialReleaseAssetUrl(fallbackMsi.browser_download_url)) return fallbackMsi;
+    return null;
+}
+
+function pickAndroidInstallerAsset(releasePayload) {
+    const assets = Array.isArray(releasePayload?.assets) ? releasePayload.assets : [];
+    const apkAssets = assets.filter((asset) => /\.apk$/i.test(String(asset?.name || '')) && typeof asset?.browser_download_url === 'string');
+    const signedLike = apkAssets.find((asset) => !/unsigned/i.test(String(asset.name)));
+    if (signedLike && isOfficialReleaseAssetUrl(signedLike.browser_download_url)) return signedLike;
+    const debugApk = apkAssets.find((asset) => /^app-debug\.apk$/i.test(String(asset.name || '')));
+    if (debugApk && isOfficialReleaseAssetUrl(debugApk.browser_download_url)) return debugApk;
+    return null;
+}
+
+async function resolveInAppUpdateAsset(manifest, targetPlatform) {
+    const tag = extractReleaseTag(manifest);
+    if (!tag) return null;
+    const releasePayload = await fetchReleaseByTag(tag);
+    if (!releasePayload) return null;
+    if (targetPlatform === 'desktop') return pickDesktopInstallerAsset(releasePayload);
+    if (targetPlatform === 'android') return pickAndroidInstallerAsset(releasePayload);
+    return null;
+}
+
+function canUseInAppDesktopUpdate() {
+    return Boolean(isDesktopTauri && tauriInvoke);
+}
+
+function canUseInAppAndroidUpdate() {
+    const plugin = getAndroidInAppUpdaterPlugin();
+    return Boolean(plugin && typeof plugin.downloadAndInstallApk === 'function');
+}
+
+async function tryRunInAppUpdate(manifest) {
+    if (!manifest) return false;
+
+    if (canUseInAppDesktopUpdate()) {
+        const asset = await resolveInAppUpdateAsset(manifest, 'desktop');
+        if (!asset?.browser_download_url) return false;
+        await tauriInvoke('download_and_launch_windows_installer', {
+            url: asset.browser_download_url,
+            fileName: String(asset.name || '')
+        });
+        showToast('Installer downloaded. Follow the system installer prompts to finish updating.');
+        return true;
+    }
+
+    if (canUseInAppAndroidUpdate()) {
+        const asset = await resolveInAppUpdateAsset(manifest, 'android');
+        if (!asset?.browser_download_url) return false;
+        const updater = getAndroidInAppUpdaterPlugin();
+        await updater.downloadAndInstallApk({
+            url: asset.browser_download_url,
+            fileName: String(asset.name || 'app-debug.apk')
+        });
+        showToast('Downloading update APK. Android will ask you to confirm installation.');
+        return true;
+    }
+
+    return false;
+}
+
 function renderUpdateAvailableBanner(manifest) {
     if (!updateAvailableBanner || !manifest) return;
     pendingUpdateManifest = manifest;
@@ -881,6 +992,11 @@ function renderUpdateAvailableBanner(manifest) {
     if (updateLatestVersionLabel) updateLatestVersionLabel.textContent = `v${normalizeVersionString(manifest.latestVersion)}`;
     if (updateNotesLabel) {
         updateNotesLabel.textContent = String(manifest.notes || 'A newer installer is available for download.');
+    }
+    if (openUpdateReleaseBtn) {
+        openUpdateReleaseBtn.textContent = (canUseInAppDesktopUpdate() || canUseInAppAndroidUpdate())
+            ? 'Update Now'
+            : 'View Release';
     }
     updateAvailableBanner.classList.remove('hidden');
 }
@@ -10997,8 +11113,28 @@ goalMinutesInput.addEventListener('input', () => {
         document.getElementById('app-version').textContent = APP_VERSION;
         if (openUpdateReleaseBtn) {
             openUpdateReleaseBtn.addEventListener('click', async () => {
-                const targetUrl = pendingUpdateManifest?.releaseUrl || pendingUpdateManifest?.downloadsUrl;
-                if (targetUrl) await openExternalUrl(targetUrl);
+                if (updateActionInFlight) return;
+                updateActionInFlight = true;
+                const originalLabel = openUpdateReleaseBtn.textContent;
+                openUpdateReleaseBtn.disabled = true;
+                openUpdateReleaseBtn.textContent = 'Preparing...';
+                try {
+                    const handled = await tryRunInAppUpdate(pendingUpdateManifest);
+                    if (!handled) {
+                        const targetUrl = pendingUpdateManifest?.releaseUrl || pendingUpdateManifest?.downloadsUrl;
+                        if (targetUrl) await openExternalUrl(targetUrl);
+                    } else {
+                        hideUpdateAvailableBanner();
+                    }
+                } catch (error) {
+                    console.error('In-app update attempt failed:', error);
+                    const targetUrl = pendingUpdateManifest?.releaseUrl || pendingUpdateManifest?.downloadsUrl;
+                    if (targetUrl) await openExternalUrl(targetUrl);
+                } finally {
+                    updateActionInFlight = false;
+                    openUpdateReleaseBtn.disabled = false;
+                    openUpdateReleaseBtn.textContent = originalLabel;
+                }
             });
         }
         if (laterUpdateBannerBtn) {

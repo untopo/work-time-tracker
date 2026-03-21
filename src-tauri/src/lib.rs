@@ -158,6 +158,95 @@ fn open_external_url(url: String) -> Result<(), String> {
   }
 }
 
+fn is_allowed_release_asset_url(parsed: &Url) -> bool {
+  if parsed.scheme() != "https" {
+    return false;
+  }
+  if parsed.host_str() != Some("github.com") {
+    return false;
+  }
+  let path = parsed.path();
+  if !path.starts_with("/untopo/work-time-tracker/releases/download/") {
+    return false;
+  }
+  let lower = path.to_ascii_lowercase();
+  lower.ends_with(".exe") || lower.ends_with(".msi")
+}
+
+fn sanitize_file_name(input: &str) -> String {
+  input
+    .chars()
+    .filter(|ch| ch.is_ascii_alphanumeric() || *ch == '.' || *ch == '-' || *ch == '_')
+    .collect::<String>()
+}
+
+#[tauri::command]
+fn download_and_launch_windows_installer(url: String, file_name: Option<String>) -> Result<(), String> {
+  let trimmed = url.trim();
+  if trimmed.is_empty() {
+    return Err("URL cannot be empty".to_string());
+  }
+
+  let parsed = Url::parse(trimmed).map_err(|_| "Invalid URL format".to_string())?;
+  if !is_allowed_release_asset_url(&parsed) {
+    return Err("Only official GitHub release installer assets are allowed".to_string());
+  }
+
+  #[cfg(not(target_os = "windows"))]
+  {
+    let _ = file_name;
+    return Err("In-app installer flow is currently available only on Windows desktop builds".to_string());
+  }
+
+  #[cfg(target_os = "windows")]
+  {
+    let fallback_name = parsed
+      .path_segments()
+      .and_then(|mut segments| segments.next_back())
+      .unwrap_or("work-time-tracker-update.exe");
+    let requested_name = file_name.unwrap_or_else(|| fallback_name.to_string());
+    let safe_name = {
+      let sanitized = sanitize_file_name(&requested_name);
+      if sanitized.is_empty() {
+        sanitize_file_name(fallback_name)
+      } else {
+        sanitized
+      }
+    };
+
+    let temp_path = std::env::temp_dir().join(format!("wtt-{safe_name}"));
+    let temp_path_str = temp_path.to_string_lossy().to_string();
+    let escaped_url = trimmed.replace('\'', "''");
+    let escaped_out_path = temp_path_str.replace('\'', "''");
+
+    let ps_script = format!(
+      "$ProgressPreference='SilentlyContinue';Invoke-WebRequest -Uri '{escaped_url}' -OutFile '{escaped_out_path}'"
+    );
+    let download_status = Command::new("powershell")
+      .args(["-NoProfile", "-NonInteractive", "-Command", &ps_script])
+      .status()
+      .map_err(|error| format!("Failed to start download process: {error}"))?;
+
+    if !download_status.success() {
+      return Err("Failed to download installer package".to_string());
+    }
+
+    let lower_name = safe_name.to_ascii_lowercase();
+    if lower_name.ends_with(".msi") {
+      Command::new("msiexec")
+        .args(["/i", &temp_path_str])
+        .spawn()
+        .map_err(|error| format!("Failed to launch MSI installer: {error}"))?;
+    } else {
+      Command::new(&temp_path)
+        .spawn()
+        .map_err(|error| format!("Failed to launch installer: {error}"))?;
+    }
+
+    Ok(())
+  }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -169,7 +258,8 @@ pub fn run() {
       read_text_file,
       write_text_file,
       show_main_window,
-      open_external_url
+      open_external_url,
+      download_and_launch_windows_installer
     ])
     .setup(|app| {
       if let Some(main_window) = app.handle().get_webview_window("main") {
