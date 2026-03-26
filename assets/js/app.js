@@ -8,9 +8,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.2.7';
+    const APP_VERSION = '1.3.0';
     const CHANGELOG = [
-        { version: '1.2.7', date: '2026-03-21', changes: ['Test release to validate in-app updates across desktop and Android', 'Aligned release metadata to v1.2.7 across web, desktop, and mobile targets', 'Retained release-page fallback when direct in-app update cannot proceed'] },
+        { version: '1.3.0', date: '2026-03-25', changes: ['Major UI refresh across web and desktop with a cleaner app shell, smoother motion, and a more polished workspace flow', 'Reworked the Live Workspace into a denser action hub with integrated call/session controls, compact timer adjustments, and improved balance across desktop and tablet layouts', 'Upgraded modal behavior with more consistent overlays, improved positioning, draggable support for larger panels, and cleaner treatment for form and utility modals', 'Redesigned Floating Controls Settings into a more compact customization panel, removed redundant dock-position controls, and added reset actions for layout recovery', 'Significantly improved responsive layouts for mobile and tablet, including a stronger Settings composition, tablet-specific workstrip tuning, and broader spacing/stacking polish across key views', 'Restored sidebar-equivalent mobile and tablet utilities through a dedicated Info & Support section with local time, version, quick actions, social links, theme toggle, and donate access'] },
         { version: '1.2.6', date: '2026-03-21', changes: ['Added in-app updater flow for desktop (Tauri): update banner can now download and launch the Windows installer directly without opening the GitHub Releases page', 'Added in-app updater flow for Android app shell: update banner can now download the APK and open the Android installer directly inside the app flow', 'Update action now auto-falls back to release page if in-app update cannot be completed on the current platform', 'Android update bridge added with strict official release URL validation, FileProvider handoff, and installer intent launch'] },
         { version: '1.2.5', date: '2026-03-21', changes: ['Version alignment hotfix: in-app Current Version and What\'s New now match the published release number across web, desktop, and Android', 'Added release guard in build flow to block publishing when package, manifest, Tauri, Cargo, or app frontend versions are out of sync', 'Maintained Patterns detail modal improvements with left/right navigation and polished header spacing'] },
         { version: '1.2.4', date: '2026-03-21', changes: ['Added detailed drill-down modal for Patterns cells (hourly, weekly, and monthly) with per-slot calls and session context', 'Added in-modal left/right navigation to move between adjacent hours/days without leaving the detail view', 'Heatmap/trend cells now open details directly on click while preserving hover tooltip behavior', 'Refined patterns detail modal header spacing so navigation buttons no longer conflict with the close icon'] },
@@ -223,7 +223,144 @@ function applyAppShellMode() {
 }
 
 const scheduleAppShellRefresh = createRafScheduler(applyAppShellMode);
-const scheduleDesktopOverlayRefresh = () => {};
+    const scheduleDesktopOverlayRefresh = () => {};
+    const APP_ACTIVE_SECTION_KEY = 'wtt_active_section_v1';
+    const SIDEBAR_COLLAPSED_KEY = 'wtt_sidebar_collapsed_v1';
+    let sidebarCollapsedPreference = false;
+
+function normalizeAppSection(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    return ['work', 'call-log', 'analytics', 'progress', 'settings'].includes(normalized)
+        ? normalized
+        : 'work';
+}
+
+function setActiveAppSection(section, options = {}) {
+    const normalized = normalizeAppSection(section);
+    const persist = options.persist !== false;
+    const shouldScroll = options.scroll !== false;
+
+    appViewSections.forEach((sectionEl) => {
+        sectionEl.classList.toggle('is-active', sectionEl.getAttribute('data-app-view') === normalized);
+    });
+
+    appNavButtons.forEach((button) => {
+        const isActive = button.getAttribute('data-app-nav') === normalized;
+        button.classList.toggle('is-active', isActive);
+        if (button.hasAttribute('data-app-nav')) {
+            button.setAttribute('aria-current', isActive ? 'page' : 'false');
+        }
+    });
+
+    document.body.setAttribute('data-app-section', normalized);
+    if (persist) {
+        try { appStorage.setItem(APP_ACTIVE_SECTION_KEY, normalized); } catch {}
+    }
+    if (shouldScroll) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    requestAnimationFrame(() => {
+        try {
+            if (normalized === 'analytics') updateStatistics();
+            if (normalized === 'call-log') displayCalls();
+            if (normalized === 'analytics' || normalized === 'settings') renderPaymentCycles();
+            if (normalized === 'progress') {
+                updateRpgProgress();
+                renderAchievementsModal();
+            }
+            if (normalized === 'settings') updateStorageInfo();
+            if (normalized === 'work') {
+                renderSessionTracker();
+                queueWorkstripSync();
+            }
+        } catch (error) {
+            console.error('Failed to refresh app section view:', normalized, error);
+        }
+    });
+}
+
+function initializeAppNavigation() {
+    appNavButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const targetSection = button.getAttribute('data-app-nav');
+            setActiveAppSection(targetSection);
+        });
+    });
+
+    const savedSection = normalizeAppSection(appStorage.getItem(APP_ACTIVE_SECTION_KEY));
+    setActiveAppSection(savedSection, { scroll: false });
+}
+
+function canUseCollapsibleSidebar() {
+    return window.innerWidth > 1100;
+}
+
+function extractSidebarButtonLabel(button) {
+    if (!button) return '';
+    const explicit = String(button.getAttribute('aria-label') || '').trim();
+    if (explicit) return explicit;
+    const text = button.querySelector('span')?.textContent || button.textContent;
+    return String(text || '').replace(/\s+/g, ' ').trim();
+}
+
+function syncSidebarButtonTitles() {
+    [...appNavButtons, settingsToggleBtn, darkToggleBtn, sidebarDonateBtn].forEach((button) => {
+        if (!button) return;
+        const label = extractSidebarButtonLabel(button);
+        if (!label) return;
+        button.setAttribute('title', label);
+        if (!button.getAttribute('aria-label')) {
+            button.setAttribute('aria-label', label);
+        }
+    });
+}
+
+function applySidebarCollapsedState() {
+    const collapsed = sidebarCollapsedPreference && canUseCollapsibleSidebar();
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+    document.body.setAttribute('data-sidebar-collapsed', collapsed ? 'true' : 'false');
+    if (appSidebarToggleBtn) {
+        const actionLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+        appSidebarToggleBtn.setAttribute('aria-label', actionLabel);
+        appSidebarToggleBtn.setAttribute('title', actionLabel);
+        appSidebarToggleBtn.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+    }
+}
+
+function setSidebarCollapsedPreference(nextCollapsed, options = {}) {
+    sidebarCollapsedPreference = !!nextCollapsed;
+    if (options.persist !== false) {
+        try {
+            appStorage.setItem(SIDEBAR_COLLAPSED_KEY, sidebarCollapsedPreference ? '1' : '0');
+        } catch {}
+    }
+    applySidebarCollapsedState();
+}
+
+function initializeSidebarCollapse() {
+    syncSidebarButtonTitles();
+    try {
+        sidebarCollapsedPreference = appStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1';
+    } catch {
+        sidebarCollapsedPreference = false;
+    }
+    applySidebarCollapsedState();
+    if (appSidebarToggleBtn) {
+        appSidebarToggleBtn.addEventListener('click', () => {
+            setSidebarCollapsedPreference(!sidebarCollapsedPreference);
+        });
+    }
+    window.addEventListener('resize', applySidebarCollapsedState, { passive: true });
+}
+
+function markAppUiReady() {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            document.body?.classList.remove('app-booting');
+        });
+    });
+}
 
     // ============================================
     // UTILITY FUNCTIONS
@@ -1574,11 +1711,29 @@ async function confirmExportOptions() {
     const focusWorkstripStatus = document.getElementById('focus-workstrip-status');
     const focusWorkstripRate = document.getElementById('focus-workstrip-rate');
     const focusWorkstripTimer = document.getElementById('focus-workstrip-timer');
+    const focusWorkstripPlusSecondBtn = document.getElementById('focus-workstrip-plus-second-btn');
+    const focusWorkstripMinusSecondBtn = document.getElementById('focus-workstrip-minus-second-btn');
+    const focusWorkstripTimerAdjust = document.querySelector('.focus-workstrip-timer-adjust');
     const focusWorkstripEarnings = document.getElementById('focus-workstrip-earnings');
+    const focusWorkstripSession = document.getElementById('focus-workstrip-session');
     const focusWorkstripReminder = document.getElementById('focus-workstrip-reminder');
+    const focusWorkstripGoalProgress = document.getElementById('focus-workstrip-goal-progress');
+    const focusWorkstripGoalBar = document.getElementById('focus-workstrip-goal-bar');
+    const focusWorkstripGoalSummary = document.getElementById('focus-workstrip-goal-summary');
+    const appSidebarToggleBtn = document.getElementById('app-sidebar-toggle-btn');
     const workstripAddCallBtn = document.getElementById('workstrip-add-call-btn');
     const workstripStartCallBtn = document.getElementById('workstrip-start-call-btn');
     const workstripEndCallBtn = document.getElementById('workstrip-end-call-btn');
+    const workstripSessionToggleBtn = document.getElementById('workstrip-session-toggle-btn');
+    const workstripSessionPauseBtn = document.getElementById('workstrip-session-pause-btn');
+    const appNavButtons = Array.from(document.querySelectorAll('[data-app-nav]'));
+    const appViewSections = Array.from(document.querySelectorAll('[data-app-view]'));
+    const openPaymentCyclesSettingsBtn = document.getElementById('open-payment-cycles-settings-btn');
+    const sidebarAppVersionLabel = document.getElementById('sidebar-app-version');
+    const mobileAppVersionLabel = document.getElementById('mobile-app-version');
+    const mobileSettingsOpenBtn = document.getElementById('mobile-settings-open-btn');
+    const sidebarDonateBtn = document.getElementById('sidebar-donate-btn');
+    const mobileDonateBtn = document.getElementById('mobile-donate-btn');
     const postCallReviewStrip = document.getElementById('post-call-review-strip');
     const postCallReviewSummary = document.getElementById('post-call-review-summary');
     const postCallUndoBtn = document.getElementById('post-call-undo-btn');
@@ -1614,15 +1769,15 @@ async function confirmExportOptions() {
     const callDurationInput = document.getElementById('call-duration');
     const callNotesInput = document.getElementById('call-notes');
     const darkToggleBtn = document.getElementById('dark-toggle');
+    const themeToggleLabel = document.getElementById('theme-toggle-label');
+    const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle-btn');
+    const mobileThemeToggleLabel = document.getElementById('mobile-theme-toggle-label');
     const showRateAddBtn = document.getElementById('show-rate-add');
     const rateForm = document.getElementById('rate-form');
     const cancelRateAddBtn = document.getElementById('cancel-rate-add');
-    const achievementsToggleBtn = document.getElementById('achievements-toggle');
     const settingsToggleBtn = document.getElementById('settings-toggle');
-    const footerOpenSettingsBtn = document.getElementById('footer-open-settings-btn');
     const footerCollapsiblePanels = Array.from(document.querySelectorAll('.app-footer-collapsible[data-footer-collapsible]'));
-    const settingsModal = document.getElementById('settings-modal');
-    const closeSettingsModalBtn = document.getElementById('close-settings-modal');
+    const settingsView = document.getElementById('view-settings');
     const openDataHubBtn = document.getElementById('open-data-hub-btn');
     const exportDataBtn = document.getElementById('export-data');
     const exportCallLogCsvBtn = document.getElementById('export-call-log-csv');
@@ -1700,11 +1855,19 @@ async function confirmExportOptions() {
     const hourlyHeatmapGrid = document.getElementById('hourly-heatmap-grid');
     const hourlyHeatmapSummary = document.getElementById('hourly-heatmap-summary');
     const hourlyHeatmapTopHours = document.getElementById('hourly-heatmap-top-hours');
+    const hourlyHeatmapPrevBtn = document.getElementById('hourly-heatmap-prev-btn');
+    const hourlyHeatmapNextBtn = document.getElementById('hourly-heatmap-next-btn');
+    const hourlyHeatmapRangeLabel = document.getElementById('hourly-heatmap-range-label');
+    const hourlyHeatmapSummaryInline = document.getElementById('hourly-heatmap-summary-inline');
     const trendAnalyticsGrid = document.getElementById('trend-analytics-grid');
     const patternsPanelSummary = document.getElementById('patterns-panel-summary');
     const hourlyHeatmapCard = document.getElementById('hourly-heatmap-card');
+    const hourlyHeatmapMetricToggle = document.getElementById('hourly-heatmap-metric-toggle');
     const trendCard = document.getElementById('trend-card');
     const patternsModeHourlyBtn = document.getElementById('patterns-mode-hourly-btn');
+    const hourlyHeatmapMetricCallsBtn = document.getElementById('hourly-heatmap-metric-calls-btn');
+    const hourlyHeatmapMetricMinutesBtn = document.getElementById('hourly-heatmap-metric-minutes-btn');
+    const hourlyHeatmapMetricEarningsBtn = document.getElementById('hourly-heatmap-metric-earnings-btn');
     const weeklyTrendBars = document.getElementById('weekly-trend-bars');
     const weeklyTrendSummary = document.getElementById('weekly-trend-summary');
     const weeklyTrendBestDay = document.getElementById('weekly-trend-best-day');
@@ -1777,6 +1940,8 @@ async function confirmExportOptions() {
     const storageBar = document.getElementById('storage-bar');
     const localTimeDisplay = document.getElementById('local-time');
     const userTimeZoneDisplay = document.getElementById('user-time-zone');
+    const mobileLocalTimeDisplay = document.getElementById('mobile-local-time');
+    const mobileUserTimeZoneDisplay = document.getElementById('mobile-user-time-zone');
     const tzSelect = document.getElementById('timezone-select');
     const resetTzBtn = document.getElementById('reset-timezone');
     const editCycleModal = document.getElementById('edit-cycle-modal');
@@ -1843,11 +2008,10 @@ const featurePaymentCyclesToggle = document.getElementById('feature-payment-cycl
 const featureFloatingControlsToggle = document.getElementById('feature-floating-controls-toggle');
 const featureRpgToggle = document.getElementById('feature-rpg-toggle');
 const openFloatingControlsSettingsBtn = document.getElementById('open-floating-controls-settings-btn');
-const openPaymentCyclesSettingsBtn = document.getElementById('open-payment-cycles-settings-btn');
 const floatingControlsSettingsModal = document.getElementById('floating-controls-settings-modal');
 const closeFloatingControlsSettingsBtn = document.getElementById('close-floating-controls-settings-modal');
 const doneFloatingControlsSettingsBtn = document.getElementById('done-floating-controls-settings-btn');
-const paymentCyclesSettingsModal = document.getElementById('payment-cycles-settings-modal');
+const paymentCyclesManagerPanel = document.getElementById('payment-cycles-settings-modal');
 const closePaymentCyclesSettingsModalBtn = document.getElementById('close-payment-cycles-settings-modal');
 const donePaymentCyclesSettingsBtn = document.getElementById('done-payment-cycles-settings-btn');
 const achievementsSettingsModal = document.getElementById('achievements-settings-modal');
@@ -1873,7 +2037,6 @@ const achievementDetailEarnedAt = document.getElementById('achievement-detail-ea
 const rpgProgressCard = document.getElementById('rpg-progress-card');
 const floatingControlsCustomization = document.getElementById('floating-controls-customization');
 const floatingControlsSizeModeSelect = document.getElementById('floating-controls-size-mode');
-const floatingControlsSideSelect = document.getElementById('floating-controls-side');
 const floatingSecondaryActionSelect = document.getElementById('floating-secondary-action-select');
 const floatingShowActiveCardToggle = document.getElementById('floating-show-active-card-toggle');
 const floatingActiveCardCustomization = document.getElementById('floating-active-card-customization');
@@ -1884,6 +2047,8 @@ const floatingActiveShowAdjustToggle = document.getElementById('floating-active-
 const floatingOneHandedToggle = document.getElementById('floating-one-handed-toggle');
 const floatingPreviewEnabledToggle = document.getElementById('floating-preview-enabled-toggle');
 const floatingPreviewRandomizeBtn = document.getElementById('floating-preview-randomize-btn');
+const floatingResetPositionBtn = document.getElementById('floating-reset-position-btn');
+const floatingResetDefaultsBtn = document.getElementById('floating-reset-defaults-btn');
 const floatingPreviewContainer = document.getElementById('floating-preview-lab');
 const floatingPreviewHint = document.getElementById('floating-preview-hint');
 const floatingFeatureStateNote = document.getElementById('floating-feature-state-note');
@@ -2025,6 +2190,11 @@ function syncWorkstripSummary() {
     if (focusWorkstripTimer) {
         focusWorkstripTimer.textContent = isActive ? String(activeState.elapsedLabel || '00:00:00') : '00:00:00';
     }
+    if (focusWorkstripTimerAdjust) {
+        focusWorkstripTimerAdjust.classList.toggle('is-visible', isActive);
+    }
+    if (focusWorkstripPlusSecondBtn) focusWorkstripPlusSecondBtn.disabled = !isActive;
+    if (focusWorkstripMinusSecondBtn) focusWorkstripMinusSecondBtn.disabled = !isActive;
     if (focusWorkstripEarnings) {
         if (isActive) {
             focusWorkstripEarnings.textContent = String(activeState.earningsLabel || '$0.00');
@@ -2032,6 +2202,13 @@ function syncWorkstripSummary() {
             focusWorkstripEarnings.textContent = todayEarningsDisplay.textContent || '$0.00';
         } else {
             focusWorkstripEarnings.textContent = '$0.00';
+        }
+    }
+    if (focusWorkstripSession) {
+        if (sessionTrackerState?.active) {
+            focusWorkstripSession.textContent = sessionTrackerState.paused ? 'Paused' : 'Running';
+        } else {
+            focusWorkstripSession.textContent = 'Ready';
         }
     }
     if (workstripStartCallBtn) workstripStartCallBtn.style.display = isActive ? 'none' : '';
@@ -2085,7 +2262,6 @@ function loadFeatureFlags() {
             rpg: true,
             uiRefresh: true,
             floatingControlsSizeMode: 'auto',
-            floatingControlsSide: 'right',
             floatingSecondaryAction: 'add',
             floatingShowActiveCard: true,
             floatingActiveShowTimer: true,
@@ -2103,7 +2279,6 @@ function loadFeatureFlags() {
             rpg: typeof parsed.rpg === 'boolean' ? parsed.rpg : true,
             uiRefresh: true,
             floatingControlsSizeMode: ['auto', 'full', 'compact', 'icon'].includes(parsed.floatingControlsSizeMode) ? parsed.floatingControlsSizeMode : 'auto',
-            floatingControlsSide: parsed.floatingControlsSide === 'left' ? 'left' : 'right',
             floatingSecondaryAction: ['add', 'goto', 'none'].includes(parsed.floatingSecondaryAction) ? parsed.floatingSecondaryAction : 'add',
             floatingShowActiveCard: typeof parsed.floatingShowActiveCard === 'boolean' ? parsed.floatingShowActiveCard : true,
             floatingActiveShowTimer: typeof parsed.floatingActiveShowTimer === 'boolean' ? parsed.floatingActiveShowTimer : true,
@@ -2121,7 +2296,6 @@ function loadFeatureFlags() {
             rpg: true,
             uiRefresh: true,
             floatingControlsSizeMode: 'auto',
-            floatingControlsSide: 'right',
             floatingSecondaryAction: 'add',
             floatingShowActiveCard: true,
             floatingActiveShowTimer: true,
@@ -2184,8 +2358,8 @@ function updatePreviewDockElement(dockEl, flags, mode) {
 
     dockEl.classList.remove('preview-mode-full', 'preview-mode-compact', 'preview-mode-icon');
     dockEl.classList.add(mode === 'icon' ? 'preview-mode-icon' : mode === 'compact' ? 'preview-mode-compact' : 'preview-mode-full');
-    dockEl.classList.toggle('preview-left', (flags.floatingControlsSide || 'right') === 'left');
-    dockEl.classList.toggle('preview-right', (flags.floatingControlsSide || 'right') !== 'left');
+    dockEl.classList.toggle('preview-left', false);
+    dockEl.classList.toggle('preview-right', true);
     dockEl.classList.toggle('preview-one-handed', !!flags.floatingOneHanded);
 
     const primaryBtn = dockEl.querySelector('.preview-primary-btn');
@@ -2290,11 +2464,11 @@ function startFloatingPreviewAutoRefresh(flags = featureFlags) {
 }
 
 function detailModals() {
-    return [floatingControlsSettingsModal, paymentCyclesSettingsModal].filter(Boolean);
+    return [];
 }
 
 function getSettingsMainPanel() {
-    return settingsModal?.querySelector('.settings-main-modal-panel') || null;
+    return settingsView?.querySelector('.settings-main-modal-panel') || null;
 }
 
 function computeDetailPanelLayout() {
@@ -2344,24 +2518,26 @@ function closeOtherDetailModals(exceptModal = null) {
             if (modalEl === floatingControlsSettingsModal && openFloatingControlsSettingsBtn) {
                 openFloatingControlsSettingsBtn.setAttribute('aria-expanded', 'false');
             }
-            if (modalEl === paymentCyclesSettingsModal && openPaymentCyclesSettingsBtn) {
-                openPaymentCyclesSettingsBtn.setAttribute('aria-expanded', 'false');
-            }
         }
     });
 }
 
+function isPaymentCyclesManagerOpen() {
+    if (!paymentCyclesManagerPanel) return false;
+    return paymentCyclesManagerPanel.style.display !== 'none';
+}
+
 function updateSettingsSplitState() {
-    if (!settingsModal) return;
+    if (!settingsView) return;
     const anySideOpen = detailModals().some((modalEl) => modalEl
         && modalEl.classList.contains('settings-side-modal-anchored')
         && (ModalManager.isOpen(modalEl) || modalEl.classList.contains('is-open')));
-    settingsModal.classList.toggle('settings-split-active', anySideOpen);
+    settingsView.classList.toggle('settings-split-active', anySideOpen);
 }
 
 function applyDetailModalPresentation(modalEl) {
-    if (!modalEl || !settingsModal) return;
-    const canSplit = ModalManager.isOpen(settingsModal) && window.innerWidth > 1100;
+    if (!modalEl || !settingsView) return;
+    const canSplit = document.body.getAttribute('data-app-section') === 'settings' && window.innerWidth > 1100;
     modalEl.classList.toggle('settings-side-modal', canSplit);
     modalEl.classList.toggle('settings-side-modal-anchored', canSplit);
     if (!canSplit) {
@@ -2410,9 +2586,15 @@ function applyFeatureFlags(flags) {
     if (paymentCyclesConfig) {
         if (pcEnabled) paymentCyclesConfig.classList.remove('hidden'); else paymentCyclesConfig.classList.add('hidden');
     }
+    if (openPaymentCyclesSettingsBtn) {
+        openPaymentCyclesSettingsBtn.classList.toggle('hidden', !pcEnabled);
+    }
     // keep main paymentCyclesToggle in sync if it exists
     if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
         paymentCyclesToggle.checked = pcEnabled;
+    }
+    if (!pcEnabled && isPaymentCyclesManagerOpen()) {
+        closePaymentCyclesManagerPanel();
     }
 
     const rpgEnabled = !!flags.rpg;
@@ -2448,9 +2630,6 @@ function applyFeatureFlags(flags) {
     }
     if (floatingControlsSizeModeSelect) {
         floatingControlsSizeModeSelect.value = flags.floatingControlsSizeMode || 'auto';
-    }
-    if (floatingControlsSideSelect) {
-        floatingControlsSideSelect.value = flags.floatingControlsSide || 'right';
     }
     if (floatingSecondaryActionSelect) {
         floatingSecondaryActionSelect.value = flags.floatingSecondaryAction || 'add';
@@ -2500,7 +2679,6 @@ let featureFlags = {
     rpg: true,
     uiRefresh: true,
     floatingControlsSizeMode: 'auto',
-    floatingControlsSide: 'right',
     floatingSecondaryAction: 'add',
     floatingShowActiveCard: true,
     floatingActiveShowTimer: true,
@@ -2550,6 +2728,7 @@ let pendingConfirmOptions = {};
         const focusState = new Map();
         const modalStack = [];
         const transitionGuard = new Map();
+        let activeModalDrag = null;
         let keydownBound = false;
         let lastBodyPaddingRight = '';
 
@@ -2651,20 +2830,147 @@ let pendingConfirmOptions = {};
             return Number.isFinite(at) && (performance.now() - at) < 120;
         }
 
+        function getModalPanel(modalEl) {
+            return modalEl?.querySelector('.modal') || null;
+        }
+
+        function resetModalDragOffset(panel) {
+            if (!panel) return;
+            panel.style.removeProperty('--modal-drag-x');
+            panel.style.removeProperty('--modal-drag-y');
+            panel.style.removeProperty('position');
+            panel.style.removeProperty('left');
+            panel.style.removeProperty('top');
+            panel.style.removeProperty('width');
+            panel.style.removeProperty('margin');
+            panel.classList.remove('is-dragging');
+        }
+
+        function clamp(value, min, max) {
+            return Math.min(max, Math.max(min, value));
+        }
+
+        function clampModalFixedPosition(panel, proposedLeft, proposedTop) {
+            if (!panel) return { left: 0, top: 0 };
+            const safeMargin = 12;
+            const rect = panel.getBoundingClientRect();
+            const minLeft = safeMargin;
+            const maxLeft = Math.max(minLeft, window.innerWidth - safeMargin - rect.width);
+            const minTop = safeMargin;
+            const maxTop = Math.max(minTop, window.innerHeight - safeMargin - rect.height);
+            return {
+                left: clamp(proposedLeft, minLeft, maxLeft),
+                top: clamp(proposedTop, minTop, maxTop)
+            };
+        }
+
+        function getDragPoint(event) {
+            if (!event) return null;
+            if (typeof event.clientX === 'number' && typeof event.clientY === 'number') {
+                return { x: event.clientX, y: event.clientY };
+            }
+            const touch = event.touches?.[0] || event.changedTouches?.[0];
+            if (touch && typeof touch.clientX === 'number' && typeof touch.clientY === 'number') {
+                return { x: touch.clientX, y: touch.clientY };
+            }
+            return null;
+        }
+
+        function stopModalDrag() {
+            if (!activeModalDrag) return;
+            const { modalEl, panel, moveHandler, endHandler, mouseUpHandler } = activeModalDrag;
+            window.removeEventListener('mousemove', moveHandler, true);
+            window.removeEventListener('touchmove', moveHandler, true);
+            window.removeEventListener('mouseup', mouseUpHandler || endHandler, true);
+            window.removeEventListener('touchend', endHandler, true);
+            window.removeEventListener('touchcancel', endHandler, true);
+            if (modalEl) modalEl.classList.remove('is-dragging');
+            if (panel) panel.classList.remove('is-dragging');
+            activeModalDrag = null;
+        }
+
+        function startModalDrag(event, modalEl) {
+            if (!modalEl) return;
+            if (event.type === 'mousedown' && event.button !== 0) return;
+            const panel = getModalPanel(modalEl);
+            if (!panel || modalEl.classList.contains('settings-side-modal')) return;
+            const startPoint = getDragPoint(event);
+            if (!startPoint) return;
+
+            stopModalDrag();
+            bringToFront(modalEl);
+
+            const startRect = panel.getBoundingClientRect();
+            panel.style.position = 'fixed';
+            panel.style.left = `${Math.round(startRect.left)}px`;
+            panel.style.top = `${Math.round(startRect.top)}px`;
+            panel.style.width = `${Math.round(startRect.width)}px`;
+            panel.style.margin = '0';
+
+            modalEl.classList.add('is-dragging');
+            panel.classList.add('is-dragging');
+            event.preventDefault();
+
+            const moveHandler = (moveEvent) => {
+                const movePoint = getDragPoint(moveEvent);
+                if (!movePoint) return;
+                if (typeof moveEvent.preventDefault === 'function') moveEvent.preventDefault();
+                const deltaX = movePoint.x - startPoint.x;
+                const deltaY = movePoint.y - startPoint.y;
+                const nextPosition = clampModalFixedPosition(panel, startRect.left + deltaX, startRect.top + deltaY);
+                panel.style.left = `${Math.round(nextPosition.left)}px`;
+                panel.style.top = `${Math.round(nextPosition.top)}px`;
+            };
+
+            const endHandler = () => {
+                stopModalDrag();
+            };
+
+            const mouseUpHandler = () => stopModalDrag();
+            activeModalDrag = { modalEl, panel, moveHandler, endHandler, mouseUpHandler };
+            window.addEventListener('mousemove', moveHandler, true);
+            window.addEventListener('touchmove', moveHandler, { capture: true, passive: false });
+            window.addEventListener('mouseup', mouseUpHandler, true);
+            window.addEventListener('touchend', endHandler, true);
+            window.addEventListener('touchcancel', endHandler, true);
+        }
+
+        function ensureModalDragHandle(modalEl) {
+            const panel = getModalPanel(modalEl);
+            if (!panel || panel.dataset.dragHandleInitialized === 'true' || modalEl.classList.contains('settings-side-modal')) return;
+
+            let handle = panel.querySelector('[data-modal-drag-handle]') || panel.querySelector('.modal-drag-handle');
+            if (!handle) {
+                handle = document.createElement('div');
+                handle.className = 'modal-drag-handle';
+                handle.setAttribute('aria-hidden', 'true');
+                handle.innerHTML = '<span class="modal-drag-pill"></span>';
+                panel.prepend(handle);
+            }
+
+            handle.addEventListener('mousedown', (event) => startModalDrag(event, modalEl));
+            handle.addEventListener('touchstart', (event) => startModalDrag(event, modalEl), { passive: false });
+            panel.dataset.dragHandleInitialized = 'true';
+        }
+
         function fitModalToViewport(modalEl) {
             if (!modalEl) return;
-            const panel = modalEl.querySelector('.modal');
+            const panel = getModalPanel(modalEl);
             if (!panel) return;
             const safeMargin = 16;
             const maxHeight = Math.max(220, window.innerHeight - (safeMargin * 2));
             panel.style.maxHeight = `${maxHeight}px`;
             if (modalEl.classList.contains('settings-side-modal-anchored')) return;
-
-            const rect = panel.getBoundingClientRect();
-            if (rect.top < safeMargin) {
-                panel.style.marginTop = `${safeMargin - rect.top}px`;
-            } else {
-                panel.style.marginTop = '';
+            if (panel.style.position === 'fixed') {
+                const currentLeft = parseFloat(panel.style.left);
+                const currentTop = parseFloat(panel.style.top);
+                const nextPosition = clampModalFixedPosition(
+                    panel,
+                    Number.isFinite(currentLeft) ? currentLeft : safeMargin,
+                    Number.isFinite(currentTop) ? currentTop : safeMargin
+                );
+                panel.style.left = `${Math.round(nextPosition.left)}px`;
+                panel.style.top = `${Math.round(nextPosition.top)}px`;
             }
         }
 
@@ -2673,6 +2979,7 @@ let pendingConfirmOptions = {};
             modalEl.classList.add('app-modal');
             modalEl.setAttribute('aria-hidden', isOpen(modalEl) ? 'false' : 'true');
             inferAria(modalEl);
+            ensureModalDragHandle(modalEl);
 
             const mergedConfig = {
                 dismissOnOverlay: true,
@@ -2713,6 +3020,7 @@ let pendingConfirmOptions = {};
             }
 
             const panel = modalEl.querySelector('.modal');
+            resetModalDragOffset(panel);
             const sourceEl = options.sourceEl instanceof HTMLElement ? options.sourceEl : null;
             if (panel && sourceEl) {
                 const panelRect = panel.getBoundingClientRect();
@@ -2751,6 +3059,7 @@ let pendingConfirmOptions = {};
         function close(modalEl, options = {}) {
             if (!modalEl || !modalEl.id || !isOpen(modalEl)) return;
             if (isTransitionGuarded(modalEl)) return;
+            if (activeModalDrag?.modalEl === modalEl) stopModalDrag();
             markTransition(modalEl);
 
             modalEl.style.display = 'none';
@@ -2762,7 +3071,7 @@ let pendingConfirmOptions = {};
                 panel.style.removeProperty('--modal-origin-x');
                 panel.style.removeProperty('--modal-origin-y');
                 panel.style.removeProperty('z-index');
-                panel.style.marginTop = '';
+                resetModalDragOffset(panel);
             }
 
             const idx = modalStack.indexOf(modalEl.id);
@@ -3108,17 +3417,17 @@ function computeFloatingDockOffset() {
     return bottomOffset;
 }
 
-function avoidFocusedInputOverlap(flags) {
+function avoidFocusedInputOverlap(side) {
     const activeEl = document.activeElement;
-    if (!activeEl || !(activeEl instanceof HTMLElement)) return flags.floatingControlsSide;
+    if (!activeEl || !(activeEl instanceof HTMLElement)) return side;
     const tag = activeEl.tagName.toLowerCase();
-    if (!['input', 'textarea', 'select'].includes(tag)) return flags.floatingControlsSide;
+    if (!['input', 'textarea', 'select'].includes(tag)) return side;
     const rect = activeEl.getBoundingClientRect();
     const nearRight = rect.right > window.innerWidth * 0.62;
     const nearLeft = rect.left < window.innerWidth * 0.38;
-    if (flags.floatingControlsSide === 'right' && nearRight) return 'left';
-    if (flags.floatingControlsSide === 'left' && nearLeft) return 'right';
-    return flags.floatingControlsSide;
+    if (side === 'right' && nearRight) return 'left';
+    if (side === 'left' && nearLeft) return 'right';
+    return side;
 }
 
 function isElementVisibleInViewport(el, minVisibleRatio = 0.2) {
@@ -3245,8 +3554,7 @@ function updateFloatingCallControls(flags = featureFlags) {
     if (floatingDockManualPosition) {
         applyFloatingDockManualPosition(floatingDockManualPosition);
     } else {
-        const preferredSide = flags?.floatingControlsSide === 'left' ? 'left' : 'right';
-        const side = avoidFocusedInputOverlap({ ...flags, floatingControlsSide: preferredSide });
+        const side = avoidFocusedInputOverlap('right');
         const bottomOffset = computeFloatingDockOffset();
         floatingCallControls.style.top = 'auto';
         floatingCallControls.style.bottom = `${bottomOffset}px`;
@@ -3417,6 +3725,8 @@ if (storedDailyGoal) {
     let paymentCyclesListExpanded = false;
     let trendMode = normalizeTrendMode(appStorage.getItem('trendMode'));
     let patternsMode = normalizePatternsMode(appStorage.getItem('patternsMode') || trendMode || 'hourly');
+    let hourlyHeatmapMetric = normalizeHourlyHeatmapMetric(appStorage.getItem('hourlyHeatmapMetric'));
+    let hourlyHeatmapAnchorDate = getHourlyHeatmapAnchorStorageDate();
     let trendAnchorDate = getTrendAnchorStorageDate();
     let patternsDetailState = null;
     let hourlyHeatmapWindowStartMs = 0;
@@ -3453,6 +3763,10 @@ if (storedDailyGoal) {
         return ['hourly', 'weekly', 'monthly'].includes(mode) ? mode : 'hourly';
     }
 
+    function normalizeHourlyHeatmapMetric(metric) {
+        return ['calls', 'minutes', 'earnings'].includes(metric) ? metric : 'earnings';
+    }
+
     function clampTrendAnchorToToday(dateObj) {
         const today = new Date();
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -3467,6 +3781,11 @@ if (storedDailyGoal) {
         return clampTrendAnchorToToday(raw || new Date());
     }
 
+    function getHourlyHeatmapAnchorStorageDate() {
+        const raw = parseDateInput(appStorage.getItem('hourlyHeatmapAnchorDate') || '');
+        return clampTrendAnchorToToday(raw || new Date());
+    }
+
     function saveTrendPreferences() {
         queueStorageWrite('trendMode', trendMode);
         queueStorageWrite('trendAnchorDate', formatDateForInput(trendAnchorDate));
@@ -3474,6 +3793,14 @@ if (storedDailyGoal) {
 
     function savePatternsPreference() {
         queueStorageWrite('patternsMode', patternsMode);
+    }
+
+    function saveHourlyHeatmapMetricPreference() {
+        queueStorageWrite('hourlyHeatmapMetric', hourlyHeatmapMetric);
+    }
+
+    function saveHourlyHeatmapAnchorPreference() {
+        queueStorageWrite('hourlyHeatmapAnchorDate', formatDateForInput(hourlyHeatmapAnchorDate));
     }
 
     function getSessionDefaultState() {
@@ -3839,6 +4166,23 @@ if (storedDailyGoal) {
                 : '<i class="fas fa-pause mr-1"></i> Pause';
         }
         if (sessionEndBtn) sessionEndBtn.disabled = !metrics.state.active;
+        if (workstripSessionToggleBtn) {
+            workstripSessionToggleBtn.innerHTML = metrics.state.active
+                ? '<i class="fas fa-stop"></i><span>End Session</span>'
+                : '<i class="fas fa-business-time"></i><span>Start Session</span>';
+            workstripSessionToggleBtn.classList.toggle('focus-workstrip-action-session-main', !metrics.state.active);
+            workstripSessionToggleBtn.classList.toggle('focus-workstrip-action-end', metrics.state.active);
+            workstripSessionToggleBtn.setAttribute('aria-label', metrics.state.active ? 'End session' : 'Start session');
+            workstripSessionToggleBtn.setAttribute('title', metrics.state.active ? 'End session' : 'Start session');
+        }
+        if (workstripSessionPauseBtn) {
+            workstripSessionPauseBtn.disabled = !metrics.state.active;
+            workstripSessionPauseBtn.innerHTML = metrics.state.paused
+                ? '<i class="fas fa-play"></i><span>Resume</span>'
+                : '<i class="fas fa-pause"></i><span>Pause</span>';
+            workstripSessionPauseBtn.setAttribute('aria-label', metrics.state.paused ? 'Resume session' : 'Pause session');
+            workstripSessionPauseBtn.setAttribute('title', metrics.state.paused ? 'Resume session' : 'Pause session');
+        }
         if (sessionStartTimeInput) {
             sessionStartTimeInput.disabled = false;
             sessionStartTimeInput.readOnly = true;
@@ -3847,6 +4191,8 @@ if (storedDailyGoal) {
             sessionEndTimeInput.disabled = false;
             sessionEndTimeInput.readOnly = true;
         }
+
+        queueWorkstripSync();
     }
 
     function startWorkSession() {
@@ -4872,19 +5218,23 @@ if (storedDailyGoal) {
     function getTierClasses(tier, unlocked) {
         if (!unlocked) return {
             badge: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-            card: 'border-gray-200 dark:border-gray-700'
+            card: 'border-gray-200 dark:border-gray-700',
+            progress: 'achievement-progress-fill-locked'
         };
         if (tier === 'Gold') return {
             badge: 'bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100',
-            card: 'border-amber-300 dark:border-amber-700'
+            card: 'border-amber-300 dark:border-amber-700',
+            progress: 'achievement-progress-fill-gold'
         };
         if (tier === 'Silver') return {
             badge: 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
-            card: 'border-slate-300 dark:border-slate-600'
+            card: 'border-slate-300 dark:border-slate-600',
+            progress: 'achievement-progress-fill-silver'
         };
         return {
             badge: 'bg-orange-200 text-orange-900 dark:bg-orange-800 dark:text-orange-100',
-            card: 'border-orange-300 dark:border-orange-700'
+            card: 'border-orange-300 dark:border-orange-700',
+            progress: 'achievement-progress-fill-bronze'
         };
     }
 
@@ -5171,11 +5521,11 @@ if (storedDailyGoal) {
             const progressText = `${progress.formatter(progress.current)} / ${progress.formatter(progress.target)}`;
             return `
                 <button type="button" class="achievement-card-btn settings-section-card border ${tierStyles.card} ${unlocked ? 'opacity-100' : 'opacity-80'}" data-achievement-id="${a.id}">
-                    <div class="flex items-start justify-between gap-3 mb-1">
-                        <div class="font-semibold text-gray-800 dark:text-gray-100">
+                    <div class="achievement-card-header">
+                        <div class="achievement-card-title font-semibold text-gray-800 dark:text-gray-100">
                             <i class="fas ${a.icon} mr-2 ${unlocked ? 'text-amber-500' : 'text-gray-400'}"></i>${a.name}
                         </div>
-                        <span class="text-xs px-2 py-1 rounded-full ${tierStyles.badge}">${a.tier}</span>
+                        <span class="achievement-tier-badge text-xs px-2 py-1 rounded-full ${tierStyles.badge}">${a.tier}</span>
                     </div>
                     <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">${a.description}</p>
                     <div class="mb-2">
@@ -5184,7 +5534,7 @@ if (storedDailyGoal) {
                             <span>${progressText}</span>
                         </div>
                         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                            <div class="achievement-progress-fill bg-amber-500 h-1.5 rounded-full transition-all duration-500 ease-out" style="width:${progress.pct}%"></div>
+                            <div class="achievement-progress-fill ${tierStyles.progress} h-1.5 rounded-full transition-all duration-500 ease-out" style="width:${progress.pct}%"></div>
                         </div>
                     </div>
                     ${rpgEnabled
@@ -5235,11 +5585,11 @@ if (storedDailyGoal) {
             const doneText = unlocked ? `Completed on ${formatAchievementDate(completedAt)}` : 'In progress';
             return `
                 <div class="settings-section-card border ${tierStyles.card} ${unlocked ? 'opacity-100' : 'opacity-90'}">
-                    <div class="flex items-start justify-between gap-3 mb-1">
-                        <div class="font-semibold text-gray-800 dark:text-gray-100">
+                    <div class="achievement-card-header">
+                        <div class="achievement-card-title font-semibold text-gray-800 dark:text-gray-100">
                             <i class="fas ${q.icon} mr-2 ${unlocked ? 'text-emerald-500' : 'text-gray-400'}"></i>${q.name}
                         </div>
-                        <span class="text-xs px-2 py-1 rounded-full ${tierStyles.badge}">+${q.rewardXp} XP</span>
+                        <span class="achievement-tier-badge text-xs px-2 py-1 rounded-full ${tierStyles.badge}">+${q.rewardXp} XP</span>
                     </div>
                     <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">${q.description}</p>
                     <div class="mb-2">
@@ -5331,7 +5681,7 @@ if (storedDailyGoal) {
             achievementDetailTitle.innerHTML = `<i class="fas ${achievement.icon} mr-2 ${unlocked ? 'text-amber-500' : 'text-gray-400'}"></i>${achievement.name}`;
         }
         if (achievementDetailTier) {
-            achievementDetailTier.className = `text-xs inline-block px-2 py-1 rounded-full mb-3 ${tierStyles.badge}`;
+            achievementDetailTier.className = `achievement-tier-badge text-xs inline-block px-2 py-1 rounded-full mb-3 ${tierStyles.badge}`;
             achievementDetailTier.textContent = achievement.tier;
         }
         if (achievementDetailDescription) {
@@ -5930,7 +6280,7 @@ function confirmCsvImport() {
     });
     saveCalls();
     closeCsvImportPreviewModal();
-    closeSettingsModal();
+    closeSettingsView();
     showAlertModal(
         'CSV Import Complete',
         `${readyRows.length} call${readyRows.length === 1 ? '' : 's'} imported. ${duplicateCount} duplicate row${duplicateCount === 1 ? '' : 's'} skipped. ${invalidCount} invalid row${invalidCount === 1 ? '' : 's'} not imported.`,
@@ -5992,7 +6342,7 @@ function importJsonBackup(importedData) {
             syncDailyGoalInputs();
             populateRateSelects();
             showToast(`Backup merged: ${callMerge.addedCount} calls, ${rateMerge.addedCount} rates, ${cycleMerge.addedCount} cycles added.`);
-            closeSettingsModal();
+            closeSettingsView();
         },
         {
             icon: 'fa-upload',
@@ -7056,15 +7406,24 @@ function saveCalls() {
                 : `Ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'} | Next pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`;
         } else if (context.next || nextPayCycle) {
             const upcomingCycle = context.next || nextPayCycle;
-            const daysUntilStart = Math.max(0, Math.ceil((upcomingCycle._startMs - nowMs) / (1000 * 60 * 60 * 24)));
+            const hasUpcomingStart = Number.isFinite(upcomingCycle?._startMs) && upcomingCycle._startMs > nowMs;
+            const daysUntilStart = hasUpcomingStart
+                ? Math.max(0, Math.ceil((upcomingCycle._startMs - nowMs) / (1000 * 60 * 60 * 24)))
+                : null;
             const daysUntilPay = Number.isFinite(upcomingCycle._payMs)
                 ? Math.max(0, Math.ceil((upcomingCycle._payMs - nowMs) / (1000 * 60 * 60 * 24)))
                 : null;
-            paymentCyclesCurrentRange.textContent = `Next: ${formatDate(upcomingCycle.startDate)} -> ${formatDate(upcomingCycle.endDate)}`;
+            paymentCyclesCurrentRange.textContent = hasUpcomingStart
+                ? `Next cycle: ${formatDate(upcomingCycle.startDate)} -> ${formatDate(upcomingCycle.endDate)}`
+                : `Closest payout cycle: ${formatDate(upcomingCycle.startDate)} -> ${formatDate(upcomingCycle.endDate)}`;
             paymentCyclesCurrentPay.textContent = `Next Pay Date: ${formatDate(upcomingCycle.payDate)}`;
             paymentCyclesCurrentDays.textContent = daysUntilPay === null
-                ? `Starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'}`
-                : `Starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'} | Pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`;
+                ? (daysUntilStart === null
+                    ? 'Pay date pending'
+                    : `Starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'}`)
+                : (daysUntilStart === null
+                    ? `Closest pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`
+                    : `Starts in ${daysUntilStart} day${daysUntilStart === 1 ? '' : 's'} | Pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`);
         } else {
             paymentCyclesCurrentRange.textContent = 'No current cycle for today.';
             paymentCyclesCurrentPay.textContent = 'Next Pay Date: --';
@@ -7279,9 +7638,10 @@ function saveCalls() {
 
     function updateHourlyHeatmap(nowMs = Date.now()) {
         if (!hourlyHeatmapGrid || !hourlyHeatmapTopHours || !hourlyHeatmapSummary) return;
+        hourlyHeatmapAnchorDate = clampTrendAnchorToToday(hourlyHeatmapAnchorDate || new Date(nowMs));
         const currentDate = new Date(nowMs);
-        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const nextMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+        const monthStart = new Date(hourlyHeatmapAnchorDate.getFullYear(), hourlyHeatmapAnchorDate.getMonth(), 1);
+        const nextMonthStart = new Date(hourlyHeatmapAnchorDate.getFullYear(), hourlyHeatmapAnchorDate.getMonth() + 1, 1);
         const startMs = monthStart.getTime();
         const endMs = nextMonthStart.getTime();
         hourlyHeatmapWindowStartMs = startMs;
@@ -7299,39 +7659,73 @@ function saveCalls() {
             hourlyDurationMs[hour] += Math.max(0, Number(calls[i].duration) || 0);
         }
 
-        const maxCount = Math.max(1, ...hourlyCounts);
+        hourlyHeatmapMetric = normalizeHourlyHeatmapMetric(hourlyHeatmapMetric);
+        const activeMetricValues = hourlyCounts.map((count, hour) => {
+            if (hourlyHeatmapMetric === 'minutes') {
+                return hourlyDurationMs[hour] / 60000;
+            }
+            if (hourlyHeatmapMetric === 'earnings') {
+                return hourlyEarnings[hour];
+            }
+            return count;
+        });
+        const maxMetricValue = Math.max(1, ...activeMetricValues);
+        const metricLabel = hourlyHeatmapMetric === 'minutes'
+            ? 'minutes'
+            : (hourlyHeatmapMetric === 'earnings' ? 'earnings' : 'calls');
         hideHeatmapHoverTooltip(true);
         hourlyHeatmapGrid.innerHTML = '';
         for (let hour = 0; hour < 24; hour += 1) {
             const count = hourlyCounts[hour];
-            const intensity = count > 0 ? (count / maxCount) : 0;
-            const alpha = count > 0 ? (0.12 + (0.58 * intensity)) : 0.06;
+            const metricValue = activeMetricValues[hour];
+            const hasActivity = metricValue > 0;
+            const intensity = hasActivity ? (metricValue / maxMetricValue) : 0;
+            const alpha = hasActivity ? (0.12 + (0.58 * intensity)) : 0.06;
             const cell = document.createElement('div');
             cell.className = 'hourly-heatmap-cell';
             cell.style.background = `rgba(16, 185, 129, ${alpha.toFixed(3)})`;
             cell.innerHTML = `
                 <span class="hourly-heatmap-hour">${String(hour).padStart(2, '0')}h</span>
             `;
+            const metricValueText = hourlyHeatmapMetric === 'minutes'
+                ? `${Math.round(metricValue)} min`
+                : (hourlyHeatmapMetric === 'earnings'
+                    ? formatEarnings(metricValue)
+                    : `${count} call${count === 1 ? '' : 's'}`);
             const tooltip = `${String(hour).padStart(2, '0')}:00 | ${count} call${count === 1 ? '' : 's'} | ${formatEarnings(hourlyEarnings[hour])} | ${formatTime(hourlyDurationMs[hour])}`;
-            cell.dataset.heatmapTooltip = tooltip;
+            const tooltipWithMetric = `${String(hour).padStart(2, '0')}:00 | ${metricLabel}: ${metricValueText} | ${count} call${count === 1 ? '' : 's'} | ${formatEarnings(hourlyEarnings[hour])} | ${formatTime(hourlyDurationMs[hour])}`;
+            cell.dataset.heatmapTooltip = tooltipWithMetric;
             cell.dataset.patternDetailType = 'hourly';
             cell.dataset.patternHour = String(hour);
             cell.dataset.patternMonthStartMs = String(startMs);
             cell.dataset.patternMonthEndMs = String(endMs);
-            cell.setAttribute('aria-label', tooltip);
+            cell.setAttribute('aria-label', tooltipWithMetric);
             cell.removeAttribute('title');
             hourlyHeatmapGrid.appendChild(cell);
         }
         bindHeatmapTooltipDelegation(hourlyHeatmapGrid);
 
-        const topHours = hourlyCounts
-            .map((count, hour) => ({ hour, count }))
-            .filter((entry) => entry.count > 0)
-            .sort((a, b) => b.count - a.count)
+        const topHours = activeMetricValues
+            .map((value, hour) => ({
+                hour,
+                value,
+                count: hourlyCounts[hour],
+                earnings: hourlyEarnings[hour],
+                durationMs: hourlyDurationMs[hour]
+            }))
+            .filter((entry) => entry.value > 0)
+            .sort((a, b) => b.value - a.value)
             .slice(0, 3);
         if (topHours.length > 0) {
             hourlyHeatmapTopHours.innerHTML = topHours
-                .map((entry) => `<span class="trend-insight-chip">${String(entry.hour).padStart(2, '0')}:00 - ${entry.count}</span>`)
+                .map((entry) => {
+                    const metricText = hourlyHeatmapMetric === 'minutes'
+                        ? `${Math.round(entry.durationMs / 60000)} min`
+                        : (hourlyHeatmapMetric === 'earnings'
+                            ? formatEarnings(entry.earnings)
+                            : `${entry.count} call${entry.count === 1 ? '' : 's'}`);
+                    return `<span class="trend-insight-chip">${String(entry.hour).padStart(2, '0')}:00 - ${metricText}</span>`;
+                })
                 .join('');
         } else {
             hourlyHeatmapTopHours.innerHTML = '<span class="trend-insight-chip trend-insight-chip-empty">No peak hour yet</span>';
@@ -7339,7 +7733,39 @@ function saveCalls() {
 
         const totalCallsInWindow = hourlyCounts.reduce((sum, value) => sum + value, 0);
         const monthLabel = monthStart.toLocaleDateString(DISPLAY_LOCALE, { month: 'long', year: 'numeric' });
-        hourlyHeatmapSummary.textContent = `${monthLabel} activity by start hour - ${totalCallsInWindow} call${totalCallsInWindow === 1 ? '' : 's'}.`;
+        if (hourlyHeatmapRangeLabel) hourlyHeatmapRangeLabel.textContent = monthLabel;
+        if (hourlyHeatmapNextBtn) {
+            const currentMonthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            hourlyHeatmapNextBtn.disabled = monthStart.getTime() >= currentMonthStart.getTime();
+        }
+        if (hourlyHeatmapPrevBtn) hourlyHeatmapPrevBtn.disabled = false;
+        if (patternsMode === 'hourly' && patternsPanelSummary) {
+            if (hourlyHeatmapMetric === 'minutes') {
+                patternsPanelSummary.textContent = `${monthLabel} talk time by start hour.`;
+            } else if (hourlyHeatmapMetric === 'earnings') {
+                patternsPanelSummary.textContent = `${monthLabel} earnings by start hour.`;
+            } else {
+                patternsPanelSummary.textContent = `${monthLabel} call starts by hour.`;
+            }
+        }
+        if (hourlyHeatmapMetric === 'minutes') {
+            const totalMinutesInWindow = Math.round(hourlyDurationMs.reduce((sum, value) => sum + value, 0) / 60000);
+            hourlyHeatmapSummary.textContent = `${monthLabel} talk time by start hour - ${totalMinutesInWindow} min total.`;
+            if (hourlyHeatmapSummaryInline) {
+                hourlyHeatmapSummaryInline.textContent = `${monthLabel} | ${totalMinutesInWindow} min`;
+            }
+        } else if (hourlyHeatmapMetric === 'earnings') {
+            const totalEarningsInWindow = hourlyEarnings.reduce((sum, value) => sum + value, 0);
+            hourlyHeatmapSummary.textContent = `${monthLabel} earnings by start hour - ${formatEarnings(totalEarningsInWindow)} total.`;
+            if (hourlyHeatmapSummaryInline) {
+                hourlyHeatmapSummaryInline.textContent = `${monthLabel} | ${formatEarnings(totalEarningsInWindow)}`;
+            }
+        } else {
+            hourlyHeatmapSummary.textContent = `${monthLabel} activity by start hour - ${totalCallsInWindow} call${totalCallsInWindow === 1 ? '' : 's'}.`;
+            if (hourlyHeatmapSummaryInline) {
+                hourlyHeatmapSummaryInline.textContent = `${monthLabel} | ${totalCallsInWindow} call${totalCallsInWindow === 1 ? '' : 's'}`;
+            }
+        }
     }
     function getLocalDateKey(dateObj) {
         const d = dateObj instanceof Date ? dateObj : new Date(dateObj);
@@ -7709,6 +8135,7 @@ function saveCalls() {
 
     function updatePatternsPanelUi() {
         patternsMode = normalizePatternsMode(patternsMode);
+        hourlyHeatmapMetric = normalizeHourlyHeatmapMetric(hourlyHeatmapMetric);
         const isHourly = patternsMode === 'hourly';
         const isWeekly = patternsMode === 'weekly';
         const isMonthly = patternsMode === 'monthly';
@@ -7716,20 +8143,56 @@ function saveCalls() {
         if (patternsModeHourlyBtn) patternsModeHourlyBtn.classList.toggle('is-active', isHourly);
         if (trendModeWeeklyBtn) trendModeWeeklyBtn.classList.toggle('is-active', isWeekly);
         if (trendModeMonthlyBtn) trendModeMonthlyBtn.classList.toggle('is-active', isMonthly);
+        if (hourlyHeatmapMetricCallsBtn) hourlyHeatmapMetricCallsBtn.classList.toggle('is-active', hourlyHeatmapMetric === 'calls');
+        if (hourlyHeatmapMetricMinutesBtn) hourlyHeatmapMetricMinutesBtn.classList.toggle('is-active', hourlyHeatmapMetric === 'minutes');
+        if (hourlyHeatmapMetricEarningsBtn) hourlyHeatmapMetricEarningsBtn.classList.toggle('is-active', hourlyHeatmapMetric === 'earnings');
 
         if (hourlyHeatmapCard) hourlyHeatmapCard.classList.toggle('hidden', !isHourly);
+        if (hourlyHeatmapMetricToggle) hourlyHeatmapMetricToggle.classList.toggle('hidden', !isHourly);
         if (trendCard) trendCard.classList.toggle('hidden', isHourly);
         if (trendAnalyticsGrid) trendAnalyticsGrid.classList.toggle('patterns-hourly-active', isHourly);
 
         if (patternsPanelSummary) {
             if (isHourly) {
-                patternsPanelSummary.textContent = 'Current month call starts by hour.';
+                if (hourlyHeatmapMetric === 'minutes') {
+                    patternsPanelSummary.textContent = 'Current month talk time by start hour.';
+                } else if (hourlyHeatmapMetric === 'earnings') {
+                    patternsPanelSummary.textContent = 'Current month earnings by start hour.';
+                } else {
+                    patternsPanelSummary.textContent = 'Current month call starts by hour.';
+                }
             } else if (isWeekly) {
                 patternsPanelSummary.textContent = '7-day earnings pattern for the current week window.';
             } else {
                 patternsPanelSummary.textContent = 'Month-wide earnings distribution by day.';
             }
         }
+    }
+
+    function setHourlyHeatmapMetric(metric) {
+        const normalized = normalizeHourlyHeatmapMetric(metric);
+        if (hourlyHeatmapMetric === normalized) {
+            updatePatternsPanelUi();
+            updateHourlyHeatmap();
+            return;
+        }
+        hourlyHeatmapMetric = normalized;
+        saveHourlyHeatmapMetricPreference();
+        updatePatternsPanelUi();
+        updateHourlyHeatmap();
+    }
+
+    function shiftHourlyHeatmapMonth(direction) {
+        const step = Number(direction) < 0 ? -1 : 1;
+        const currentMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const monthStart = new Date(hourlyHeatmapAnchorDate.getFullYear(), hourlyHeatmapAnchorDate.getMonth(), 1);
+        const shiftedMonth = new Date(monthStart.getFullYear(), monthStart.getMonth() + step, 1);
+        hourlyHeatmapAnchorDate = shiftedMonth.getTime() > currentMonthStart.getTime()
+            ? currentMonthStart
+            : shiftedMonth;
+        hourlyHeatmapAnchorDate = clampTrendAnchorToToday(hourlyHeatmapAnchorDate);
+        saveHourlyHeatmapAnchorPreference();
+        updateHourlyHeatmap();
     }
 
     function setPatternsMode(mode) {
@@ -7828,8 +8291,12 @@ function saveCalls() {
             const dailyRows = [];
             let total = 0;
             let activeDays = 0;
+            let totalCalls = 0;
+            let totalDurationMs = 0;
             let bestDayValue = 0;
             let bestDayDate = null;
+            let bestDayCalls = 0;
+            let bestDayDurationMs = 0;
 
             for (let day = 1; day <= daysInMonth; day += 1) {
                 const dateObj = new Date(monthStart.getFullYear(), monthStart.getMonth(), day);
@@ -7837,10 +8304,14 @@ function saveCalls() {
                 const earnings = dayEarningsMap.get(key) || 0;
                 const stats = dayStatsMap.get(key) || { calls: 0, earnings: 0, durationMs: 0 };
                 total += earnings;
+                totalCalls += Math.max(0, Number(stats.calls) || 0);
+                totalDurationMs += Math.max(0, Number(stats.durationMs) || 0);
                 if (earnings > 0) activeDays += 1;
                 if (earnings > bestDayValue) {
                     bestDayValue = earnings;
                     bestDayDate = dateObj;
+                    bestDayCalls = Math.max(0, Number(stats.calls) || 0);
+                    bestDayDurationMs = Math.max(0, Number(stats.durationMs) || 0);
                 }
                 dailyRows.push({
                     day,
@@ -7902,13 +8373,18 @@ function saveCalls() {
             }
 
             const monthLabel = monthStart.toLocaleDateString(DISPLAY_LOCALE, { month: 'long', year: 'numeric' });
+            const averagePerActiveDay = activeDays > 0 ? total / activeDays : 0;
             trendRangeLabel.textContent = monthLabel;
-            weeklyTrendSummary.textContent = `Monthly earnings in ${monthLabel} | Total ${formatEarnings(total)} across ${activeDays} active day${activeDays === 1 ? '' : 's'}.`;
+            weeklyTrendSummary.textContent = `Monthly earnings in ${monthLabel} | Total ${formatEarnings(total)} across ${activeDays} active day${activeDays === 1 ? '' : 's'}, ${totalCalls} call${totalCalls === 1 ? '' : 's'}, and ${formatTime(totalDurationMs)} of talk time.`;
             if (trendSummaryInline) {
-                trendSummaryInline.textContent = `Total ${formatEarnings(total)} | ${activeDays} active day${activeDays === 1 ? '' : 's'}`;
+                trendSummaryInline.textContent = `Total ${formatEarnings(total)} | ${activeDays} active | ${totalCalls} calls`;
             }
             if (bestDayDate) {
-                weeklyTrendBestDay.innerHTML = `<span class="trend-insight-chip trend-insight-chip-best">${bestDayDate.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'short', month: 'short', day: 'numeric' })} - ${formatEarnings(bestDayValue)}</span>`;
+                weeklyTrendBestDay.innerHTML = [
+                    `<span class="trend-insight-chip trend-insight-chip-best">${bestDayDate.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'short', month: 'short', day: 'numeric' })} - ${formatEarnings(bestDayValue)}</span>`,
+                    `<span class="trend-insight-chip">${bestDayCalls} call${bestDayCalls === 1 ? '' : 's'} | ${formatTime(bestDayDurationMs)}</span>`,
+                    `<span class="trend-insight-chip">${activeDays} active day${activeDays === 1 ? '' : 's'} | Avg ${formatEarnings(averagePerActiveDay)}</span>`
+                ].join('');
             } else {
                 weeklyTrendBestDay.innerHTML = '<span class="trend-insight-chip trend-insight-chip-empty">No best day yet</span>';
             }
@@ -7933,10 +8409,13 @@ function saveCalls() {
             const dayStartMs = weekStartMs + (index * dayMs);
             const dayDate = new Date(dayStartMs);
             const key = getLocalDateKey(dayDate);
+            const stats = dayStatsMap.get(key) || { calls: 0, earnings: 0, durationMs: 0 };
             return {
                 dayStartMs,
                 dayDate,
-                earnings: dayEarningsMap.get(key) || 0
+                earnings: dayEarningsMap.get(key) || 0,
+                calls: Math.max(0, Number(stats.calls) || 0),
+                durationMs: Math.max(0, Number(stats.durationMs) || 0)
             };
         });
 
@@ -7947,7 +8426,7 @@ function saveCalls() {
             const intensity = entry.earnings > 0 ? (entry.earnings / maxEarnings) : 0;
             const alpha = entry.earnings > 0 ? (0.12 + (0.58 * intensity)) : 0.06;
             const dayLabel = entry.dayDate.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'short' }).toUpperCase();
-            const tooltip = `${entry.dayDate.toLocaleDateString(DISPLAY_LOCALE)} | ${formatEarnings(entry.earnings)}`;
+            const tooltip = `${entry.dayDate.toLocaleDateString(DISPLAY_LOCALE)} | ${formatEarnings(entry.earnings)} | ${entry.calls} call${entry.calls === 1 ? '' : 's'} | ${formatTime(entry.durationMs)}`;
             const wrapper = document.createElement('div');
             wrapper.className = 'weekly-trend-day';
             wrapper.innerHTML = `
@@ -7967,10 +8446,18 @@ function saveCalls() {
 
         const bestDay = dayWindow.reduce((best, entry) => (entry.earnings > best.earnings ? entry : best), dayWindow[0] || { earnings: 0, dayDate: trendAnchorDate });
         const bestDayLabel = bestDay.dayDate.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'long', month: 'short', day: 'numeric' });
-        weeklyTrendBestDay.innerHTML = `<span class="trend-insight-chip trend-insight-chip-best">${bestDayLabel} - ${formatEarnings(bestDay.earnings)}</span>`;
+        const weekTotalCalls = dayWindow.reduce((sum, entry) => sum + entry.calls, 0);
+        const weekTotalDurationMs = dayWindow.reduce((sum, entry) => sum + entry.durationMs, 0);
+        const activeWeekDays = dayWindow.filter((entry) => entry.earnings > 0 || entry.calls > 0).length;
         const weekTotal = dayWindow.reduce((sum, entry) => sum + entry.earnings, 0);
-        weeklyTrendSummary.textContent = `Earnings over this 7-day window | Total ${formatEarnings(weekTotal)}`;
-        if (trendSummaryInline) trendSummaryInline.textContent = `7-day total ${formatEarnings(weekTotal)}`;
+        const weekAveragePerActiveDay = activeWeekDays > 0 ? weekTotal / activeWeekDays : 0;
+        weeklyTrendBestDay.innerHTML = [
+            `<span class="trend-insight-chip trend-insight-chip-best">${bestDayLabel} - ${formatEarnings(bestDay.earnings)}</span>`,
+            `<span class="trend-insight-chip">${bestDay.calls} call${bestDay.calls === 1 ? '' : 's'} | ${formatTime(bestDay.durationMs)}</span>`,
+            `<span class="trend-insight-chip">${activeWeekDays} active day${activeWeekDays === 1 ? '' : 's'} | Avg ${formatEarnings(weekAveragePerActiveDay)}</span>`
+        ].join('');
+        weeklyTrendSummary.textContent = `Earnings over this 7-day window | Total ${formatEarnings(weekTotal)}, ${weekTotalCalls} call${weekTotalCalls === 1 ? '' : 's'}, and ${formatTime(weekTotalDurationMs)} of talk time.`;
+        if (trendSummaryInline) trendSummaryInline.textContent = `7-day total ${formatEarnings(weekTotal)} | ${activeWeekDays} active | ${weekTotalCalls} calls`;
 
         const rangeStart = dayWindow[0]?.dayDate || trendAnchorDate;
         const rangeEnd = dayWindow[6]?.dayDate || trendAnchorDate;
@@ -8164,12 +8651,22 @@ function saveCalls() {
             goalMinutesDisplay.textContent = goalSummary[1] || '0 / 0 Min';
             goalProgressBar.style.width = `${progress}%`;
             goalProgressText.textContent = `${progress.toFixed(0)}%`;
+            if (focusWorkstripGoalBar) focusWorkstripGoalBar.style.width = `${progress}%`;
+            if (focusWorkstripGoalProgress) focusWorkstripGoalProgress.textContent = `${progress.toFixed(0)}%`;
+            if (focusWorkstripGoalSummary) {
+                focusWorkstripGoalSummary.textContent = hasAmountGoal
+                    ? (goalSummary[0] || '$0.00 / $0.00')
+                    : (goalSummary[1] || '0 / 0 Min');
+            }
         } else {
             goalEstimateDisplay.textContent = 'No goal set';
             goalProgressBar.style.width = '0%';
             goalProgressText.textContent = '0%';
             goalAmountDisplay.textContent = '$0.00 / $0.00';
             goalMinutesDisplay.textContent = '0 / 0 Min';
+            if (focusWorkstripGoalBar) focusWorkstripGoalBar.style.width = '0%';
+            if (focusWorkstripGoalProgress) focusWorkstripGoalProgress.textContent = '0%';
+            if (focusWorkstripGoalSummary) focusWorkstripGoalSummary.textContent = 'No goal set';
         }
 
         if (goalEstimateDeltaDisplay) {
@@ -8319,9 +8816,10 @@ function saveCalls() {
                     const isCurrentCyclePay = currentCycle
                         && nearestPayCycle._startMs === currentCycle._startMs
                         && nearestPayCycle._endMs === currentCycle._endMs;
+                    const payCycleEnded = Number.isFinite(nearestPayCycle._endMs) && nearestPayCycle._endMs < nowMs;
                     nextPayCycleContextDisplay.textContent = isCurrentCyclePay
-                        ? 'Current cycle payout'
-                        : 'Upcoming cycle payout';
+                        ? 'Payout tied to the active cycle'
+                        : (payCycleEnded ? 'Closest pending payout from a previous cycle' : 'Closest upcoming payout');
                 }
             }
         }
@@ -8394,8 +8892,13 @@ function saveCalls() {
         const now = new Date();
         const timeString = cachedTimeZoneFormatters.time.format(now);
         const dateString = cachedTimeZoneFormatters.date.format(now);
-        localTimeDisplay.textContent = `${dateString} ${timeString}`;
-        userTimeZoneDisplay.textContent = tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const resolvedTz = tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
+        [localTimeDisplay, mobileLocalTimeDisplay].filter(Boolean).forEach((el) => {
+            el.textContent = `${dateString} ${timeString}`;
+        });
+        [userTimeZoneDisplay, mobileUserTimeZoneDisplay].filter(Boolean).forEach((el) => {
+            el.textContent = resolvedTz;
+        });
     }
 
     function formatDate(dateStr) {
@@ -9075,9 +9578,9 @@ function saveCalls() {
         queueWorkstripSync();
     }
 
-    // Settings modal functions
-    function openSettingsModal(triggerEl = null) {
-        ModalManager.open(settingsModal, { focusSelector: '#feature-notes-toggle', sourceEl: triggerEl });
+    // Settings view functions
+    function openSettingsView(triggerEl = null) {
+        setActiveAppSection('settings');
         const state = loadOnboardingState();
         state.dismissed.settings = true;
         state.seen = true;
@@ -9087,30 +9590,29 @@ function saveCalls() {
         state.completed.settings = true;
         saveOnboardingState(state);
         updateOnboardingCues();
-        updateSettingsSplitState();
         updateStorageInfo();
     }
 
-    function closeSettingsModal() {
+    function closeSettingsView() {
+        if (settingsView) settingsView.classList.remove('settings-split-active');
         closeOtherDetailModals(null);
         detailModals().forEach((modalEl) => clearDetailModalPresentation(modalEl));
         stopFloatingPreviewAutoRefresh();
-        ModalManager.close(settingsModal);
     }
 
-    function openPaymentCyclesSettingsModal(triggerEl = null, options = {}) {
+    function openPaymentCyclesManagerPanel(triggerEl = null, options = {}) {
         if (!featureFlags.paymentCycles) return;
-        closeOtherDetailModals(paymentCyclesSettingsModal);
-        settingsModal?.classList.add('settings-split-active');
-        applyDetailModalPresentation(paymentCyclesSettingsModal);
-        positionDetailModal(paymentCyclesSettingsModal);
-        ModalManager.open(paymentCyclesSettingsModal, { focusSelector: '#show-add-cycle-btn', sourceEl: triggerEl });
-        if (openPaymentCyclesSettingsBtn) openPaymentCyclesSettingsBtn.setAttribute('aria-expanded', 'true');
-        setDetailPanelOrigin(paymentCyclesSettingsModal, triggerEl);
-        updateSettingsSplitState();
+        closeOtherDetailModals(null);
+        openSettingsView(triggerEl);
+        if (paymentCyclesManagerPanel) paymentCyclesManagerPanel.style.display = '';
         updateStorageInfo();
         paymentCyclesListExpanded = !!options?.expandList;
         renderPaymentCycles();
+        if (paymentCyclesManagerPanel) {
+            requestAnimationFrame(() => {
+                paymentCyclesManagerPanel.scrollIntoView({ block: 'start', behavior: 'smooth' });
+            });
+        }
     }
 
     function openPaymentCyclesManagerFromDashboard(triggerEl = null) {
@@ -9118,24 +9620,20 @@ function saveCalls() {
             showToast('Enable Payment Cycles in Settings first.');
             return;
         }
-        if (settingsModal && !ModalManager.isOpen(settingsModal)) {
-            openSettingsModal(settingsToggleBtn || triggerEl);
-        }
-        openPaymentCyclesSettingsModal(triggerEl || openPaymentCyclesSettingsBtn, { expandList: true });
+        openPaymentCyclesManagerPanel(triggerEl, { expandList: true });
     }
 
     function openAchievementsSettingsModal(triggerEl = null) {
-        if (settingsModal && ModalManager.isOpen(settingsModal)) {
-            closeSettingsModal();
+        if (document.body.getAttribute('data-app-section') === 'settings') {
+            closeSettingsView();
         }
-        clearDetailModalPresentation(achievementsSettingsModal);
+        setActiveAppSection('progress');
         renderAchievementsModal();
-        ModalManager.open(achievementsSettingsModal, { focusSelector: '#done-achievements-settings-btn', sourceEl: triggerEl });
-        const scrollEl = achievementsSettingsModal?.querySelector('.settings-modal-scroll');
-        if (scrollEl) {
-            scrollEl.scrollTop = 0;
+        closeAchievementDetailModal();
+        const gridEl = document.getElementById('achievements-grid');
+        if (gridEl) {
             requestAnimationFrame(() => {
-                scrollEl.scrollTop = 0;
+                gridEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
             });
         }
     }
@@ -9153,25 +9651,16 @@ function saveCalls() {
 
     function closeAchievementsSettingsModal() {
         closeAchievementDetailModal();
-        ModalManager.close(achievementsSettingsModal);
     }
 
-    function closePaymentCyclesSettingsModal() {
-        ModalManager.close(paymentCyclesSettingsModal);
-        clearDetailModalPresentation(paymentCyclesSettingsModal);
-        if (openPaymentCyclesSettingsBtn) openPaymentCyclesSettingsBtn.setAttribute('aria-expanded', 'false');
+    function closePaymentCyclesManagerPanel() {
+        if (paymentCyclesManagerPanel) paymentCyclesManagerPanel.style.display = 'none';
     }
 
-    function openFloatingControlsSettingsModal(triggerEl = null) {
+function openFloatingControlsSettingsModal(triggerEl = null) {
         if (!featureFlags.floatingCallControls) return;
-        closeOtherDetailModals(floatingControlsSettingsModal);
-        settingsModal?.classList.add('settings-split-active');
-        applyDetailModalPresentation(floatingControlsSettingsModal);
-        positionDetailModal(floatingControlsSettingsModal);
         ModalManager.open(floatingControlsSettingsModal, { focusSelector: '#floating-controls-size-mode', sourceEl: triggerEl });
         if (openFloatingControlsSettingsBtn) openFloatingControlsSettingsBtn.setAttribute('aria-expanded', 'true');
-        setDetailPanelOrigin(floatingControlsSettingsModal, triggerEl);
-        updateSettingsSplitState();
         requestAnimationFrame(() => {
             updateFloatingPreview(featureFlags, { randomize: true });
             startFloatingPreviewAutoRefresh(featureFlags);
@@ -9181,7 +9670,6 @@ function saveCalls() {
     function closeFloatingControlsSettingsModal() {
         stopFloatingPreviewAutoRefresh();
         ModalManager.close(floatingControlsSettingsModal);
-        clearDetailModalPresentation(floatingControlsSettingsModal);
         if (openFloatingControlsSettingsBtn) openFloatingControlsSettingsBtn.setAttribute('aria-expanded', 'false');
     }
 
@@ -9564,6 +10052,7 @@ function saveCalls() {
     const cancelFeedbackBtn = document.getElementById('cancel-feedback');
     const feedbackForm = document.getElementById('feedback-form');
     const contactUsBtn = document.getElementById('contact-us-btn');
+    const mobileContactUsBtn = document.getElementById('mobile-contact-us-btn');
     const supportModal = document.getElementById('support-modal');
     const closeSupportModalBtn = document.getElementById('close-support-modal');
     const cancelSupportModalBtn = document.getElementById('cancel-support-modal');
@@ -9571,6 +10060,7 @@ function saveCalls() {
     const supportKofiBtn = document.getElementById('support-kofi-btn');
     const supportModalPaypalBtn = document.getElementById('support-modal-paypal-btn');
     const supportModalKofiBtn = document.getElementById('support-modal-kofi-btn');
+    const mobileOpenChangelogBtn = document.getElementById('mobile-open-changelog-btn');
     const onboardingModal = document.getElementById('onboarding-modal');
     const closeOnboardingModalBtn = document.getElementById('close-onboarding-modal');
     const onboardingDontShowToggle = document.getElementById('onboarding-dont-show-toggle');
@@ -9764,7 +10254,7 @@ function saveCalls() {
             highlightOnboardingTarget(startCallBtn);
             return;
         }
-        openSettingsModal(settingsToggleBtn);
+        openSettingsView(settingsToggleBtn);
     }
 
     function updateOnboardingCues() {
@@ -9819,10 +10309,10 @@ function saveCalls() {
         if (onboardingDontShowToggle) onboardingDontShowToggle.checked = false;
         updateOnboardingProgressUI();
         updateOnboardingCues();
-        closePaymentCyclesSettingsModal();
+        closePaymentCyclesManagerPanel();
         closeFloatingControlsSettingsModal();
         closeDataHubModal();
-        closeSettingsModal();
+        closeSettingsView();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         window.setTimeout(() => {
             openOnboardingModalIfNeeded(true);
@@ -9844,8 +10334,17 @@ function saveCalls() {
     if (contactUsBtn) {
         contactUsBtn.addEventListener('click', openFeedbackModal);
     }
+    if (mobileContactUsBtn) {
+        mobileContactUsBtn.addEventListener('click', openFeedbackModal);
+    }
     if (supportDonateBtn) {
         supportDonateBtn.addEventListener('click', openSupportModal);
+    }
+    if (sidebarDonateBtn) {
+        sidebarDonateBtn.addEventListener('click', openSupportModal);
+    }
+    if (mobileDonateBtn) {
+        mobileDonateBtn.addEventListener('click', openSupportModal);
     }
     if (supportKofiBtn) {
         supportKofiBtn.addEventListener('click', openSupportModal);
@@ -9872,13 +10371,11 @@ function saveCalls() {
         patternsDetailNextBtn.addEventListener('click', () => shiftPatternsDetail(1));
     }
     initializeFooterCollapsiblePanels();
-    if (footerOpenSettingsBtn) {
-        footerOpenSettingsBtn.addEventListener('click', () => {
-            openSettingsModal(footerOpenSettingsBtn);
-        });
+    if (openPaymentCyclesSettingsBtn) {
+        openPaymentCyclesSettingsBtn.addEventListener('click', (e) => openPaymentCyclesManagerPanel(e.currentTarget, { expandList: true }));
     }
-    if (achievementsToggleBtn) {
-        achievementsToggleBtn.addEventListener('click', (e) => openAchievementsSettingsModal(e.currentTarget));
+    if (mobileSettingsOpenBtn) {
+        mobileSettingsOpenBtn.addEventListener('click', (e) => openSettingsView(e.currentTarget));
     }
     if (closeCsvImportPreviewModalBtn) {
         closeCsvImportPreviewModalBtn.addEventListener('click', closeCsvImportPreviewModal);
@@ -9969,7 +10466,9 @@ function saveCalls() {
             report: getModalQaSnapshot
         };
         ModalManager.register(callModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#call-date' });
-        ModalManager.register(settingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feature-notes-toggle' });
+        if (settingsView && settingsView.classList.contains('app-modal')) {
+            ModalManager.register(settingsView, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feature-notes-toggle' });
+        }
         ModalManager.register(dataHubModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#data-hub-export-json-btn' });
         ModalManager.register(editCycleModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#cycle-start-date-input' });
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
@@ -9982,7 +10481,6 @@ function saveCalls() {
         ModalManager.register(achievementsSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-achievements-settings-btn' });
         ModalManager.register(achievementDetailModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#done-achievement-detail-btn' });
         ModalManager.register(floatingControlsSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#floating-controls-size-mode' });
-        ModalManager.register(paymentCyclesSettingsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#show-add-cycle-btn' });
         ModalManager.register(confirmationModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#confirmation-confirm-btn' });
         ModalManager.register(recoveryModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#recovery-resume-btn' });
         ModalManager.register(onboardingModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#onboarding-quick-start-btn' });
@@ -10026,7 +10524,7 @@ function saveCalls() {
                 state.dismissAll = !!onboardingDontShowToggle?.checked;
                 saveOnboardingState(state);
                 closeOnboardingModal();
-                openSettingsModal(onboardingCustomizeFirstBtn);
+                openSettingsView(onboardingCustomizeFirstBtn);
             });
         }
 
@@ -10056,7 +10554,7 @@ function saveCalls() {
         if (cueOpenSettingsBtn) {
             cueOpenSettingsBtn.addEventListener('click', () => {
                 highlightOnboardingTarget(settingsToggleBtn);
-                openSettingsModal(cueOpenSettingsBtn);
+                openSettingsView(cueOpenSettingsBtn);
                 markOnboardingCueDismissed('settings');
             });
         }
@@ -10097,6 +10595,18 @@ function saveCalls() {
             workstripAddCallBtn.addEventListener('click', () => {
                 addCallBtn?.click();
             });
+        }
+        if (workstripSessionToggleBtn) {
+            workstripSessionToggleBtn.addEventListener('click', () => {
+                if (sessionTrackerState?.active) {
+                    endWorkSession();
+                } else {
+                    startWorkSession();
+                }
+            });
+        }
+        if (workstripSessionPauseBtn) {
+            workstripSessionPauseBtn.addEventListener('click', toggleWorkSessionPause);
         }
         if (postCallUndoBtn) {
             postCallUndoBtn.addEventListener('click', undoPostCallReviewEntry);
@@ -10170,6 +10680,12 @@ function saveCalls() {
         }
         if (floatingPlusSecondBtn) {
             floatingPlusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(1000));
+        }
+        if (focusWorkstripMinusSecondBtn) {
+            focusWorkstripMinusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(-1000));
+        }
+        if (focusWorkstripPlusSecondBtn) {
+            focusWorkstripPlusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(1000));
         }
         if (floatingStartCallBtn) {
             floatingStartCallBtn.addEventListener('click', () => {
@@ -10469,9 +10985,6 @@ function saveCalls() {
             if (openFloatingControlsSettingsBtn) {
                 openFloatingControlsSettingsBtn.addEventListener('click', (e) => openFloatingControlsSettingsModal(e.currentTarget));
             }
-            if (openPaymentCyclesSettingsBtn) {
-                openPaymentCyclesSettingsBtn.addEventListener('click', (e) => openPaymentCyclesSettingsModal(e.currentTarget));
-            }
             if (viewAllPaymentCyclesBtn) {
                 viewAllPaymentCyclesBtn.addEventListener('click', (e) => openPaymentCyclesManagerFromDashboard(e.currentTarget));
             }
@@ -10488,10 +11001,10 @@ function saveCalls() {
                 doneFloatingControlsSettingsBtn.addEventListener('click', closeFloatingControlsSettingsModal);
             }
             if (closePaymentCyclesSettingsModalBtn) {
-                closePaymentCyclesSettingsModalBtn.addEventListener('click', closePaymentCyclesSettingsModal);
+                closePaymentCyclesSettingsModalBtn.addEventListener('click', closePaymentCyclesManagerPanel);
             }
             if (donePaymentCyclesSettingsBtn) {
-                donePaymentCyclesSettingsBtn.addEventListener('click', closePaymentCyclesSettingsModal);
+                donePaymentCyclesSettingsBtn.addEventListener('click', closePaymentCyclesManagerPanel);
             }
             if (closeAchievementsSettingsModalBtn) {
                 closeAchievementsSettingsModalBtn.addEventListener('click', closeAchievementsSettingsModal);
@@ -10523,16 +11036,6 @@ function saveCalls() {
             if (floatingControlsSizeModeSelect) {
                 floatingControlsSizeModeSelect.addEventListener('change', (e) => {
                     featureFlags.floatingControlsSizeMode = e.target.value;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-
-            if (floatingControlsSideSelect) {
-                floatingControlsSideSelect.addEventListener('change', (e) => {
-                    featureFlags.floatingControlsSide = e.target.value === 'left' ? 'left' : 'right';
-                    floatingDockManualPosition = null;
-                    saveFloatingDockManualPosition(null);
                     saveFeatureFlags(featureFlags);
                     applyFeatureFlags(featureFlags);
                 });
@@ -10602,6 +11105,36 @@ function saveCalls() {
                 });
             }
 
+            if (floatingResetPositionBtn) {
+                floatingResetPositionBtn.addEventListener('click', () => {
+                    floatingDockManualPosition = null;
+                    saveFloatingDockManualPosition(null);
+                    updateFloatingCallControls(featureFlags);
+                    showToast('Dock position reset.');
+                });
+            }
+
+            if (floatingResetDefaultsBtn) {
+                floatingResetDefaultsBtn.addEventListener('click', () => {
+                    featureFlags.floatingControlsSizeMode = 'auto';
+                    featureFlags.floatingSecondaryAction = 'add';
+                    featureFlags.floatingShowActiveCard = true;
+                    featureFlags.floatingActiveShowTimer = true;
+                    featureFlags.floatingActiveShowEarnings = true;
+                    featureFlags.floatingActiveShowRate = false;
+                    featureFlags.floatingActiveShowAdjust = false;
+                    featureFlags.floatingOneHanded = false;
+                    featureFlags.floatingPreviewEnabled = true;
+                    floatingDockManualPosition = null;
+                    saveFloatingDockManualPosition(null);
+                    saveFeatureFlags(featureFlags);
+                    applyFeatureFlags(featureFlags);
+                    updateFloatingPreview(featureFlags, { randomize: true });
+                    updateFloatingCallControls(featureFlags);
+                    showToast('Floating controls reset to defaults.');
+                });
+            }
+
             // Keep feature flag in sync when user toggles the original paymentCyclesToggle
             if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
                 paymentCyclesToggle.addEventListener('change', (e) => {
@@ -10616,6 +11149,9 @@ function saveCalls() {
 
         if (openChangelogBtn) {
             openChangelogBtn.addEventListener('click', openChangelogModal);
+        }
+        if (mobileOpenChangelogBtn) {
+            mobileOpenChangelogBtn.addEventListener('click', openChangelogModal);
         }
 
         if (closeChangelogModalBtn) {
@@ -10746,12 +11282,30 @@ callEndTimeInput.addEventListener('input', syncCallDateFromDateTime);
                 darkToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
                 darkToggleBtn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
             }
+            if (themeToggleLabel) {
+                themeToggleLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            }
+            if (mobileThemeToggleBtn) {
+                mobileThemeToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+                mobileThemeToggleBtn.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+            }
+            if (mobileThemeToggleLabel) {
+                mobileThemeToggleLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            }
         }
 
-        darkToggleBtn.addEventListener('click', () => {
-            const nextTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-            applyTheme(nextTheme);
-        });
+        if (darkToggleBtn) {
+            darkToggleBtn.addEventListener('click', () => {
+                const nextTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+                applyTheme(nextTheme);
+            });
+        }
+        if (mobileThemeToggleBtn) {
+            mobileThemeToggleBtn.addEventListener('click', () => {
+                const nextTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+                applyTheme(nextTheme);
+            });
+        }
         const savedTheme = appStorage.getItem('theme');
         const initialTheme = (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches))
             ? 'dark'
@@ -10880,6 +11434,24 @@ goalMinutesInput.addEventListener('input', () => {
         if (trendModeMonthlyBtn) {
             trendModeMonthlyBtn.addEventListener('click', () => setPatternsMode('monthly'));
         }
+        if (hourlyHeatmapMetricCallsBtn) {
+            hourlyHeatmapMetricCallsBtn.addEventListener('click', () => setHourlyHeatmapMetric('calls'));
+        }
+        if (hourlyHeatmapMetricMinutesBtn) {
+            hourlyHeatmapMetricMinutesBtn.addEventListener('click', () => setHourlyHeatmapMetric('minutes'));
+        }
+        if (hourlyHeatmapMetricEarningsBtn) {
+            hourlyHeatmapMetricEarningsBtn.addEventListener('click', () => setHourlyHeatmapMetric('earnings'));
+        }
+        if (hourlyHeatmapPrevBtn) {
+            hourlyHeatmapPrevBtn.addEventListener('click', () => shiftHourlyHeatmapMonth(-1));
+        }
+        if (hourlyHeatmapNextBtn) {
+            hourlyHeatmapNextBtn.addEventListener('click', () => {
+                if (hourlyHeatmapNextBtn.disabled) return;
+                shiftHourlyHeatmapMonth(1);
+            });
+        }
         if (rpgBreakdownToggleBtn) {
             rpgBreakdownToggleBtn.addEventListener('click', () => {
                 rpgXpBreakdownExpanded = !rpgXpBreakdownExpanded;
@@ -10905,9 +11477,9 @@ goalMinutesInput.addEventListener('input', () => {
             updateCallLogFilterButtons();
         });
         
-        settingsToggleBtn.addEventListener('click', (e) => openSettingsModal(e.currentTarget));
-        closeSettingsModalBtn.addEventListener('click', closeSettingsModal);
-        
+        if (settingsToggleBtn) {
+            settingsToggleBtn.addEventListener('click', (e) => openSettingsView(e.currentTarget));
+        }
         if (tzSelect) {
             tzSelect.addEventListener('change', () => {
                 const tz = tzSelect.value;
@@ -11076,7 +11648,7 @@ goalMinutesInput.addEventListener('input', () => {
                 syncDailyGoalInputs();
                 populateRateSelects();
                 showToast('All data reset.');
-                closeSettingsModal();
+                closeSettingsView();
                 },
                 {
                     requireText: 'RESET',
@@ -11111,7 +11683,10 @@ goalMinutesInput.addEventListener('input', () => {
             });
         });
         
-        document.getElementById('app-version').textContent = APP_VERSION;
+        const appVersionLabel = document.getElementById('app-version');
+        if (appVersionLabel) appVersionLabel.textContent = APP_VERSION;
+        if (sidebarAppVersionLabel) sidebarAppVersionLabel.textContent = APP_VERSION;
+        if (mobileAppVersionLabel) mobileAppVersionLabel.textContent = APP_VERSION;
         if (openUpdateReleaseBtn) {
             openUpdateReleaseBtn.addEventListener('click', async () => {
                 if (updateActionInFlight) return;
@@ -11152,6 +11727,8 @@ goalMinutesInput.addEventListener('input', () => {
         populateRateSelects();
         applyRpgBreakdownVisibility();
         populateTimeZones();
+        initializeSidebarCollapse();
+        initializeAppNavigation();
         updateLocalTime();
         displayCalls();
         syncDailyGoalInputs();
@@ -11288,7 +11865,10 @@ goalMinutesInput.addEventListener('input', () => {
             });
         }
 
+        markAppUiReady();
+
         } catch (err) {
+            document.body?.classList.remove('app-booting');
             console.error('Initialization error', err);
             try {
                 // show a visible alert in the page so it's obvious
