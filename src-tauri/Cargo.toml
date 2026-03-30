@@ -1,6 +1,6 @@
 [package]
 name = "work_time_tracker"
-version = "1.3.0"
+version = "1.4.0"
 description = "Privacy-first time tracker for interpreters and freelancers."
 authors = ["Topo"]
 license = "MIT"
@@ -25,6 +25,5 @@ rfd = "0.15"
 tauri = { version = "2.10.0", features = [] }
 tauri-plugin-log = "2"
 url = "2.5"
-
 
 

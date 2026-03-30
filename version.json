@@ -1,6 +1,6 @@
 {
-    "latestVersion":  "1.3.0",
-    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.3.0",
+    "latestVersion":  "1.4.0",
+    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.4.0",
     "downloadsUrl":  "https://github.com/untopo/work-time-tracker/releases",
     "notes":  "Major UI refresh across web and desktop with a cleaner shell, smoother interactions, stronger tablet/mobile layouts, and a more polished Live Workspace and settings experience."
 }
