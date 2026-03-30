@@ -1,13 +1,13 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.2.7-blue)
+![Version](https://img.shields.io/badge/version-1.4.0-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
 
 A lightweight, privacy-first time tracker for interpreters and freelancers.
 
-Track live calls, earnings, rates, goals, achievements, and payment cycles directly in your browser.
+Track live calls, earnings, rates, goals, achievements, payment cycles, and interpreter support resources across web, desktop, and Android.
 
 ## Table of Contents
 - [Live Demo](#live-demo)
@@ -18,8 +18,8 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - [Data \& Privacy](#data--privacy)
 - [Security Notes](#security-notes)
 - [Backup \& Restore](#backup--restore)
-- [Desktop App Prep](#desktop-app-prep)
-- [Mobile App Prep](#mobile-app-prep)
+- [Desktop App](#desktop-app)
+- [Android App](#android-app)
 - [Limitations](#limitations)
 - [Browser Support](#browser-support)
 - [Quick Start](#quick-start)
@@ -45,6 +45,7 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 3. Add manual calls with flexible date, time, and duration inputs when needed.
 4. Review totals in stats, achievements, and call log filters.
 5. Export backups or import JSON / CSV call logs from Settings.
+6. Open `Resources` for fast ZIP/address lookup and multilingual term support during live work.
 
 ## Screenshots
 ### Dashboard Top
@@ -85,6 +86,10 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - Optional volatile notes (never persisted/exported)
 - Built-in changelog modal
 - Mobile-friendly Call Log cards on narrow screens
+- Dedicated `Resources` workspace for interpreter support tools
+- Native `US ZIP / Address Lookup` with one-bar search for ZIPs, cities, states, and partial addresses
+- Native `Interpreter Language Assistant` with multilingual term lookup, translation candidates, related terms, and quick meaning support
+- Responsive `Info & Support` utility area on mobile/tablet when the desktop sidebar is hidden
 
 ## Data & Privacy
 - 100% local `localStorage`
@@ -131,8 +136,8 @@ Track live calls, earnings, rates, goals, achievements, and payment cycles direc
 - `Export Call Log CSV` exports just the selected call rows in spreadsheet format.
 - CSV export also lets you choose which columns to include.
 
-## Desktop App Prep
-The project is now scaffolded to support a future Tauri desktop build from the same codebase used by GitHub Pages.
+## Desktop App
+The project includes a Tauri desktop app built from the same shared frontend used by the web version.
 
 Current setup:
 - Web version still runs directly from the project root
@@ -141,6 +146,7 @@ Current setup:
 - App persistence now goes through a shared storage adapter so the same frontend can target browser storage today and Tauri-native storage later
 - Tauri builds now mirror app storage to a native JSON snapshot file in the app data directory while keeping the browser flow unchanged
 - Tauri desktop builds now use native open/save dialogs for JSON backup import/export and CSV import/export while the browser version keeps its current download/upload flow
+- Desktop builds include update awareness and shared release-version syncing with the web and Android targets
 Important:
 - Existing GitHub Pages users keep using the same browser `localStorage` keys as before, so this refactor does not wipe or rename their saved data
 - The browser version and the future desktop app will not automatically share the same `localStorage`
@@ -165,8 +171,8 @@ Notes:
 - `npm run tauri:dev` launches the desktop app against the same frontend
 - `npm run tauri:build` creates the installable desktop bundle once the Windows build tools are installed
 
-## Mobile App Prep
-The same repository now also includes the first Capacitor-based mobile scaffold so web, desktop, and future mobile builds can keep sharing one frontend.
+## Android App
+The same repository includes a Capacitor-based Android app so web, desktop, and Android builds can keep sharing one frontend.
 
 Current setup:
 - Capacitor config lives in `capacitor.config.json`
@@ -174,6 +180,8 @@ Current setup:
 - Mobile sync still uses the generated `dist/` frontend output
 - Narrow screens now use a dedicated card-based `Call Log` layout instead of relying only on the desktop table view
 - Phone-sized inputs now use safer sizing to reduce browser zoom and touch friction
+- Mobile/tablet layouts include a dedicated `Info & Support` area so version, local time, social links, quick actions, and theme toggle stay visible without the desktop sidebar
+- Android builds include update awareness and share release versioning with the web and desktop targets
 
 Project commands:
 ```bash
@@ -187,7 +195,6 @@ Notes:
 - `npm run cap:sync` refreshes Capacitor platforms from the current shared web app
 - `npm run cap:sync:android` updates the Android project specifically
 - `npm run cap:open:android` opens the Android project in Android Studio once your Android toolchain is installed
-- The Android scaffold is a prep step, not a published mobile release yet
 
 ## Limitations
 - No multi-device sync (single browser profile only).
@@ -258,6 +265,11 @@ No. Notes are volatile and intentionally not persisted/exported.
 ### Can I sync data across devices?
 Not currently. Use JSON export/import manually.
 
+### What is the Resources section for?
+`Resources` is an in-app workspace for interpreter support tools that can stay open alongside the rest of the app. It currently includes:
+- `US ZIP / Address Lookup`
+- `Interpreter Language Assistant`
+
 ### Can I import a company call history CSV?
 Yes. The app can import CSV files when they include the same core fields used by the Call Log:
 - `Call Date`
@@ -279,8 +291,8 @@ Most likely browser/site storage was cleared or a private session ended.
 Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
 
 ## Changelog
-- Current Version: `v1.2.7`
-- In-app history: footer version link (`What's New` modal)
+- Current Version: `v1.4.0`
+- In-app history: `What's New` modal inside the app
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - Published release entries and assets: [GitHub Releases](https://github.com/untopo/work-time-tracker/releases)
 
