@@ -20,7 +20,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api.github.com https://untopo.github.io https://formspree.io; form-action 'self' https://www.paypal.com https://formspree.io https://ko-fi.com;"
+      "csp": "default-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api.github.com https://untopo.github.io https://formspree.io https://api.zippopotam.us https://nominatim.openstreetmap.org https://api.mymemory.translated.net https://api.dictionaryapi.dev https://api.datamuse.com; form-action 'self' https://www.paypal.com https://formspree.io https://ko-fi.com;"
     }
   },
   "bundle": {
