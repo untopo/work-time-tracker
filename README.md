@@ -5,47 +5,80 @@
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
 
-A lightweight, privacy-first time tracker for interpreters and freelancers.
+A local-first call, earnings, and workflow tracker built for interpreters.
 
-Track live calls, earnings, rates, goals, achievements, payment cycles, and interpreter support resources across web, desktop, and Android.
-
-## Table of Contents
-- [Live Demo](#live-demo)
-- [Who This Is For](#who-this-is-for)
-- [Key Workflows](#key-workflows)
-- [Screenshots](#screenshots)
-- [Core Features](#core-features)
-- [Data \& Privacy](#data--privacy)
-- [Security Notes](#security-notes)
-- [Backup \& Restore](#backup--restore)
-- [Desktop App](#desktop-app)
-- [Android App](#android-app)
-- [Limitations](#limitations)
-- [Browser Support](#browser-support)
-- [Quick Start](#quick-start)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [FAQ](#faq)
-- [Changelog](#changelog)
-- [Feedback](#feedback)
-- [Credits](#credits)
+Work Time Tracker helps you run live calls, log manual work, track rates and goals, review patterns, manage sessions, and use interpreter support tools without depending on accounts or cloud sync.
 
 ## Live Demo
 - https://untopo.github.io/work-time-tracker/
 
-## Who This Is For
-- Interpreters who bill by call duration.
-- Freelancers tracking time-based income without spreadsheets.
-- Users who prefer a fast, local-only tool with no account setup.
+## Why It Exists
+- Track paid calls and earnings without spreadsheets
+- Keep work data local and simple
+- Stay fast during live interpreting work
+- Combine tracking and support tools in one workspace
 
-## Key Workflows
-1. Select a rate and start a live call.
-2. End the call and automatically save duration + earnings.
-3. Add manual calls with flexible date, time, and duration inputs when needed.
-4. Review totals in stats, achievements, and call log filters.
-5. Export backups or import JSON / CSV call logs from Settings.
-6. Open `Resources` for fast ZIP/address lookup and multilingual term support during live work.
+## Who It Is For
+- Interpreters who bill by duration
+- Freelancers tracking time-based income
+- Users who want a private tool with no account setup
+
+## Product Areas
+### Work
+- Start and end live calls
+- See real-time timer and earnings
+- Manage rates and daily goals
+- Run work sessions with pause/resume
+
+### Call Log
+- Review saved calls
+- Filter by date ranges
+- Search and edit entries
+- Import/export call history
+
+### Analytics
+- Review daily earnings and average call duration
+- See hourly, weekly, and monthly patterns
+- Track payment-cycle snapshots
+
+### Progress
+- View achievements, XP, streaks, and quests
+- Keep consistency visible over time
+
+### Resources
+- `US ZIP / Address Lookup`
+- `Interpreter Language Assistant`
+
+### Settings
+- Toggle optional features
+- Manage time zone, storage, and backups
+- Access data tools and support actions
+
+## Core Features
+- Live call timer with real-time earnings
+- Manual call entry and editing
+- Multiple billing rates
+- Daily goal tracking in USD and minutes
+- Session tracking with utilization metrics
+- Call Log filtering and CSV import/export
+- JSON backup export/import
+- Payment cycle tracking
+- Floating call controls
+- Dark/light mode
+- In-app changelog
+- Responsive layouts for desktop, tablet, and mobile
+
+## Interpreter Support Tools
+### US ZIP / Address Lookup
+- One-bar search for ZIPs, cities, states, and partial addresses
+- Fast suggestions and ranked address matches
+- Recent lookups stored locally
+
+### Interpreter Language Assistant
+- Multilingual term lookup
+- Ranked translation candidates
+- Quick meaning support when available
+- Related terms and frequent searches
 
 ## Screenshots
 ### Dashboard Top
@@ -63,166 +96,70 @@ Track live calls, earnings, rates, goals, achievements, payment cycles, and inte
 ### Achievements
 ![Achievements Screenshot](assets/images/achievements.png)
 
-## Core Features
-- Live call timer with real-time earnings
-- Manual call entry + call editing
-- Flexible Add Call modal with separate `Call Date`, `Start Time`, `End Time`, and `Duration`
-- Duration input supports minutes (`15`) or time formats like `00:15:30`
-- Multiple billing rates
-- Call filters: Today / Week / Month / Custom date
-- Daily goal tracking (USD and minutes sync)
-- Monthly stats + optional payment cycle tracking
-- Achievements system with milestone tracking
-- Optional RPG Mode with XP, levels, and daily quests
-- CSV call log import with preview, dedupe, and rate assignment
-- Call Log CSV export for spreadsheet-friendly records
-- Export scope selector for all history, current filtered view, a specific date, or a custom range
-- Minimal Data Hub that separates backups from Call Log CSV actions
-- Automatic restore of active live calls when reopening the app
-- Desktop and mobile update notice when a newer packaged release is available
-- Safe backup merge import that preserves existing local data
-- Dark mode / light mode toggle
-- Floating call controls (optional)
-- Optional volatile notes (never persisted/exported)
-- Built-in changelog modal
-- Mobile-friendly Call Log cards on narrow screens
-- Dedicated `Resources` workspace for interpreter support tools
-- Native `US ZIP / Address Lookup` with one-bar search for ZIPs, cities, states, and partial addresses
-- Native `Interpreter Language Assistant` with multilingual term lookup, translation candidates, related terms, and quick meaning support
-- Responsive `Info & Support` utility area on mobile/tablet when the desktop sidebar is hidden
-
-## Data & Privacy
-- 100% local `localStorage`
+## Data and Privacy
+- 100% local storage by default
 - No accounts
 - No tracking
 - No analytics
-- No backend
+- No backend dependency for the core app
 - No automatic cloud sync
-- Notes are volatile by design
+- Volatile notes are intentionally not persisted/exported
 
-## Security Notes
-- Data stays in your browser only.
-- If browser storage is cleared, your data is permanently removed.
-- Use export backups if your tracking data is important.
+## Backup and Restore
+- Backup and restore live in `Settings -> Data Management`
+- `Export Backup JSON` includes app data such as calls, rates, goals, and payment cycles
+- `Export Call Log CSV` exports call rows only
+- Imports are reviewed before saving
+- Exact duplicates are skipped during merge/import flows
 
-## Backup & Restore
-- Open Data Hub: `Settings -> Data Management -> Open Data Hub`
-- Export Backup JSON: `Settings -> Data Management -> Open Data Hub -> Export Backup JSON`
-- Export Call Log CSV: `Settings -> Data Management -> Open Data Hub -> Export Call Log CSV`
-- Import backup / CSV: `Settings -> Data Management -> Open Data Hub -> Import Backup JSON / Import Call Log CSV`
-- Reset calls only: `Settings -> Data Management -> Reset Calls Only`
-- Full reset: `Settings -> Data Management -> Reset All Data`
+## Platforms
+### Web
+- Runs directly from the project root
+- Compatible with GitHub Pages
 
-### Import Behavior
-- JSON backups are merged into your current local data instead of replacing it.
-- CSV imports are reviewed before saving.
-- CSV preview supports filters for `Ready`, `Duplicates`, and `Invalid` rows.
-- Exact duplicate calls are skipped automatically during CSV and backup merges.
-- CSV preview lets you map columns for:
-  - `Call Date`
-  - `Start Time`
-  - `End Time`
-  - `Duration`
-  - `Rate` (optional)
-- If a CSV has no usable rate column, you can apply a rate before confirming the import.
+### Desktop
+- Built with Tauri from the same shared frontend
+- Uses generated `dist/` output
+- Supports native file dialogs for import/export
+- Shares release-version syncing with web and Android
 
-### Export Behavior
-- Both export actions now let you choose the call scope before downloading:
-  - `All History`
-  - `Current Call Log View`
-  - `Specific Date`
-  - `Custom Range`
-- `Export Backup JSON` still includes rates, goals, and payment cycle settings.
-- `Export Call Log CSV` exports just the selected call rows in spreadsheet format.
-- CSV export also lets you choose which columns to include.
+### Android
+- Built with Capacitor from the same shared frontend
+- Uses generated `dist/` output
+- Includes responsive mobile/tablet layouts and update awareness
 
-## Desktop App
-The project includes a Tauri desktop app built from the same shared frontend used by the web version.
+## Quick Start
+```bash
+git clone https://github.com/untopo/work-time-tracker.git
+cd work-time-tracker
+```
 
-Current setup:
-- Web version still runs directly from the project root
-- Desktop packaging uses a generated `dist/` folder
-- Tauri config lives in `src-tauri/`
-- App persistence now goes through a shared storage adapter so the same frontend can target browser storage today and Tauri-native storage later
-- Tauri builds now mirror app storage to a native JSON snapshot file in the app data directory while keeping the browser flow unchanged
-- Tauri desktop builds now use native open/save dialogs for JSON backup import/export and CSV import/export while the browser version keeps its current download/upload flow
-- Desktop builds include update awareness and shared release-version syncing with the web and Android targets
-Important:
-- Existing GitHub Pages users keep using the same browser `localStorage` keys as before, so this refactor does not wipe or rename their saved data
-- The browser version and the future desktop app will not automatically share the same `localStorage`
-- To move data between them safely, use `Export Backup JSON` from one side and `Import Backup JSON` on the other
+Open `index.html` directly for the web version, or use the build commands below for packaged targets.
 
-What you need to install on Windows:
-- Rust / Cargo
-- Microsoft Visual Studio Build Tools with:
-  - MSVC
-  - Windows 10/11 SDK
-  - Desktop development with C++
-
-Project commands:
+## Build Commands
+### Web
 ```bash
 npm run build:web
+```
+
+### Desktop
+```bash
 npm run tauri:dev
 npm run tauri:build
 ```
 
-Notes:
-- `npm run build:web` prepares the static `dist/` folder used by Tauri
-- `npm run tauri:dev` launches the desktop app against the same frontend
-- `npm run tauri:build` creates the installable desktop bundle once the Windows build tools are installed
-
-## Android App
-The same repository includes a Capacitor-based Android app so web, desktop, and Android builds can keep sharing one frontend.
-
-Current setup:
-- Capacitor config lives in `capacitor.config.json`
-- Android scaffold lives in `android/`
-- Mobile sync still uses the generated `dist/` frontend output
-- Narrow screens now use a dedicated card-based `Call Log` layout instead of relying only on the desktop table view
-- Phone-sized inputs now use safer sizing to reduce browser zoom and touch friction
-- Mobile/tablet layouts include a dedicated `Info & Support` area so version, local time, social links, quick actions, and theme toggle stay visible without the desktop sidebar
-- Android builds include update awareness and share release versioning with the web and desktop targets
-
-Project commands:
+### Android
 ```bash
-npm run build:web
 npm run cap:sync
 npm run cap:sync:android
 npm run cap:open:android
 ```
 
-Notes:
-- `npm run cap:sync` refreshes Capacitor platforms from the current shared web app
-- `npm run cap:sync:android` updates the Android project specifically
-- `npm run cap:open:android` opens the Android project in Android Studio once your Android toolchain is installed
-
-## Limitations
-- No multi-device sync (single browser profile only).
-- No cloud recovery.
-- localStorage capacity depends on browser/device limits.
-- Clearing site data or using private/incognito sessions may remove data.
-
-## Browser Support
-Tested and recommended on latest:
-- Chrome
-- Edge
-- Firefox
-
-Safari generally works, but always verify export/import behavior on your environment.
-
-## Quick Start
-```bash
-git clone https://github.com/untopo/work-time-tracker.git
-```
-Open `index.html` in your browser.
-
-No build step required.
-
 ## Tech Stack
-- Vanilla JavaScript (ES6)
-- HTML + CSS
-- GitHub Pages compatible
-- Feature flags for progressive rollout
+- Vanilla JavaScript
+- HTML and CSS
+- Tauri for desktop packaging
+- Capacitor for Android packaging
 
 ## Project Structure
 ```text
@@ -231,8 +168,6 @@ No build step required.
 |-- package.json
 |-- capacitor.config.json
 |-- scripts/
-|   |-- prepare-dist.mjs
-|   `-- tauri-win.mjs
 |-- android/
 |-- src-tauri/
 |-- assets/
@@ -246,61 +181,53 @@ No build step required.
 `-- .nojekyll
 ```
 
-## Contributing
-1. Fork and create a branch.
-2. Keep changes focused and small.
-3. Preserve user data behavior and modal UX consistency.
-4. Open a PR with:
-- What changed
-- Why it changed
-- Manual test notes (especially for settings/modals)
-
 ## FAQ
 ### Where is my data stored?
-In your browser `localStorage` for this site.
-
-### Are notes saved?
-No. Notes are volatile and intentionally not persisted/exported.
+In local app/browser storage for this project.
 
 ### Can I sync data across devices?
-Not currently. Use JSON export/import manually.
+Not automatically. Use JSON export/import manually.
 
 ### What is the Resources section for?
-`Resources` is an in-app workspace for interpreter support tools that can stay open alongside the rest of the app. It currently includes:
-- `US ZIP / Address Lookup`
-- `Interpreter Language Assistant`
+It is an in-app workspace for interpreter support tools that stay available alongside the rest of the app.
 
 ### Can I import a company call history CSV?
-Yes. The app can import CSV files when they include the same core fields used by the Call Log:
-- `Call Date`
-- `Start Time`
-- `End Time`
-- `Duration`
-- `Rate` (optional)
-
-Before importing, the app shows a preview so you can:
-- confirm detected rows
-- map columns manually if needed
-- assign a rate to imported calls
-- skip accidental duplicates automatically
+Yes. The app supports preview, column mapping, dedupe, and optional rate handling before import.
 
 ### Why did my data disappear?
-Most likely browser/site storage was cleared or a private session ended.
+Most likely the underlying browser/site/app storage was cleared.
 
-### How do I back up safely?
-Export JSON regularly from `Settings -> Data Management -> Open Data Hub`.
+## Limitations
+- No automatic multi-device sync
+- No cloud recovery
+- Local storage capacity depends on the environment
+- Clearing site/app storage can remove saved data
 
-## Changelog
+## Browser Support
+Recommended on current:
+- Chrome
+- Edge
+- Firefox
+
+Safari generally works, but import/export behavior should always be verified in your environment.
+
+## Contributing
+1. Fork the repo and create a branch.
+2. Keep changes focused.
+3. Preserve local-first behavior and data integrity.
+4. Include manual test notes in your PR.
+
+## Releases
 - Current Version: `v1.4.0`
-- In-app history: `What's New` modal inside the app
+- In-app history: `What's New` modal
+- GitHub Releases: https://github.com/untopo/work-time-tracker/releases
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)
-- Published release entries and assets: [GitHub Releases](https://github.com/untopo/work-time-tracker/releases)
 
 ## Feedback
 Use the in-app `Contact Us` modal for:
-- Bug reports
-- Feature requests
-- General feedback
+- bug reports
+- feature requests
+- general feedback
 
 Direct contact reference: `worktimetrackertool@gmail.com`
 
@@ -308,10 +235,3 @@ Direct contact reference: `worktimetrackertool@gmail.com`
 Built for interpreters by interpreters.
 
 Made by [Topo](https://www.instagram.com/otpo/)
-
-
-
-
-
-
-
