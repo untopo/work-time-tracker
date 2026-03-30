@@ -87,6 +87,9 @@
             <button type="button" class="app-nav-link" data-app-nav="progress">
                 <i class="fas fa-trophy"></i><span>Progress</span>
             </button>
+            <button type="button" class="app-nav-link" data-app-nav="resources">
+                <i class="fas fa-toolbox"></i><span>Resources</span>
+            </button>
         </nav>
         <div class="app-sidebar-footer">
             <div class="app-sidebar-utility-stack">
@@ -146,6 +149,7 @@
             <button type="button" class="app-nav-pill" data-app-nav="call-log">Log</button>
             <button type="button" class="app-nav-pill" data-app-nav="analytics">Analytics</button>
             <button type="button" class="app-nav-pill" data-app-nav="progress">Progress</button>
+            <button type="button" class="app-nav-pill" data-app-nav="resources">Resources</button>
             <button type="button" id="mobile-settings-open-btn" class="app-nav-pill">Settings</button>
         </div>
         <div class="app-content-frame" role="main" aria-label="Work Time Tracker main content">
@@ -824,6 +828,42 @@
     </div>
     </div>
 
+                </section>
+
+                <section id="view-resources" class="app-view" data-app-view="resources" aria-labelledby="resources-view-title">
+                    <h2 id="resources-view-title" class="sr-only">Resources</h2>
+                    <div class="resources-view-stack">
+                        <div class="dashboard-surface resources-hero-card">
+                            <div class="resources-hero-copy">
+                                <p class="resources-card-eyebrow">Interpreter Toolkit</p>
+                                <h3 class="resources-hero-title">Resources</h3>
+                                <p class="resources-hero-text">Keep frequently used lookup tools inside the workspace. Turn on one or more resources and they will organize automatically below.</p>
+                            </div>
+                            <div class="resources-hero-meta">
+                                <span class="resources-hero-chip">Reference</span>
+                                <span class="resources-hero-chip">Lookup</span>
+                                <span class="resources-hero-chip">Embedded beta</span>
+                            </div>
+                        </div>
+
+                        <div class="resources-catalog-grid" id="resources-catalog"></div>
+
+                        <div class="dashboard-surface resources-active-shell">
+                            <div class="resources-active-header">
+                                <div>
+                                    <p class="resources-card-eyebrow">Active Workspace</p>
+                                    <h3 class="resources-active-title">Open Resources</h3>
+                                </div>
+                                <div id="resources-active-count" class="resources-active-count">0 active</div>
+                            </div>
+                            <div id="resources-empty-state" class="resources-empty-state">
+                                <div class="resources-empty-icon"><i class="fas fa-compass"></i></div>
+                                <div class="resources-empty-title">No active resources yet</div>
+                                <div class="resources-empty-copy">Enable a tool above to pin it into this workspace.</div>
+                            </div>
+                            <div id="resources-active-grid" class="resources-active-grid"></div>
+                        </div>
+                    </div>
                 </section>
 
                 <section id="view-settings" class="app-view" data-app-view="settings" aria-label="Settings">

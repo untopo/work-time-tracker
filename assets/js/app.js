@@ -8,8 +8,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.3.0';
+    const APP_VERSION = '1.4.0';
     const CHANGELOG = [
+        { version: '1.4.0', date: '2026-03-30', changes: ['Added a new Resources workspace with built-in interpreter tools available directly inside the app', 'Introduced a native US ZIP / Address Lookup with one-bar search for ZIP codes, cities, states, and partial addresses', 'Added a native Interpreter Language Assistant for multilingual term lookup, translation candidates, related terms, and quick meaning support', 'Improved resource search performance with faster suggestions, caching, smoother loading behavior, and better handling of rapid consecutive searches', 'Refined result quality for both address and language lookups with stronger ranking, cleaner output, and reduced noisy or low-value matches', 'Enhanced the Resources layout so active tools organize more cleanly, including full-width presentation when only one resource is open'] },
         { version: '1.3.0', date: '2026-03-25', changes: ['Major UI refresh across web and desktop with a cleaner app shell, smoother motion, and a more polished workspace flow', 'Reworked the Live Workspace into a denser action hub with integrated call/session controls, compact timer adjustments, and improved balance across desktop and tablet layouts', 'Upgraded modal behavior with more consistent overlays, improved positioning, draggable support for larger panels, and cleaner treatment for form and utility modals', 'Redesigned Floating Controls Settings into a more compact customization panel, removed redundant dock-position controls, and added reset actions for layout recovery', 'Significantly improved responsive layouts for mobile and tablet, including a stronger Settings composition, tablet-specific workstrip tuning, and broader spacing/stacking polish across key views', 'Restored sidebar-equivalent mobile and tablet utilities through a dedicated Info & Support section with local time, version, quick actions, social links, theme toggle, and donate access'] },
         { version: '1.2.6', date: '2026-03-21', changes: ['Added in-app updater flow for desktop (Tauri): update banner can now download and launch the Windows installer directly without opening the GitHub Releases page', 'Added in-app updater flow for Android app shell: update banner can now download the APK and open the Android installer directly inside the app flow', 'Update action now auto-falls back to release page if in-app update cannot be completed on the current platform', 'Android update bridge added with strict official release URL validation, FileProvider handoff, and installer intent launch'] },
         { version: '1.2.5', date: '2026-03-21', changes: ['Version alignment hotfix: in-app Current Version and What\'s New now match the published release number across web, desktop, and Android', 'Added release guard in build flow to block publishing when package, manifest, Tauri, Cargo, or app frontend versions are out of sync', 'Maintained Patterns detail modal improvements with left/right navigation and polished header spacing'] },
@@ -226,11 +227,127 @@ const scheduleAppShellRefresh = createRafScheduler(applyAppShellMode);
     const scheduleDesktopOverlayRefresh = () => {};
     const APP_ACTIVE_SECTION_KEY = 'wtt_active_section_v1';
     const SIDEBAR_COLLAPSED_KEY = 'wtt_sidebar_collapsed_v1';
+    const RESOURCES_ACTIVE_KEY = 'wtt_resources_active_v1';
+    const TERM_ASSISTANT_RECENTS_KEY = 'wtt_term_assistant_recents_v1';
+    const ADDRESS_LOOKUP_HISTORY_KEY = 'wtt_address_lookup_history_v1';
+    const LANGUAGE_OPTIONS = [
+        ['en', 'English'],
+        ['es', 'Spanish'],
+        ['fr', 'French'],
+        ['de', 'German'],
+        ['it', 'Italian'],
+        ['pt', 'Portuguese'],
+        ['nl', 'Dutch'],
+        ['pl', 'Polish'],
+        ['ro', 'Romanian'],
+        ['cs', 'Czech'],
+        ['sk', 'Slovak'],
+        ['sl', 'Slovenian'],
+        ['hu', 'Hungarian'],
+        ['el', 'Greek'],
+        ['ru', 'Russian'],
+        ['uk', 'Ukrainian'],
+        ['bg', 'Bulgarian'],
+        ['tr', 'Turkish'],
+        ['ar', 'Arabic'],
+        ['he', 'Hebrew'],
+        ['fa', 'Persian'],
+        ['hi', 'Hindi'],
+        ['ur', 'Urdu'],
+        ['bn', 'Bengali'],
+        ['ta', 'Tamil'],
+        ['te', 'Telugu'],
+        ['ml', 'Malayalam'],
+        ['th', 'Thai'],
+        ['vi', 'Vietnamese'],
+        ['id', 'Indonesian'],
+        ['ms', 'Malay'],
+        ['tl', 'Tagalog'],
+        ['zh-CN', 'Chinese (Simplified)'],
+        ['zh-TW', 'Chinese (Traditional)'],
+        ['ja', 'Japanese'],
+        ['ko', 'Korean'],
+        ['sw', 'Swahili'],
+        ['ht', 'Haitian Creole'],
+        ['fi', 'Finnish'],
+        ['sv', 'Swedish'],
+        ['da', 'Danish'],
+        ['no', 'Norwegian']
+    ];
+    const US_STATE_ABBREVIATIONS = {
+        alabama: 'AL', alaska: 'AK', arizona: 'AZ', arkansas: 'AR', california: 'CA', colorado: 'CO',
+        connecticut: 'CT', delaware: 'DE', florida: 'FL', georgia: 'GA', hawaii: 'HI', idaho: 'ID',
+        illinois: 'IL', indiana: 'IN', iowa: 'IA', kansas: 'KS', kentucky: 'KY', louisiana: 'LA',
+        maine: 'ME', maryland: 'MD', massachusetts: 'MA', michigan: 'MI', minnesota: 'MN', mississippi: 'MS',
+        missouri: 'MO', montana: 'MT', nebraska: 'NE', nevada: 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
+        'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', ohio: 'OH',
+        oklahoma: 'OK', oregon: 'OR', pennsylvania: 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+        'south dakota': 'SD', tennessee: 'TN', texas: 'TX', utah: 'UT', vermont: 'VT', virginia: 'VA',
+        washington: 'WA', 'west virginia': 'WV', wisconsin: 'WI', wyoming: 'WY', 'district of columbia': 'DC'
+    };
     let sidebarCollapsedPreference = false;
+    const RESOURCE_DEFINITIONS = [
+        {
+            id: 'zipcodes',
+            title: 'US ZIP / Address Lookup',
+            shortLabel: 'ZIP Lookup',
+            badge: 'Reference',
+            description: 'Search ZIPs, addresses, cities, and states from one bar.',
+            embedUrl: '',
+            externalUrl: 'https://www.unitedstateszipcodes.org/',
+            helper: 'One-bar U.S. location lookup.',
+            embedMode: 'native_zip'
+        },
+        {
+            id: 'linguee',
+            title: 'Interpreter Language Assistant',
+            shortLabel: 'Language Assistant',
+            badge: 'Language',
+            description: 'Native multilingual translation and quick meaning lookup.',
+            embedUrl: '',
+            externalUrl: 'https://www.linguee.com/',
+            helper: 'Translate and review terms without leaving the workspace.',
+            embedMode: 'native_terms'
+        }
+    ];
+    let activeResourceIds = [];
+    const zipLookupState = {
+        query: '',
+        loading: false,
+        error: '',
+        resultCards: [],
+        resultSummary: '',
+        suggestions: [],
+        suggestionsLoading: false,
+        recentQueries: []
+    };
+    const termAssistantState = {
+        query: '',
+        sourceLang: 'en',
+        targetLang: 'es',
+        loading: false,
+        error: '',
+        translationResult: null,
+        definitionResult: null,
+        frequentLookups: [],
+        semanticHints: []
+    };
+    let addressSuggestionDebounceId = 0;
+    let addressSuggestionRequestId = 0;
+    let smartLookupRequestId = 0;
+    let termLookupRequestId = 0;
+    let addressSuggestionAbortController = null;
+    let smartLookupAbortController = null;
+    let termLookupAbortController = null;
+    const SMART_ADDRESS_RESULT_CACHE = new Map();
+    const SMART_ADDRESS_SUGGESTION_CACHE = new Map();
+    const TERM_TRANSLATION_CACHE = new Map();
+    const TERM_DEFINITION_CACHE = new Map();
+    const TERM_SEMANTIC_CACHE = new Map();
 
 function normalizeAppSection(value) {
     const normalized = String(value || '').trim().toLowerCase();
-    return ['work', 'call-log', 'analytics', 'progress', 'settings'].includes(normalized)
+    return ['work', 'call-log', 'analytics', 'progress', 'resources', 'settings'].includes(normalized)
         ? normalized
         : 'work';
 }
@@ -269,6 +386,7 @@ function setActiveAppSection(section, options = {}) {
                 updateRpgProgress();
                 renderAchievementsModal();
             }
+            if (normalized === 'resources') renderResourcesView();
             if (normalized === 'settings') updateStorageInfo();
             if (normalized === 'work') {
                 renderSessionTracker();
@@ -1733,6 +1851,10 @@ async function confirmExportOptions() {
     const mobileAppVersionLabel = document.getElementById('mobile-app-version');
     const mobileSettingsOpenBtn = document.getElementById('mobile-settings-open-btn');
     const sidebarDonateBtn = document.getElementById('sidebar-donate-btn');
+    const resourcesCatalog = document.getElementById('resources-catalog');
+    const resourcesActiveGrid = document.getElementById('resources-active-grid');
+    const resourcesEmptyState = document.getElementById('resources-empty-state');
+    const resourcesActiveCount = document.getElementById('resources-active-count');
     const mobileDonateBtn = document.getElementById('mobile-donate-btn');
     const postCallReviewStrip = document.getElementById('post-call-review-strip');
     const postCallReviewSummary = document.getElementById('post-call-review-summary');
@@ -8906,6 +9028,1006 @@ function saveCalls() {
         return date.toLocaleDateString(DISPLAY_LOCALE);
     }
 
+    function loadActiveResources() {
+        try {
+            const raw = JSON.parse(appStorage.getItem(RESOURCES_ACTIVE_KEY) || '[]');
+            if (!Array.isArray(raw)) return [];
+            const validIds = new Set(RESOURCE_DEFINITIONS.map((resource) => resource.id));
+            return raw.filter((id) => validIds.has(id));
+        } catch {
+            return [];
+        }
+    }
+
+    function loadAddressLookupHistory() {
+        try {
+            const raw = JSON.parse(appStorage.getItem(ADDRESS_LOOKUP_HISTORY_KEY) || '[]');
+            return Array.isArray(raw) ? raw.slice(0, 8).map((item) => normalizeSearchText(item)).filter(Boolean) : [];
+        } catch {
+            return [];
+        }
+    }
+
+    function loadTermAssistantRecents() {
+        try {
+            const raw = JSON.parse(appStorage.getItem(TERM_ASSISTANT_RECENTS_KEY) || '[]');
+            if (!Array.isArray(raw)) return [];
+            return raw.slice(0, 10).map((item) => ({
+                query: String(item?.query || '').trim(),
+                sourceLang: item?.sourceLang || 'en',
+                targetLang: item?.targetLang || 'es',
+                count: Number(item?.count || 1),
+                lastUsedAt: Number(item?.lastUsedAt || Date.now())
+            })).filter((item) => item.query);
+        } catch {
+            return [];
+        }
+    }
+
+    function saveActiveResources() {
+        try {
+            appStorage.setItem(RESOURCES_ACTIVE_KEY, JSON.stringify(activeResourceIds));
+        } catch {}
+    }
+
+    function saveTermAssistantRecents() {
+        try {
+            appStorage.setItem(TERM_ASSISTANT_RECENTS_KEY, JSON.stringify(termAssistantState.frequentLookups.slice(0, 10)));
+        } catch {}
+    }
+
+    function saveAddressLookupHistory() {
+        try {
+            appStorage.setItem(ADDRESS_LOOKUP_HISTORY_KEY, JSON.stringify(zipLookupState.recentQueries.slice(0, 8)));
+        } catch {}
+    }
+
+    function pushAddressLookupHistory(query) {
+        const normalized = normalizeSearchText(query);
+        if (!normalized) return;
+        zipLookupState.recentQueries = [
+            normalized,
+            ...zipLookupState.recentQueries.filter((item) => item.toLowerCase() !== normalized.toLowerCase())
+        ].slice(0, 8);
+        saveAddressLookupHistory();
+    }
+
+    function pushRecentTermLookup(entry) {
+        if (!entry?.query) return;
+        const normalizedQuery = String(entry.query).trim();
+        const now = Date.now();
+        const existing = termAssistantState.frequentLookups.find((item) => item.query === normalizedQuery && item.sourceLang === entry.sourceLang && item.targetLang === entry.targetLang);
+        if (existing) {
+            existing.count += 1;
+            existing.lastUsedAt = now;
+        } else {
+            termAssistantState.frequentLookups.push({
+                query: normalizedQuery,
+                sourceLang: entry.sourceLang,
+                targetLang: entry.targetLang,
+                count: 1,
+                lastUsedAt: now
+            });
+        }
+        termAssistantState.frequentLookups.sort((a, b) => {
+            if (b.count !== a.count) return b.count - a.count;
+            return b.lastUsedAt - a.lastUsedAt;
+        });
+        termAssistantState.frequentLookups = termAssistantState.frequentLookups.slice(0, 10);
+        saveTermAssistantRecents();
+    }
+
+    function getResourceDefinition(resourceId) {
+        return RESOURCE_DEFINITIONS.find((resource) => resource.id === resourceId) || null;
+    }
+
+    function isResourceActive(resourceId) {
+        return activeResourceIds.includes(resourceId);
+    }
+
+    function toggleResourceActive(resourceId) {
+        if (!getResourceDefinition(resourceId)) return;
+        if (isResourceActive(resourceId)) {
+            activeResourceIds = activeResourceIds.filter((id) => id !== resourceId);
+        } else {
+            activeResourceIds = [...activeResourceIds, resourceId];
+        }
+        saveActiveResources();
+        renderResourcesView();
+    }
+
+    function renderResourcesCatalog() {
+        if (!resourcesCatalog) return;
+        resourcesCatalog.innerHTML = RESOURCE_DEFINITIONS.map((resource) => {
+            const active = isResourceActive(resource.id);
+            const openLabel = resource.embedMode === 'external_only' ? 'Open tool' : 'Open externally';
+            return `
+                <article class="settings-section-card resources-card ${active ? 'is-active' : ''}" data-resource-card="${escapeHTML(resource.id)}">
+                    <div class="resources-card-topline">
+                        <span class="resources-card-badge">${escapeHTML(resource.badge)}</span>
+                        <span class="resources-card-state">${active ? 'Active' : 'Hidden'}</span>
+                    </div>
+                    <h3 class="resources-card-title">${escapeHTML(resource.title)}</h3>
+                    <p class="resources-card-description">${escapeHTML(resource.description)}</p>
+                    <div class="resources-card-footer">
+                        <button type="button" class="resources-card-toggle ${active ? 'is-active' : ''}" data-resource-toggle="${escapeHTML(resource.id)}">
+                            ${active ? 'Hide from workspace' : 'Show in workspace'}
+                        </button>
+                        <button type="button" class="resources-card-link" data-resource-open="${escapeHTML(resource.id)}">${openLabel}</button>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    }
+
+    function refreshScaledResourceEmbeds() {
+        if (!resourcesActiveGrid) return;
+        resourcesActiveGrid.querySelectorAll('[data-embed-mode="scaled"]').forEach((wrap) => {
+            const baseWidth = Number(wrap.dataset.embedBaseWidth) || 1180;
+            const baseHeight = Number(wrap.dataset.embedBaseHeight) || 920;
+            const availableWidth = Math.max(wrap.clientWidth || 0, 1);
+            const scale = Math.min(availableWidth / baseWidth, 1);
+            wrap.style.setProperty('--resource-embed-base-width', `${baseWidth}px`);
+            wrap.style.setProperty('--resource-embed-base-height', `${baseHeight}px`);
+            wrap.style.setProperty('--resource-embed-scale', `${scale}`);
+            wrap.style.height = `${Math.max(Math.round(baseHeight * scale), 460)}px`;
+        });
+    }
+
+    function renderZipLookupPanel() {
+        const buttonLabel = zipLookupState.loading ? 'Searching...' : 'Search';
+        const suggestions = Array.isArray(zipLookupState.suggestions) ? zipLookupState.suggestions : [];
+        const resultCards = Array.isArray(zipLookupState.resultCards) ? zipLookupState.resultCards : [];
+        const recentQueries = Array.isArray(zipLookupState.recentQueries) ? zipLookupState.recentQueries : [];
+        return `
+            <div class="zip-resource-workspace">
+                <form class="zip-resource-form zip-resource-form-single" data-smart-address-form>
+                    <div class="zip-resource-form-title">ZIP, address, city, or state</div>
+                    <div class="zip-resource-form-copy">One search bar for U.S. lookups.</div>
+                    <div class="zip-resource-toolbar">
+                        <div class="zip-resource-detected">Detected intent: <span>${escapeHTML(detectLookupIntent(zipLookupState.query))}</span></div>
+                    </div>
+                    <div class="zip-resource-input-row">
+                        <input id="zip-resource-smart-input" class="zip-resource-input" name="smart_query" type="text" autocomplete="off" placeholder="e.g. 90210, Beverly Hills CA, 435 W..., 4600 Silver Hill Rd" value="${escapeHTML(zipLookupState.query)}">
+                        <button type="submit" class="zip-resource-submit">${buttonLabel}</button>
+                    </div>
+                    ${zipLookupState.suggestionsLoading ? '<div class="zip-resource-inline-note">Looking for likely matches...</div>' : ''}
+                    ${suggestions.length ? `
+                        <div class="zip-resource-suggestions">
+                            ${suggestions.map((item, index) => `
+                                <button type="button" class="zip-resource-suggestion" data-smart-suggestion-index="${index}">
+                                    ${item.intent ? `<span class="zip-resource-suggestion-badge">${escapeHTML(item.intent)}</span>` : ''}
+                                    <span class="zip-resource-suggestion-main">${escapeHTML(item.title || '--')}</span>
+                                    <span class="zip-resource-suggestion-meta">${escapeHTML(item.meta || '--')}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    ${recentQueries.length ? `
+                        <div class="term-assistant-meta-label">Recent</div>
+                        <div class="term-assistant-recents">
+                            ${recentQueries.map((item) => `
+                                <button type="button" class="term-assistant-recent-chip" data-smart-recent="${escapeHTML(item)}">${escapeHTML(item)}</button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="zip-resource-inline-note">Best with ZIPs, full addresses, or city + state.</div>
+                    ${zipLookupState.error ? `<div class="zip-resource-error">${escapeHTML(zipLookupState.error)}</div>` : ''}
+                    ${zipLookupState.resultSummary ? `
+                        <div class="zip-resource-result-shell">
+                            <div class="zip-resource-result-header">
+                                <div class="zip-resource-result-title">${escapeHTML(zipLookupState.resultSummary)}</div>
+                                <div class="zip-resource-result-badge">${resultCards.length} result${resultCards.length === 1 ? '' : 's'}</div>
+                            </div>
+                            <div class="zip-resource-result-grid">
+                                ${resultCards.map((item, index) => `
+                                    <div class="zip-resource-result-card ${index === 0 ? 'is-primary' : ''}">
+                                        ${index === 0 ? '<div class="zip-resource-result-flag">Best match</div>' : ''}
+                                        <div class="zip-resource-result-main">${escapeHTML(item.title || '--')}</div>
+                                        <div class="zip-resource-result-sub">${escapeHTML(item.subtitle || '--')}</div>
+                                        <div class="zip-resource-result-meta">${escapeHTML(item.meta || '--')}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="zip-resource-actions">
+                        <button type="button" class="resources-panel-btn" data-resource-open="zipcodes">Open full site</button>
+                    </div>
+                </form>
+                <div class="resources-panel-note">Public U.S. data sources.</div>
+            </div>
+        `;
+    }
+
+    function getLanguageLabel(code) {
+        return LANGUAGE_OPTIONS.find(([value]) => value === code)?.[1] || code;
+    }
+
+    function renderLanguageOptions(selectedCode) {
+        return LANGUAGE_OPTIONS.map(([value, label]) => `<option value="${escapeHTML(value)}" ${selectedCode === value ? 'selected' : ''}>${escapeHTML(label)}</option>`).join('');
+    }
+
+    function normalizeSearchText(value) {
+        return String(value || '')
+            .replace(/[，]/g, ',')
+            .replace(/\s+/g, ' ')
+            .replace(/\s*,\s*/g, ', ')
+            .trim();
+    }
+
+    function normalizeStateToken(value) {
+        const normalized = normalizeSearchText(value).toLowerCase();
+        if (!normalized) return '';
+        if (/^[a-z]{2}$/.test(normalized)) return normalized.toUpperCase();
+        return US_STATE_ABBREVIATIONS[normalized] || '';
+    }
+
+    function getCachedValue(cache, key) {
+        if (!cache.has(key)) return null;
+        const value = cache.get(key);
+        cache.delete(key);
+        cache.set(key, value);
+        return value;
+    }
+
+    function isAbortLikeError(error) {
+        return error?.name === 'AbortError';
+    }
+
+    function setCachedValue(cache, key, value, maxSize = 30) {
+        if (cache.has(key)) cache.delete(key);
+        cache.set(key, value);
+        if (cache.size > maxSize) {
+            const oldestKey = cache.keys().next().value;
+            if (oldestKey !== undefined) cache.delete(oldestKey);
+        }
+    }
+
+    function isInvalidTranslationText(text, sourceText = '') {
+        const normalized = String(text || '').trim().toLowerCase();
+        const normalizedSource = String(sourceText || '').trim().toLowerCase();
+        if (!normalized) return true;
+        const blockedPhrases = [
+            'please, specify two different languages',
+            'please specify two different languages',
+            'specify two different languages',
+            'could not translate',
+            'translation unavailable',
+            'no translation'
+        ];
+        if (blockedPhrases.includes(normalized)) return true;
+        if (normalized === normalizedSource) return true;
+        return false;
+    }
+
+    function detectLookupIntent(rawQuery) {
+        const normalized = String(rawQuery || '').trim();
+        if (/^\d{5}(?:-\d{4})?$/.test(normalized)) return 'ZIP';
+        if (parseCityStateQuery(normalized) && !/\d/.test(normalized)) return 'City / State';
+        if (/\d/.test(normalized)) return 'Address';
+        return 'Location';
+    }
+
+    function captureActiveResourceInputState() {
+        const active = document.activeElement;
+        if (!(active instanceof HTMLInputElement) && !(active instanceof HTMLTextAreaElement)) return null;
+        if (!resourcesActiveGrid?.contains(active)) return null;
+        return {
+            id: active.id || '',
+            value: active.value,
+            selectionStart: typeof active.selectionStart === 'number' ? active.selectionStart : null,
+            selectionEnd: typeof active.selectionEnd === 'number' ? active.selectionEnd : null
+        };
+    }
+
+    function restoreActiveResourceInputState(snapshot) {
+        if (!snapshot?.id) return;
+        const next = document.getElementById(snapshot.id);
+        if (!(next instanceof HTMLInputElement) && !(next instanceof HTMLTextAreaElement)) return;
+        next.focus({ preventScroll: true });
+        if (snapshot.id === 'zip-resource-smart-input') {
+            const end = next.value.length;
+            try {
+                next.setSelectionRange(end, end);
+            } catch {}
+            return;
+        }
+        if (next.value === snapshot.value && snapshot.selectionStart !== null && snapshot.selectionEnd !== null) {
+            try {
+                next.setSelectionRange(snapshot.selectionStart, snapshot.selectionEnd);
+            } catch {}
+        }
+    }
+
+    function normalizeTermMatches(matches, sourceLang, targetLang) {
+        const seen = new Set();
+        const normalizedQuery = normalizeSearchText(termAssistantState.query).toLowerCase();
+        return (Array.isArray(matches) ? matches : [])
+            .filter((item) => item && typeof item.translation === 'string')
+            .map((item) => {
+                const rawQuality = Number(item.match ?? item.quality ?? 0);
+                const quality = rawQuality > 1 ? rawQuality / 100 : rawQuality;
+                const segment = normalizeSearchText(item.segment || '');
+                const translation = normalizeSearchText(item.translation || '');
+                const usageCount = Number(item['usage-count'] || 0);
+                const subject = String(item.subject || '');
+                let rankBoost = 0;
+                if (segment.toLowerCase() === normalizedQuery) rankBoost += 0.35;
+                if (segment.toLowerCase().startsWith(normalizedQuery)) rankBoost += 0.18;
+                if (translation.split(' ').length <= 3) rankBoost += 0.08;
+                if (usageCount >= 3) rankBoost += Math.min(0.12, usageCount * 0.02);
+                if (subject && subject !== 'All' && subject !== 'General') rankBoost += 0.05;
+                return ({
+                translation,
+                segment,
+                quality: quality + rankBoost,
+                source: String(item.source || ''),
+                target: String(item.target || ''),
+                subject,
+                usageCount
+                });
+            })
+            .filter((item) => item.translation && item.segment)
+            .filter((item) => !isInvalidTranslationText(item.translation, item.segment))
+            .filter((item) => item.target.toLowerCase().startsWith(targetLang))
+            .filter((item) => item.source.toLowerCase().startsWith(sourceLang))
+            .filter((item) => {
+                const key = item.translation.toLowerCase();
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            })
+            .sort((a, b) => b.quality - a.quality)
+            .slice(0, 10);
+    }
+
+    function normalizeDictionaryEntry(data) {
+        const entries = Array.isArray(data?.value) ? data.value : Array.isArray(data) ? data : [];
+        return entries[0] || null;
+    }
+
+    function normalizeSemanticHints(data) {
+        return (Array.isArray(data?.value) ? data.value : Array.isArray(data) ? data : [])
+            .map((item) => normalizeSearchText(item?.word || ''))
+            .filter(Boolean)
+            .filter((word, index, arr) => arr.indexOf(word) === index)
+            .slice(0, 6);
+    }
+
+    function renderDefinitionBlock(entry) {
+        if (!entry) return '';
+        const phonetic = Array.isArray(entry.phonetics)
+            ? entry.phonetics.find((item) => item?.text)?.text || ''
+            : '';
+        const meanings = Array.isArray(entry.meanings) ? entry.meanings.slice(0, 3) : [];
+        return `
+            <div class="term-assistant-section">
+                <div class="term-assistant-section-title">Meaning</div>
+                <div class="term-assistant-definition-head">
+                    <div class="term-assistant-definition-word">${escapeHTML(entry.word || '--')}</div>
+                    ${phonetic ? `<div class="term-assistant-definition-phonetic">${escapeHTML(phonetic)}</div>` : ''}
+                </div>
+                <div class="term-assistant-definition-list">
+                    ${meanings.map((meaning) => `
+                        <div class="term-assistant-definition-card">
+                            <div class="term-assistant-definition-pos">${escapeHTML(meaning.partOfSpeech || 'term')}</div>
+                            ${(Array.isArray(meaning.definitions) ? meaning.definitions.slice(0, 2) : []).map((definition) => `
+                                <div class="term-assistant-definition-item">
+                                    <div>${escapeHTML(definition.definition || '--')}</div>
+                                    ${definition.example ? `<div class="term-assistant-definition-example">${escapeHTML(definition.example)}</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    function renderTermAssistantPanel() {
+        const suggestions = normalizeTermMatches(termAssistantState.translationResult?.matches, termAssistantState.sourceLang, termAssistantState.targetLang);
+        const fallbackHeadline = !isInvalidTranslationText(termAssistantState.translationResult?.responseData?.translatedText, termAssistantState.query)
+            ? String(termAssistantState.translationResult?.responseData?.translatedText || '').trim()
+            : '';
+        const headline = suggestions[0]?.translation || fallbackHeadline || '';
+        return `
+            <div class="term-assistant-workspace">
+                <form class="term-assistant-search" data-term-assistant-form>
+                    <div class="term-assistant-controls">
+                        <div class="term-assistant-control">
+                            <label class="zip-resource-label" for="term-assistant-query">Term or phrase</label>
+                            <input id="term-assistant-query" class="zip-resource-input" name="query" type="text" autocomplete="off" placeholder="e.g. deductible, onset, claim number" value="${escapeHTML(termAssistantState.query)}">
+                        </div>
+                        <div class="term-assistant-direction">
+                            <div class="term-assistant-control">
+                                <label class="zip-resource-label" for="term-assistant-source">From</label>
+                                <select id="term-assistant-source" class="zip-resource-input" name="source">
+                                    ${renderLanguageOptions(termAssistantState.sourceLang)}
+                                </select>
+                            </div>
+                            <div class="term-assistant-control">
+                                <label class="zip-resource-label" for="term-assistant-target">To</label>
+                                <select id="term-assistant-target" class="zip-resource-input" name="target">
+                                    ${renderLanguageOptions(termAssistantState.targetLang)}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="term-assistant-primary-actions">
+                            <button type="button" class="resources-panel-btn term-assistant-swap-btn" data-term-swap>Swap</button>
+                            <button type="submit" class="zip-resource-submit term-assistant-submit">${termAssistantState.loading ? 'Searching...' : 'Search term'}</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="term-assistant-meta">
+                    <div class="term-assistant-meta-copy">Translate terms fast across many languages.</div>
+                    ${termAssistantState.frequentLookups.length ? `
+                        <div class="term-assistant-meta-label">Most searched</div>
+                        <div class="term-assistant-recents">
+                            ${termAssistantState.frequentLookups.map((item) => `
+                                <button type="button" class="term-assistant-recent-chip" data-term-recent="${escapeHTML(item.query)}" data-term-source="${escapeHTML(item.sourceLang)}" data-term-target="${escapeHTML(item.targetLang)}">
+                                    ${escapeHTML(item.query)} <span>${item.count}x · ${escapeHTML(getLanguageLabel(item.sourceLang))} -> ${escapeHTML(getLanguageLabel(item.targetLang))}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    ${termAssistantState.semanticHints.length ? `
+                        <div class="term-assistant-meta-label">Related</div>
+                        <div class="term-assistant-recents">
+                            ${termAssistantState.semanticHints.map((item) => `
+                                <button type="button" class="term-assistant-recent-chip" data-term-recent="${escapeHTML(item)}" data-term-source="en" data-term-target="${escapeHTML(termAssistantState.targetLang)}">
+                                    ${escapeHTML(item)}
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+                ${termAssistantState.error ? `<div class="zip-resource-error">${escapeHTML(termAssistantState.error)}</div>` : ''}
+                ${headline ? `
+                    <div class="term-assistant-results">
+                        <div class="term-assistant-headline">
+                            <div>
+                                <div class="term-assistant-headline-label">Best candidate</div>
+                                <div class="term-assistant-headline-value">${escapeHTML(headline)}</div>
+                            </div>
+                            <div class="term-assistant-headline-actions">
+                                <div class="term-assistant-headline-badge">${escapeHTML(getLanguageLabel(termAssistantState.sourceLang))} -> ${escapeHTML(getLanguageLabel(termAssistantState.targetLang))}</div>
+                            </div>
+                        </div>
+                        <div class="term-assistant-grid">
+                            <div class="term-assistant-section">
+                                <div class="term-assistant-section-title">Translation candidates</div>
+                                <div class="term-assistant-candidates">
+                                    ${suggestions.length ? suggestions.map((item) => `
+                                        <div class="term-assistant-candidate">
+                                            <div class="term-assistant-candidate-row">
+                                                <div class="term-assistant-candidate-main">${escapeHTML(item.translation)}</div>
+                                            </div>
+                                            <div class="term-assistant-candidate-meta">${escapeHTML(item.segment)}${item.subject && item.subject !== 'All' ? ` · ${escapeHTML(item.subject)}` : ''}${item.usageCount ? ` · used ${item.usageCount}x` : ''} | ${Math.min(99, Math.round((item.quality || 0) * 100))}%</div>
+                                        </div>
+                                    `).join('') : '<div class="term-assistant-empty">No strong candidate terms were returned for this query.</div>'}
+                                </div>
+                            </div>
+                            ${renderDefinitionBlock(termAssistantState.definitionResult)}
+                        </div>
+                    </div>
+                ` : '<div class="term-assistant-empty term-assistant-empty-shell">Search a term to see translations and quick meaning support.</div>'}
+                <div class="resources-panel-note">Public translation and dictionary sources.</div>
+            </div>
+        `;
+    }
+
+    function buildZipResultCards(data) {
+        const places = Array.isArray(data?.places) ? data.places : [];
+        return places.map((place) => ({
+            title: `ZIP ${data['post code'] || '--'} · ${place['place name'] || '--'}`,
+            subtitle: `${place.state || '--'} (${place['state abbreviation'] || '--'})`,
+            meta: `Lat ${place.latitude || '--'} | Lon ${place.longitude || '--'}`
+        }));
+    }
+
+    function buildPlaceResultCards(data) {
+        const places = Array.isArray(data?.places) ? data.places : [];
+        return places.map((place) => ({
+            title: `${place['place name'] || '--'} · ZIP ${place['post code'] || '--'}`,
+            subtitle: `${place.state || '--'} (${place['state abbreviation'] || '--'})`,
+            meta: 'United States'
+        }));
+    }
+
+    function trimUsCountrySuffix(value) {
+        return String(value || '')
+            .replace(/,\s*United States(?: of America)?\s*$/i, '')
+            .replace(/,\s*Estados Unidos de Am(?:e|é)rica\s*$/i, '')
+            .replace(/,\s*Estados Unidos\s*$/i, '')
+            .trim();
+    }
+
+    function getAddressMatchScore(match, query) {
+        const address = match?.address || {};
+        const normalizedQuery = normalizeSearchText(query).toLowerCase();
+        const display = trimUsCountrySuffix(match?.display_name || '').toLowerCase();
+        const name = String(match?.name || '').toLowerCase();
+        const type = String(match?.type || '').toLowerCase();
+        const hasHouseNumber = Boolean(address.house_number);
+        const hasRoad = Boolean(address.road);
+        const postcode = String(address.postcode || '');
+        let score = 0;
+        if (display === normalizedQuery) score += 120;
+        if (display.startsWith(normalizedQuery)) score += 70;
+        if (name && normalizedQuery.includes(name)) score += 25;
+        if (postcode && normalizedQuery.replace(/\D/g, '') === postcode.replace(/\D/g, '')) score += 90;
+        if (hasHouseNumber) score += 28;
+        if (hasRoad) score += 22;
+        if (type === 'house') score += 24;
+        if (type === 'residential') score += 16;
+        if (type === 'street') score += 12;
+        if (type === 'postcode') score += 10;
+        if (match?.place_rank) score += Math.max(0, 40 - Number(match.place_rank));
+        return score;
+    }
+
+    function rankAddressMatches(matches, query) {
+        return [...(Array.isArray(matches) ? matches : [])]
+            .sort((a, b) => getAddressMatchScore(b, query) - getAddressMatchScore(a, query));
+    }
+
+    function buildAddressResultCards(matches) {
+        return (Array.isArray(matches) ? matches : []).map((match) => {
+            const address = match?.address || {};
+            const city = address.city || address.town || address.village || address.hamlet || address.county || '--';
+            return {
+                title: trimUsCountrySuffix(match?.display_name || '--'),
+                subtitle: `ZIP ${address.postcode || '--'} | ${city}, ${address.state || '--'}`,
+                meta: `Lat ${String(match?.lat ?? '--')} | Lon ${String(match?.lon ?? '--')}`
+            };
+        });
+    }
+
+    function parseCityStateQuery(rawQuery) {
+        const normalized = normalizeSearchText(rawQuery);
+        const commaParts = normalized.split(',').map((part) => part.trim()).filter(Boolean);
+        if (commaParts.length >= 2) {
+            const stateCandidate = normalizeStateToken(commaParts[commaParts.length - 1]);
+            const cityCandidate = commaParts.slice(0, -1).join(' ');
+            if (stateCandidate && cityCandidate.length >= 2) {
+                return { city: cityCandidate, state: stateCandidate };
+            }
+        }
+        const parts = normalized.split(/\s+/).filter(Boolean);
+        const last = normalizeStateToken(parts[parts.length - 1] || '');
+        if (last && parts.length >= 2) {
+            return { city: parts.slice(0, -1).join(' '), state: last };
+        }
+        if (parts.length >= 2) {
+            const lastTwo = normalizeStateToken(parts.slice(-2).join(' '));
+            if (lastTwo) {
+                return { city: parts.slice(0, -2).join(' '), state: lastTwo };
+            }
+        }
+        return null;
+    }
+
+    async function lookupZipQuery(rawQuery, signal) {
+        const normalizedZip = normalizeSearchText(rawQuery);
+        const response = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(normalizedZip)}`, { signal });
+        if (!response.ok) {
+            throw new Error(response.status === 404 ? 'No result found for that ZIP code.' : 'ZIP lookup could not be completed right now.');
+        }
+        const data = await response.json();
+        return {
+            summary: `ZIP ${data['post code'] || normalizedZip}`,
+            cards: buildZipResultCards(data)
+        };
+    }
+
+    async function lookupCityStateQuery(rawQuery, signal) {
+        const parsed = parseCityStateQuery(rawQuery);
+        if (!parsed) {
+            throw new Error('Add a state abbreviation like CA or NY for city searches.');
+        }
+        const response = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(parsed.state)}/${encodeURIComponent(parsed.city)}`, { signal });
+        if (!response.ok) {
+            throw new Error(response.status === 404 ? 'No ZIP codes found for that city/state.' : 'City lookup could not be completed right now.');
+        }
+        const data = await response.json();
+        return {
+            summary: `${parsed.city}, ${parsed.state}`,
+            cards: buildPlaceResultCards(data)
+        };
+    }
+
+    async function lookupAddressQuery(rawQuery, signal) {
+        const normalizedQuery = normalizeSearchText(rawQuery);
+        const url = new URL('https://nominatim.openstreetmap.org/search');
+        url.searchParams.set('q', normalizedQuery);
+        url.searchParams.set('format', 'jsonv2');
+        url.searchParams.set('addressdetails', '1');
+        url.searchParams.set('countrycodes', 'us');
+        url.searchParams.set('limit', '6');
+        const response = await fetch(url.toString(), { signal });
+        if (!response.ok) {
+            throw new Error('Address lookup could not be completed right now.');
+        }
+        const data = await response.json();
+        const matches = rankAddressMatches(Array.isArray(data) ? data : [], normalizedQuery);
+        if (!matches.length) {
+            throw new Error('No address match found. Try adding more of the address, city, state, or ZIP.');
+        }
+        return {
+            summary: trimUsCountrySuffix(matches[0]?.display_name || 'Address match'),
+            cards: buildAddressResultCards(matches)
+        };
+    }
+
+    async function runSmartAddressLookup(queryValue) {
+        const normalizedQuery = normalizeSearchText(queryValue);
+        const requestId = ++smartLookupRequestId;
+        const cacheKey = normalizedQuery.toLowerCase();
+        zipLookupState.query = normalizedQuery;
+        const cachedResult = normalizedQuery ? getCachedValue(SMART_ADDRESS_RESULT_CACHE, cacheKey) : null;
+        if (cachedResult) {
+            zipLookupState.loading = false;
+            zipLookupState.error = '';
+            zipLookupState.resultSummary = cachedResult.summary || 'Search results';
+            zipLookupState.resultCards = Array.isArray(cachedResult.cards) ? cachedResult.cards : [];
+            zipLookupState.suggestions = [];
+            pushAddressLookupHistory(normalizedQuery);
+            renderActiveResources();
+            return;
+        }
+        smartLookupAbortController?.abort();
+        smartLookupAbortController = new AbortController();
+        zipLookupState.loading = true;
+        zipLookupState.error = '';
+        renderActiveResources();
+        try {
+            if (normalizedQuery.length < 2) {
+                throw new Error('Type a ZIP, city/state, or address to search.');
+            }
+
+            let result;
+            if (/^\d{5}(?:-\d{4})?$/.test(normalizedQuery)) {
+                result = await lookupZipQuery(normalizedQuery, smartLookupAbortController.signal);
+            } else {
+                const cityState = parseCityStateQuery(normalizedQuery);
+                if (cityState && !/\d/.test(normalizedQuery)) {
+                    try {
+                        result = await lookupCityStateQuery(normalizedQuery, smartLookupAbortController.signal);
+                    } catch {
+                        result = await lookupAddressQuery(normalizedQuery, smartLookupAbortController.signal);
+                    }
+                } else {
+                    result = await lookupAddressQuery(normalizedQuery, smartLookupAbortController.signal);
+                }
+            }
+
+            setCachedValue(SMART_ADDRESS_RESULT_CACHE, cacheKey, result);
+            if (requestId !== smartLookupRequestId) return;
+            pushAddressLookupHistory(normalizedQuery);
+            zipLookupState.resultSummary = result.summary || 'Search results';
+            zipLookupState.resultCards = Array.isArray(result.cards) ? result.cards : [];
+            zipLookupState.suggestions = [];
+        } catch (error) {
+            if (requestId !== smartLookupRequestId) return;
+            if (isAbortLikeError(error)) return;
+            zipLookupState.error = error instanceof Error ? error.message : 'Lookup failed.';
+        } finally {
+            if (requestId !== smartLookupRequestId) return;
+            if (smartLookupAbortController?.signal.aborted) return;
+            zipLookupState.loading = false;
+            renderActiveResources();
+        }
+    }
+
+    async function fetchAddressSuggestions(addressValue) {
+        const rawAddress = String(addressValue || '');
+        const normalizedAddress = normalizeSearchText(addressValue);
+        const requestId = ++addressSuggestionRequestId;
+        const cacheKey = normalizedAddress.toLowerCase();
+        zipLookupState.query = rawAddress;
+        if (normalizedAddress.length < 4) {
+            addressSuggestionAbortController?.abort();
+            zipLookupState.suggestions = [];
+            zipLookupState.suggestionsLoading = false;
+            renderActiveResources();
+            return;
+        }
+        const cachedSuggestions = getCachedValue(SMART_ADDRESS_SUGGESTION_CACHE, cacheKey);
+        if (cachedSuggestions) {
+            zipLookupState.suggestions = cachedSuggestions;
+            zipLookupState.suggestionsLoading = false;
+            renderActiveResources();
+            return;
+        }
+        addressSuggestionAbortController?.abort();
+        addressSuggestionAbortController = new AbortController();
+        zipLookupState.suggestionsLoading = true;
+        try {
+            if (/^\d{1,5}$/.test(normalizedAddress)) {
+                zipLookupState.suggestions = [{
+                    title: `Search ZIP ${normalizedAddress}`,
+                    meta: 'Run a direct ZIP lookup',
+                    action: { type: 'query', query: normalizedAddress }
+                }];
+            } else {
+                const cityState = parseCityStateQuery(normalizedAddress);
+                const suggestions = [];
+                if (cityState && !/\d/.test(normalizedAddress)) {
+                    suggestions.push({
+                        title: `${cityState.city}, ${cityState.state}`,
+                        meta: 'Search ZIPs for this city/state pair',
+                        intent: 'City / State',
+                        action: { type: 'query', query: `${cityState.city}, ${cityState.state}` }
+                    });
+                }
+                const url = new URL('https://nominatim.openstreetmap.org/search');
+                url.searchParams.set('q', normalizedAddress);
+                url.searchParams.set('format', 'jsonv2');
+                url.searchParams.set('addressdetails', '1');
+                url.searchParams.set('countrycodes', 'us');
+                url.searchParams.set('limit', '5');
+                const response = await fetch(url.toString(), { signal: addressSuggestionAbortController.signal });
+                if (response.ok) {
+                    const data = await response.json();
+                    const matches = rankAddressMatches(Array.isArray(data) ? data : [], normalizedAddress).slice(0, 5);
+                    suggestions.push(...matches.map((match) => ({
+                        title: trimUsCountrySuffix(match.display_name || '--'),
+                        meta: `ZIP ${match?.address?.postcode || '--'} | ${(match?.address?.city || match?.address?.town || match?.address?.village || match?.address?.county || '--')}, ${match?.address?.state || '--'}`,
+                        intent: detectLookupIntent(match.display_name || normalizedAddress),
+                        action: { type: 'query', query: trimUsCountrySuffix(match.display_name || normalizedAddress) }
+                    })));
+                }
+                if (requestId !== addressSuggestionRequestId) return;
+                zipLookupState.suggestions = suggestions.slice(0, 6);
+            }
+            setCachedValue(SMART_ADDRESS_SUGGESTION_CACHE, cacheKey, zipLookupState.suggestions);
+        } catch (error) {
+            if (requestId !== addressSuggestionRequestId) return;
+            if (isAbortLikeError(error)) return;
+            zipLookupState.suggestions = [];
+        } finally {
+            if (requestId !== addressSuggestionRequestId) return;
+            if (addressSuggestionAbortController?.signal.aborted) return;
+            zipLookupState.suggestionsLoading = false;
+            renderActiveResources();
+        }
+    }
+
+    function queueAddressSuggestions(addressValue) {
+        clearTimeout(addressSuggestionDebounceId);
+        addressSuggestionDebounceId = window.setTimeout(() => {
+            fetchAddressSuggestions(addressValue);
+        }, 180);
+    }
+
+    async function applyAddressSuggestion(indexValue) {
+        const index = Number(indexValue);
+        const suggestion = Array.isArray(zipLookupState.suggestions) ? zipLookupState.suggestions[index] : null;
+        if (!suggestion?.action?.query) return;
+        await runSmartAddressLookup(suggestion.action.query);
+    }
+
+    async function runTermAssistantLookup(queryValue, sourceLangValue, targetLangValue) {
+        const normalizedQuery = normalizeSearchText(queryValue);
+        const requestId = ++termLookupRequestId;
+        const validLanguageCodes = new Set(LANGUAGE_OPTIONS.map(([code]) => code));
+        const sourceLang = validLanguageCodes.has(sourceLangValue) ? sourceLangValue : 'en';
+        const targetLang = validLanguageCodes.has(targetLangValue) ? targetLangValue : 'es';
+        const translationCacheKey = `${sourceLang}|${targetLang}|${normalizedQuery.toLowerCase()}`;
+        termAssistantState.query = normalizedQuery;
+        termAssistantState.sourceLang = sourceLang;
+        termAssistantState.targetLang = targetLang === sourceLang ? (sourceLang === 'en' ? 'es' : 'en') : targetLang;
+        const cachedTranslation = normalizedQuery ? getCachedValue(TERM_TRANSLATION_CACHE, translationCacheKey) : null;
+        if (cachedTranslation) {
+            termAssistantState.loading = false;
+            termAssistantState.error = '';
+            termAssistantState.translationResult = cachedTranslation;
+            renderActiveResources();
+        }
+        termLookupAbortController?.abort();
+        termLookupAbortController = new AbortController();
+        termAssistantState.loading = true;
+        termAssistantState.error = '';
+        renderActiveResources();
+        try {
+            if (normalizedQuery.length < 2) {
+                throw new Error('Enter a term or short phrase to search.');
+            }
+            let translationData = cachedTranslation;
+            if (!translationData) {
+                const translationUrl = new URL('https://api.mymemory.translated.net/get');
+                translationUrl.searchParams.set('q', normalizedQuery);
+                translationUrl.searchParams.set('langpair', `${termAssistantState.sourceLang}|${termAssistantState.targetLang}`);
+                const translationResponse = await fetch(translationUrl.toString(), { signal: termLookupAbortController.signal });
+                if (!translationResponse.ok) {
+                    throw new Error('Translation lookup could not be completed right now.');
+                }
+                translationData = await translationResponse.json();
+                setCachedValue(TERM_TRANSLATION_CACHE, translationCacheKey, translationData);
+            }
+            if (requestId !== termLookupRequestId) return;
+            termAssistantState.translationResult = translationData;
+
+            let definitionWord = '';
+            if (termAssistantState.sourceLang === 'en') {
+                definitionWord = normalizedQuery;
+            } else if (termAssistantState.targetLang === 'en') {
+                const best = normalizeTermMatches(translationData?.matches, termAssistantState.sourceLang, termAssistantState.targetLang)[0];
+                definitionWord = best?.translation || String(translationData?.responseData?.translatedText || '').trim();
+            }
+            let nextDefinitionResult = null;
+            let nextSemanticHints = [];
+            const followUpTasks = [];
+            if (definitionWord) {
+                followUpTasks.push((async () => {
+                    const definitionKey = definitionWord.toLowerCase();
+                    let normalizedDefinition = getCachedValue(TERM_DEFINITION_CACHE, definitionKey);
+                    if (!normalizedDefinition) {
+                        const definitionResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(definitionWord)}`, { signal: termLookupAbortController.signal });
+                        if (definitionResponse.ok) {
+                            const definitionData = await definitionResponse.json();
+                            normalizedDefinition = normalizeDictionaryEntry(definitionData);
+                            setCachedValue(TERM_DEFINITION_CACHE, definitionKey, normalizedDefinition);
+                        }
+                    }
+                    nextDefinitionResult = normalizedDefinition || null;
+                })().catch(() => {}));
+            }
+            if (termAssistantState.sourceLang === 'en') {
+                followUpTasks.push((async () => {
+                    const semanticKey = normalizedQuery.toLowerCase();
+                    let semanticHints = getCachedValue(TERM_SEMANTIC_CACHE, semanticKey);
+                    if (!semanticHints) {
+                        const semanticResponse = await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(normalizedQuery)}&max=6`, { signal: termLookupAbortController.signal });
+                        if (semanticResponse.ok) {
+                            const semanticData = await semanticResponse.json();
+                            semanticHints = normalizeSemanticHints(semanticData);
+                            setCachedValue(TERM_SEMANTIC_CACHE, semanticKey, semanticHints);
+                        }
+                    }
+                    nextSemanticHints = Array.isArray(semanticHints) ? semanticHints : [];
+                })().catch(() => {}));
+            }
+            if (followUpTasks.length) {
+                await Promise.all(followUpTasks);
+                if (requestId !== termLookupRequestId) return;
+            }
+            termAssistantState.definitionResult = nextDefinitionResult;
+            termAssistantState.semanticHints = nextSemanticHints;
+            pushRecentTermLookup({
+                query: normalizedQuery,
+                sourceLang: termAssistantState.sourceLang,
+                targetLang: termAssistantState.targetLang
+            });
+        } catch (error) {
+            if (requestId !== termLookupRequestId) return;
+            if (isAbortLikeError(error)) return;
+            termAssistantState.error = error instanceof Error ? error.message : 'Term lookup failed.';
+        } finally {
+            if (requestId !== termLookupRequestId) return;
+            if (termLookupAbortController?.signal.aborted) return;
+            termAssistantState.loading = false;
+            renderActiveResources();
+        }
+    }
+
+    async function runZipPlaceLookup(stateValue, cityValue) {
+        const normalizedState = String(stateValue || '').trim().toUpperCase();
+        const normalizedCity = String(cityValue || '').trim();
+        zipLookupState.placeState = normalizedState;
+        zipLookupState.placeCity = normalizedCity;
+        zipLookupState.placeLoading = true;
+        zipLookupState.placeError = '';
+        zipLookupState.placeResult = null;
+        renderActiveResources();
+        try {
+            if (!/^[A-Z]{2}$/.test(normalizedState)) {
+                throw new Error('Use a 2-letter US state code like CA or NY.');
+            }
+            if (normalizedCity.length < 2) {
+                throw new Error('Enter a city name to search ZIP codes.');
+            }
+            const response = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(normalizedState)}/${encodeURIComponent(normalizedCity)}`);
+            if (!response.ok) {
+                throw new Error(response.status === 404 ? 'No ZIP codes found for that city/state.' : 'City lookup could not be completed right now.');
+            }
+            const data = await response.json();
+            zipLookupState.placeResult = Array.isArray(data.places) ? data.places : [];
+            if (!zipLookupState.placeResult.length) {
+                throw new Error('No ZIP codes found for that city/state.');
+            }
+        } catch (error) {
+            zipLookupState.placeError = error instanceof Error ? error.message : 'City lookup failed.';
+        } finally {
+            zipLookupState.placeLoading = false;
+            renderActiveResources();
+        }
+    }
+
+    function renderActiveResources() {
+        if (!resourcesActiveGrid || !resourcesEmptyState || !resourcesActiveCount) return;
+        const inputSnapshot = captureActiveResourceInputState();
+        resourcesActiveCount.textContent = `${activeResourceIds.length} active`;
+        resourcesEmptyState.style.display = activeResourceIds.length ? 'none' : '';
+        resourcesActiveGrid.style.display = activeResourceIds.length ? 'grid' : 'none';
+        resourcesActiveGrid.classList.toggle('is-single-resource', activeResourceIds.length === 1);
+        resourcesActiveGrid.innerHTML = activeResourceIds.map((resourceId) => {
+            const resource = getResourceDefinition(resourceId);
+            if (!resource) return '';
+            if (resource.embedMode === 'native_zip') {
+                return `
+                    <section class="resources-panel" data-resource-panel="${escapeHTML(resource.id)}">
+                        <div class="resources-panel-header">
+                            <div>
+                                <div class="resources-panel-title">${escapeHTML(resource.title)}</div>
+                                <div class="resources-panel-helper">${escapeHTML(resource.helper)}</div>
+                            </div>
+                            <div class="resources-panel-actions">
+                                <button type="button" class="resources-panel-btn" data-resource-open="${escapeHTML(resource.id)}">Open</button>
+                                <button type="button" class="resources-panel-btn resources-panel-btn-danger" data-resource-toggle="${escapeHTML(resource.id)}">Hide</button>
+                            </div>
+                        </div>
+                        ${renderZipLookupPanel()}
+                    </section>
+                `;
+            }
+            if (resource.embedMode === 'native_terms') {
+                return `
+                    <section class="resources-panel" data-resource-panel="${escapeHTML(resource.id)}">
+                        <div class="resources-panel-header">
+                            <div>
+                                <div class="resources-panel-title">${escapeHTML(resource.title)}</div>
+                                <div class="resources-panel-helper">${escapeHTML(resource.helper)}</div>
+                            </div>
+                            <div class="resources-panel-actions">
+                                <button type="button" class="resources-panel-btn" data-resource-open="${escapeHTML(resource.id)}">Open</button>
+                                <button type="button" class="resources-panel-btn resources-panel-btn-danger" data-resource-toggle="${escapeHTML(resource.id)}">Hide</button>
+                            </div>
+                        </div>
+                        ${renderTermAssistantPanel()}
+                    </section>
+                `;
+            }
+            return `
+                <section class="resources-panel" data-resource-panel="${escapeHTML(resource.id)}">
+                    <div class="resources-panel-header">
+                        <div>
+                            <div class="resources-panel-title">${escapeHTML(resource.title)}</div>
+                            <div class="resources-panel-helper">${escapeHTML(resource.helper)}</div>
+                        </div>
+                        <div class="resources-panel-actions">
+                            <button type="button" class="resources-panel-btn" data-resource-open="${escapeHTML(resource.id)}">Open</button>
+                            <button type="button" class="resources-panel-btn resources-panel-btn-danger" data-resource-toggle="${escapeHTML(resource.id)}">Hide</button>
+                        </div>
+                    </div>
+                    <div
+                        class="resources-panel-embed-wrap"
+                        data-embed-mode="${escapeHTML(resource.embedMode || 'default')}"
+                        data-embed-base-width="${escapeHTML(String(resource.embedBaseWidth || '0'))}"
+                        data-embed-base-height="${escapeHTML(String(resource.embedBaseHeight || '0'))}"
+                    >
+                        <iframe
+                            class="resources-panel-embed"
+                            src="${escapeHTML(resource.embedUrl)}"
+                            title="${escapeHTML(resource.title)}"
+                            loading="lazy"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                        ></iframe>
+                    </div>
+                    <div class="resources-panel-note">If this site blocks embedding or behaves unexpectedly, use Open to launch it in a separate tab.</div>
+                </section>
+            `;
+        }).join('');
+        restoreActiveResourceInputState(inputSnapshot);
+        refreshScaledResourceEmbeds();
+    }
+
+    function renderResourcesView() {
+        renderResourcesCatalog();
+        renderActiveResources();
+    }
+
     function calculateEarnings(durationMs, ratePerMin) {
         const minutes = durationMs / (1000 * 60);
         return minutes * ratePerMin;
@@ -10141,6 +11263,16 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         ModalManager.open(supportModal, { focusSelector: '#support-modal-paypal-btn' });
     }
 
+    async function openResourceExternally(resourceId) {
+        const resource = getResourceDefinition(resourceId);
+        if (!resource?.externalUrl) return;
+        if (typeof openExternalUrl === 'function') {
+            await openExternalUrl(resource.externalUrl);
+            return;
+        }
+        window.open(resource.externalUrl, '_blank', 'noopener,noreferrer');
+    }
+
     function closeSupportModal() {
         ModalManager.close(supportModal);
     }
@@ -10345,6 +11477,82 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     }
     if (mobileDonateBtn) {
         mobileDonateBtn.addEventListener('click', openSupportModal);
+    }
+    if (resourcesCatalog) {
+        resourcesCatalog.addEventListener('click', async (event) => {
+            const toggleBtn = event.target?.closest?.('[data-resource-toggle]');
+            if (toggleBtn) {
+                toggleResourceActive(toggleBtn.getAttribute('data-resource-toggle'));
+                return;
+            }
+            const openBtn = event.target?.closest?.('[data-resource-open]');
+            if (openBtn) {
+                await openResourceExternally(openBtn.getAttribute('data-resource-open'));
+            }
+        });
+    }
+    if (resourcesActiveGrid) {
+        resourcesActiveGrid.addEventListener('click', async (event) => {
+            const toggleBtn = event.target?.closest?.('[data-resource-toggle]');
+            if (toggleBtn) {
+                toggleResourceActive(toggleBtn.getAttribute('data-resource-toggle'));
+                return;
+            }
+            const suggestionBtn = event.target?.closest?.('[data-smart-suggestion-index]');
+            if (suggestionBtn) {
+                await applyAddressSuggestion(suggestionBtn.getAttribute('data-smart-suggestion-index'));
+                return;
+            }
+            const recentBtn = event.target?.closest?.('[data-term-recent]');
+            if (recentBtn) {
+                await runTermAssistantLookup(
+                    recentBtn.getAttribute('data-term-recent'),
+                    recentBtn.getAttribute('data-term-source'),
+                    recentBtn.getAttribute('data-term-target')
+                );
+                return;
+            }
+            const smartRecentBtn = event.target?.closest?.('[data-smart-recent]');
+            if (smartRecentBtn) {
+                await runSmartAddressLookup(smartRecentBtn.getAttribute('data-smart-recent'));
+                return;
+            }
+            const swapBtn = event.target?.closest?.('[data-term-swap]');
+            if (swapBtn) {
+                const nextSource = termAssistantState.targetLang;
+                const nextTarget = termAssistantState.sourceLang;
+                termAssistantState.sourceLang = nextSource;
+                termAssistantState.targetLang = nextTarget;
+                renderActiveResources();
+                return;
+            }
+            const openBtn = event.target?.closest?.('[data-resource-open]');
+            if (openBtn) {
+                await openResourceExternally(openBtn.getAttribute('data-resource-open'));
+            }
+        });
+        resourcesActiveGrid.addEventListener('submit', async (event) => {
+            const smartForm = event.target?.closest?.('[data-smart-address-form]');
+            if (smartForm) {
+                event.preventDefault();
+                const formData = new FormData(smartForm);
+                await runSmartAddressLookup(formData.get('smart_query'));
+                return;
+            }
+            const termForm = event.target?.closest?.('[data-term-assistant-form]');
+            if (termForm) {
+                event.preventDefault();
+                const formData = new FormData(termForm);
+                await runTermAssistantLookup(formData.get('query'), formData.get('source'), formData.get('target'));
+            }
+        });
+        resourcesActiveGrid.addEventListener('input', (event) => {
+            const smartInput = event.target?.closest?.('#zip-resource-smart-input');
+            if (smartInput) {
+                zipLookupState.query = smartInput.value;
+                queueAddressSuggestions(smartInput.value);
+            }
+        });
     }
     if (supportKofiBtn) {
         supportKofiBtn.addEventListener('click', openSupportModal);
@@ -11311,6 +12519,9 @@ callEndTimeInput.addEventListener('input', syncCallDateFromDateTime);
             ? 'dark'
             : 'light';
         applyTheme(initialTheme);
+        activeResourceIds = loadActiveResources();
+        termAssistantState.frequentLookups = loadTermAssistantRecents();
+        renderResourcesView();
 
         rateSelect.addEventListener('change', () => {
             saveLastSelectedRate();
@@ -11767,6 +12978,7 @@ goalMinutesInput.addEventListener('input', () => {
             scheduleDetailPanelsReflow();
             clampFloatingDockPositionToViewport();
             scheduleDesktopOverlayRefresh();
+            refreshScaledResourceEmbeds();
         });
         window.addEventListener('orientationchange', () => {
             scheduleAppShellRefresh();
