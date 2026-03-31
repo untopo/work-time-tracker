@@ -1818,15 +1818,25 @@
 
         .term-assistant-controls {
             display: grid;
-            grid-template-columns: minmax(0, 1.4fr) minmax(13rem, 0.9fr) auto;
+            grid-template-columns: minmax(15rem, 1fr) auto;
             gap: 0.9rem;
             align-items: end;
+        }
+
+        .term-assistant-query-row {
+            display: block;
+            margin-bottom: 0.95rem;
         }
 
         .term-assistant-control {
             display: flex;
             flex-direction: column;
             gap: 0.45rem;
+        }
+
+        .term-assistant-control-query .zip-resource-input {
+            min-height: 3rem;
+            font-size: 0.96rem;
         }
 
         .term-assistant-direction {
@@ -1842,11 +1852,27 @@
         .term-assistant-primary-actions {
             display: flex;
             align-items: center;
+            justify-content: flex-end;
             gap: 0.65rem;
         }
 
         .term-assistant-swap-btn {
             min-height: 2.8rem;
+        }
+
+        @media (max-width: 980px) {
+            .term-assistant-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .term-assistant-primary-actions {
+                justify-content: stretch;
+            }
+
+            .term-assistant-primary-actions .term-assistant-swap-btn,
+            .term-assistant-primary-actions .term-assistant-submit {
+                flex: 1 1 0;
+            }
         }
 
         .term-assistant-meta {

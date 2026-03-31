@@ -9105,11 +9105,13 @@ function saveCalls() {
         return `
             <div class="term-assistant-workspace">
                 <form class="term-assistant-search" data-term-assistant-form>
-                    <div class="term-assistant-controls">
-                        <div class="term-assistant-control">
+                    <div class="term-assistant-query-row">
+                        <div class="term-assistant-control term-assistant-control-query">
                             <label class="zip-resource-label" for="term-assistant-query">Term or phrase</label>
                             <input id="term-assistant-query" class="zip-resource-input" name="query" type="text" autocomplete="off" placeholder="e.g. deductible, onset, claim number" value="${escapeHTML(termAssistantState.query)}">
                         </div>
+                    </div>
+                    <div class="term-assistant-controls">
                         <div class="term-assistant-direction">
                             <div class="term-assistant-control">
                                 <label class="zip-resource-label" for="term-assistant-source">From</label>
