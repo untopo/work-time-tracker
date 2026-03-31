@@ -265,6 +265,9 @@ const scheduleAppShellRefresh = createRafScheduler(applyAppShellMode);
         error: '',
         translationResult: null,
         definitionResult: null,
+        definitionMeta: null,
+        selectedCandidateIndex: 0,
+        definitionLoading: false,
         frequentLookups: [],
         semanticHints: []
     };
@@ -9068,6 +9071,7 @@ function saveCalls() {
 
     function renderDefinitionBlock(entry) {
         if (!entry) return '';
+        const meta = termAssistantState.definitionMeta || {};
         const phonetic = Array.isArray(entry.phonetics)
             ? entry.phonetics.find((item) => item?.text)?.text || ''
             : '';
@@ -9075,6 +9079,7 @@ function saveCalls() {
         return `
             <div class="term-assistant-section">
                 <div class="term-assistant-section-title">Meaning</div>
+                ${meta.label ? `<div class="term-assistant-definition-context">${escapeHTML(meta.label)}</div>` : ''}
                 <div class="term-assistant-definition-head">
                     <div class="term-assistant-definition-word">${escapeHTML(entry.word || '--')}</div>
                     ${phonetic ? `<div class="term-assistant-definition-phonetic">${escapeHTML(phonetic)}</div>` : ''}
@@ -9096,12 +9101,154 @@ function saveCalls() {
         `;
     }
 
-    function renderTermAssistantPanel() {
-        const suggestions = normalizeTermMatches(termAssistantState.translationResult?.matches, termAssistantState.sourceLang, termAssistantState.targetLang, termAssistantState.query);
+    function createFallbackDefinitionEntry(word, definitions, meta = {}) {
+        const safeDefinitions = Array.isArray(definitions) ? definitions.filter(Boolean).slice(0, 3) : [];
+        if (!safeDefinitions.length) return null;
+        return {
+            word,
+            phonetics: [],
+            meanings: [{
+                partOfSpeech: meta.partOfSpeech || 'gloss',
+                definitions: safeDefinitions.map((definition) => ({
+                    definition: String(definition || '').trim(),
+                    example: ''
+                }))
+            }]
+        };
+    }
+
+    function getTermAssistantSuggestions() {
+        return normalizeTermMatches(
+            termAssistantState.translationResult?.matches,
+            termAssistantState.sourceLang,
+            termAssistantState.targetLang,
+            termAssistantState.query
+        );
+    }
+
+    async function fetchTranslationDataCached(queryValue, sourceLang, targetLang, signal) {
+        const normalizedQuery = normalizeSearchText(queryValue);
+        if (!normalizedQuery) return null;
+        const cacheKey = `${sourceLang}|${targetLang}|${normalizedQuery.toLowerCase()}`;
+        let translationData = getCachedValue(TERM_TRANSLATION_CACHE, cacheKey);
+        if (translationData) return translationData;
+        const translationUrl = new URL('https://api.mymemory.translated.net/get');
+        translationUrl.searchParams.set('q', normalizedQuery);
+        translationUrl.searchParams.set('langpair', `${sourceLang}|${targetLang}`);
+        const response = await fetch(translationUrl.toString(), { signal });
+        if (!response.ok) return null;
+        translationData = await response.json();
+        setCachedValue(TERM_TRANSLATION_CACHE, cacheKey, translationData);
+        return translationData;
+    }
+
+    async function fetchDictionaryEntryCached(word, signal) {
+        const normalizedWord = normalizeSearchText(word).toLowerCase();
+        if (!normalizedWord) return null;
+        let normalizedDefinition = getCachedValue(TERM_DEFINITION_CACHE, normalizedWord);
+        if (normalizedDefinition) return normalizedDefinition;
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`, { signal });
+        if (!response.ok) return null;
+        const definitionData = await response.json();
+        normalizedDefinition = normalizeDictionaryEntry(definitionData);
+        if (normalizedDefinition) setCachedValue(TERM_DEFINITION_CACHE, normalizedWord, normalizedDefinition);
+        return normalizedDefinition;
+    }
+
+    async function fetchSemanticHintsCached(word, signal) {
+        const normalizedWord = normalizeSearchText(word).toLowerCase();
+        if (!normalizedWord) return [];
+        let semanticHints = getCachedValue(TERM_SEMANTIC_CACHE, normalizedWord);
+        if (semanticHints) return Array.isArray(semanticHints) ? semanticHints : [];
+        const response = await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(word)}&max=6`, { signal });
+        if (!response.ok) return [];
+        const semanticData = await response.json();
+        semanticHints = normalizeSemanticHints(semanticData);
+        setCachedValue(TERM_SEMANTIC_CACHE, normalizedWord, semanticHints);
+        return Array.isArray(semanticHints) ? semanticHints : [];
+    }
+
+    function getSelectedTermCandidate(suggestions) {
+        if (!Array.isArray(suggestions) || !suggestions.length) return null;
+        const safeIndex = Number.isFinite(termAssistantState.selectedCandidateIndex)
+            ? Math.max(0, Math.min(termAssistantState.selectedCandidateIndex, suggestions.length - 1))
+            : 0;
+        return suggestions[safeIndex] || suggestions[0] || null;
+    }
+
+    async function resolveTermAssistantMeaning({ signal }) {
+        const suggestions = getTermAssistantSuggestions();
+        const selectedCandidate = getSelectedTermCandidate(suggestions);
         const fallbackHeadline = !isInvalidTranslationText(termAssistantState.translationResult?.responseData?.translatedText, termAssistantState.query)
             ? String(termAssistantState.translationResult?.responseData?.translatedText || '').trim()
             : '';
-        const headline = suggestions[0]?.translation || fallbackHeadline || '';
+
+        let englishTerm = '';
+        let contextLabel = '';
+
+        if (termAssistantState.targetLang === 'en') {
+            englishTerm = normalizeSearchText(selectedCandidate?.translation || fallbackHeadline || termAssistantState.query);
+            contextLabel = selectedCandidate?.translation
+                ? `Selected candidate: ${selectedCandidate.translation}`
+                : `Meaning of ${termAssistantState.query}`;
+        } else if (termAssistantState.sourceLang === 'en') {
+            const reverseTranslation = selectedCandidate?.translation
+                ? await fetchTranslationDataCached(selectedCandidate.translation, termAssistantState.targetLang, 'en', signal)
+                : null;
+            const reverseSuggestions = normalizeTermMatches(reverseTranslation?.matches, termAssistantState.targetLang, 'en', selectedCandidate?.translation || '');
+            englishTerm = normalizeSearchText(reverseSuggestions[0]?.translation || reverseTranslation?.responseData?.translatedText || termAssistantState.query);
+            contextLabel = selectedCandidate?.translation
+                ? `Meaning behind ${selectedCandidate.translation}`
+                : `Meaning of ${termAssistantState.query}`;
+        } else {
+            const selectedText = normalizeSearchText(selectedCandidate?.translation || termAssistantState.query);
+            const sourceForEnglish = selectedCandidate?.translation ? termAssistantState.targetLang : termAssistantState.sourceLang;
+            const englishTranslation = await fetchTranslationDataCached(selectedText, sourceForEnglish, 'en', signal);
+            const englishSuggestions = normalizeTermMatches(englishTranslation?.matches, sourceForEnglish, 'en', selectedText);
+            englishTerm = normalizeSearchText(englishSuggestions[0]?.translation || englishTranslation?.responseData?.translatedText || selectedText);
+            contextLabel = selectedCandidate?.translation
+                ? `English gloss for ${selectedCandidate.translation}`
+                : `English gloss for ${termAssistantState.query}`;
+        }
+
+        let definitionEntry = null;
+        let semanticHints = [];
+        if (englishTerm) {
+            definitionEntry = await fetchDictionaryEntryCached(englishTerm, signal);
+            semanticHints = await fetchSemanticHintsCached(englishTerm, signal);
+        }
+
+        if (!definitionEntry) {
+            const fallbackDefinitions = [];
+            if (englishTerm) fallbackDefinitions.push(`English gloss: ${englishTerm}`);
+            if (selectedCandidate?.segment && selectedCandidate.segment !== selectedCandidate.translation) {
+                fallbackDefinitions.push(`Source phrase: ${selectedCandidate.segment}`);
+            }
+            if (selectedCandidate?.subject && selectedCandidate.subject !== 'All') {
+                fallbackDefinitions.push(`Context: ${selectedCandidate.subject}`);
+            }
+            definitionEntry = createFallbackDefinitionEntry(
+                englishTerm || selectedCandidate?.translation || termAssistantState.query || 'term',
+                fallbackDefinitions,
+                { partOfSpeech: 'note' }
+            );
+        }
+
+        return {
+            definitionEntry,
+            semanticHints,
+            contextLabel,
+            englishTerm
+        };
+    }
+
+    function renderTermAssistantPanel() {
+        const suggestions = getTermAssistantSuggestions();
+        const fallbackHeadline = !isInvalidTranslationText(termAssistantState.translationResult?.responseData?.translatedText, termAssistantState.query)
+            ? String(termAssistantState.translationResult?.responseData?.translatedText || '').trim()
+            : '';
+        const selectedCandidate = getSelectedTermCandidate(suggestions);
+        const headline = selectedCandidate?.translation || suggestions[0]?.translation || fallbackHeadline || '';
         return `
             <div class="term-assistant-workspace">
                 <form class="term-assistant-search" data-term-assistant-form>
@@ -9171,17 +9318,19 @@ function saveCalls() {
                             <div class="term-assistant-section">
                                 <div class="term-assistant-section-title">Translation candidates</div>
                                 <div class="term-assistant-candidates">
-                                    ${suggestions.length ? suggestions.map((item) => `
-                                        <div class="term-assistant-candidate">
+                                    ${suggestions.length ? suggestions.map((item, index) => `
+                                        <button type="button" class="term-assistant-candidate ${selectedCandidate === item ? 'is-active' : ''}" data-term-candidate-index="${index}">
                                             <div class="term-assistant-candidate-row">
                                                 <div class="term-assistant-candidate-main">${escapeHTML(item.translation)}</div>
                                             </div>
                                             <div class="term-assistant-candidate-meta">${escapeHTML(item.segment)}${item.subject && item.subject !== 'All' ? ` · ${escapeHTML(item.subject)}` : ''}${item.usageCount ? ` · used ${item.usageCount}x` : ''} | ${Math.min(99, Math.round((item.quality || 0) * 100))}%</div>
-                                        </div>
+                                        </button>
                                     `).join('') : '<div class="term-assistant-empty">No strong candidate terms were returned for this query.</div>'}
                                 </div>
                             </div>
-                            ${renderDefinitionBlock(termAssistantState.definitionResult)}
+                            ${termAssistantState.definitionLoading
+                                ? '<div class="term-assistant-empty term-assistant-empty-shell">Loading meaning...</div>'
+                                : renderDefinitionBlock(termAssistantState.definitionResult)}
                         </div>
                     </div>
                 ` : '<div class="term-assistant-empty term-assistant-empty-shell">Search a term to see translations and quick meaning support.</div>'}
@@ -9430,6 +9579,7 @@ function saveCalls() {
         termAssistantState.query = normalizedQuery;
         termAssistantState.sourceLang = sourceLang;
         termAssistantState.targetLang = targetLang === sourceLang ? (sourceLang === 'en' ? 'es' : 'en') : targetLang;
+        termAssistantState.selectedCandidateIndex = 0;
         const cachedTranslation = normalizedQuery ? getCachedValue(TERM_TRANSLATION_CACHE, translationCacheKey) : null;
         if (cachedTranslation) {
             termAssistantState.loading = false;
@@ -9440,7 +9590,9 @@ function saveCalls() {
         termLookupAbortController?.abort();
         termLookupAbortController = new AbortController();
         termAssistantState.loading = true;
+        termAssistantState.definitionLoading = true;
         termAssistantState.error = '';
+        termAssistantState.definitionMeta = null;
         renderActiveResources();
         try {
             if (normalizedQuery.length < 2) {
@@ -9460,53 +9612,11 @@ function saveCalls() {
             }
             if (requestId !== termLookupRequestId) return;
             termAssistantState.translationResult = translationData;
-
-            let definitionWord = '';
-            if (termAssistantState.sourceLang === 'en') {
-                definitionWord = normalizedQuery;
-            } else if (termAssistantState.targetLang === 'en') {
-                const best = normalizeTermMatches(translationData?.matches, termAssistantState.sourceLang, termAssistantState.targetLang, termAssistantState.query)[0];
-                definitionWord = best?.translation || String(translationData?.responseData?.translatedText || '').trim();
-            }
-            let nextDefinitionResult = null;
-            let nextSemanticHints = [];
-            const followUpTasks = [];
-            if (definitionWord) {
-                followUpTasks.push((async () => {
-                    const definitionKey = definitionWord.toLowerCase();
-                    let normalizedDefinition = getCachedValue(TERM_DEFINITION_CACHE, definitionKey);
-                    if (!normalizedDefinition) {
-                        const definitionResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(definitionWord)}`, { signal: termLookupAbortController.signal });
-                        if (definitionResponse.ok) {
-                            const definitionData = await definitionResponse.json();
-                            normalizedDefinition = normalizeDictionaryEntry(definitionData);
-                            setCachedValue(TERM_DEFINITION_CACHE, definitionKey, normalizedDefinition);
-                        }
-                    }
-                    nextDefinitionResult = normalizedDefinition || null;
-                })().catch(() => {}));
-            }
-            if (termAssistantState.sourceLang === 'en') {
-                followUpTasks.push((async () => {
-                    const semanticKey = normalizedQuery.toLowerCase();
-                    let semanticHints = getCachedValue(TERM_SEMANTIC_CACHE, semanticKey);
-                    if (!semanticHints) {
-                        const semanticResponse = await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(normalizedQuery)}&max=6`, { signal: termLookupAbortController.signal });
-                        if (semanticResponse.ok) {
-                            const semanticData = await semanticResponse.json();
-                            semanticHints = normalizeSemanticHints(semanticData);
-                            setCachedValue(TERM_SEMANTIC_CACHE, semanticKey, semanticHints);
-                        }
-                    }
-                    nextSemanticHints = Array.isArray(semanticHints) ? semanticHints : [];
-                })().catch(() => {}));
-            }
-            if (followUpTasks.length) {
-                await Promise.all(followUpTasks);
-                if (requestId !== termLookupRequestId) return;
-            }
-            termAssistantState.definitionResult = nextDefinitionResult;
-            termAssistantState.semanticHints = nextSemanticHints;
+            const meaning = await resolveTermAssistantMeaning({ signal: termLookupAbortController.signal });
+            if (requestId !== termLookupRequestId) return;
+            termAssistantState.definitionResult = meaning.definitionEntry;
+            termAssistantState.definitionMeta = { label: meaning.contextLabel || '' };
+            termAssistantState.semanticHints = Array.isArray(meaning.semanticHints) ? meaning.semanticHints : [];
             pushRecentTermLookup({
                 query: normalizedQuery,
                 sourceLang: termAssistantState.sourceLang,
@@ -9520,6 +9630,31 @@ function saveCalls() {
             if (requestId !== termLookupRequestId) return;
             if (termLookupAbortController?.signal.aborted) return;
             termAssistantState.loading = false;
+            termAssistantState.definitionLoading = false;
+            renderActiveResources();
+        }
+    }
+
+    async function selectTermAssistantCandidate(indexValue) {
+        const index = Number(indexValue);
+        const suggestions = getTermAssistantSuggestions();
+        if (!Number.isFinite(index) || index < 0 || index >= suggestions.length) return;
+        termAssistantState.selectedCandidateIndex = index;
+        termAssistantState.definitionLoading = true;
+        renderActiveResources();
+        termLookupAbortController?.abort();
+        termLookupAbortController = new AbortController();
+        try {
+            const meaning = await resolveTermAssistantMeaning({ signal: termLookupAbortController.signal });
+            if (termLookupAbortController?.signal.aborted) return;
+            termAssistantState.definitionResult = meaning.definitionEntry;
+            termAssistantState.definitionMeta = { label: meaning.contextLabel || '' };
+            termAssistantState.semanticHints = Array.isArray(meaning.semanticHints) ? meaning.semanticHints : [];
+        } catch (error) {
+            if (isAbortLikeError(error)) return;
+        } finally {
+            if (termLookupAbortController?.signal.aborted) return;
+            termAssistantState.definitionLoading = false;
             renderActiveResources();
         }
     }
@@ -11053,6 +11188,11 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
                     recentBtn.getAttribute('data-term-source'),
                     recentBtn.getAttribute('data-term-target')
                 );
+                return;
+            }
+            const candidateBtn = event.target?.closest?.('[data-term-candidate-index]');
+            if (candidateBtn) {
+                await selectTermAssistantCandidate(candidateBtn.getAttribute('data-term-candidate-index'));
                 return;
             }
             const smartRecentBtn = event.target?.closest?.('[data-smart-recent]');
