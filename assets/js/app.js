@@ -230,86 +230,22 @@ const scheduleAppShellRefresh = createRafScheduler(applyAppShellMode);
     const RESOURCES_ACTIVE_KEY = 'wtt_resources_active_v1';
     const TERM_ASSISTANT_RECENTS_KEY = 'wtt_term_assistant_recents_v1';
     const ADDRESS_LOOKUP_HISTORY_KEY = 'wtt_address_lookup_history_v1';
-    const LANGUAGE_OPTIONS = [
-        ['en', 'English'],
-        ['es', 'Spanish'],
-        ['fr', 'French'],
-        ['de', 'German'],
-        ['it', 'Italian'],
-        ['pt', 'Portuguese'],
-        ['nl', 'Dutch'],
-        ['pl', 'Polish'],
-        ['ro', 'Romanian'],
-        ['cs', 'Czech'],
-        ['sk', 'Slovak'],
-        ['sl', 'Slovenian'],
-        ['hu', 'Hungarian'],
-        ['el', 'Greek'],
-        ['ru', 'Russian'],
-        ['uk', 'Ukrainian'],
-        ['bg', 'Bulgarian'],
-        ['tr', 'Turkish'],
-        ['ar', 'Arabic'],
-        ['he', 'Hebrew'],
-        ['fa', 'Persian'],
-        ['hi', 'Hindi'],
-        ['ur', 'Urdu'],
-        ['bn', 'Bengali'],
-        ['ta', 'Tamil'],
-        ['te', 'Telugu'],
-        ['ml', 'Malayalam'],
-        ['th', 'Thai'],
-        ['vi', 'Vietnamese'],
-        ['id', 'Indonesian'],
-        ['ms', 'Malay'],
-        ['tl', 'Tagalog'],
-        ['zh-CN', 'Chinese (Simplified)'],
-        ['zh-TW', 'Chinese (Traditional)'],
-        ['ja', 'Japanese'],
-        ['ko', 'Korean'],
-        ['sw', 'Swahili'],
-        ['ht', 'Haitian Creole'],
-        ['fi', 'Finnish'],
-        ['sv', 'Swedish'],
-        ['da', 'Danish'],
-        ['no', 'Norwegian']
-    ];
-    const US_STATE_ABBREVIATIONS = {
-        alabama: 'AL', alaska: 'AK', arizona: 'AZ', arkansas: 'AR', california: 'CA', colorado: 'CO',
-        connecticut: 'CT', delaware: 'DE', florida: 'FL', georgia: 'GA', hawaii: 'HI', idaho: 'ID',
-        illinois: 'IL', indiana: 'IN', iowa: 'IA', kansas: 'KS', kentucky: 'KY', louisiana: 'LA',
-        maine: 'ME', maryland: 'MD', massachusetts: 'MA', michigan: 'MI', minnesota: 'MN', mississippi: 'MS',
-        missouri: 'MO', montana: 'MT', nebraska: 'NE', nevada: 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
-        'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', ohio: 'OH',
-        oklahoma: 'OK', oregon: 'OR', pennsylvania: 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
-        'south dakota': 'SD', tennessee: 'TN', texas: 'TX', utah: 'UT', vermont: 'VT', virginia: 'VA',
-        washington: 'WA', 'west virginia': 'WV', wisconsin: 'WI', wyoming: 'WY', 'district of columbia': 'DC'
-    };
+    const resourcesData = window.WTTResourcesData || {};
+    const resourcesHelpers = window.WTTResourcesHelpers || {};
+    const LANGUAGE_OPTIONS = Array.isArray(resourcesData.LANGUAGE_OPTIONS) ? resourcesData.LANGUAGE_OPTIONS : [];
+    const US_STATE_ABBREVIATIONS = resourcesData.US_STATE_ABBREVIATIONS || {};
+    const normalizeSearchText = resourcesHelpers.normalizeSearchText || ((value) => String(value || '').trim());
+    const trimUsCountrySuffix = resourcesHelpers.trimUsCountrySuffix || ((value) => String(value || '').trim());
+    const normalizeStateToken = resourcesHelpers.normalizeStateToken || ((value) => String(value || '').trim().toUpperCase());
+    const parseCityStateQuery = resourcesHelpers.parseCityStateQuery || (() => null);
+    const detectLookupIntent = resourcesHelpers.detectLookupIntent || (() => 'Location');
+    const isInvalidTranslationText = resourcesHelpers.isInvalidTranslationText || (() => false);
+    const normalizeTermMatches = resourcesHelpers.normalizeTermMatches || ((matches) => Array.isArray(matches) ? matches : []);
+    const normalizeDictionaryEntry = resourcesHelpers.normalizeDictionaryEntry || ((data) => Array.isArray(data) ? data[0] || null : null);
+    const normalizeSemanticHints = resourcesHelpers.normalizeSemanticHints || (() => []);
+    const rankAddressMatches = resourcesHelpers.rankAddressMatches || ((matches) => Array.isArray(matches) ? matches : []);
     let sidebarCollapsedPreference = false;
-    const RESOURCE_DEFINITIONS = [
-        {
-            id: 'zipcodes',
-            title: 'US ZIP / Address Lookup',
-            shortLabel: 'ZIP Lookup',
-            badge: 'Reference',
-            description: 'Search ZIPs, addresses, cities, and states from one bar.',
-            embedUrl: '',
-            externalUrl: 'https://www.unitedstateszipcodes.org/',
-            helper: 'One-bar U.S. location lookup.',
-            embedMode: 'native_zip'
-        },
-        {
-            id: 'linguee',
-            title: 'Interpreter Language Assistant',
-            shortLabel: 'Language Assistant',
-            badge: 'Language',
-            description: 'Native multilingual translation and quick meaning lookup.',
-            embedUrl: '',
-            externalUrl: 'https://www.linguee.com/',
-            helper: 'Translate and review terms without leaving the workspace.',
-            embedMode: 'native_terms'
-        }
-    ];
+    const RESOURCE_DEFINITIONS = Array.isArray(resourcesData.RESOURCE_DEFINITIONS) ? resourcesData.RESOURCE_DEFINITIONS : [];
     let activeResourceIds = [];
     const zipLookupState = {
         query: '',
@@ -1186,9 +1122,11 @@ function pickDesktopInstallerAsset(releasePayload) {
 function pickAndroidInstallerAsset(releasePayload) {
     const assets = Array.isArray(releasePayload?.assets) ? releasePayload.assets : [];
     const apkAssets = assets.filter((asset) => /\.apk$/i.test(String(asset?.name || '')) && typeof asset?.browser_download_url === 'string');
-    const signedLike = apkAssets.find((asset) => !/unsigned/i.test(String(asset.name)));
-    if (signedLike && isOfficialReleaseAssetUrl(signedLike.browser_download_url)) return signedLike;
-    const debugApk = apkAssets.find((asset) => /^app-debug\.apk$/i.test(String(asset.name || '')));
+    const preferredRelease = apkAssets.find((asset) => /(signed|release)(?!.*unsigned).*\.apk$/i.test(String(asset.name || '')));
+    if (preferredRelease && isOfficialReleaseAssetUrl(preferredRelease.browser_download_url)) return preferredRelease;
+    const fallbackRelease = apkAssets.find((asset) => !/debug|unsigned/i.test(String(asset.name || '')));
+    if (fallbackRelease && isOfficialReleaseAssetUrl(fallbackRelease.browser_download_url)) return fallbackRelease;
+    const debugApk = apkAssets.find((asset) => /debug.*\.apk$/i.test(String(asset.name || '')));
     if (debugApk && isOfficialReleaseAssetUrl(debugApk.browser_download_url)) return debugApk;
     return null;
 }
@@ -1232,7 +1170,7 @@ async function tryRunInAppUpdate(manifest) {
         const updater = getAndroidInAppUpdaterPlugin();
         await updater.downloadAndInstallApk({
             url: asset.browser_download_url,
-            fileName: String(asset.name || 'app-debug.apk')
+            fileName: String(asset.name || 'Work.Time.Tracker_update.apk')
         });
         showToast('Downloading update APK. Android will ask you to confirm installation.');
         return true;
@@ -9248,21 +9186,6 @@ function saveCalls() {
         return LANGUAGE_OPTIONS.map(([value, label]) => `<option value="${escapeHTML(value)}" ${selectedCode === value ? 'selected' : ''}>${escapeHTML(label)}</option>`).join('');
     }
 
-    function normalizeSearchText(value) {
-        return String(value || '')
-            .replace(/[，]/g, ',')
-            .replace(/\s+/g, ' ')
-            .replace(/\s*,\s*/g, ', ')
-            .trim();
-    }
-
-    function normalizeStateToken(value) {
-        const normalized = normalizeSearchText(value).toLowerCase();
-        if (!normalized) return '';
-        if (/^[a-z]{2}$/.test(normalized)) return normalized.toUpperCase();
-        return US_STATE_ABBREVIATIONS[normalized] || '';
-    }
-
     function getCachedValue(cache, key) {
         if (!cache.has(key)) return null;
         const value = cache.get(key);
@@ -9282,31 +9205,6 @@ function saveCalls() {
             const oldestKey = cache.keys().next().value;
             if (oldestKey !== undefined) cache.delete(oldestKey);
         }
-    }
-
-    function isInvalidTranslationText(text, sourceText = '') {
-        const normalized = String(text || '').trim().toLowerCase();
-        const normalizedSource = String(sourceText || '').trim().toLowerCase();
-        if (!normalized) return true;
-        const blockedPhrases = [
-            'please, specify two different languages',
-            'please specify two different languages',
-            'specify two different languages',
-            'could not translate',
-            'translation unavailable',
-            'no translation'
-        ];
-        if (blockedPhrases.includes(normalized)) return true;
-        if (normalized === normalizedSource) return true;
-        return false;
-    }
-
-    function detectLookupIntent(rawQuery) {
-        const normalized = String(rawQuery || '').trim();
-        if (/^\d{5}(?:-\d{4})?$/.test(normalized)) return 'ZIP';
-        if (parseCityStateQuery(normalized) && !/\d/.test(normalized)) return 'City / State';
-        if (/\d/.test(normalized)) return 'Address';
-        return 'Location';
     }
 
     function captureActiveResourceInputState() {
@@ -9340,61 +9238,6 @@ function saveCalls() {
         }
     }
 
-    function normalizeTermMatches(matches, sourceLang, targetLang) {
-        const seen = new Set();
-        const normalizedQuery = normalizeSearchText(termAssistantState.query).toLowerCase();
-        return (Array.isArray(matches) ? matches : [])
-            .filter((item) => item && typeof item.translation === 'string')
-            .map((item) => {
-                const rawQuality = Number(item.match ?? item.quality ?? 0);
-                const quality = rawQuality > 1 ? rawQuality / 100 : rawQuality;
-                const segment = normalizeSearchText(item.segment || '');
-                const translation = normalizeSearchText(item.translation || '');
-                const usageCount = Number(item['usage-count'] || 0);
-                const subject = String(item.subject || '');
-                let rankBoost = 0;
-                if (segment.toLowerCase() === normalizedQuery) rankBoost += 0.35;
-                if (segment.toLowerCase().startsWith(normalizedQuery)) rankBoost += 0.18;
-                if (translation.split(' ').length <= 3) rankBoost += 0.08;
-                if (usageCount >= 3) rankBoost += Math.min(0.12, usageCount * 0.02);
-                if (subject && subject !== 'All' && subject !== 'General') rankBoost += 0.05;
-                return ({
-                translation,
-                segment,
-                quality: quality + rankBoost,
-                source: String(item.source || ''),
-                target: String(item.target || ''),
-                subject,
-                usageCount
-                });
-            })
-            .filter((item) => item.translation && item.segment)
-            .filter((item) => !isInvalidTranslationText(item.translation, item.segment))
-            .filter((item) => item.target.toLowerCase().startsWith(targetLang))
-            .filter((item) => item.source.toLowerCase().startsWith(sourceLang))
-            .filter((item) => {
-                const key = item.translation.toLowerCase();
-                if (seen.has(key)) return false;
-                seen.add(key);
-                return true;
-            })
-            .sort((a, b) => b.quality - a.quality)
-            .slice(0, 10);
-    }
-
-    function normalizeDictionaryEntry(data) {
-        const entries = Array.isArray(data?.value) ? data.value : Array.isArray(data) ? data : [];
-        return entries[0] || null;
-    }
-
-    function normalizeSemanticHints(data) {
-        return (Array.isArray(data?.value) ? data.value : Array.isArray(data) ? data : [])
-            .map((item) => normalizeSearchText(item?.word || ''))
-            .filter(Boolean)
-            .filter((word, index, arr) => arr.indexOf(word) === index)
-            .slice(0, 6);
-    }
-
     function renderDefinitionBlock(entry) {
         if (!entry) return '';
         const phonetic = Array.isArray(entry.phonetics)
@@ -9426,7 +9269,7 @@ function saveCalls() {
     }
 
     function renderTermAssistantPanel() {
-        const suggestions = normalizeTermMatches(termAssistantState.translationResult?.matches, termAssistantState.sourceLang, termAssistantState.targetLang);
+        const suggestions = normalizeTermMatches(termAssistantState.translationResult?.matches, termAssistantState.sourceLang, termAssistantState.targetLang, termAssistantState.query);
         const fallbackHeadline = !isInvalidTranslationText(termAssistantState.translationResult?.responseData?.translatedText, termAssistantState.query)
             ? String(termAssistantState.translationResult?.responseData?.translatedText || '').trim()
             : '';
@@ -9535,43 +9378,6 @@ function saveCalls() {
         }));
     }
 
-    function trimUsCountrySuffix(value) {
-        return String(value || '')
-            .replace(/,\s*United States(?: of America)?\s*$/i, '')
-            .replace(/,\s*Estados Unidos de Am(?:e|é)rica\s*$/i, '')
-            .replace(/,\s*Estados Unidos\s*$/i, '')
-            .trim();
-    }
-
-    function getAddressMatchScore(match, query) {
-        const address = match?.address || {};
-        const normalizedQuery = normalizeSearchText(query).toLowerCase();
-        const display = trimUsCountrySuffix(match?.display_name || '').toLowerCase();
-        const name = String(match?.name || '').toLowerCase();
-        const type = String(match?.type || '').toLowerCase();
-        const hasHouseNumber = Boolean(address.house_number);
-        const hasRoad = Boolean(address.road);
-        const postcode = String(address.postcode || '');
-        let score = 0;
-        if (display === normalizedQuery) score += 120;
-        if (display.startsWith(normalizedQuery)) score += 70;
-        if (name && normalizedQuery.includes(name)) score += 25;
-        if (postcode && normalizedQuery.replace(/\D/g, '') === postcode.replace(/\D/g, '')) score += 90;
-        if (hasHouseNumber) score += 28;
-        if (hasRoad) score += 22;
-        if (type === 'house') score += 24;
-        if (type === 'residential') score += 16;
-        if (type === 'street') score += 12;
-        if (type === 'postcode') score += 10;
-        if (match?.place_rank) score += Math.max(0, 40 - Number(match.place_rank));
-        return score;
-    }
-
-    function rankAddressMatches(matches, query) {
-        return [...(Array.isArray(matches) ? matches : [])]
-            .sort((a, b) => getAddressMatchScore(b, query) - getAddressMatchScore(a, query));
-    }
-
     function buildAddressResultCards(matches) {
         return (Array.isArray(matches) ? matches : []).map((match) => {
             const address = match?.address || {};
@@ -9582,30 +9388,6 @@ function saveCalls() {
                 meta: `Lat ${String(match?.lat ?? '--')} | Lon ${String(match?.lon ?? '--')}`
             };
         });
-    }
-
-    function parseCityStateQuery(rawQuery) {
-        const normalized = normalizeSearchText(rawQuery);
-        const commaParts = normalized.split(',').map((part) => part.trim()).filter(Boolean);
-        if (commaParts.length >= 2) {
-            const stateCandidate = normalizeStateToken(commaParts[commaParts.length - 1]);
-            const cityCandidate = commaParts.slice(0, -1).join(' ');
-            if (stateCandidate && cityCandidate.length >= 2) {
-                return { city: cityCandidate, state: stateCandidate };
-            }
-        }
-        const parts = normalized.split(/\s+/).filter(Boolean);
-        const last = normalizeStateToken(parts[parts.length - 1] || '');
-        if (last && parts.length >= 2) {
-            return { city: parts.slice(0, -1).join(' '), state: last };
-        }
-        if (parts.length >= 2) {
-            const lastTwo = normalizeStateToken(parts.slice(-2).join(' '));
-            if (lastTwo) {
-                return { city: parts.slice(0, -2).join(' '), state: lastTwo };
-            }
-        }
-        return null;
     }
 
     async function lookupZipQuery(rawQuery, signal) {
@@ -9853,7 +9635,7 @@ function saveCalls() {
             if (termAssistantState.sourceLang === 'en') {
                 definitionWord = normalizedQuery;
             } else if (termAssistantState.targetLang === 'en') {
-                const best = normalizeTermMatches(translationData?.matches, termAssistantState.sourceLang, termAssistantState.targetLang)[0];
+                const best = normalizeTermMatches(translationData?.matches, termAssistantState.sourceLang, termAssistantState.targetLang, termAssistantState.query)[0];
                 definitionWord = best?.translation || String(translationData?.responseData?.translatedText || '').trim();
             }
             let nextDefinitionResult = null;
@@ -9908,39 +9690,6 @@ function saveCalls() {
             if (requestId !== termLookupRequestId) return;
             if (termLookupAbortController?.signal.aborted) return;
             termAssistantState.loading = false;
-            renderActiveResources();
-        }
-    }
-
-    async function runZipPlaceLookup(stateValue, cityValue) {
-        const normalizedState = String(stateValue || '').trim().toUpperCase();
-        const normalizedCity = String(cityValue || '').trim();
-        zipLookupState.placeState = normalizedState;
-        zipLookupState.placeCity = normalizedCity;
-        zipLookupState.placeLoading = true;
-        zipLookupState.placeError = '';
-        zipLookupState.placeResult = null;
-        renderActiveResources();
-        try {
-            if (!/^[A-Z]{2}$/.test(normalizedState)) {
-                throw new Error('Use a 2-letter US state code like CA or NY.');
-            }
-            if (normalizedCity.length < 2) {
-                throw new Error('Enter a city name to search ZIP codes.');
-            }
-            const response = await fetch(`https://api.zippopotam.us/us/${encodeURIComponent(normalizedState)}/${encodeURIComponent(normalizedCity)}`);
-            if (!response.ok) {
-                throw new Error(response.status === 404 ? 'No ZIP codes found for that city/state.' : 'City lookup could not be completed right now.');
-            }
-            const data = await response.json();
-            zipLookupState.placeResult = Array.isArray(data.places) ? data.places : [];
-            if (!zipLookupState.placeResult.length) {
-                throw new Error('No ZIP codes found for that city/state.');
-            }
-        } catch (error) {
-            zipLookupState.placeError = error instanceof Error ? error.message : 'City lookup failed.';
-        } finally {
-            zipLookupState.placeLoading = false;
             renderActiveResources();
         }
     }

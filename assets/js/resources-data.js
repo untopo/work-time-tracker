@@ -1,0 +1,83 @@
+(function () {
+    window.WTTResourcesData = {
+        LANGUAGE_OPTIONS: [
+            ['en', 'English'],
+            ['es', 'Spanish'],
+            ['fr', 'French'],
+            ['de', 'German'],
+            ['pt', 'Portuguese'],
+            ['it', 'Italian'],
+            ['nl', 'Dutch'],
+            ['pl', 'Polish'],
+            ['ro', 'Romanian'],
+            ['cs', 'Czech'],
+            ['sk', 'Slovak'],
+            ['sl', 'Slovenian'],
+            ['hu', 'Hungarian'],
+            ['el', 'Greek'],
+            ['ru', 'Russian'],
+            ['uk', 'Ukrainian'],
+            ['bg', 'Bulgarian'],
+            ['tr', 'Turkish'],
+            ['ar', 'Arabic'],
+            ['he', 'Hebrew'],
+            ['fa', 'Persian'],
+            ['hi', 'Hindi'],
+            ['ur', 'Urdu'],
+            ['bn', 'Bengali'],
+            ['ta', 'Tamil'],
+            ['te', 'Telugu'],
+            ['ml', 'Malayalam'],
+            ['th', 'Thai'],
+            ['vi', 'Vietnamese'],
+            ['id', 'Indonesian'],
+            ['ms', 'Malay'],
+            ['tl', 'Tagalog'],
+            ['zh-CN', 'Chinese (Simplified)'],
+            ['zh-TW', 'Chinese (Traditional)'],
+            ['ja', 'Japanese'],
+            ['ko', 'Korean'],
+            ['sw', 'Swahili'],
+            ['ht', 'Haitian Creole'],
+            ['fi', 'Finnish'],
+            ['sv', 'Swedish'],
+            ['da', 'Danish'],
+            ['no', 'Norwegian']
+        ],
+        US_STATE_ABBREVIATIONS: {
+            alabama: 'AL', alaska: 'AK', arizona: 'AZ', arkansas: 'AR', california: 'CA', colorado: 'CO',
+            connecticut: 'CT', delaware: 'DE', florida: 'FL', georgia: 'GA', hawaii: 'HI', idaho: 'ID',
+            illinois: 'IL', indiana: 'IN', iowa: 'IA', kansas: 'KS', kentucky: 'KY', louisiana: 'LA',
+            maine: 'ME', maryland: 'MD', massachusetts: 'MA', michigan: 'MI', minnesota: 'MN', mississippi: 'MS',
+            missouri: 'MO', montana: 'MT', nebraska: 'NE', nevada: 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
+            'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND', ohio: 'OH',
+            oklahoma: 'OK', oregon: 'OR', pennsylvania: 'PA', 'rhode island': 'RI', 'south carolina': 'SC',
+            'south dakota': 'SD', tennessee: 'TN', texas: 'TX', utah: 'UT', vermont: 'VT', virginia: 'VA',
+            washington: 'WA', 'west virginia': 'WV', wisconsin: 'WI', wyoming: 'WY', 'district of columbia': 'DC'
+        },
+        RESOURCE_DEFINITIONS: [
+            {
+                id: 'zipcodes',
+                title: 'US ZIP / Address Lookup',
+                shortLabel: 'ZIP Lookup',
+                badge: 'Reference',
+                description: 'Search ZIPs, addresses, cities, and states from one bar.',
+                embedUrl: '',
+                externalUrl: 'https://www.unitedstateszipcodes.org/',
+                helper: 'One-bar U.S. location lookup.',
+                embedMode: 'native_zip'
+            },
+            {
+                id: 'linguee',
+                title: 'Interpreter Language Assistant',
+                shortLabel: 'Language Assistant',
+                badge: 'Language',
+                description: 'Native multilingual translation and quick meaning lookup.',
+                embedUrl: '',
+                externalUrl: 'https://www.linguee.com/',
+                helper: 'Translate and review terms without leaving the workspace.',
+                embedMode: 'native_terms'
+            }
+        ]
+    };
+})();

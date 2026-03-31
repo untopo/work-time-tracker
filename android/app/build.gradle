@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+import java.util.Properties
 
 def appPackage = new JsonSlurper().parse(file('../../package.json'))
 def versionParts = String.valueOf(appPackage.version ?: '1.0.0')
@@ -12,6 +13,18 @@ while (versionParts.size() < 3) {
 }
 def androidVersionName = String.valueOf(appPackage.version ?: '1.0.0')
 def androidVersionCode = (versionParts[0] * 10000) + (versionParts[1] * 100) + versionParts[2]
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+def releaseStoreFile = keystoreProperties.getProperty('storeFile') ?: System.getenv('WTT_ANDROID_KEYSTORE_FILE')
+def releaseStorePassword = keystoreProperties.getProperty('storePassword') ?: System.getenv('WTT_ANDROID_KEYSTORE_PASSWORD')
+def releaseKeyAlias = keystoreProperties.getProperty('keyAlias') ?: System.getenv('WTT_ANDROID_KEY_ALIAS')
+def releaseKeyPassword = keystoreProperties.getProperty('keyPassword') ?: System.getenv('WTT_ANDROID_KEY_PASSWORD')
+def hasReleaseSigning = [releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword].every { value ->
+    value != null && String.valueOf(value).trim()
+}
 
 apply plugin: 'com.android.application'
 
@@ -31,10 +44,35 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    buildTypes {
+    signingConfigs {
         release {
+            if (hasReleaseSigning) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+        }
+        release {
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def releaseSuffix = variant.buildType.name == 'release'
+                ? (hasReleaseSigning ? 'signed' : 'unsigned')
+                : variant.buildType.name
+            outputFileName = "Work.Time.Tracker_${androidVersionName}_${releaseSuffix}.apk"
         }
     }
 }
