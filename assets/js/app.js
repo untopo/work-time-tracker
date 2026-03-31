@@ -704,8 +704,6 @@ const updateNotesLabel = document.getElementById('update-notes');
 const openUpdateReleaseBtn = document.getElementById('open-update-release-btn');
 const laterUpdateBannerBtn = document.getElementById('later-update-banner-btn');
 const dismissUpdateBannerBtn = document.getElementById('dismiss-update-banner-btn');
-let pendingUpdateManifest = null;
-let updateActionInFlight = false;
 let releaseSpotlightBannerEl = null;
 let androidWidgetBridgeTimerId = null;
 const NATIVE_WIDGET_CALLS_KEY = '__wtt_native_widget_calls';
@@ -714,10 +712,10 @@ let lastAndroidWidgetDefaultRateSnapshot = null;
 let lastAndroidWidgetActiveSessionSnapshot = null;
 let androidWidgetBridgeInFlight = false;
 const updateUtils = window.WTTUpdateUtils || {};
+const updateManagerFactory = window.WTTUpdateManager || {};
 const normalizeVersionString = updateUtils.normalizeVersionString || ((version) => String(version || '').trim().replace(/^v/i, ''));
 const isRemoteVersionNewer = updateUtils.isRemoteVersionNewer || (() => false);
-const fetchUpdateManifest = updateUtils.fetchUpdateManifest || (async () => null);
-const resolveInAppUpdateAsset = updateUtils.resolveInAppUpdateAsset || (async () => null);
+let updateManager = null;
 
 function createTauriEventTarget(label) {
     return typeof label === 'string' && label
@@ -1018,11 +1016,6 @@ window.addEventListener('wtt-live-call-widget-sync', () => {
     void processNativeAndroidWidgetSyncPayload();
 });
 
-function hideUpdateAvailableBanner() {
-    if (!updateAvailableBanner) return;
-    updateAvailableBanner.classList.add('hidden');
-}
-
 async function openExternalUrl(url) {
     const safeUrl = String(url || '').trim();
     if (!/^https?:\/\//i.test(safeUrl)) return;
@@ -1035,87 +1028,6 @@ async function openExternalUrl(url) {
         }
     }
     window.open(safeUrl, '_blank', 'noopener,noreferrer');
-}
-
-function canUseInAppDesktopUpdate() {
-    return Boolean(isDesktopTauri && tauriInvoke);
-}
-
-function canUseInAppAndroidUpdate() {
-    const plugin = getAndroidInAppUpdaterPlugin();
-    return Boolean(plugin && typeof plugin.downloadAndInstallApk === 'function');
-}
-
-async function tryRunInAppUpdate(manifest) {
-    if (!manifest) return false;
-
-    if (canUseInAppDesktopUpdate()) {
-        const asset = await resolveInAppUpdateAsset({
-            manifest,
-            targetPlatform: 'desktop',
-            releasesApiBase: RELEASES_API_BASE,
-            officialPrefix: OFFICIAL_RELEASE_ASSET_PREFIX
-        });
-        if (!asset?.browser_download_url) return false;
-        await tauriInvoke('download_and_launch_windows_installer', {
-            url: asset.browser_download_url,
-            fileName: String(asset.name || '')
-        });
-        showToast('Installer downloaded. Follow the system installer prompts to finish updating.');
-        return true;
-    }
-
-    if (canUseInAppAndroidUpdate()) {
-        const asset = await resolveInAppUpdateAsset({
-            manifest,
-            targetPlatform: 'android',
-            releasesApiBase: RELEASES_API_BASE,
-            officialPrefix: OFFICIAL_RELEASE_ASSET_PREFIX
-        });
-        if (!asset?.browser_download_url) return false;
-        const updater = getAndroidInAppUpdaterPlugin();
-        await updater.downloadAndInstallApk({
-            url: asset.browser_download_url,
-            fileName: String(asset.name || 'Work.Time.Tracker_update.apk')
-        });
-        showToast('Downloading update APK. Android will ask you to confirm installation.');
-        return true;
-    }
-
-    return false;
-}
-
-function renderUpdateAvailableBanner(manifest) {
-    if (!updateAvailableBanner || !manifest) return;
-    pendingUpdateManifest = manifest;
-    if (updateCurrentVersionLabel) updateCurrentVersionLabel.textContent = `v${normalizeVersionString(APP_VERSION)}`;
-    if (updateLatestVersionLabel) updateLatestVersionLabel.textContent = `v${normalizeVersionString(manifest.latestVersion)}`;
-    if (updateNotesLabel) {
-        updateNotesLabel.textContent = String(manifest.notes || 'A newer installer is available for download.');
-    }
-    if (openUpdateReleaseBtn) {
-        openUpdateReleaseBtn.textContent = (canUseInAppDesktopUpdate() || canUseInAppAndroidUpdate())
-            ? 'Update Now'
-            : 'View Release';
-    }
-    updateAvailableBanner.classList.remove('hidden');
-}
-
-function dismissUpdateAvailableBannerForVersion(version) {
-    const normalized = normalizeVersionString(version);
-    if (normalized) appStorage.setItem(UPDATE_DISMISSED_VERSION_KEY, normalized);
-    hideUpdateAvailableBanner();
-}
-
-async function checkForInstalledAppUpdates() {
-    if (!shouldCheckForInstalledAppUpdates()) return;
-    const manifest = await fetchUpdateManifest(UPDATE_MANIFEST_URLS);
-    if (!manifest?.latestVersion) return;
-    if (!isRemoteVersionNewer(manifest.latestVersion, APP_VERSION)) return;
-    const dismissedVersion = normalizeVersionString(appStorage.getItem(UPDATE_DISMISSED_VERSION_KEY));
-    const latestVersion = normalizeVersionString(manifest.latestVersion);
-    if (dismissedVersion && dismissedVersion === latestVersion) return;
-    renderUpdateAvailableBanner(manifest);
 }
 
 function sanitizeGoatCounterSiteCode(value) {
@@ -12553,41 +12465,33 @@ goalMinutesInput.addEventListener('input', () => {
         if (appVersionLabel) appVersionLabel.textContent = APP_VERSION;
         if (sidebarAppVersionLabel) sidebarAppVersionLabel.textContent = APP_VERSION;
         if (mobileAppVersionLabel) mobileAppVersionLabel.textContent = APP_VERSION;
-        if (openUpdateReleaseBtn) {
-            openUpdateReleaseBtn.addEventListener('click', async () => {
-                if (updateActionInFlight) return;
-                updateActionInFlight = true;
-                const originalLabel = openUpdateReleaseBtn.textContent;
-                openUpdateReleaseBtn.disabled = true;
-                openUpdateReleaseBtn.textContent = 'Preparing...';
-                try {
-                    const handled = await tryRunInAppUpdate(pendingUpdateManifest);
-                    if (!handled) {
-                        const targetUrl = pendingUpdateManifest?.releaseUrl || pendingUpdateManifest?.downloadsUrl;
-                        if (targetUrl) await openExternalUrl(targetUrl);
-                    } else {
-                        hideUpdateAvailableBanner();
-                    }
-                } catch (error) {
-                    console.error('In-app update attempt failed:', error);
-                    const targetUrl = pendingUpdateManifest?.releaseUrl || pendingUpdateManifest?.downloadsUrl;
-                    if (targetUrl) await openExternalUrl(targetUrl);
-                } finally {
-                    updateActionInFlight = false;
-                    openUpdateReleaseBtn.disabled = false;
-                    openUpdateReleaseBtn.textContent = originalLabel;
-                }
+        if (updateManagerFactory?.create && !updateManager) {
+            updateManager = updateManagerFactory.create({
+                appVersion: APP_VERSION,
+                appStorage,
+                updateManifestUrls: UPDATE_MANIFEST_URLS,
+                releasesApiBase: RELEASES_API_BASE,
+                officialReleaseAssetPrefix: OFFICIAL_RELEASE_ASSET_PREFIX,
+                dismissedVersionKey: UPDATE_DISMISSED_VERSION_KEY,
+                elements: {
+                    banner: updateAvailableBanner,
+                    currentVersionLabel: updateCurrentVersionLabel,
+                    latestVersionLabel: updateLatestVersionLabel,
+                    notesLabel: updateNotesLabel,
+                    openButton: openUpdateReleaseBtn,
+                    laterButton: laterUpdateBannerBtn,
+                    dismissButton: dismissUpdateBannerBtn
+                },
+                platform: {
+                    isDesktopTauri,
+                    shouldCheckForInstalledAppUpdates,
+                    getAndroidInAppUpdaterPlugin
+                },
+                openExternalUrl,
+                tauriInvoke,
+                showToast
             });
-        }
-        if (laterUpdateBannerBtn) {
-            laterUpdateBannerBtn.addEventListener('click', () => {
-                dismissUpdateAvailableBannerForVersion(pendingUpdateManifest?.latestVersion);
-            });
-        }
-        if (dismissUpdateBannerBtn) {
-            dismissUpdateBannerBtn.addEventListener('click', () => {
-                dismissUpdateAvailableBannerForVersion(pendingUpdateManifest?.latestVersion);
-            });
+            updateManager.bind();
         }
         displayRates();
         populateRateSelects();
@@ -12618,7 +12522,7 @@ goalMinutesInput.addEventListener('input', () => {
         }
         registerGoatCounterDebugApi();
         setupGoatCounterAnalytics();
-        void checkForInstalledAppUpdates();
+        void updateManager?.check?.();
         scheduleReleaseSpotlightBanner();
         setInterval(updateLocalTime, 1000);
         window.addEventListener('scroll', () => {
