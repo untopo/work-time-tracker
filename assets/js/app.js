@@ -232,7 +232,9 @@ const scheduleAppShellRefresh = createRafScheduler(applyAppShellMode);
     const ADDRESS_LOOKUP_HISTORY_KEY = 'wtt_address_lookup_history_v1';
     const resourcesData = window.WTTResourcesData || {};
     const resourcesHelpers = window.WTTResourcesHelpers || {};
+    const medicalGlossaryData = window.WTTMedicalGlossary || {};
     const LANGUAGE_OPTIONS = Array.isArray(resourcesData.LANGUAGE_OPTIONS) ? resourcesData.LANGUAGE_OPTIONS : [];
+    const MEDICAL_GLOSSARY_ENTRIES = Array.isArray(medicalGlossaryData.entries) ? medicalGlossaryData.entries : [];
     const US_STATE_ABBREVIATIONS = resourcesData.US_STATE_ABBREVIATIONS || {};
     const normalizeSearchText = resourcesHelpers.normalizeSearchText || ((value) => String(value || '').trim());
     const trimUsCountrySuffix = resourcesHelpers.trimUsCountrySuffix || ((value) => String(value || '').trim());
@@ -284,6 +286,7 @@ const scheduleAppShellRefresh = createRafScheduler(applyAppShellMode);
     const TERM_DEFINITION_CACHE = new Map();
     const TERM_SEMANTIC_CACHE = new Map();
     const TERM_MEANING_CACHE = new Map();
+    const MEDICAL_GLOSSARY_INDEX = new Map();
 
 function normalizeAppSection(value) {
     const normalized = String(value || '').trim().toLowerCase();
@@ -9185,6 +9188,51 @@ function saveCalls() {
             .trim();
     }
 
+    function extractMedicalGlossaryAliases(term, aliases = []) {
+        const out = new Set((Array.isArray(aliases) ? aliases : []).map((item) => normalizeSearchText(item)).filter(Boolean));
+        const normalizedTerm = normalizeSearchText(term);
+        if (normalizedTerm) out.add(normalizedTerm);
+        const match = normalizedTerm.match(/^(.+?)\s*\((.+)\)$/);
+        if (match) {
+            const left = normalizeSearchText(match[1]);
+            const inside = normalizeSearchText(match[2]);
+            if (left) out.add(left);
+            if (inside) {
+                out.add(inside);
+                inside.split('/').map((item) => normalizeSearchText(item)).filter(Boolean).forEach((item) => out.add(item));
+            }
+        }
+        return Array.from(out);
+    }
+
+    function buildMedicalGlossaryIndex() {
+        if (MEDICAL_GLOSSARY_INDEX.size) return;
+        MEDICAL_GLOSSARY_ENTRIES.forEach((entry) => {
+            const term = Array.isArray(entry) ? entry[0] : entry?.term;
+            const definition = Array.isArray(entry) ? entry[1] : entry?.definition;
+            const aliases = extractMedicalGlossaryAliases(term, Array.isArray(entry) ? [] : entry?.aliases);
+            if (!term || !definition) return;
+            const record = {
+                term: normalizeSearchText(term),
+                definition: normalizeSearchText(definition),
+                aliases
+            };
+            aliases.forEach((alias) => {
+                const key = normalizeComparableText(alias);
+                if (key && !MEDICAL_GLOSSARY_INDEX.has(key)) {
+                    MEDICAL_GLOSSARY_INDEX.set(key, record);
+                }
+            });
+        });
+    }
+
+    function lookupMedicalGlossary(term) {
+        buildMedicalGlossaryIndex();
+        const key = normalizeComparableText(term);
+        if (!key) return null;
+        return MEDICAL_GLOSSARY_INDEX.get(key) || null;
+    }
+
     function isMeaninglessGloss(value, comparisonValues = []) {
         const normalized = normalizeComparableText(value);
         if (!normalized) return true;
@@ -9240,6 +9288,24 @@ function saveCalls() {
 
         let definitionEntry = null;
         let semanticHints = [];
+        const glossaryEntry = lookupMedicalGlossary(englishTerm)
+            || lookupMedicalGlossary(selectedCandidate?.segment)
+            || lookupMedicalGlossary(termAssistantState.query);
+
+        if (glossaryEntry) {
+            definitionEntry = createFallbackDefinitionEntry(
+                glossaryEntry.term,
+                [glossaryEntry.definition],
+                { partOfSpeech: 'medical term' }
+            );
+            return {
+                definitionEntry,
+                semanticHints: [],
+                contextLabel: `Medical glossary: ${glossaryEntry.term}`,
+                englishTerm: glossaryEntry.term
+            };
+        }
+
         if (englishTerm) {
             definitionEntry = await fetchDictionaryEntryCached(englishTerm, signal);
             semanticHints = await fetchSemanticHintsCached(englishTerm, signal);
@@ -9627,6 +9693,17 @@ function saveCalls() {
         termAssistantState.definitionMeta = null;
         termAssistantState.definitionResult = null;
         termAssistantState.semanticHints = [];
+        const immediateGlossaryMatch = lookupMedicalGlossary(normalizedQuery);
+        if (immediateGlossaryMatch) {
+            termAssistantState.definitionResult = createFallbackDefinitionEntry(
+                immediateGlossaryMatch.term,
+                [immediateGlossaryMatch.definition],
+                { partOfSpeech: 'medical term' }
+            );
+            termAssistantState.definitionMeta = {
+                label: `Medical glossary: ${immediateGlossaryMatch.term}`
+            };
+        }
         renderActiveResources();
         try {
             if (normalizedQuery.length < 2) {
