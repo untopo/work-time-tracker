@@ -2023,10 +2023,32 @@
             background: rgba(255, 255, 255, 0.64);
         }
 
+        .term-assistant-candidate {
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+        }
+
+        .term-assistant-candidate:hover {
+            transform: translateY(-1px);
+            border-color: rgba(59, 130, 246, 0.22);
+        }
+
+        .term-assistant-candidate.is-active {
+            border-color: rgba(59, 130, 246, 0.32);
+            background: rgba(59, 130, 246, 0.08);
+        }
+
         html.dark .term-assistant-candidate,
         html.dark .term-assistant-definition-card {
             border-color: rgba(148, 163, 184, 0.14);
             background: rgba(15, 23, 42, 0.44);
+        }
+
+        html.dark .term-assistant-candidate.is-active {
+            border-color: rgba(96, 165, 250, 0.34);
+            background: rgba(30, 64, 175, 0.18);
         }
 
         .term-assistant-candidate-main,
@@ -2067,6 +2089,16 @@
             align-items: baseline;
             gap: 0.6rem;
             flex-wrap: wrap;
+        }
+
+        .term-assistant-definition-context {
+            font-size: 0.76rem;
+            line-height: 1.5;
+            color: #526277;
+        }
+
+        html.dark .term-assistant-definition-context {
+            color: #a5b4c7;
         }
 
         .term-assistant-definition-pos {
