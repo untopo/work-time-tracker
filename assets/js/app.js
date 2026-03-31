@@ -713,6 +713,11 @@ const NATIVE_WIDGET_ACTIVE_SESSION_KEY = '__wtt_native_widget_active_session';
 let lastAndroidWidgetDefaultRateSnapshot = null;
 let lastAndroidWidgetActiveSessionSnapshot = null;
 let androidWidgetBridgeInFlight = false;
+const updateUtils = window.WTTUpdateUtils || {};
+const normalizeVersionString = updateUtils.normalizeVersionString || ((version) => String(version || '').trim().replace(/^v/i, ''));
+const isRemoteVersionNewer = updateUtils.isRemoteVersionNewer || (() => false);
+const fetchUpdateManifest = updateUtils.fetchUpdateManifest || (async () => null);
+const resolveInAppUpdateAsset = updateUtils.resolveInAppUpdateAsset || (async () => null);
 
 function createTauriEventTarget(label) {
     return typeof label === 'string' && label
@@ -1013,30 +1018,6 @@ window.addEventListener('wtt-live-call-widget-sync', () => {
     void processNativeAndroidWidgetSyncPayload();
 });
 
-function normalizeVersionString(version) {
-    return String(version || '')
-        .trim()
-        .replace(/^v/i, '');
-}
-
-function parseVersionParts(version) {
-    return normalizeVersionString(version)
-        .split('.')
-        .map((part) => Number.parseInt(part, 10) || 0);
-}
-
-function isRemoteVersionNewer(remoteVersion, localVersion) {
-    const remoteParts = parseVersionParts(remoteVersion);
-    const localParts = parseVersionParts(localVersion);
-    const total = Math.max(remoteParts.length, localParts.length, 3);
-    for (let i = 0; i < total; i += 1) {
-        const remote = remoteParts[i] || 0;
-        const local = localParts[i] || 0;
-        if (remote !== local) return remote > local;
-    }
-    return false;
-}
-
 function hideUpdateAvailableBanner() {
     if (!updateAvailableBanner) return;
     updateAvailableBanner.classList.add('hidden');
@@ -1056,91 +1037,6 @@ async function openExternalUrl(url) {
     window.open(safeUrl, '_blank', 'noopener,noreferrer');
 }
 
-async function fetchUpdateManifest() {
-    for (const baseUrl of UPDATE_MANIFEST_URLS) {
-        try {
-            const separator = baseUrl.includes('?') ? '&' : '?';
-            const response = await fetch(`${baseUrl}${separator}t=${Date.now()}`, {
-                cache: 'no-store'
-            });
-            if (!response.ok) continue;
-            const payload = await response.json();
-            if (payload && typeof payload === 'object' && payload.latestVersion) {
-                return payload;
-            }
-        } catch (error) {
-            console.debug('Update manifest fetch failed for', baseUrl, error);
-        }
-    }
-    return null;
-}
-
-function extractReleaseTag(manifest) {
-    const explicit = normalizeVersionString(manifest?.latestVersion);
-    const releaseUrl = String(manifest?.releaseUrl || '').trim();
-    if (releaseUrl) {
-        const match = releaseUrl.match(/\/tag\/([^/?#]+)/i);
-        if (match?.[1]) return String(match[1]);
-    }
-    return explicit ? `v${explicit}` : '';
-}
-
-function isOfficialReleaseAssetUrl(url) {
-    const value = String(url || '').trim();
-    return value.startsWith(OFFICIAL_RELEASE_ASSET_PREFIX);
-}
-
-async function fetchReleaseByTag(tag) {
-    const safeTag = String(tag || '').trim();
-    if (!safeTag) return null;
-    try {
-        const response = await fetch(`${RELEASES_API_BASE}/tags/${encodeURIComponent(safeTag)}?t=${Date.now()}`, {
-            cache: 'no-store'
-        });
-        if (!response.ok) return null;
-        const payload = await response.json();
-        if (!payload || typeof payload !== 'object' || !Array.isArray(payload.assets)) return null;
-        return payload;
-    } catch (error) {
-        console.warn('Failed to fetch release metadata for in-app update:', error);
-        return null;
-    }
-}
-
-function pickDesktopInstallerAsset(releasePayload) {
-    const assets = Array.isArray(releasePayload?.assets) ? releasePayload.assets : [];
-    const byName = assets.filter((asset) => typeof asset?.name === 'string' && typeof asset?.browser_download_url === 'string');
-    const preferred = byName.find((asset) => /_x64-setup\.exe$/i.test(asset.name));
-    if (preferred && isOfficialReleaseAssetUrl(preferred.browser_download_url)) return preferred;
-    const fallbackExe = byName.find((asset) => /\.exe$/i.test(asset.name));
-    if (fallbackExe && isOfficialReleaseAssetUrl(fallbackExe.browser_download_url)) return fallbackExe;
-    const fallbackMsi = byName.find((asset) => /\.msi$/i.test(asset.name));
-    if (fallbackMsi && isOfficialReleaseAssetUrl(fallbackMsi.browser_download_url)) return fallbackMsi;
-    return null;
-}
-
-function pickAndroidInstallerAsset(releasePayload) {
-    const assets = Array.isArray(releasePayload?.assets) ? releasePayload.assets : [];
-    const apkAssets = assets.filter((asset) => /\.apk$/i.test(String(asset?.name || '')) && typeof asset?.browser_download_url === 'string');
-    const preferredRelease = apkAssets.find((asset) => /(signed|release)(?!.*unsigned).*\.apk$/i.test(String(asset.name || '')));
-    if (preferredRelease && isOfficialReleaseAssetUrl(preferredRelease.browser_download_url)) return preferredRelease;
-    const fallbackRelease = apkAssets.find((asset) => !/debug|unsigned/i.test(String(asset.name || '')));
-    if (fallbackRelease && isOfficialReleaseAssetUrl(fallbackRelease.browser_download_url)) return fallbackRelease;
-    const debugApk = apkAssets.find((asset) => /debug.*\.apk$/i.test(String(asset.name || '')));
-    if (debugApk && isOfficialReleaseAssetUrl(debugApk.browser_download_url)) return debugApk;
-    return null;
-}
-
-async function resolveInAppUpdateAsset(manifest, targetPlatform) {
-    const tag = extractReleaseTag(manifest);
-    if (!tag) return null;
-    const releasePayload = await fetchReleaseByTag(tag);
-    if (!releasePayload) return null;
-    if (targetPlatform === 'desktop') return pickDesktopInstallerAsset(releasePayload);
-    if (targetPlatform === 'android') return pickAndroidInstallerAsset(releasePayload);
-    return null;
-}
-
 function canUseInAppDesktopUpdate() {
     return Boolean(isDesktopTauri && tauriInvoke);
 }
@@ -1154,7 +1050,12 @@ async function tryRunInAppUpdate(manifest) {
     if (!manifest) return false;
 
     if (canUseInAppDesktopUpdate()) {
-        const asset = await resolveInAppUpdateAsset(manifest, 'desktop');
+        const asset = await resolveInAppUpdateAsset({
+            manifest,
+            targetPlatform: 'desktop',
+            releasesApiBase: RELEASES_API_BASE,
+            officialPrefix: OFFICIAL_RELEASE_ASSET_PREFIX
+        });
         if (!asset?.browser_download_url) return false;
         await tauriInvoke('download_and_launch_windows_installer', {
             url: asset.browser_download_url,
@@ -1165,7 +1066,12 @@ async function tryRunInAppUpdate(manifest) {
     }
 
     if (canUseInAppAndroidUpdate()) {
-        const asset = await resolveInAppUpdateAsset(manifest, 'android');
+        const asset = await resolveInAppUpdateAsset({
+            manifest,
+            targetPlatform: 'android',
+            releasesApiBase: RELEASES_API_BASE,
+            officialPrefix: OFFICIAL_RELEASE_ASSET_PREFIX
+        });
         if (!asset?.browser_download_url) return false;
         const updater = getAndroidInAppUpdaterPlugin();
         await updater.downloadAndInstallApk({
@@ -1203,7 +1109,7 @@ function dismissUpdateAvailableBannerForVersion(version) {
 
 async function checkForInstalledAppUpdates() {
     if (!shouldCheckForInstalledAppUpdates()) return;
-    const manifest = await fetchUpdateManifest();
+    const manifest = await fetchUpdateManifest(UPDATE_MANIFEST_URLS);
     if (!manifest?.latestVersion) return;
     if (!isRemoteVersionNewer(manifest.latestVersion, APP_VERSION)) return;
     const dismissedVersion = normalizeVersionString(appStorage.getItem(UPDATE_DISMISSED_VERSION_KEY));

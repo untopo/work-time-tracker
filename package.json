@@ -6,6 +6,7 @@
   "scripts": {
     "dev:web": "serve . -l 1420 --no-clipboard",
     "verify:version-sync": "node scripts/verify-version-sync.mjs",
+    "verify:release-ready": "node scripts/verify-release-ready.mjs",
     "build:web": "npm run verify:version-sync && node scripts/prepare-dist.mjs",
     "android:icons": "powershell -ExecutionPolicy Bypass -File scripts/generate-android-icons.ps1",
     "tauri:dev": "node scripts/tauri-win.mjs dev",

@@ -237,6 +237,7 @@ Safari generally works, but import/export behavior should always be verified in 
 - In-app history: `What's New` modal
 - GitHub Releases: https://github.com/untopo/work-time-tracker/releases
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)
+- Release workflow: [`RELEASE.md`](RELEASE.md)
 
 ## Feedback
 Use the in-app `Contact Us` modal for:
