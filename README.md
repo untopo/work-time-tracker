@@ -191,6 +191,7 @@ gradlew assembleRelease
 |   |   |-- app.js
 |   |   |-- resources-data.js
 |   |   |-- resources-helpers.js
+|   |   |-- settings-manager.js
 |   |   |-- storage.js
 |   |   |-- update-utils.js
 |   |   `-- update-manager.js

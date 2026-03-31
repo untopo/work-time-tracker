@@ -2442,109 +2442,7 @@ function clearDetailModalPresentation(modalEl) {
 }
 
 function applyFeatureFlags(flags) {
-    // Notes feature
-    const notesEnabled = !!flags.notes;
-    if (liveCallNotesInput) liveCallNotesInput.style.display = notesEnabled ? '' : 'none';
-    if (callNotesInput) callNotesInput.style.display = notesEnabled ? '' : 'none';
-    // hide associated label for modal notes
-    const callNotesLabel = document.querySelector('label[for="call-notes"]');
-    if (callNotesLabel) callNotesLabel.style.display = notesEnabled ? '' : 'none';
-    // toggle notes column cells and header
-    document.querySelectorAll('.notes-column').forEach(el => el.style.display = notesEnabled ? '' : 'none');
-
-    // Payment cycles feature
-    const pcEnabled = !!flags.paymentCycles;
-    // update runtime flag
-    paymentCyclesEnabled = pcEnabled;
-    // show/hide entire section (header + config)
-    if (paymentCyclesSection) {
-        paymentCyclesSection.style.display = pcEnabled ? '' : 'none';
-    }
-    // show/hide config (kept for backward compatibility)
-    if (paymentCyclesConfig) {
-        if (pcEnabled) paymentCyclesConfig.classList.remove('hidden'); else paymentCyclesConfig.classList.add('hidden');
-    }
-    if (openPaymentCyclesSettingsBtn) {
-        openPaymentCyclesSettingsBtn.classList.toggle('hidden', !pcEnabled);
-    }
-    // keep main paymentCyclesToggle in sync if it exists
-    if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
-        paymentCyclesToggle.checked = pcEnabled;
-    }
-    if (!pcEnabled && isPaymentCyclesManagerOpen()) {
-        closePaymentCyclesManagerPanel();
-    }
-
-    const rpgEnabled = !!flags.rpg;
-    if (rpgProgressCard) {
-        rpgProgressCard.style.display = rpgEnabled ? '' : 'none';
-    }
-    if (dailyQuestsSection) {
-        dailyQuestsSection.style.display = rpgEnabled ? '' : 'none';
-    }
-    if (featureRpgToggle) {
-        featureRpgToggle.checked = rpgEnabled;
-    }
-    if (!rpgEnabled && achievementDetailModal && ModalManager.isOpen(achievementDetailModal) && selectedAchievementId) {
-        const selectedAchievement = getAchievementById(selectedAchievementId);
-        if (selectedAchievement?.rpgOnly) {
-            closeAchievementDetailModal();
-        }
-    }
-
-    flags.uiRefresh = true;
-    document.body.classList.add('ui-refresh-v1');
-    if (focusWorkstrip) {
-        focusWorkstrip.style.display = '';
-    }
-
-    // Floating call controls feature
-    if (openFloatingControlsSettingsBtn) {
-        openFloatingControlsSettingsBtn.style.display = flags.floatingCallControls ? '' : 'none';
-        openFloatingControlsSettingsBtn.setAttribute('aria-expanded', (floatingControlsSettingsModal && ModalManager.isOpen(floatingControlsSettingsModal)) ? 'true' : 'false');
-    }
-    if (floatingActiveCardCustomization) {
-        floatingActiveCardCustomization.style.display = flags.floatingShowActiveCard ? '' : 'none';
-    }
-    if (floatingControlsSizeModeSelect) {
-        floatingControlsSizeModeSelect.value = flags.floatingControlsSizeMode || 'auto';
-    }
-    if (floatingSecondaryActionSelect) {
-        floatingSecondaryActionSelect.value = flags.floatingSecondaryAction || 'add';
-    }
-    if (floatingShowActiveCardToggle) {
-        floatingShowActiveCardToggle.checked = !!flags.floatingShowActiveCard;
-    }
-    if (floatingActiveShowTimerToggle) {
-        floatingActiveShowTimerToggle.checked = !!flags.floatingActiveShowTimer;
-    }
-    if (floatingActiveShowEarningsToggle) {
-        floatingActiveShowEarningsToggle.checked = !!flags.floatingActiveShowEarnings;
-    }
-    if (floatingActiveShowRateToggle) {
-        floatingActiveShowRateToggle.checked = !!flags.floatingActiveShowRate;
-    }
-    if (floatingActiveShowAdjustToggle) {
-        floatingActiveShowAdjustToggle.checked = !!flags.floatingActiveShowAdjust;
-    }
-    if (floatingOneHandedToggle) {
-        floatingOneHandedToggle.checked = !!flags.floatingOneHanded;
-    }
-    if (floatingPreviewEnabledToggle) {
-        floatingPreviewEnabledToggle.checked = ENABLE_FLOATING_PREVIEW_TESTING && !!flags.floatingPreviewEnabled;
-        floatingPreviewEnabledToggle.disabled = !ENABLE_FLOATING_PREVIEW_TESTING;
-    }
-    if (floatingFeatureStateNote) {
-        floatingFeatureStateNote.style.display = flags.floatingCallControls ? 'none' : '';
-    }
-    if (!ENABLE_FLOATING_PREVIEW_TESTING && floatingPreviewContainer) {
-        floatingPreviewContainer.style.display = 'none';
-    }
-    updateFloatingPreview(flags);
-    updateFloatingCallControls(flags);
-    renderAchievementsModal();
-    updateRpgProgress();
-    queueWorkstripSync();
+    settingsManager?.applyFeatureFlags(flags);
 }
 
 // initialize feature flags (will be applied on DOMContentLoaded too)
@@ -2566,6 +2464,134 @@ let featureFlags = {
     floatingOneHanded: false,
     floatingPreviewEnabled: true
 };
+
+let settingsManager = window.WTTSettingsManager?.create({
+    appStorage,
+    modalManager: ModalManager,
+    elements: {
+        callNotesInput,
+        liveCallNotesInput,
+        closeFloatingControlsSettingsBtn,
+        closePaymentCyclesSettingsModalBtn,
+        dailyQuestsSection,
+        doneFloatingControlsSettingsBtn,
+        donePaymentCyclesSettingsBtn,
+        featureFloatingControlsToggle,
+        featureNotesToggle,
+        featurePaymentCyclesToggle,
+        featureRpgToggle,
+        floatingControlsSettingsModal,
+        focusWorkstrip,
+        mobileSettingsOpenBtn,
+        openDataHubBtn,
+        openFloatingControlsSettingsBtn,
+        openPaymentCyclesSettingsBtn,
+        paymentCyclesConfig,
+        paymentCyclesManagerPanel,
+        paymentCyclesSection,
+        paymentCyclesToggle,
+        paymentCyclesToggleAllBtn,
+        rpgProgressCard,
+        settingsToggleBtn,
+        settingsView,
+        storageBar,
+        storageUsedDisplay,
+        tzSelect,
+        resetTzBtn,
+        achievementDetailModal,
+        viewAllPaymentCyclesBtn
+    },
+    featureControls: {},
+    floatingControls: {
+        activeCardCustomization: floatingActiveCardCustomization,
+        activeShowAdjustToggle: floatingActiveShowAdjustToggle,
+        activeShowEarningsToggle: floatingActiveShowEarningsToggle,
+        activeShowRateToggle: floatingActiveShowRateToggle,
+        activeShowTimerToggle: floatingActiveShowTimerToggle,
+        featureStateNote: floatingFeatureStateNote,
+        oneHandedToggle: floatingOneHandedToggle,
+        previewContainer: floatingPreviewContainer,
+        previewEnabledToggle: floatingPreviewEnabledToggle,
+        previewRandomizeBtn: floatingPreviewRandomizeBtn,
+        resetDefaultsBtn: floatingResetDefaultsBtn,
+        resetPositionBtn: floatingResetPositionBtn,
+        secondaryActionSelect: floatingSecondaryActionSelect,
+        showActiveCardToggle: floatingShowActiveCardToggle,
+        sizeModeSelect: floatingControlsSizeModeSelect
+    },
+    callbacks: {
+        clearDetailModalPresentation,
+        closeAchievementDetailModal,
+        closeOtherDetailModals,
+        detailModals,
+        displayCalls,
+        getAchievementById,
+        getFeatureFlags: () => featureFlags,
+        getPaymentCyclesCount: () => Array.isArray(paymentCycles) ? paymentCycles.length : 0,
+        getPaymentCyclesListExpanded: () => paymentCyclesListExpanded,
+        getSelectedAchievementId: () => selectedAchievementId,
+        getStorageData: () => ({
+            rates,
+            calls,
+            dailyGoal,
+            paymentCyclesEnabled,
+            paymentCycles,
+            sessionHistoryEntries,
+            theme: appStorage.getItem('theme'),
+            timeZone: appStorage.getItem('timeZone')
+        }),
+        isPaymentCyclesManagerOpen,
+        markOnboardingSettingsSeen: () => {
+            const state = loadOnboardingState();
+            state.dismissed.settings = true;
+            state.seen = true;
+            if (!state.completed || typeof state.completed !== 'object') {
+                state.completed = { rate: false, call: false, settings: false };
+            }
+            state.completed.settings = true;
+            saveOnboardingState(state);
+        },
+        openDataHubModal,
+        queueWorkstripSync,
+        renderAchievementsModal,
+        renderPaymentCycles,
+        saveFeatureFlags,
+        saveFloatingDockManualPosition,
+        savePaymentCycles,
+        setActiveAppSection: (section) => setActiveAppSection(section),
+        setFloatingDockManualPosition: (value) => { floatingDockManualPosition = value; },
+        setPaymentCyclesEnabled: (value) => { paymentCyclesEnabled = value; },
+        setPaymentCyclesListExpanded: (expanded, count) => {
+            if (typeof count === 'number') {
+                setPaymentCyclesListExpanded(expanded, count);
+                return;
+            }
+            paymentCyclesListExpanded = !!expanded;
+        },
+        setUserTimeZone,
+        showToast,
+        startFloatingPreviewAutoRefresh,
+        stopFloatingPreviewAutoRefresh,
+        updateFloatingCallControls,
+        updateFloatingPreview,
+        updateLocalTime,
+        updateOnboardingCues,
+        updateRpgProgress,
+        updateStatistics,
+        ensurePaymentCyclesDataLoaded: () => {
+            if (Array.isArray(paymentCycles)) return;
+            try {
+                const stored = JSON.parse(appStorage.getItem('paymentCycles'));
+                paymentCycles = Array.isArray(stored) ? stored : [];
+            } catch (error) {
+                paymentCycles = [];
+            }
+        }
+    },
+    state: {
+        enableFloatingPreviewTesting: ENABLE_FLOATING_PREVIEW_TESTING
+    }
+});
 
     // Recovery modal (v1.0.5)
 const recoveryModal = document.getElementById('recovery-modal');
@@ -7106,24 +7132,7 @@ function saveCalls() {
     }
 
     function updateStorageInfo() {
-        const data = {
-            rates,
-            calls,
-            dailyGoal,
-            paymentCyclesEnabled,
-            paymentCycles,
-            sessionHistoryEntries,
-            theme: appStorage.getItem('theme'),
-            timeZone: appStorage.getItem('timeZone')
-        };
-        const dataStr = JSON.stringify(data);
-        const bytes = new Blob([dataStr]).size;
-        const kb = (bytes / 1024).toFixed(2);
-        const maxKb = 5120;
-        const percentage = Math.min((bytes / (maxKb * 1024)) * 100, 100);
-        
-        storageUsedDisplay.textContent = `${kb} KB / ${(maxKb / 1024).toFixed(1)} MB`;
-        storageBar.style.width = `${percentage}%`;
+        settingsManager?.updateStorageInfo();
     }
 
     const scheduleStorageInfoRefresh = createRafScheduler(() => updateStorageInfo());
@@ -10269,47 +10278,19 @@ function saveCalls() {
 
     // Settings view functions
     function openSettingsView(triggerEl = null) {
-        setActiveAppSection('settings');
-        const state = loadOnboardingState();
-        state.dismissed.settings = true;
-        state.seen = true;
-        if (!state.completed || typeof state.completed !== 'object') {
-            state.completed = { rate: false, call: false, settings: false };
-        }
-        state.completed.settings = true;
-        saveOnboardingState(state);
-        updateOnboardingCues();
-        updateStorageInfo();
+        settingsManager?.openSettingsView(triggerEl);
     }
 
     function closeSettingsView() {
-        if (settingsView) settingsView.classList.remove('settings-split-active');
-        closeOtherDetailModals(null);
-        detailModals().forEach((modalEl) => clearDetailModalPresentation(modalEl));
-        stopFloatingPreviewAutoRefresh();
+        settingsManager?.closeSettingsView();
     }
 
     function openPaymentCyclesManagerPanel(triggerEl = null, options = {}) {
-        if (!featureFlags.paymentCycles) return;
-        closeOtherDetailModals(null);
-        openSettingsView(triggerEl);
-        if (paymentCyclesManagerPanel) paymentCyclesManagerPanel.style.display = '';
-        updateStorageInfo();
-        paymentCyclesListExpanded = !!options?.expandList;
-        renderPaymentCycles();
-        if (paymentCyclesManagerPanel) {
-            requestAnimationFrame(() => {
-                paymentCyclesManagerPanel.scrollIntoView({ block: 'start', behavior: 'smooth' });
-            });
-        }
+        settingsManager?.openPaymentCyclesManagerPanel(triggerEl, options);
     }
 
     function openPaymentCyclesManagerFromDashboard(triggerEl = null) {
-        if (!featureFlags.paymentCycles) {
-            showToast('Enable Payment Cycles in Settings first.');
-            return;
-        }
-        openPaymentCyclesManagerPanel(triggerEl, { expandList: true });
+        settingsManager?.openPaymentCyclesManagerFromDashboard(triggerEl);
     }
 
     function openAchievementsSettingsModal(triggerEl = null) {
@@ -10343,23 +10324,15 @@ function saveCalls() {
     }
 
     function closePaymentCyclesManagerPanel() {
-        if (paymentCyclesManagerPanel) paymentCyclesManagerPanel.style.display = 'none';
+        settingsManager?.closePaymentCyclesManagerPanel();
     }
 
 function openFloatingControlsSettingsModal(triggerEl = null) {
-        if (!featureFlags.floatingCallControls) return;
-        ModalManager.open(floatingControlsSettingsModal, { focusSelector: '#floating-controls-size-mode', sourceEl: triggerEl });
-        if (openFloatingControlsSettingsBtn) openFloatingControlsSettingsBtn.setAttribute('aria-expanded', 'true');
-        requestAnimationFrame(() => {
-            updateFloatingPreview(featureFlags, { randomize: true });
-            startFloatingPreviewAutoRefresh(featureFlags);
-        });
+        settingsManager?.openFloatingControlsSettingsModal(triggerEl);
     }
 
     function closeFloatingControlsSettingsModal() {
-        stopFloatingPreviewAutoRefresh();
-        ModalManager.close(floatingControlsSettingsModal);
-        if (openFloatingControlsSettingsBtn) openFloatingControlsSettingsBtn.setAttribute('aria-expanded', 'false');
+        settingsManager?.closeFloatingControlsSettingsModal();
     }
 
     function openEditCycleModal() {
@@ -11146,12 +11119,6 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         patternsDetailNextBtn.addEventListener('click', () => shiftPatternsDetail(1));
     }
     initializeFooterCollapsiblePanels();
-    if (openPaymentCyclesSettingsBtn) {
-        openPaymentCyclesSettingsBtn.addEventListener('click', (e) => openPaymentCyclesManagerPanel(e.currentTarget, { expandList: true }));
-    }
-    if (mobileSettingsOpenBtn) {
-        mobileSettingsOpenBtn.addEventListener('click', (e) => openSettingsView(e.currentTarget));
-    }
     if (closeCsvImportPreviewModalBtn) {
         closeCsvImportPreviewModalBtn.addEventListener('click', closeCsvImportPreviewModal);
     }
@@ -11691,96 +11658,11 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         featureFlags = loadFeatureFlags();
             floatingDockManualPosition = loadFloatingDockManualPosition();
             migrateLegacyRpgCallEligibility();
-            // set toggle states in settings modal if present
-            if (featureNotesToggle) featureNotesToggle.checked = !!featureFlags.notes;
-            if (featurePaymentCyclesToggle) featurePaymentCyclesToggle.checked = !!featureFlags.paymentCycles;
-            if (featureFloatingControlsToggle) featureFloatingControlsToggle.checked = !!featureFlags.floatingCallControls;
-            if (featureRpgToggle) featureRpgToggle.checked = !!featureFlags.rpg;
-            if (floatingShowActiveCardToggle) floatingShowActiveCardToggle.checked = !!featureFlags.floatingShowActiveCard;
-            if (floatingActiveShowTimerToggle) floatingActiveShowTimerToggle.checked = !!featureFlags.floatingActiveShowTimer;
-            if (floatingActiveShowEarningsToggle) floatingActiveShowEarningsToggle.checked = !!featureFlags.floatingActiveShowEarnings;
-            if (floatingActiveShowRateToggle) floatingActiveShowRateToggle.checked = !!featureFlags.floatingActiveShowRate;
-            if (floatingActiveShowAdjustToggle) floatingActiveShowAdjustToggle.checked = !!featureFlags.floatingActiveShowAdjust;
-            if (floatingOneHandedToggle) floatingOneHandedToggle.checked = !!featureFlags.floatingOneHanded;
-            if (floatingSecondaryActionSelect) floatingSecondaryActionSelect.value = featureFlags.floatingSecondaryAction || 'add';
-            if (floatingPreviewEnabledToggle) floatingPreviewEnabledToggle.checked = ENABLE_FLOATING_PREVIEW_TESTING && !!featureFlags.floatingPreviewEnabled;
-            // apply the flags immediately
+            settingsManager?.syncFeatureControlInputs(featureFlags);
             applyFeatureFlags(featureFlags);
             queueWorkstripSync();
-
-            // Wire toggle changes
-            if (featureNotesToggle) {
-                featureNotesToggle.addEventListener('change', (e) => {
-                    featureFlags.notes = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-
-            if (featurePaymentCyclesToggle) {
-                featurePaymentCyclesToggle.addEventListener('change', (e) => {
-                    featureFlags.paymentCycles = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    // ensure the runtime flag follows this feature toggle
-                    paymentCyclesEnabled = !!e.target.checked;
-                    // Make sure we don't accidentally overwrite existing cycles data
-                    if (!Array.isArray(paymentCycles)) {
-                        try {
-                            const stored = JSON.parse(appStorage.getItem('paymentCycles'));
-                            paymentCycles = Array.isArray(stored) ? stored : [];
-                        } catch (ex) {
-                            paymentCycles = [];
-                        }
-                    }
-                    try { savePaymentCycles(); } catch (e2) {}
-                    // if the original paymentCyclesToggle exists keep it in sync and trigger its handler
-                    if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
-                        paymentCyclesToggle.checked = !!e.target.checked;
-                        paymentCyclesToggle.dispatchEvent(new Event('change'));
-                    }
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-
-            if (featureFloatingControlsToggle) {
-                featureFloatingControlsToggle.addEventListener('change', (e) => {
-                    featureFlags.floatingCallControls = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-
-            if (featureRpgToggle) {
-                featureRpgToggle.addEventListener('change', (e) => {
-                    featureFlags.rpg = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-            if (openFloatingControlsSettingsBtn) {
-                openFloatingControlsSettingsBtn.addEventListener('click', (e) => openFloatingControlsSettingsModal(e.currentTarget));
-            }
-            if (viewAllPaymentCyclesBtn) {
-                viewAllPaymentCyclesBtn.addEventListener('click', (e) => openPaymentCyclesManagerFromDashboard(e.currentTarget));
-            }
-            if (paymentCyclesToggleAllBtn) {
-                paymentCyclesToggleAllBtn.addEventListener('click', () => {
-                    if (!Array.isArray(paymentCycles) || paymentCycles.length === 0) return;
-                    setPaymentCyclesListExpanded(!paymentCyclesListExpanded, paymentCycles.length);
-                });
-            }
-            if (closeFloatingControlsSettingsBtn) {
-                closeFloatingControlsSettingsBtn.addEventListener('click', closeFloatingControlsSettingsModal);
-            }
-            if (doneFloatingControlsSettingsBtn) {
-                doneFloatingControlsSettingsBtn.addEventListener('click', closeFloatingControlsSettingsModal);
-            }
-            if (closePaymentCyclesSettingsModalBtn) {
-                closePaymentCyclesSettingsModalBtn.addEventListener('click', closePaymentCyclesManagerPanel);
-            }
-            if (donePaymentCyclesSettingsBtn) {
-                donePaymentCyclesSettingsBtn.addEventListener('click', closePaymentCyclesManagerPanel);
-            }
+            settingsManager?.bindFeatureToggleControls();
+            settingsManager?.bindViewListeners();
             if (closeAchievementsSettingsModalBtn) {
                 closeAchievementsSettingsModalBtn.addEventListener('click', closeAchievementsSettingsModal);
             }
@@ -11808,117 +11690,6 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
                     applyStreakShieldForToday();
                 });
             }
-            if (floatingControlsSizeModeSelect) {
-                floatingControlsSizeModeSelect.addEventListener('change', (e) => {
-                    featureFlags.floatingControlsSizeMode = e.target.value;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-
-            if (floatingSecondaryActionSelect) {
-                floatingSecondaryActionSelect.addEventListener('change', (e) => {
-                    featureFlags.floatingSecondaryAction = ['add', 'goto', 'none'].includes(e.target.value) ? e.target.value : 'add';
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-            if (floatingShowActiveCardToggle) {
-                floatingShowActiveCardToggle.addEventListener('change', (e) => {
-                    featureFlags.floatingShowActiveCard = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-            if (floatingActiveShowTimerToggle) {
-                floatingActiveShowTimerToggle.addEventListener('change', (e) => {
-                    featureFlags.floatingActiveShowTimer = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-            if (floatingActiveShowEarningsToggle) {
-                floatingActiveShowEarningsToggle.addEventListener('change', (e) => {
-                    featureFlags.floatingActiveShowEarnings = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-            if (floatingActiveShowRateToggle) {
-                floatingActiveShowRateToggle.addEventListener('change', (e) => {
-                    featureFlags.floatingActiveShowRate = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-            if (floatingActiveShowAdjustToggle) {
-                floatingActiveShowAdjustToggle.addEventListener('change', (e) => {
-                    featureFlags.floatingActiveShowAdjust = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-            if (floatingOneHandedToggle) {
-                floatingOneHandedToggle.addEventListener('change', (e) => {
-                    featureFlags.floatingOneHanded = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-
-            if (floatingPreviewEnabledToggle) {
-                floatingPreviewEnabledToggle.addEventListener('change', (e) => {
-                    featureFlags.floatingPreviewEnabled = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                });
-            }
-
-            if (floatingPreviewRandomizeBtn) {
-                floatingPreviewRandomizeBtn.addEventListener('click', () => {
-                    updateFloatingPreview(featureFlags, { randomize: true });
-                });
-            }
-
-            if (floatingResetPositionBtn) {
-                floatingResetPositionBtn.addEventListener('click', () => {
-                    floatingDockManualPosition = null;
-                    saveFloatingDockManualPosition(null);
-                    updateFloatingCallControls(featureFlags);
-                    showToast('Dock position reset.');
-                });
-            }
-
-            if (floatingResetDefaultsBtn) {
-                floatingResetDefaultsBtn.addEventListener('click', () => {
-                    featureFlags.floatingControlsSizeMode = 'auto';
-                    featureFlags.floatingSecondaryAction = 'add';
-                    featureFlags.floatingShowActiveCard = true;
-                    featureFlags.floatingActiveShowTimer = true;
-                    featureFlags.floatingActiveShowEarnings = true;
-                    featureFlags.floatingActiveShowRate = false;
-                    featureFlags.floatingActiveShowAdjust = false;
-                    featureFlags.floatingOneHanded = false;
-                    featureFlags.floatingPreviewEnabled = true;
-                    floatingDockManualPosition = null;
-                    saveFloatingDockManualPosition(null);
-                    saveFeatureFlags(featureFlags);
-                    applyFeatureFlags(featureFlags);
-                    updateFloatingPreview(featureFlags, { randomize: true });
-                    updateFloatingCallControls(featureFlags);
-                    showToast('Floating controls reset to defaults.');
-                });
-            }
-
-            // Keep feature flag in sync when user toggles the original paymentCyclesToggle
-            if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
-                paymentCyclesToggle.addEventListener('change', (e) => {
-                    featureFlags.paymentCycles = !!e.target.checked;
-                    saveFeatureFlags(featureFlags);
-                    if (featurePaymentCyclesToggle) featurePaymentCyclesToggle.checked = !!e.target.checked;
-                });
-            }
-
         // Open/Close What's New (Changelog)
         const openChangelogBtn = document.getElementById('open-changelog');
 
@@ -12255,32 +12026,6 @@ goalMinutesInput.addEventListener('input', () => {
             updateCallLogFilterButtons();
         });
         
-        if (settingsToggleBtn) {
-            settingsToggleBtn.addEventListener('click', (e) => openSettingsView(e.currentTarget));
-        }
-        if (tzSelect) {
-            tzSelect.addEventListener('change', () => {
-                const tz = tzSelect.value;
-                setUserTimeZone(tz);
-                updateStatistics();
-                displayCalls();
-                updateLocalTime();
-            });
-        }
-
-        if (resetTzBtn) {
-            resetTzBtn.addEventListener('click', () => {
-                if (tzSelect) tzSelect.value = '';
-                setUserTimeZone('');
-                updateStatistics();
-                displayCalls();
-                updateLocalTime();
-            });
-        }
-
-        if (openDataHubBtn) {
-            openDataHubBtn.addEventListener('click', openDataHubModal);
-        }
         if (closeDataHubModalBtn) {
             closeDataHubModalBtn.addEventListener('click', closeDataHubModal);
         }
