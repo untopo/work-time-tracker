@@ -155,6 +155,20 @@ npm run cap:sync:android
 npm run cap:open:android
 ```
 
+To produce a signed Android release, copy `android/keystore.properties.example` to `android/keystore.properties` and fill in your keystore values, or provide the same values through these environment variables:
+
+- `WTT_ANDROID_KEYSTORE_FILE`
+- `WTT_ANDROID_KEYSTORE_PASSWORD`
+- `WTT_ANDROID_KEY_ALIAS`
+- `WTT_ANDROID_KEY_PASSWORD`
+
+Then build from Android Studio or run:
+
+```bash
+cd android
+gradlew assembleRelease
+```
+
 ## Tech Stack
 - Vanilla JavaScript
 - HTML and CSS
@@ -175,6 +189,7 @@ npm run cap:open:android
 |   |   `-- styles.css
 |   |-- js/
 |   |   |-- app.js
+|   |   |-- resources-data.js
 |   |   `-- storage.js
 |   `-- images/
 |-- README.md
