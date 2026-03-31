@@ -190,7 +190,10 @@ gradlew assembleRelease
 |   |-- js/
 |   |   |-- app.js
 |   |   |-- resources-data.js
-|   |   `-- storage.js
+|   |   |-- resources-helpers.js
+|   |   |-- storage.js
+|   |   |-- update-utils.js
+|   |   `-- update-manager.js
 |   `-- images/
 |-- README.md
 `-- .nojekyll
