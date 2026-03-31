@@ -1994,6 +1994,10 @@
             gap: 1rem;
         }
 
+        .term-assistant-grid.is-single-column {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
         .term-assistant-section {
             display: flex;
             flex-direction: column;

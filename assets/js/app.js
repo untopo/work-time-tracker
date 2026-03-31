@@ -283,6 +283,7 @@ const scheduleAppShellRefresh = createRafScheduler(applyAppShellMode);
     const TERM_TRANSLATION_CACHE = new Map();
     const TERM_DEFINITION_CACHE = new Map();
     const TERM_SEMANTIC_CACHE = new Map();
+    const TERM_MEANING_CACHE = new Map();
 
 function normalizeAppSection(value) {
     const normalized = String(value || '').trim().toLowerCase();
@@ -9176,6 +9177,32 @@ function saveCalls() {
         return suggestions[safeIndex] || suggestions[0] || null;
     }
 
+    function normalizeComparableText(value) {
+        return normalizeSearchText(value)
+            .toLowerCase()
+            .replace(/[^\p{L}\p{N}]+/gu, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function isMeaninglessGloss(value, comparisonValues = []) {
+        const normalized = normalizeComparableText(value);
+        if (!normalized) return true;
+        return comparisonValues.some((item) => normalizeComparableText(item) === normalized);
+    }
+
+    function getTermMeaningCacheKey() {
+        const suggestions = getTermAssistantSuggestions();
+        const selectedCandidate = getSelectedTermCandidate(suggestions);
+        return [
+            termAssistantState.sourceLang,
+            termAssistantState.targetLang,
+            normalizeSearchText(termAssistantState.query).toLowerCase(),
+            normalizeSearchText(selectedCandidate?.translation || '').toLowerCase(),
+            normalizeSearchText(selectedCandidate?.segment || '').toLowerCase()
+        ].join('|');
+    }
+
     async function resolveTermAssistantMeaning({ signal }) {
         const suggestions = getTermAssistantSuggestions();
         const selectedCandidate = getSelectedTermCandidate(suggestions);
@@ -9219,8 +9246,15 @@ function saveCalls() {
         }
 
         if (!definitionEntry) {
+            const comparisonValues = [
+                termAssistantState.query,
+                selectedCandidate?.translation,
+                selectedCandidate?.segment
+            ];
             const fallbackDefinitions = [];
-            if (englishTerm) fallbackDefinitions.push(`English gloss: ${englishTerm}`);
+            if (englishTerm && !isMeaninglessGloss(englishTerm, comparisonValues)) {
+                fallbackDefinitions.push(`English gloss: ${englishTerm}`);
+            }
             if (selectedCandidate?.segment && selectedCandidate.segment !== selectedCandidate.translation) {
                 fallbackDefinitions.push(`Source phrase: ${selectedCandidate.segment}`);
             }
@@ -9249,6 +9283,7 @@ function saveCalls() {
             : '';
         const selectedCandidate = getSelectedTermCandidate(suggestions);
         const headline = selectedCandidate?.translation || suggestions[0]?.translation || fallbackHeadline || '';
+        const shouldShowMeaning = !!termAssistantState.definitionResult;
         return `
             <div class="term-assistant-workspace">
                 <form class="term-assistant-search" data-term-assistant-form>
@@ -9314,7 +9349,7 @@ function saveCalls() {
                                 <div class="term-assistant-headline-badge">${escapeHTML(getLanguageLabel(termAssistantState.sourceLang))} -> ${escapeHTML(getLanguageLabel(termAssistantState.targetLang))}</div>
                             </div>
                         </div>
-                        <div class="term-assistant-grid">
+                        <div class="term-assistant-grid ${shouldShowMeaning ? '' : 'is-single-column'}">
                             <div class="term-assistant-section">
                                 <div class="term-assistant-section-title">Translation candidates</div>
                                 <div class="term-assistant-candidates">
@@ -9328,9 +9363,7 @@ function saveCalls() {
                                     `).join('') : '<div class="term-assistant-empty">No strong candidate terms were returned for this query.</div>'}
                                 </div>
                             </div>
-                            ${termAssistantState.definitionLoading
-                                ? '<div class="term-assistant-empty term-assistant-empty-shell">Loading meaning...</div>'
-                                : renderDefinitionBlock(termAssistantState.definitionResult)}
+                            ${shouldShowMeaning ? renderDefinitionBlock(termAssistantState.definitionResult) : ''}
                         </div>
                     </div>
                 ` : '<div class="term-assistant-empty term-assistant-empty-shell">Search a term to see translations and quick meaning support.</div>'}
@@ -9590,9 +9623,10 @@ function saveCalls() {
         termLookupAbortController?.abort();
         termLookupAbortController = new AbortController();
         termAssistantState.loading = true;
-        termAssistantState.definitionLoading = true;
         termAssistantState.error = '';
         termAssistantState.definitionMeta = null;
+        termAssistantState.definitionResult = null;
+        termAssistantState.semanticHints = [];
         renderActiveResources();
         try {
             if (normalizedQuery.length < 2) {
@@ -9612,8 +9646,11 @@ function saveCalls() {
             }
             if (requestId !== termLookupRequestId) return;
             termAssistantState.translationResult = translationData;
-            const meaning = await resolveTermAssistantMeaning({ signal: termLookupAbortController.signal });
+            const meaningCacheKey = getTermMeaningCacheKey();
+            const cachedMeaning = getCachedValue(TERM_MEANING_CACHE, meaningCacheKey);
+            const meaning = cachedMeaning || await resolveTermAssistantMeaning({ signal: termLookupAbortController.signal });
             if (requestId !== termLookupRequestId) return;
+            if (!cachedMeaning) setCachedValue(TERM_MEANING_CACHE, meaningCacheKey, meaning);
             termAssistantState.definitionResult = meaning.definitionEntry;
             termAssistantState.definitionMeta = { label: meaning.contextLabel || '' };
             termAssistantState.semanticHints = Array.isArray(meaning.semanticHints) ? meaning.semanticHints : [];
@@ -9630,7 +9667,6 @@ function saveCalls() {
             if (requestId !== termLookupRequestId) return;
             if (termLookupAbortController?.signal.aborted) return;
             termAssistantState.loading = false;
-            termAssistantState.definitionLoading = false;
             renderActiveResources();
         }
     }
@@ -9640,13 +9676,17 @@ function saveCalls() {
         const suggestions = getTermAssistantSuggestions();
         if (!Number.isFinite(index) || index < 0 || index >= suggestions.length) return;
         termAssistantState.selectedCandidateIndex = index;
-        termAssistantState.definitionLoading = true;
+        termAssistantState.definitionResult = null;
+        termAssistantState.definitionMeta = null;
         renderActiveResources();
         termLookupAbortController?.abort();
         termLookupAbortController = new AbortController();
         try {
-            const meaning = await resolveTermAssistantMeaning({ signal: termLookupAbortController.signal });
+            const meaningCacheKey = getTermMeaningCacheKey();
+            const cachedMeaning = getCachedValue(TERM_MEANING_CACHE, meaningCacheKey);
+            const meaning = cachedMeaning || await resolveTermAssistantMeaning({ signal: termLookupAbortController.signal });
             if (termLookupAbortController?.signal.aborted) return;
+            if (!cachedMeaning) setCachedValue(TERM_MEANING_CACHE, meaningCacheKey, meaning);
             termAssistantState.definitionResult = meaning.definitionEntry;
             termAssistantState.definitionMeta = { label: meaning.contextLabel || '' };
             termAssistantState.semanticHints = Array.isArray(meaning.semanticHints) ? meaning.semanticHints : [];
@@ -9654,7 +9694,6 @@ function saveCalls() {
             if (isAbortLikeError(error)) return;
         } finally {
             if (termLookupAbortController?.signal.aborted) return;
-            termAssistantState.definitionLoading = false;
             renderActiveResources();
         }
     }
