@@ -2465,133 +2465,7 @@ let featureFlags = {
     floatingPreviewEnabled: true
 };
 
-let settingsManager = window.WTTSettingsManager?.create({
-    appStorage,
-    modalManager: ModalManager,
-    elements: {
-        callNotesInput,
-        liveCallNotesInput,
-        closeFloatingControlsSettingsBtn,
-        closePaymentCyclesSettingsModalBtn,
-        dailyQuestsSection,
-        doneFloatingControlsSettingsBtn,
-        donePaymentCyclesSettingsBtn,
-        featureFloatingControlsToggle,
-        featureNotesToggle,
-        featurePaymentCyclesToggle,
-        featureRpgToggle,
-        floatingControlsSettingsModal,
-        focusWorkstrip,
-        mobileSettingsOpenBtn,
-        openDataHubBtn,
-        openFloatingControlsSettingsBtn,
-        openPaymentCyclesSettingsBtn,
-        paymentCyclesConfig,
-        paymentCyclesManagerPanel,
-        paymentCyclesSection,
-        paymentCyclesToggle,
-        paymentCyclesToggleAllBtn,
-        rpgProgressCard,
-        settingsToggleBtn,
-        settingsView,
-        storageBar,
-        storageUsedDisplay,
-        tzSelect,
-        resetTzBtn,
-        achievementDetailModal,
-        viewAllPaymentCyclesBtn
-    },
-    featureControls: {},
-    floatingControls: {
-        activeCardCustomization: floatingActiveCardCustomization,
-        activeShowAdjustToggle: floatingActiveShowAdjustToggle,
-        activeShowEarningsToggle: floatingActiveShowEarningsToggle,
-        activeShowRateToggle: floatingActiveShowRateToggle,
-        activeShowTimerToggle: floatingActiveShowTimerToggle,
-        featureStateNote: floatingFeatureStateNote,
-        oneHandedToggle: floatingOneHandedToggle,
-        previewContainer: floatingPreviewContainer,
-        previewEnabledToggle: floatingPreviewEnabledToggle,
-        previewRandomizeBtn: floatingPreviewRandomizeBtn,
-        resetDefaultsBtn: floatingResetDefaultsBtn,
-        resetPositionBtn: floatingResetPositionBtn,
-        secondaryActionSelect: floatingSecondaryActionSelect,
-        showActiveCardToggle: floatingShowActiveCardToggle,
-        sizeModeSelect: floatingControlsSizeModeSelect
-    },
-    callbacks: {
-        clearDetailModalPresentation,
-        closeAchievementDetailModal,
-        closeOtherDetailModals,
-        detailModals,
-        displayCalls,
-        getAchievementById,
-        getFeatureFlags: () => featureFlags,
-        getPaymentCyclesCount: () => Array.isArray(paymentCycles) ? paymentCycles.length : 0,
-        getPaymentCyclesListExpanded: () => paymentCyclesListExpanded,
-        getSelectedAchievementId: () => selectedAchievementId,
-        getStorageData: () => ({
-            rates,
-            calls,
-            dailyGoal,
-            paymentCyclesEnabled,
-            paymentCycles,
-            sessionHistoryEntries,
-            theme: appStorage.getItem('theme'),
-            timeZone: appStorage.getItem('timeZone')
-        }),
-        isPaymentCyclesManagerOpen,
-        markOnboardingSettingsSeen: () => {
-            const state = loadOnboardingState();
-            state.dismissed.settings = true;
-            state.seen = true;
-            if (!state.completed || typeof state.completed !== 'object') {
-                state.completed = { rate: false, call: false, settings: false };
-            }
-            state.completed.settings = true;
-            saveOnboardingState(state);
-        },
-        openDataHubModal,
-        queueWorkstripSync,
-        renderAchievementsModal,
-        renderPaymentCycles,
-        saveFeatureFlags,
-        saveFloatingDockManualPosition,
-        savePaymentCycles,
-        setActiveAppSection: (section) => setActiveAppSection(section),
-        setFloatingDockManualPosition: (value) => { floatingDockManualPosition = value; },
-        setPaymentCyclesEnabled: (value) => { paymentCyclesEnabled = value; },
-        setPaymentCyclesListExpanded: (expanded, count) => {
-            if (typeof count === 'number') {
-                setPaymentCyclesListExpanded(expanded, count);
-                return;
-            }
-            paymentCyclesListExpanded = !!expanded;
-        },
-        setUserTimeZone,
-        showToast,
-        startFloatingPreviewAutoRefresh,
-        stopFloatingPreviewAutoRefresh,
-        updateFloatingCallControls,
-        updateFloatingPreview,
-        updateLocalTime,
-        updateOnboardingCues,
-        updateRpgProgress,
-        updateStatistics,
-        ensurePaymentCyclesDataLoaded: () => {
-            if (Array.isArray(paymentCycles)) return;
-            try {
-                const stored = JSON.parse(appStorage.getItem('paymentCycles'));
-                paymentCycles = Array.isArray(stored) ? stored : [];
-            } catch (error) {
-                paymentCycles = [];
-            }
-        }
-    },
-    state: {
-        enableFloatingPreviewTesting: ENABLE_FLOATING_PREVIEW_TESTING
-    }
-});
+let settingsManager = null;
 
     // Recovery modal (v1.0.5)
 const recoveryModal = document.getElementById('recovery-modal');
@@ -3067,6 +2941,133 @@ let pendingConfirmOptions = {};
             refreshLayout
         };
     })();
+
+settingsManager = window.WTTSettingsManager?.create({
+    appStorage,
+    modalManager: ModalManager,
+    elements: {
+        callNotesInput,
+        liveCallNotesInput,
+        closeFloatingControlsSettingsBtn,
+        closePaymentCyclesSettingsModalBtn,
+        dailyQuestsSection,
+        doneFloatingControlsSettingsBtn,
+        donePaymentCyclesSettingsBtn,
+        featureFloatingControlsToggle,
+        featureNotesToggle,
+        featurePaymentCyclesToggle,
+        featureRpgToggle,
+        floatingControlsSettingsModal,
+        focusWorkstrip,
+        mobileSettingsOpenBtn,
+        openDataHubBtn,
+        openFloatingControlsSettingsBtn,
+        openPaymentCyclesSettingsBtn,
+        paymentCyclesConfig,
+        paymentCyclesManagerPanel,
+        paymentCyclesSection,
+        paymentCyclesToggle,
+        paymentCyclesToggleAllBtn,
+        rpgProgressCard,
+        settingsToggleBtn,
+        settingsView,
+        storageBar,
+        storageUsedDisplay,
+        tzSelect,
+        resetTzBtn,
+        achievementDetailModal,
+        viewAllPaymentCyclesBtn
+    },
+    floatingControls: {
+        activeCardCustomization: floatingActiveCardCustomization,
+        activeShowAdjustToggle: floatingActiveShowAdjustToggle,
+        activeShowEarningsToggle: floatingActiveShowEarningsToggle,
+        activeShowRateToggle: floatingActiveShowRateToggle,
+        activeShowTimerToggle: floatingActiveShowTimerToggle,
+        featureStateNote: floatingFeatureStateNote,
+        oneHandedToggle: floatingOneHandedToggle,
+        previewContainer: floatingPreviewContainer,
+        previewEnabledToggle: floatingPreviewEnabledToggle,
+        previewRandomizeBtn: floatingPreviewRandomizeBtn,
+        resetDefaultsBtn: floatingResetDefaultsBtn,
+        resetPositionBtn: floatingResetPositionBtn,
+        secondaryActionSelect: floatingSecondaryActionSelect,
+        showActiveCardToggle: floatingShowActiveCardToggle,
+        sizeModeSelect: floatingControlsSizeModeSelect
+    },
+    callbacks: {
+        clearDetailModalPresentation,
+        closeAchievementDetailModal,
+        closeOtherDetailModals,
+        detailModals,
+        displayCalls,
+        getAchievementById,
+        getFeatureFlags: () => featureFlags,
+        getPaymentCyclesCount: () => Array.isArray(paymentCycles) ? paymentCycles.length : 0,
+        getPaymentCyclesListExpanded: () => paymentCyclesListExpanded,
+        getSelectedAchievementId: () => selectedAchievementId,
+        getStorageData: () => ({
+            rates,
+            calls,
+            dailyGoal,
+            paymentCyclesEnabled,
+            paymentCycles,
+            sessionHistoryEntries,
+            theme: appStorage.getItem('theme'),
+            timeZone: appStorage.getItem('timeZone')
+        }),
+        isPaymentCyclesManagerOpen,
+        markOnboardingSettingsSeen: () => {
+            const state = loadOnboardingState();
+            state.dismissed.settings = true;
+            state.seen = true;
+            if (!state.completed || typeof state.completed !== 'object') {
+                state.completed = { rate: false, call: false, settings: false };
+            }
+            state.completed.settings = true;
+            saveOnboardingState(state);
+        },
+        openDataHubModal,
+        queueWorkstripSync,
+        renderAchievementsModal,
+        renderPaymentCycles,
+        saveFeatureFlags,
+        saveFloatingDockManualPosition,
+        savePaymentCycles,
+        setActiveAppSection: (section) => setActiveAppSection(section),
+        setFloatingDockManualPosition: (value) => { floatingDockManualPosition = value; },
+        setPaymentCyclesEnabled: (value) => { paymentCyclesEnabled = value; },
+        setPaymentCyclesListExpanded: (expanded, count) => {
+            if (typeof count === 'number') {
+                setPaymentCyclesListExpanded(expanded, count);
+                return;
+            }
+            paymentCyclesListExpanded = !!expanded;
+        },
+        setUserTimeZone,
+        showToast,
+        startFloatingPreviewAutoRefresh,
+        stopFloatingPreviewAutoRefresh,
+        updateFloatingCallControls,
+        updateFloatingPreview,
+        updateLocalTime,
+        updateOnboardingCues,
+        updateRpgProgress,
+        updateStatistics,
+        ensurePaymentCyclesDataLoaded: () => {
+            if (Array.isArray(paymentCycles)) return;
+            try {
+                const stored = JSON.parse(appStorage.getItem('paymentCycles'));
+                paymentCycles = Array.isArray(stored) ? stored : [];
+            } catch (error) {
+                paymentCycles = [];
+            }
+        }
+    },
+    state: {
+        enableFloatingPreviewTesting: ENABLE_FLOATING_PREVIEW_TESTING
+    }
+});
 
 function isAnyAppModalOpen() {
     return Array.from(document.querySelectorAll('.app-modal')).some(el => el.style.display === 'flex');
