@@ -1104,6 +1104,15 @@
                     <button id="filter-today" class="px-3 py-1 rounded-lg bg-blue-500 text-white text-sm">Today</button>
                     <button id="filter-week" class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 text-sm dark:bg-gray-700 dark:text-gray-200">Week</button>
                     <button id="filter-month" class="px-3 py-1 rounded-lg bg-gray-200 text-gray-700 text-sm dark:bg-gray-700 dark:text-gray-200">Month</button>
+                    <div class="call-log-date-nav" aria-label="Call log date navigation">
+                        <button id="call-log-prev-period-btn" type="button" class="call-log-date-nav-btn" aria-label="Previous period">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <input id="call-log-date-picker" type="date" class="call-log-date-picker" />
+                        <button id="call-log-next-period-btn" type="button" class="call-log-date-nav-btn" aria-label="Next period">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="call-log-toolbar-secondary">
                     <label for="call-log-search" class="sr-only">Search calls</label>
@@ -1958,6 +1967,10 @@
         <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-4">
             <i class="fas fa-envelope text-blue-500 mr-2"></i>Contact Us
         </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            You can also email us directly at:
+            <a href="mailto:worktimetrackertool@gmail.com" class="font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200">worktimetrackertool@gmail.com</a>
+        </p>
         <form id="feedback-form" action="https://formspree.io/f/xwvqagvg" method="POST">
             <label for="feedback-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
             <input type="text" id="feedback-name" name="name" required

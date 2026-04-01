@@ -8,8 +8,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.4.0';
+    const APP_VERSION = '1.4.1';
     const CHANGELOG = [
+        { version: '1.4.1', date: '2026-04-01', changes: ['Call Log now includes a restored date picker and previous/next period navigation for day, week, and month views', 'Call Log period navigation now moves in the same unit as the active filter instead of forcing a separate analytics date flow', 'Contact Us now includes a direct support email so users can reach out without the form if needed'] },
         { version: '1.4.0', date: '2026-03-30', changes: ['Added a new Resources workspace with built-in interpreter tools available directly inside the app', 'Introduced a native US ZIP / Address Lookup with one-bar search for ZIP codes, cities, states, and partial addresses', 'Added a native Interpreter Language Assistant for multilingual term lookup, translation candidates, related terms, and quick meaning support', 'Improved resource search performance with faster suggestions, caching, smoother loading behavior, and better handling of rapid consecutive searches', 'Refined result quality for both address and language lookups with stronger ranking, cleaner output, and reduced noisy or low-value matches', 'Enhanced the Resources layout so active tools organize more cleanly, including full-width presentation when only one resource is open', 'Added a new Discord community link for interpreters who want to connect, share resources, and support each other'] },
         { version: '1.3.0', date: '2026-03-25', changes: ['Major UI refresh across web and desktop with a cleaner app shell, smoother motion, and a more polished workspace flow', 'Reworked the Live Workspace into a denser action hub with integrated call/session controls, compact timer adjustments, and improved balance across desktop and tablet layouts', 'Upgraded modal behavior with more consistent overlays, improved positioning, draggable support for larger panels, and cleaner treatment for form and utility modals', 'Redesigned Floating Controls Settings into a more compact customization panel, removed redundant dock-position controls, and added reset actions for layout recovery', 'Significantly improved responsive layouts for mobile and tablet, including a stronger Settings composition, tablet-specific workstrip tuning, and broader spacing/stacking polish across key views', 'Restored sidebar-equivalent mobile and tablet utilities through a dedicated Info & Support section with local time, version, quick actions, social links, theme toggle, and donate access'] },
         { version: '1.2.6', date: '2026-03-21', changes: ['Added in-app updater flow for desktop (Tauri): update banner can now download and launch the Windows installer directly without opening the GitHub Releases page', 'Added in-app updater flow for Android app shell: update banner can now download the APK and open the Android installer directly inside the app flow', 'Update action now auto-falls back to release page if in-app update cannot be completed on the current platform', 'Android update bridge added with strict official release URL validation, FileProvider handoff, and installer intent launch'] },
@@ -1251,12 +1252,24 @@ function getCurrentExportScope() {
 }
 
 function getCurrentCallLogViewLabel() {
-    if (callLogFilter === 'today') return 'Today';
-    if (callLogFilter === 'week') return 'Week';
-    if (callLogFilter === 'month') return 'Month';
+    const anchorDate = getCallLogAnchorDate();
+    const todayDate = parseDateInput(getTodayDateString()) || new Date();
+    if (callLogFilter === 'today') {
+        return getDayStartMs(anchorDate) === getDayStartMs(todayDate)
+            ? 'Today'
+            : anchorDate.toLocaleDateString(DISPLAY_LOCALE, { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    if (callLogFilter === 'week') {
+        const { start, end } = getCallLogRangeForFilter('week', anchorDate);
+        const startLabel = start.toLocaleDateString(DISPLAY_LOCALE, { month: 'short', day: 'numeric' });
+        const endLabel = addDays(end, -1).toLocaleDateString(DISPLAY_LOCALE, { month: 'short', day: 'numeric', year: 'numeric' });
+        return `Week (${startLabel} - ${endLabel})`;
+    }
+    if (callLogFilter === 'month') {
+        return anchorDate.toLocaleDateString(DISPLAY_LOCALE, { month: 'long', year: 'numeric' });
+    }
     if (callLogFilter === 'date') {
-        const selectedDate = statsDatePicker?.value || getTodayDateString();
-        return `Date (${selectedDate})`;
+        return `Date (${formatDateForInput(anchorDate)})`;
     }
     return 'Current View';
 }
@@ -1634,6 +1647,9 @@ async function confirmExportOptions() {
     const callLogRateFilterSelect = document.getElementById('call-log-rate-filter');
     const callLogResetViewBtn = document.getElementById('call-log-reset-view');
     const callLogResultsSummary = document.getElementById('call-log-results-summary');
+    const callLogDatePicker = document.getElementById('call-log-date-picker');
+    const callLogPrevPeriodBtn = document.getElementById('call-log-prev-period-btn');
+    const callLogNextPeriodBtn = document.getElementById('call-log-next-period-btn');
     let floatingVisibilityObserver = null;
     let observedFloatingPrimaryButton = null;
     let callControlsVisibleInViewport = false;
@@ -3613,6 +3629,7 @@ if (storedDailyGoal) {
     let isEditingCycle = false;
     let editingCycleIndex = null;
     let callLogFilter = 'today';
+    let callLogAnchorDate = new Date();
     let floatingDockCollapsed = false;
     let floatingDockIdleTimer = null;
     let floatingDockExpandTimer = null;
@@ -6813,43 +6830,20 @@ function migrateLegacyRpgCallEligibility() {
     }
 
     function getFilterCacheKey() {
-        const dateKey = callLogFilter === 'date' ? (statsDatePicker?.value || getTodayDateString()) : '';
-        return `${callsDatasetVersion}|${callLogFilter}|${dateKey}|q:${callLogSearchQuery}|r:${callLogRateFilter}`;
+        const anchorKey = formatDateForInput(getCallLogAnchorDate());
+        return `${callsDatasetVersion}|${callLogFilter}|${anchorKey}|q:${callLogSearchQuery}|r:${callLogRateFilter}`;
     }
 
     function getFilteredCallsCached() {
         const cacheKey = getFilterCacheKey();
         if (filteredCallsCache.key === cacheKey) return filteredCallsCache.rows;
 
-        const now = new Date();
         let startMs = null;
         let endMs = null;
-        if (callLogFilter === 'today') {
-            const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const end = new Date(start);
-            end.setDate(end.getDate() + 1);
-            startMs = start.getTime();
-            endMs = end.getTime();
-        } else if (callLogFilter === 'week') {
-            const start = new Date(now);
-            start.setDate(now.getDate() - now.getDay());
-            const end = new Date(start);
-            end.setDate(end.getDate() + 7);
-            startMs = start.getTime();
-            endMs = end.getTime();
-        } else if (callLogFilter === 'month') {
-            const start = new Date(now.getFullYear(), now.getMonth(), 1);
-            const end = new Date(start);
-            end.setMonth(end.getMonth() + 1);
-            startMs = start.getTime();
-            endMs = end.getTime();
-        } else if (callLogFilter === 'date') {
-            const selectedDate = parseDateInput(statsDatePicker?.value) || new Date();
-            const start = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-            const end = new Date(start);
-            end.setDate(end.getDate() + 1);
-            startMs = start.getTime();
-            endMs = end.getTime();
+        if (['today', 'week', 'month', 'date'].includes(callLogFilter)) {
+            const range = getCallLogRangeForFilter(callLogFilter, getCallLogAnchorDate());
+            startMs = range.start.getTime();
+            endMs = range.end.getTime();
         }
 
         let rows = (startMs === null)
@@ -6928,11 +6922,13 @@ function migrateLegacyRpgCallEligibility() {
 
     function resetCallLogView() {
         callLogFilter = 'today';
+        callLogAnchorDate = normalizeDateOnly(new Date());
         callLogSort = { key: 'startTime', direction: 'desc' };
         callLogSearchQuery = '';
         callLogRateFilter = '';
         if (callLogSearchInput) callLogSearchInput.value = '';
         if (callLogRateFilterSelect) callLogRateFilterSelect.value = '';
+        syncCallLogDatePickerValue(callLogAnchorDate);
         updateCallLogSortUi();
         updateCallLogFilterButtons();
         displayCalls();
@@ -9947,6 +9943,63 @@ function saveCalls() {
         return nextDate;
     }
 
+    function normalizeDateOnly(dateObj) {
+        const source = dateObj instanceof Date && Number.isFinite(dateObj.getTime()) ? dateObj : new Date();
+        return new Date(source.getFullYear(), source.getMonth(), source.getDate());
+    }
+
+    function syncCallLogDatePickerValue(dateObj = callLogAnchorDate) {
+        if (!callLogDatePicker) return;
+        callLogDatePicker.value = formatDateForInput(normalizeDateOnly(dateObj));
+    }
+
+    function getCallLogAnchorDate() {
+        if (callLogDatePicker?.value) {
+            const pickedDate = parseDateInput(callLogDatePicker.value);
+            if (pickedDate) return normalizeDateOnly(pickedDate);
+        }
+        return normalizeDateOnly(callLogAnchorDate);
+    }
+
+    function updateCallLogDatePickerBounds() {
+        if (!callLogDatePicker) return;
+        const today = getTodayDateString();
+        callLogDatePicker.max = today;
+        if (callLogDatePicker.value && callLogDatePicker.value > today) {
+            callLogDatePicker.value = today;
+        }
+    }
+
+    function getCallLogRangeForFilter(filter, anchorDateInput = callLogAnchorDate) {
+        const anchorDate = normalizeDateOnly(anchorDateInput);
+        if (filter === 'week') {
+            const start = new Date(anchorDate);
+            start.setDate(anchorDate.getDate() - anchorDate.getDay());
+            const end = new Date(start);
+            end.setDate(end.getDate() + 7);
+            return { start, end };
+        }
+        if (filter === 'month') {
+            const start = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1);
+            const end = new Date(start);
+            end.setMonth(end.getMonth() + 1);
+            return { start, end };
+        }
+        const start = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate());
+        const end = new Date(start);
+        end.setDate(end.getDate() + 1);
+        return { start, end };
+    }
+
+    function getCallLogNavigationStepDays(filter = callLogFilter, anchorDateInput = callLogAnchorDate) {
+        if (filter === 'week') return 7;
+        if (filter === 'month') {
+            const anchorDate = normalizeDateOnly(anchorDateInput);
+            return new Date(anchorDate.getFullYear(), anchorDate.getMonth() + 1, 0).getDate();
+        }
+        return 1;
+    }
+
     function updateDatePickerBounds() {
         const today = getTodayDateString();
         statsDatePicker.max = today;
@@ -9963,6 +10016,41 @@ function saveCalls() {
         statsNextDayBtn.disabled = disableNext;
         statsNextDayBtn.classList.toggle('opacity-50', disableNext);
         statsNextDayBtn.classList.toggle('cursor-not-allowed', disableNext);
+    }
+
+    function updateCallLogNavigationButtons() {
+        if (!callLogNextPeriodBtn) return;
+        updateCallLogDatePickerBounds();
+        const today = normalizeDateOnly(parseDateInput(getTodayDateString()) || new Date());
+        const anchorDate = getCallLogAnchorDate();
+        let disableNext = false;
+        if (callLogFilter === 'month') {
+            const todayMonthStart = new Date(today.getFullYear(), today.getMonth(), 1).getTime();
+            const anchorMonthStart = new Date(anchorDate.getFullYear(), anchorDate.getMonth(), 1).getTime();
+            disableNext = anchorMonthStart >= todayMonthStart;
+        } else if (callLogFilter === 'week') {
+            disableNext = getCallLogRangeForFilter('week', anchorDate).start.getTime() >= getCallLogRangeForFilter('week', today).start.getTime();
+        } else {
+            disableNext = getDayStartMs(anchorDate) >= getDayStartMs(today);
+        }
+        callLogNextPeriodBtn.disabled = disableNext;
+    }
+
+    function shiftCallLogPeriod(step) {
+        updateCallLogDatePickerBounds();
+        const today = normalizeDateOnly(parseDateInput(getTodayDateString()) || new Date());
+        const currentDate = getCallLogAnchorDate();
+        let targetDate;
+        if (callLogFilter === 'month') {
+            targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + step, 1);
+        } else {
+            targetDate = addDays(currentDate, step * getCallLogNavigationStepDays(callLogFilter, currentDate));
+        }
+        const clampedTarget = targetDate > today ? today : normalizeDateOnly(targetDate);
+        callLogAnchorDate = clampedTarget;
+        syncCallLogDatePickerValue(clampedTarget);
+        displayCalls();
+        updateCallLogFilterButtons();
     }
 
     function shiftStatsDate(days) {
@@ -10884,7 +10972,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             activeBtn.classList.add('bg-blue-500', 'text-white', 'dark:bg-blue-600', 'dark:text-white');
         }
 
-        updateDateNavigationButtons();
+        updateCallLogNavigationButtons();
     }
 
     function getOrCreateToastStack() {
@@ -12221,10 +12309,7 @@ goalMinutesInput.addEventListener('input', () => {
         
         statsDatePicker.addEventListener('change', () => {
             updateDatePickerBounds();
-            callLogFilter = 'date';
             updateStatistics();
-            displayCalls();
-            updateCallLogFilterButtons();
         });
         statsPrevDayBtn.addEventListener('click', () => {
             shiftStatsDate(-1);
@@ -12279,10 +12364,7 @@ goalMinutesInput.addEventListener('input', () => {
         currentDateBtn.addEventListener('click', () => {
             const today = getTodayDateString();
             statsDatePicker.value = today;
-            callLogFilter = 'today';
             updateStatistics();
-            displayCalls();
-            updateCallLogFilterButtons();
         });
         
         if (closeDataHubModalBtn) {
@@ -12553,23 +12635,50 @@ goalMinutesInput.addEventListener('input', () => {
 
         const today = getTodayDateString();
         statsDatePicker.value = today;
+        callLogAnchorDate = normalizeDateOnly(parseDateInput(today) || new Date());
+        syncCallLogDatePickerValue(callLogAnchorDate);
+        updateCallLogDatePickerBounds();
         updateDatePickerBounds();
         
         filterTodayBtn.addEventListener('click', () => {
             callLogFilter = 'today';
+            callLogAnchorDate = getCallLogAnchorDate();
             displayCalls();
             updateCallLogFilterButtons();
         });
         filterWeekBtn.addEventListener('click', () => {
             callLogFilter = 'week';
+            callLogAnchorDate = getCallLogAnchorDate();
             displayCalls();
             updateCallLogFilterButtons();
         });
         filterMonthBtn.addEventListener('click', () => {
             callLogFilter = 'month';
+            callLogAnchorDate = getCallLogAnchorDate();
             displayCalls();
             updateCallLogFilterButtons();
         });
+        if (callLogDatePicker) {
+            callLogDatePicker.addEventListener('change', () => {
+                updateCallLogDatePickerBounds();
+                const selectedDate = parseDateInput(callLogDatePicker.value) || parseDateInput(getTodayDateString()) || new Date();
+                callLogAnchorDate = normalizeDateOnly(selectedDate);
+                callLogFilter = 'date';
+                displayCalls();
+                updateCallLogFilterButtons();
+            });
+        }
+        if (callLogPrevPeriodBtn) {
+            callLogPrevPeriodBtn.addEventListener('click', () => {
+                shiftCallLogPeriod(-1);
+            });
+        }
+        if (callLogNextPeriodBtn) {
+            callLogNextPeriodBtn.addEventListener('click', () => {
+                if (callLogNextPeriodBtn.disabled) return;
+                shiftCallLogPeriod(1);
+            });
+        }
         if (callLogSearchInput) {
             callLogSearchInput.addEventListener('input', (e) => {
                 const nextValue = String(e?.target?.value || '');
