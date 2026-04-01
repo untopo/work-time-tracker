@@ -8,8 +8,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.4.1';
+    const APP_VERSION = '1.4.2';
     const CHANGELOG = [
+        { version: '1.4.2', date: '2026-04-01', changes: ['Fixed Call Log date picker initialization so the selector starts with a valid date and responds more reliably when choosing a specific day', 'Improved Call Log date navigation stability across web, desktop, and Android by wiring the picker earlier and handling both input and change events'] },
         { version: '1.4.1', date: '2026-04-01', changes: ['Call Log now includes a restored date picker and previous/next period navigation for day, week, and month views', 'Call Log period navigation now moves in the same unit as the active filter instead of forcing a separate analytics date flow', 'Contact Us now includes a direct support email so users can reach out without the form if needed'] },
         { version: '1.4.0', date: '2026-03-30', changes: ['Added a new Resources workspace with built-in interpreter tools available directly inside the app', 'Introduced a native US ZIP / Address Lookup with one-bar search for ZIP codes, cities, states, and partial addresses', 'Added a native Interpreter Language Assistant for multilingual term lookup, translation candidates, related terms, and quick meaning support', 'Improved resource search performance with faster suggestions, caching, smoother loading behavior, and better handling of rapid consecutive searches', 'Refined result quality for both address and language lookups with stronger ranking, cleaner output, and reduced noisy or low-value matches', 'Enhanced the Resources layout so active tools organize more cleanly, including full-width presentation when only one resource is open', 'Added a new Discord community link for interpreters who want to connect, share resources, and support each other'] },
         { version: '1.3.0', date: '2026-03-25', changes: ['Major UI refresh across web and desktop with a cleaner app shell, smoother motion, and a more polished workspace flow', 'Reworked the Live Workspace into a denser action hub with integrated call/session controls, compact timer adjustments, and improved balance across desktop and tablet layouts', 'Upgraded modal behavior with more consistent overlays, improved positioning, draggable support for larger panels, and cleaner treatment for form and utility modals', 'Redesigned Floating Controls Settings into a more compact customization panel, removed redundant dock-position controls, and added reset actions for layout recovery', 'Significantly improved responsive layouts for mobile and tablet, including a stronger Settings composition, tablet-specific workstrip tuning, and broader spacing/stacking polish across key views', 'Restored sidebar-equivalent mobile and tablet utilities through a dedicated Info & Support section with local time, version, quick actions, social links, theme toggle, and donate access'] },
@@ -12579,6 +12580,13 @@ goalMinutesInput.addEventListener('input', () => {
             });
             updateManager.bind();
         }
+        const today = getTodayDateString();
+        statsDatePicker.value = today;
+        callLogAnchorDate = normalizeDateOnly(parseDateInput(today) || new Date());
+        syncCallLogDatePickerValue(callLogAnchorDate);
+        updateCallLogDatePickerBounds();
+        updateDatePickerBounds();
+
         displayRates();
         populateRateSelects();
         applyRpgBreakdownVisibility();
@@ -12633,13 +12641,6 @@ goalMinutesInput.addEventListener('input', () => {
         });
         window.visualViewport?.addEventListener('resize', scheduleAppShellRefresh);
 
-        const today = getTodayDateString();
-        statsDatePicker.value = today;
-        callLogAnchorDate = normalizeDateOnly(parseDateInput(today) || new Date());
-        syncCallLogDatePickerValue(callLogAnchorDate);
-        updateCallLogDatePickerBounds();
-        updateDatePickerBounds();
-        
         filterTodayBtn.addEventListener('click', () => {
             callLogFilter = 'today';
             callLogAnchorDate = getCallLogAnchorDate();
@@ -12659,14 +12660,17 @@ goalMinutesInput.addEventListener('input', () => {
             updateCallLogFilterButtons();
         });
         if (callLogDatePicker) {
-            callLogDatePicker.addEventListener('change', () => {
+            const handleCallLogDatePickerChange = () => {
                 updateCallLogDatePickerBounds();
                 const selectedDate = parseDateInput(callLogDatePicker.value) || parseDateInput(getTodayDateString()) || new Date();
                 callLogAnchorDate = normalizeDateOnly(selectedDate);
+                syncCallLogDatePickerValue(callLogAnchorDate);
                 callLogFilter = 'date';
                 displayCalls();
                 updateCallLogFilterButtons();
-            });
+            };
+            callLogDatePicker.addEventListener('change', handleCallLogDatePickerChange);
+            callLogDatePicker.addEventListener('input', handleCallLogDatePickerChange);
         }
         if (callLogPrevPeriodBtn) {
             callLogPrevPeriodBtn.addEventListener('click', () => {
