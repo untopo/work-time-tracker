@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.4.2-blue)
+![Version](https://img.shields.io/badge/version-1.5.0-blue)
 ![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
@@ -237,7 +237,7 @@ Safari generally works, but import/export behavior should always be verified in 
 4. Include manual test notes in your PR.
 
 ## Releases
-- Current Version: `v1.4.2`
+- Current Version: `v1.5.0`
 - In-app history: `What's New` modal
 - GitHub Releases: https://github.com/untopo/work-time-tracker/releases
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)

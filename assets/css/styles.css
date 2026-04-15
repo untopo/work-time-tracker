@@ -5582,6 +5582,14 @@
             margin-bottom: 0.5rem;
         }
 
+        .session-history-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
         .session-history-title {
             font-size: 0.74rem;
             font-weight: 800;
@@ -5590,6 +5598,7 @@
             color: #334155;
         }
 
+        .session-history-action-btn,
         .session-history-clear-btn {
             border-radius: 9999px;
             border: 1px solid rgba(148, 163, 184, 0.45);
@@ -5601,6 +5610,7 @@
             transition: background-color 0.14s ease, border-color 0.14s ease, transform 0.14s ease;
         }
 
+        .session-history-action-btn:hover:not(:disabled),
         .session-history-clear-btn:hover:not(:disabled) {
             background: rgba(241, 245, 249, 0.95);
             border-color: rgba(100, 116, 139, 0.55);
@@ -5639,6 +5649,10 @@
             margin-top: 0.32rem;
         }
 
+        .session-history-row-actions {
+            justify-content: flex-end;
+        }
+
         .session-history-date {
             font-size: 0.68rem;
             font-weight: 800;
@@ -5664,12 +5678,52 @@
             padding: 0.22rem 0.44rem;
         }
 
+        .session-history-edit-btn {
+            border-radius: 9999px;
+            border: 1px solid rgba(99, 102, 241, 0.36);
+            background: rgba(238, 242, 255, 0.9);
+            color: #4f46e5;
+            font-size: 0.62rem;
+            font-weight: 800;
+            line-height: 1;
+            padding: 0.26rem 0.52rem;
+            transition: background-color 0.14s ease, transform 0.14s ease, border-color 0.14s ease;
+        }
+
+        .session-history-edit-btn:hover {
+            background: rgba(224, 231, 255, 0.96);
+            border-color: rgba(79, 70, 229, 0.5);
+            transform: translateY(-1px);
+        }
+
         .session-history-empty {
             font-size: 0.68rem;
             color: #64748b;
             font-weight: 600;
             text-align: center;
             padding: 0.42rem 0.2rem;
+        }
+
+        .session-history-editor-preview {
+            border: 1px solid rgba(99, 102, 241, 0.24);
+            border-radius: 0.9rem;
+            background: rgba(248, 250, 252, 0.82);
+            padding: 0.8rem;
+        }
+
+        .session-history-editor-preview-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #475569;
+            margin-bottom: 0.45rem;
+        }
+
+        .session-history-editor-preview-body {
+            font-size: 0.82rem;
+            color: #334155;
+            line-height: 1.5;
         }
 
         .pattern-detail-header {
@@ -5942,12 +5996,14 @@
             color: #cbd5e1;
         }
 
+        html.dark .session-history-action-btn,
         html.dark .session-history-clear-btn {
             border-color: rgba(100, 116, 139, 0.55);
             background: rgba(30, 41, 59, 0.82);
             color: #e2e8f0;
         }
 
+        html.dark .session-history-action-btn:hover:not(:disabled),
         html.dark .session-history-clear-btn:hover:not(:disabled) {
             background: rgba(51, 65, 85, 0.9);
             border-color: rgba(148, 163, 184, 0.6);
@@ -5972,8 +6028,32 @@
             color: #cbd5e1;
         }
 
+        html.dark .session-history-edit-btn {
+            border-color: rgba(129, 140, 248, 0.42);
+            background: rgba(49, 46, 129, 0.28);
+            color: #c7d2fe;
+        }
+
+        html.dark .session-history-edit-btn:hover {
+            background: rgba(67, 56, 202, 0.35);
+            border-color: rgba(165, 180, 252, 0.5);
+        }
+
         html.dark .session-history-empty {
             color: #94a3b8;
+        }
+
+        html.dark .session-history-editor-preview {
+            border-color: rgba(79, 70, 229, 0.26);
+            background: rgba(15, 23, 42, 0.82);
+        }
+
+        html.dark .session-history-editor-preview-title {
+            color: #a5b4fc;
+        }
+
+        html.dark .session-history-editor-preview-body {
+            color: #cbd5e1;
         }
 
         html.dark .pattern-detail-nav-btn {

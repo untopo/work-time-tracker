@@ -2050,7 +2050,10 @@
         <div class="session-history-wrap">
             <div class="session-history-header">
                 <h3 class="session-history-title">Completed Sessions</h3>
-                <button id="session-history-clear-btn" type="button" class="session-history-clear-btn">Clear</button>
+                <div class="session-history-actions">
+                    <button id="session-history-add-btn" type="button" class="session-history-action-btn">Add Session</button>
+                    <button id="session-history-clear-btn" type="button" class="session-history-clear-btn">Clear</button>
+                </div>
             </div>
             <div id="session-history-list" class="session-history-list">
                 <p class="session-history-empty">No completed sessions yet.</p>
@@ -2059,6 +2062,43 @@
         <div class="mt-5 flex justify-end">
             <button id="done-session-history-btn" type="button" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
                 Done
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="session-history-editor-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal p-6 max-w-xl w-full relative">
+        <button id="close-session-history-editor-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 id="session-history-editor-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <i class="fas fa-pen-to-square text-indigo-500 mr-2"></i>Edit Session
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            Choose a session window and the app will rebuild calls, talk time, idle time, utilization, and earnings from the calls inside that range.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label for="session-history-editor-start" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start</label>
+                <input type="datetime-local" id="session-history-editor-start" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200">
+            </div>
+            <div>
+                <label for="session-history-editor-end" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End</label>
+                <input type="datetime-local" id="session-history-editor-end" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200">
+            </div>
+        </div>
+        <div id="session-history-editor-preview" class="session-history-editor-preview mb-4">
+            <div class="session-history-editor-preview-title">Preview</div>
+            <div id="session-history-editor-preview-body" class="session-history-editor-preview-body">Choose a valid start and end time to preview the rebuilt session.</div>
+        </div>
+        <p id="session-history-editor-error" class="text-xs text-red-500 mb-4" style="display:none;"></p>
+        <div class="flex gap-2">
+            <button id="save-session-history-editor-btn" type="button" class="flex-1 bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
+                Save Session
+            </button>
+            <button id="cancel-session-history-editor-btn" type="button" class="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
+                Cancel
             </button>
         </div>
     </div>

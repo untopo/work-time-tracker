@@ -8,8 +8,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.4.2';
+    const APP_VERSION = '1.5.0';
     const CHANGELOG = [
+        { version: '1.5.0', date: '2026-04-15', changes: ['Session Tracker history now supports adding manual sessions directly from the log', 'Completed sessions can now be edited after the fact, making it easier to correct sessions that ran too long or ended late', 'Manual and edited sessions now rebuild calls, talk time, idle time, utilization, and earnings automatically from the calls inside the selected time window'] },
         { version: '1.4.2', date: '2026-04-01', changes: ['Fixed Call Log date picker initialization so the selector starts with a valid date and responds more reliably when choosing a specific day', 'Improved Call Log date navigation stability across web, desktop, and Android by wiring the picker earlier and handling both input and change events'] },
         { version: '1.4.1', date: '2026-04-01', changes: ['Call Log now includes a restored date picker and previous/next period navigation for day, week, and month views', 'Call Log period navigation now moves in the same unit as the active filter instead of forcing a separate analytics date flow', 'Contact Us now includes a direct support email so users can reach out without the form if needed'] },
         { version: '1.4.0', date: '2026-03-30', changes: ['Added a new Resources workspace with built-in interpreter tools available directly inside the app', 'Introduced a native US ZIP / Address Lookup with one-bar search for ZIP codes, cities, states, and partial addresses', 'Added a native Interpreter Language Assistant for multilingual term lookup, translation candidates, related terms, and quick meaning support', 'Improved resource search performance with faster suggestions, caching, smoother loading behavior, and better handling of rapid consecutive searches', 'Refined result quality for both address and language lookups with stronger ranking, cleaner output, and reduced noisy or low-value matches', 'Enhanced the Resources layout so active tools organize more cleanly, including full-width presentation when only one resource is open', 'Added a new Discord community link for interpreters who want to connect, share resources, and support each other'] },
@@ -1886,6 +1887,16 @@ async function confirmExportOptions() {
     const sessionHistoryModal = document.getElementById('session-history-modal');
     const closeSessionHistoryModalBtn = document.getElementById('close-session-history-modal');
     const doneSessionHistoryBtn = document.getElementById('done-session-history-btn');
+    const sessionHistoryAddBtn = document.getElementById('session-history-add-btn');
+    const sessionHistoryEditorModal = document.getElementById('session-history-editor-modal');
+    const closeSessionHistoryEditorModalBtn = document.getElementById('close-session-history-editor-modal');
+    const cancelSessionHistoryEditorBtn = document.getElementById('cancel-session-history-editor-btn');
+    const saveSessionHistoryEditorBtn = document.getElementById('save-session-history-editor-btn');
+    const sessionHistoryEditorTitle = document.getElementById('session-history-editor-title');
+    const sessionHistoryEditorStartInput = document.getElementById('session-history-editor-start');
+    const sessionHistoryEditorEndInput = document.getElementById('session-history-editor-end');
+    const sessionHistoryEditorPreviewBody = document.getElementById('session-history-editor-preview-body');
+    const sessionHistoryEditorError = document.getElementById('session-history-editor-error');
     const patternsDetailModal = document.getElementById('patterns-detail-modal');
     const closePatternsDetailModalBtn = document.getElementById('close-patterns-detail-modal');
     const donePatternsDetailBtn = document.getElementById('done-patterns-detail-btn');
@@ -3647,6 +3658,7 @@ if (storedDailyGoal) {
     let openCallLogActionsMenu = null;
     let callLogRenderTicket = 0;
     let callLogRenderState = null;
+    let sessionHistoryEditingId = null;
     let pendingStorageWrites = new Map();
     let storageWriteTimer = null;
     let pendingCsvImportFilter = 'all';
@@ -3857,6 +3869,68 @@ if (storedDailyGoal) {
         return Math.max(0, total);
     }
 
+    function countSessionCallsBetween(startMs, endMs) {
+        if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return 0;
+        let count = 0;
+        for (const call of calls) {
+            const callStartMs = getCallStartMs(call);
+            const callEndMs = getCallEndMs(call);
+            if (!Number.isFinite(callStartMs) || !Number.isFinite(callEndMs) || callEndMs <= callStartMs) continue;
+            if (callEndMs > startMs && callStartMs < endMs) {
+                count += 1;
+            }
+        }
+        return Math.max(0, count);
+    }
+
+    function getSessionTalkTimeBetween(startMs, endMs) {
+        if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return 0;
+        let talkMs = 0;
+        for (const call of calls) {
+            const callStartMs = getCallStartMs(call);
+            const callEndMs = getCallEndMs(call);
+            if (!Number.isFinite(callStartMs) || !Number.isFinite(callEndMs) || callEndMs <= callStartMs) continue;
+            const overlapStart = Math.max(startMs, callStartMs);
+            const overlapEnd = Math.min(endMs, callEndMs);
+            if (overlapEnd > overlapStart) {
+                talkMs += overlapEnd - overlapStart;
+            }
+        }
+        return Math.max(0, talkMs);
+    }
+
+    function computeCompletedSessionMetricsForWindow(startMs, endMs) {
+        const safeStartMs = Number(startMs);
+        const safeEndMs = Number(endMs);
+        if (!Number.isFinite(safeStartMs) || !Number.isFinite(safeEndMs) || safeEndMs <= safeStartMs) return null;
+        const availableMs = Math.max(0, safeEndMs - safeStartMs);
+        const rawTalkMs = getSessionTalkTimeBetween(safeStartMs, safeEndMs);
+        const talkMs = Math.max(0, Math.min(rawTalkMs, availableMs));
+        const callCount = countSessionCallsBetween(safeStartMs, safeEndMs);
+        const idleMs = Math.max(0, availableMs - talkMs);
+        const utilization = availableMs > 0 ? (talkMs / availableMs) * 100 : 0;
+        const earned = getSessionEarningsBetween(safeStartMs, safeEndMs);
+        return {
+            startedAtMs: safeStartMs,
+            endedAtMs: safeEndMs,
+            availableMs,
+            talkMs,
+            callCount,
+            idleMs,
+            utilization,
+            earned,
+            pauseCount: 0
+        };
+    }
+
+    function upsertSessionHistoryEntry(entry) {
+        if (!entry || typeof entry !== 'object') return;
+        const existingEntries = Array.isArray(sessionHistoryEntries) ? sessionHistoryEntries : [];
+        const filtered = existingEntries.filter((item) => String(item?.id || '') !== String(entry.id || ''));
+        sessionHistoryEntries = [entry, ...filtered];
+        saveSessionHistoryState();
+    }
+
     function buildCompletedSessionHistoryEntry(metrics, endedAtMs = Date.now(), pauseCount = 0) {
         const startedFromState = Number(sessionTrackerState?.startMs);
         const fallbackStart = endedAtMs - Math.max(0, Number(metrics?.elapsedMs) || 0);
@@ -3913,7 +3987,7 @@ if (storedDailyGoal) {
             const endTime = ended.toLocaleTimeString(DISPLAY_LOCALE, { hour: '2-digit', minute: '2-digit' });
             const sessionLength = Math.max(0, entry.endedAtMs - entry.startedAtMs);
             return `
-                <div class="session-history-item">
+                <div class="session-history-item" data-session-history-id="${escapeHTML(entry.id)}">
                     <div class="session-history-row">
                         <span class="session-history-date">${escapeHTML(dateLabel)}</span>
                         <span class="session-history-range">${escapeHTML(startTime)} - ${escapeHTML(endTime)}</span>
@@ -3925,6 +3999,11 @@ if (storedDailyGoal) {
                         <span class="session-history-chip">Idle ${formatTime(entry.idleMs)}</span>
                         <span class="session-history-chip">Util ${formatSessionPercent(entry.utilization)}</span>
                         <span class="session-history-chip">Earned ${formatEarnings(entry.earned)}</span>
+                    </div>
+                    <div class="session-history-row session-history-row-actions">
+                        <button type="button" class="session-history-edit-btn" data-session-history-edit="${escapeHTML(entry.id)}">
+                            <i class="fas fa-pen mr-1"></i>Edit
+                        </button>
                     </div>
                 </div>
             `;
@@ -9919,6 +9998,17 @@ function saveCalls() {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
+    function formatDateTimeLocalInput(value) {
+        const date = value instanceof Date ? value : new Date(value);
+        if (!Number.isFinite(date.getTime())) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
     function formatDateForInput(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -11174,6 +11264,111 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         ModalManager.close(sessionHistoryModal);
     }
 
+    function setSessionHistoryEditorError(message = '') {
+        if (!sessionHistoryEditorError) return;
+        const text = String(message || '').trim();
+        sessionHistoryEditorError.textContent = text;
+        sessionHistoryEditorError.style.display = text ? '' : 'none';
+    }
+
+    function updateSessionHistoryEditorPreview() {
+        if (!sessionHistoryEditorPreviewBody) return null;
+        const startMs = Date.parse(sessionHistoryEditorStartInput?.value || '');
+        const endMs = Date.parse(sessionHistoryEditorEndInput?.value || '');
+        if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) {
+            sessionHistoryEditorPreviewBody.textContent = 'Choose a valid start and end time to preview the rebuilt session.';
+            return null;
+        }
+        if (endMs <= startMs) {
+            sessionHistoryEditorPreviewBody.textContent = 'End time must be later than start time.';
+            return null;
+        }
+        const metrics = computeCompletedSessionMetricsForWindow(startMs, endMs);
+        if (!metrics) {
+            sessionHistoryEditorPreviewBody.textContent = 'Could not build session metrics for this range.';
+            return null;
+        }
+        const lengthMs = metrics.endedAtMs - metrics.startedAtMs;
+        sessionHistoryEditorPreviewBody.innerHTML = [
+            `<strong>Length:</strong> ${escapeHTML(formatTime(lengthMs))}`,
+            `<strong>Calls:</strong> ${metrics.callCount}`,
+            `<strong>Talk:</strong> ${escapeHTML(formatTime(metrics.talkMs))}`,
+            `<strong>Idle:</strong> ${escapeHTML(formatTime(metrics.idleMs))}`,
+            `<strong>Utilization:</strong> ${escapeHTML(formatSessionPercent(metrics.utilization))}`,
+            `<strong>Earned:</strong> ${escapeHTML(formatEarnings(metrics.earned))}`
+        ].join(' <span aria-hidden="true">|</span> ');
+        return metrics;
+    }
+
+    function openSessionHistoryEditor(entryId = null, triggerEl = null) {
+        if (!sessionHistoryEditorModal) return;
+        const entries = normalizeSessionHistoryEntries(sessionHistoryEntries);
+        const existingEntry = entryId ? entries.find((entry) => String(entry.id) === String(entryId)) : null;
+        sessionHistoryEditingId = existingEntry?.id || null;
+        if (sessionHistoryEditorTitle) {
+            sessionHistoryEditorTitle.innerHTML = existingEntry
+                ? '<i class="fas fa-pen-to-square text-indigo-500 mr-2"></i>Edit Session'
+                : '<i class="fas fa-plus-circle text-indigo-500 mr-2"></i>Add Session';
+        }
+        const now = new Date();
+        const defaultEnd = existingEntry ? new Date(existingEntry.endedAtMs) : new Date(now.getTime());
+        const defaultStart = existingEntry
+            ? new Date(existingEntry.startedAtMs)
+            : new Date(now.getTime() - (60 * 60 * 1000));
+        if (sessionHistoryEditorStartInput) sessionHistoryEditorStartInput.value = formatDateTimeLocalInput(defaultStart);
+        if (sessionHistoryEditorEndInput) sessionHistoryEditorEndInput.value = formatDateTimeLocalInput(defaultEnd);
+        setSessionHistoryEditorError('');
+        updateSessionHistoryEditorPreview();
+        ModalManager.open(sessionHistoryEditorModal, {
+            focusSelector: '#session-history-editor-start',
+            triggerEl
+        });
+    }
+
+    function closeSessionHistoryEditor() {
+        if (!sessionHistoryEditorModal) return;
+        ModalManager.close(sessionHistoryEditorModal);
+        sessionHistoryEditingId = null;
+        setSessionHistoryEditorError('');
+    }
+
+    function saveSessionHistoryEditor() {
+        const startMs = Date.parse(sessionHistoryEditorStartInput?.value || '');
+        const endMs = Date.parse(sessionHistoryEditorEndInput?.value || '');
+        if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) {
+            setSessionHistoryEditorError('Please choose both start and end time.');
+            return;
+        }
+        if (endMs <= startMs) {
+            setSessionHistoryEditorError('End time must be later than start time.');
+            return;
+        }
+        const metrics = computeCompletedSessionMetricsForWindow(startMs, endMs);
+        if (!metrics) {
+            setSessionHistoryEditorError('Could not build session metrics for this range.');
+            return;
+        }
+        const existingEntry = sessionHistoryEditingId
+            ? normalizeSessionHistoryEntries(sessionHistoryEntries).find((entry) => String(entry.id) === String(sessionHistoryEditingId))
+            : null;
+        const entry = {
+            id: existingEntry?.id || `${endMs}-${Math.random().toString(16).slice(2, 8)}`,
+            startedAtMs: metrics.startedAtMs,
+            endedAtMs: metrics.endedAtMs,
+            talkMs: metrics.talkMs,
+            idleMs: metrics.idleMs,
+            availableMs: metrics.availableMs,
+            utilization: metrics.utilization,
+            callCount: metrics.callCount,
+            pauseCount: existingEntry?.pauseCount || 0,
+            earned: metrics.earned
+        };
+        upsertSessionHistoryEntry(entry);
+        renderSessionHistory();
+        closeSessionHistoryEditor();
+        showToast(existingEntry ? 'Session updated.' : 'Session added.');
+    }
+
     async function openSupportDestination(url) {
         await openExternalUrl(url);
         closeSupportModal();
@@ -11448,12 +11643,41 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     if (openSessionHistoryBtn) {
         openSessionHistoryBtn.addEventListener('click', () => openSessionHistoryModal(openSessionHistoryBtn));
     }
+    if (sessionHistoryAddBtn) {
+        sessionHistoryAddBtn.addEventListener('click', () => openSessionHistoryEditor(null, sessionHistoryAddBtn));
+    }
     if (closeSessionHistoryModalBtn) {
         closeSessionHistoryModalBtn.addEventListener('click', closeSessionHistoryModal);
     }
     if (doneSessionHistoryBtn) {
         doneSessionHistoryBtn.addEventListener('click', closeSessionHistoryModal);
     }
+    if (sessionHistoryList) {
+        sessionHistoryList.addEventListener('click', (event) => {
+            const editBtn = event.target?.closest?.('[data-session-history-edit]');
+            if (!editBtn) return;
+            openSessionHistoryEditor(editBtn.getAttribute('data-session-history-edit'), editBtn);
+        });
+    }
+    if (closeSessionHistoryEditorModalBtn) {
+        closeSessionHistoryEditorModalBtn.addEventListener('click', closeSessionHistoryEditor);
+    }
+    if (cancelSessionHistoryEditorBtn) {
+        cancelSessionHistoryEditorBtn.addEventListener('click', closeSessionHistoryEditor);
+    }
+    if (saveSessionHistoryEditorBtn) {
+        saveSessionHistoryEditorBtn.addEventListener('click', saveSessionHistoryEditor);
+    }
+    [sessionHistoryEditorStartInput, sessionHistoryEditorEndInput].filter(Boolean).forEach((inputEl) => {
+        inputEl.addEventListener('input', () => {
+            setSessionHistoryEditorError('');
+            updateSessionHistoryEditorPreview();
+        });
+        inputEl.addEventListener('change', () => {
+            setSessionHistoryEditorError('');
+            updateSessionHistoryEditorPreview();
+        });
+    });
     if (closePatternsDetailModalBtn) {
         closePatternsDetailModalBtn.addEventListener('click', closePatternsDetailModal);
     }
@@ -11564,6 +11788,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(supportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#support-modal-paypal-btn' });
         ModalManager.register(sessionHistoryModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-clear-btn' });
+        ModalManager.register(sessionHistoryEditorModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-editor-start' });
         ModalManager.register(patternsDetailModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#patterns-detail-prev-btn' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
         ModalManager.register(exportOptionsModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#confirm-export-options-btn' });
