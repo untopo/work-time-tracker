@@ -1,7 +1,7 @@
 {
-    "latestVersion":  "1.4.2",
-    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.4.2",
+    "latestVersion":  "1.5.0",
+    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.5.0",
     "downloadsUrl":  "https://github.com/untopo/work-time-tracker/releases",
-    "notes":  "Fixed Call Log date picker initialization and interaction so period navigation works more reliably across web, desktop, and Android."
+    "notes":  "Session Tracker now supports adding and editing completed sessions, with automatic session metrics rebuilt from calls in the selected time window."
 }
 
