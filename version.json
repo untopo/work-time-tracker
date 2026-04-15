@@ -2,6 +2,6 @@
     "latestVersion":  "1.5.0",
     "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.5.0",
     "downloadsUrl":  "https://github.com/untopo/work-time-tracker/releases",
-    "notes":  "Session Tracker now supports adding and editing completed sessions, with automatic session metrics rebuilt from calls in the selected time window."
+    "notes":  "Session Tracker now supports adding, editing, and deleting completed sessions, with automatic session metrics rebuilt from calls in the selected time window."
 }
 

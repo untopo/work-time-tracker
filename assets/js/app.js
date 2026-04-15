@@ -10,7 +10,7 @@
     // ============================================
     const APP_VERSION = '1.5.0';
     const CHANGELOG = [
-        { version: '1.5.0', date: '2026-04-15', changes: ['Session Tracker history now supports adding manual sessions directly from the log', 'Completed sessions can now be edited after the fact, making it easier to correct sessions that ran too long or ended late', 'Manual and edited sessions now rebuild calls, talk time, idle time, utilization, and earnings automatically from the calls inside the selected time window'] },
+        { version: '1.5.0', date: '2026-04-15', changes: ['Session Tracker history now supports adding manual sessions directly from the log', 'Completed sessions can now be edited after the fact, making it easier to correct sessions that ran too long or ended late', 'Session Tracker history now also supports deleting individual completed sessions when the user wants to remove them completely', 'Manual and edited sessions now rebuild calls, talk time, idle time, utilization, and earnings automatically from the calls inside the selected time window'] },
         { version: '1.4.2', date: '2026-04-01', changes: ['Fixed Call Log date picker initialization so the selector starts with a valid date and responds more reliably when choosing a specific day', 'Improved Call Log date navigation stability across web, desktop, and Android by wiring the picker earlier and handling both input and change events'] },
         { version: '1.4.1', date: '2026-04-01', changes: ['Call Log now includes a restored date picker and previous/next period navigation for day, week, and month views', 'Call Log period navigation now moves in the same unit as the active filter instead of forcing a separate analytics date flow', 'Contact Us now includes a direct support email so users can reach out without the form if needed'] },
         { version: '1.4.0', date: '2026-03-30', changes: ['Added a new Resources workspace with built-in interpreter tools available directly inside the app', 'Introduced a native US ZIP / Address Lookup with one-bar search for ZIP codes, cities, states, and partial addresses', 'Added a native Interpreter Language Assistant for multilingual term lookup, translation candidates, related terms, and quick meaning support', 'Improved resource search performance with faster suggestions, caching, smoother loading behavior, and better handling of rapid consecutive searches', 'Refined result quality for both address and language lookups with stronger ranking, cleaner output, and reduced noisy or low-value matches', 'Enhanced the Resources layout so active tools organize more cleanly, including full-width presentation when only one resource is open', 'Added a new Discord community link for interpreters who want to connect, share resources, and support each other'] },
@@ -3931,6 +3931,14 @@ if (storedDailyGoal) {
         saveSessionHistoryState();
     }
 
+    function removeSessionHistoryEntry(entryId) {
+        const safeId = String(entryId || '').trim();
+        if (!safeId) return;
+        sessionHistoryEntries = normalizeSessionHistoryEntries(sessionHistoryEntries)
+            .filter((entry) => String(entry?.id || '') !== safeId);
+        saveSessionHistoryState();
+    }
+
     function buildCompletedSessionHistoryEntry(metrics, endedAtMs = Date.now(), pauseCount = 0) {
         const startedFromState = Number(sessionTrackerState?.startMs);
         const fallbackStart = endedAtMs - Math.max(0, Number(metrics?.elapsedMs) || 0);
@@ -4003,6 +4011,9 @@ if (storedDailyGoal) {
                     <div class="session-history-row session-history-row-actions">
                         <button type="button" class="session-history-edit-btn" data-session-history-edit="${escapeHTML(entry.id)}">
                             <i class="fas fa-pen mr-1"></i>Edit
+                        </button>
+                        <button type="button" class="session-history-delete-btn" data-session-history-delete="${escapeHTML(entry.id)}">
+                            <i class="fas fa-trash mr-1"></i>Delete
                         </button>
                     </div>
                 </div>
@@ -11655,8 +11666,27 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     if (sessionHistoryList) {
         sessionHistoryList.addEventListener('click', (event) => {
             const editBtn = event.target?.closest?.('[data-session-history-edit]');
-            if (!editBtn) return;
-            openSessionHistoryEditor(editBtn.getAttribute('data-session-history-edit'), editBtn);
+            if (editBtn) {
+                openSessionHistoryEditor(editBtn.getAttribute('data-session-history-edit'), editBtn);
+                return;
+            }
+            const deleteBtn = event.target?.closest?.('[data-session-history-delete]');
+            if (!deleteBtn) return;
+            const entryId = deleteBtn.getAttribute('data-session-history-delete');
+            showConfirmation(
+                'Delete Session',
+                'This will remove the selected completed session from history.',
+                'Delete',
+                () => {
+                    removeSessionHistoryEntry(entryId);
+                    renderSessionHistory();
+                    showToast('Session deleted.');
+                },
+                {
+                    loadingText: 'Deleting session...',
+                    successText: 'Session deleted.'
+                }
+            );
         });
     }
     if (closeSessionHistoryEditorModalBtn) {
