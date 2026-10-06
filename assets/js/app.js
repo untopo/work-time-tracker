@@ -708,6 +708,12 @@ const GOATCOUNTER_SITE_CODE_KEY = 'wtt_goatcounter_site_code';
 const GOATCOUNTER_SCRIPT_ID = 'wtt-goatcounter-script';
 const GOATCOUNTER_DEFAULT_SITE_CODE = 'untopo';
 const updateAvailableBanner = document.getElementById('update-available-banner');
+const storageWriteErrorBanner = document.getElementById('storage-write-error-banner');
+
+function setStoragePersistenceWarningVisible(visible) {
+    if (!storageWriteErrorBanner) return;
+    storageWriteErrorBanner.classList.toggle('hidden', !visible);
+}
 const updateCurrentVersionLabel = document.getElementById('update-current-version');
 const updateLatestVersionLabel = document.getElementById('update-latest-version');
 const updateNotesLabel = document.getElementById('update-notes');
@@ -6909,15 +6915,34 @@ function migrateLegacyRpgCallEligibility() {
             clearTimeout(storageWriteTimer);
             storageWriteTimer = null;
         }
-        if (!pendingStorageWrites.size) return;
-        pendingStorageWrites.forEach((value, key) => {
+        if (!pendingStorageWrites.size) {
+            setStoragePersistenceWarningVisible(false);
+            return true;
+        }
+
+        Array.from(pendingStorageWrites.entries()).forEach(([key, value]) => {
             try {
                 appStorage.setItem(key, value);
+                if (pendingStorageWrites.get(key) === value) {
+                    pendingStorageWrites.delete(key);
+                }
             } catch (err) {
                 console.warn(`Could not persist key ${key}`, err);
             }
         });
+
+        const hasUnwrittenChanges = pendingStorageWrites.size > 0;
+        setStoragePersistenceWarningVisible(hasUnwrittenChanges);
+        return !hasUnwrittenChanges;
+    }
+
+    function discardPendingStorageWrites() {
+        if (storageWriteTimer) {
+            clearTimeout(storageWriteTimer);
+            storageWriteTimer = null;
+        }
         pendingStorageWrites.clear();
+        setStoragePersistenceWarningVisible(false);
     }
 
     function getFilterCacheKey() {
@@ -9958,11 +9983,12 @@ function saveCalls() {
             return;
         }
         rates.forEach((rate, index) => {
+            const escapedRateName = escapeHTML(rate.name);
             const rateItem = document.createElement('div');
             rateItem.className = 'rates-list-item';
             rateItem.innerHTML = `
                 <div class="flex-1">
-                    <p class="font-semibold">${rate.name}</p>
+                    <p class="font-semibold">${escapedRateName}</p>
                     <p class="text-sm text-gray-600 dark:text-gray-400">$${rate.amount.toFixed(2)}/min</p>
                 </div>
                 <div class="flex items-center">
@@ -9979,7 +10005,10 @@ function saveCalls() {
     }
 
     function populateRateSelects() {
-        const rateOptions = rates.map(rate => `<option value="${rate.name}">${rate.name} - $${rate.amount.toFixed(2)}/min</option>`).join('');
+        const rateOptions = rates.map(rate => {
+            const escapedRateName = escapeHTML(rate.name);
+            return `<option value="${escapedRateName}">${escapedRateName} - $${rate.amount.toFixed(2)}/min</option>`;
+        }).join('');
         rateSelect.innerHTML = rateOptions;
         callRateSelect.innerHTML = rateOptions;
         
@@ -11199,7 +11228,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     }
 
     const PAYPAL_DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=3YPGH7MTRMFTJ';
-    const KOFI_SUPPORT_URL = 'https://ko-fi.com/C1C718BOD';
+    const KOFI_SUPPORT_URL = 'https://ko-fi.com/untopo';
     const FOOTER_COLLAPSIBLE_MOBILE_MEDIA_QUERY = '(max-width: 768px)';
     let footerCollapsibleIsMobile = null;
 
@@ -12748,6 +12777,7 @@ goalMinutesInput.addEventListener('input', () => {
                 'This will permanently delete all local data (calls, rates, goals, and settings).',
                 'Reset All',
                 () => {
+                discardPendingStorageWrites();
                 appStorage.clear();
                 calls = [];
                 rates = [];
