@@ -1,0 +1,42 @@
+name: Checks
+
+# Fast verification for every pull request and every push to main: version
+# sync across the six version locations, release readiness, JS syntax, and
+# the web build. The heavy installer builds live in build-release.yml.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Version and release checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Version sync
+        run: npm run verify:version-sync
+
+      - name: Release readiness
+        run: npm run verify:release-ready
+
+      - name: JavaScript syntax
+        run: node --check assets/js/app.js
+
+      - name: Web build
+        run: npm run build:web
