@@ -53,7 +53,7 @@ const indexHtml = readText('index.html');
 
 const appJs = readText('assets/js/app.js');
 assert(
-  appJs.includes('const APP_VERSION = \'1.4.0\'') || appJs.includes(`const APP_VERSION = '${version}'`),
+  appJs.includes(`const APP_VERSION = '${version}'`),
   'assets/js/app.js APP_VERSION must match the package version'
 );
 assert(
