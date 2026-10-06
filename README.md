@@ -1,7 +1,7 @@
 # Work Time Tracker
 
 ![Version](https://img.shields.io/badge/version-1.5.0-blue)
-![Privacy](https://img.shields.io/badge/privacy-100%25%20local-success)
+![Privacy](https://img.shields.io/badge/privacy-local--first-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
 
@@ -97,13 +97,37 @@ Work Time Tracker helps you run live calls, log manual work, track rates and goa
 ![Achievements Screenshot](assets/images/achievements.png)
 
 ## Data and Privacy
-- 100% local storage by default
-- No accounts
-- No tracking
-- No analytics
-- No backend dependency for the core app
-- No automatic cloud sync
+Your work data never leaves your device.
+
+- Calls, rates, goals, sessions, payment cycles, and progress are stored locally
+- No accounts, no login, no cloud sync
+- No backend owns your tracking data
+- Backups only move data when you explicitly export or import a file
 - Volatile notes are intentionally not persisted/exported
+
+### What Leaves Your Device
+Some optional parts of the app do talk to the internet. Nothing below ever sends
+your calls, earnings, rates, or history.
+
+| Feature | Destination | What is sent | How to avoid it |
+|---|---|---|---|
+| Usage analytics (web only) | GoatCounter (`gc.zgo.at`) | Anonymous page-view ping. No app data | Use the desktop or Android build |
+| Update check | `untopo.github.io`, `api.github.com` | Nothing. Only reads the published version | Ignore the banner |
+| US ZIP / Address Lookup | `api.zippopotam.us`, `nominatim.openstreetmap.org` | The ZIP or address you type | Do not use the tool |
+| Interpreter Language Assistant | `api.mymemory.translated.net`, `api.dictionaryapi.dev`, `api.datamuse.com` | The term you look up | Do not use the tool |
+| Contact Us form | `formspree.io` | What you write in the form | Email instead |
+| Styles and icons | `cdn.tailwindcss.com`, `cdnjs.cloudflare.com` | Standard web request on load | Self-host the assets |
+
+If you interpret under confidentiality rules, treat the Resources tools like any
+other third-party lookup: the term you search is sent to the provider above.
+
+### Analytics
+The web version at GitHub Pages loads GoatCounter for anonymous page-view
+counts. It records no personal data, no work data, and no cross-site profile.
+
+- The desktop (Tauri) and Android (Capacitor) builds skip analytics entirely
+- There is no in-app opt-out toggle yet; a browser content blocker stops it today
+- Self-hosted copies can remove the analytics call from `assets/js/app.js`
 
 ## Backup and Restore
 - Backup and restore live in `Settings -> Data Management`
@@ -242,6 +266,24 @@ Safari generally works, but import/export behavior should always be verified in 
 - GitHub Releases: https://github.com/untopo/work-time-tracker/releases
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)
 - Release workflow: [`RELEASE.md`](RELEASE.md)
+
+## Community
+Join the Discord server for interpreters using the app. It is the fastest place
+to ask questions, share workflows, and hear about releases first.
+
+- Discord: https://discord.gg/eRayqAkFWC
+- X: https://x.com/worktimetracker
+- LinkedIn: https://www.linkedin.com/company/work-time-tracker/
+- GitHub: https://github.com/untopo/work-time-tracker
+
+All of these are also available in the app sidebar.
+
+## Support the Project
+The app is free and has no paid tier. If it saves you time, you can help cover
+development and release costs:
+
+- PayPal: https://www.paypal.com/donate/?hosted_button_id=3YPGH7MTRMFTJ
+- Ko-fi: https://ko-fi.com/C1C718BOD
 
 ## Feedback
 Use the in-app `Contact Us` modal for:
