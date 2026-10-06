@@ -23,7 +23,7 @@
     "tauri"
   ],
   "author": "Topo",
-  "license": "ISC",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "@tauri-apps/api": "^2.8.0"

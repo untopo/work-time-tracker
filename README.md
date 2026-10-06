@@ -283,7 +283,7 @@ The app is free and has no paid tier. If it saves you time, you can help cover
 development and release costs:
 
 - PayPal: https://www.paypal.com/donate/?hosted_button_id=3YPGH7MTRMFTJ
-- Ko-fi: https://ko-fi.com/C1C718BOD
+- Ko-fi: https://ko-fi.com/untopo
 
 ## Feedback
 Use the in-app `Contact Us` modal for:

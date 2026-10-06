@@ -33,6 +33,15 @@
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body class="app-booting bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
+<div id="storage-write-error-banner" class="pointer-events-none fixed top-4 left-1/2 z-[95] hidden w-[min(92vw,42rem)] -translate-x-1/2 px-1" role="status" aria-live="polite" aria-atomic="true">
+    <div class="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50/95 p-4 text-amber-950 shadow-2xl backdrop-blur dark:border-amber-800/80 dark:bg-amber-950/95 dark:text-amber-50">
+        <i class="fas fa-exclamation-triangle mt-0.5 text-amber-600 dark:text-amber-300" aria-hidden="true"></i>
+        <div>
+            <p class="text-sm font-semibold">Could not save changes to this device</p>
+            <p class="mt-1 text-xs leading-relaxed text-amber-900 dark:text-amber-100">Your recent changes may be lost if you reload or close the app. If possible, export a backup, free up storage space, then make another change to retry saving.</p>
+        </div>
+    </div>
+</div>
 <div id="update-available-banner" class="fixed bottom-4 left-1/2 z-[90] hidden w-[min(92vw,32rem)] -translate-x-1/2 px-1">
     <div class="rounded-2xl border border-blue-200 bg-white/95 p-4 shadow-2xl backdrop-blur dark:border-blue-900/60 dark:bg-gray-900/95">
         <div class="flex items-start justify-between gap-3">
