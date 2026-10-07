@@ -284,6 +284,9 @@
                 <span class="text-green-700 dark:text-green-300 font-semibold text-lg mb-2">Ongoing Call</span>
                 <span id="live-call-timer" class="font-mono text-3xl text-green-900 dark:text-green-200 font-bold mb-2">00:00:00</span>
                 <span id="live-call-earnings" class="font-mono text-2xl text-green-800 dark:text-green-100 font-bold">$0.00</span>
+                <button id="live-call-focus-btn" type="button" class="mt-3 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 dark:hover:bg-green-800 transition flex items-center justify-center gap-2 text-sm font-semibold" title="Blur the workspace and center this call">
+                    <i class="fas fa-bullseye"></i> Focus
+                </button>
                 <div id="live-call-adjust-controls" class="live-call-adjust-controls mt-3">
                     <button id="live-call-minus-second-btn" type="button" class="live-call-adjust-btn live-call-adjust-minus" aria-label="Subtract one second">
                         <i class="fas fa-minus"></i><span>1s</span>
@@ -923,6 +926,17 @@
                                     </div>
                                     <label class="settings-feature-switch">
                                         <input type="checkbox" id="feature-floating-controls-toggle">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div class="settings-feature-row">
+                                    <div>
+                                        <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Focus Mode</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">During live calls, blur the workspace and center a big timer, live earnings, and your daily-goal ring. Exit anytime without touching the call.</div>
+                                    </div>
+                                    <label class="settings-feature-switch">
+                                        <input type="checkbox" id="feature-focus-mode-toggle">
                                         <span class="slider round"></span>
                                     </label>
                                 </div>

@@ -125,6 +125,11 @@
                 if (selectedAchievement?.rpgOnly) callbacks.closeAchievementDetailModal?.();
             }
 
+            const focusModeEnabled = flags.focusMode !== false;
+            if (elements.featureFocusModeToggle) elements.featureFocusModeToggle.checked = focusModeEnabled;
+            if (!focusModeEnabled) callbacks.exitFocusMode?.();
+            callbacks.syncFocusModeButtonVisibility?.();
+
             flags.uiRefresh = true;
             document.body.classList.add('ui-refresh-v1');
             if (elements.focusWorkstrip) elements.focusWorkstrip.style.display = '';
@@ -223,6 +228,12 @@
             if (elements.featureFloatingControlsToggle) {
                 elements.featureFloatingControlsToggle.addEventListener('change', onFlagChange((flags, event) => {
                     flags.floatingCallControls = !!event.target.checked;
+                }));
+            }
+
+            if (elements.featureFocusModeToggle) {
+                elements.featureFocusModeToggle.addEventListener('change', onFlagChange((flags, event) => {
+                    flags.focusMode = !!event.target.checked;
                 }));
             }
 

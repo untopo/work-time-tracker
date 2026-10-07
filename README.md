@@ -31,6 +31,14 @@ When a call ends, a quick review strip lets you double-check the entry before mo
 
 ![Post-call review strip after ending a call](docs/screenshots/post-call.png)
 
+### Focus Mode — optional, one tap
+
+During a live call, tap **Focus** to blur the workspace and center what matters: a big live timer, real-time earnings, and a ring that fills as you approach your daily goal. Exit anytime — with the button or the Esc key — without touching the call. Prefer the classic view? Turn Focus Mode off in `Settings -> Features`.
+
+| Light | Dark |
+|:---:|:---:|
+| ![Focus Mode in light theme](docs/screenshots/focus-light.png) | ![Focus Mode in dark theme](docs/screenshots/focus-dark.png) |
+
 ### Call Log — your history
 
 Every saved call in one place: filter by date range, search, and edit entries. Import a company CSV history or export your own — with preview, column mapping, and dedupe before anything is saved.
@@ -86,6 +94,7 @@ It is built for interpreters who bill by duration, freelancers tracking time-bas
 ## Core Features
 
 - Live call timer with real-time earnings
+- Optional Focus Mode during live calls
 - Manual call entry and editing
 - Multiple billing rates
 - Daily goal tracking in USD and minutes

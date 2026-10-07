@@ -10887,3 +10887,319 @@ html.dark .payment-cycles-manager-panel {
                 animation: none !important;
             }
         }
+
+/* ============================================
+   FOCUS MODE (optional live-call workspace)
+   ============================================ */
+#wtt-focus-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(241, 245, 249, 0.55);
+    backdrop-filter: blur(18px) saturate(0.92);
+    -webkit-backdrop-filter: blur(18px) saturate(0.92);
+    animation: wtt-focus-fade-in 220ms ease-out;
+}
+
+@keyframes wtt-focus-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.wtt-focus-card {
+    width: 600px;
+    max-width: calc(100vw - 48px);
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 26px;
+    box-shadow: 0 30px 70px rgba(15, 23, 42, 0.20);
+    padding: 40px 54px 36px;
+    text-align: center;
+    color: #111827;
+    font-family: inherit;
+    animation: wtt-focus-card-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes wtt-focus-card-in {
+    from { opacity: 0; transform: translateY(14px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.wtt-focus-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.wtt-focus-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    background: #10b981;
+    position: relative;
+    flex: none;
+}
+
+.wtt-focus-dot::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 9999px;
+    border: 2px solid #10b981;
+    opacity: 0.5;
+    animation: wtt-focus-pulse 1.8s ease-out infinite;
+}
+
+@keyframes wtt-focus-pulse {
+    0% { transform: scale(0.6); opacity: 0.7; }
+    80% { transform: scale(1.5); opacity: 0; }
+    100% { opacity: 0; }
+}
+
+.wtt-focus-rate {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.wtt-focus-ringwrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.wtt-focus-ring-track {
+    stroke: rgba(100, 116, 139, 0.16);
+}
+
+.wtt-focus-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.wtt-focus-timer {
+    font-size: 62px;
+    line-height: 1;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+    color: #0f172a;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.wtt-focus-earnings {
+    margin-top: 12px;
+    font-size: 34px;
+    font-weight: 700;
+    color: #059669;
+    font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.wtt-focus-sublabel {
+    margin-top: 5px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.wtt-focus-goal {
+    margin: 26px auto 0;
+    width: 100%;
+}
+
+.wtt-focus-goal-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.wtt-focus-goal-track {
+    height: 8px;
+    border-radius: 9999px;
+    background: rgba(100, 116, 139, 0.18);
+    overflow: hidden;
+}
+
+.wtt-focus-goal-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #059669, #10b981);
+    transition: width 600ms ease-out;
+}
+
+.wtt-focus-actions {
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+
+.wtt-focus-adjust {
+    width: 46px;
+    height: 46px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: transparent;
+    color: #111827;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 160ms ease, transform 160ms ease;
+}
+
+.wtt-focus-adjust:hover {
+    background: rgba(100, 116, 139, 0.10);
+    transform: translateY(-1px);
+}
+
+.wtt-focus-end {
+    padding: 14px 44px;
+    border-radius: 9999px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    background: #ef4444;
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(239, 68, 68, 0.35);
+    transition: background 160ms ease, transform 160ms ease;
+}
+
+.wtt-focus-end:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+#wtt-focus-exit-btn {
+    position: fixed;
+    top: 22px;
+    right: 26px;
+    z-index: 100000;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 18px;
+    border-radius: 9999px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: rgba(255, 255, 255, 0.97);
+    color: #111827;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+#wtt-focus-exit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.18);
+}
+
+@media (max-width: 640px) {
+    .wtt-focus-card {
+        width: 100%;
+        padding: 30px 22px 26px;
+    }
+    .wtt-focus-timer {
+        font-size: 46px;
+    }
+    .wtt-focus-earnings {
+        font-size: 28px;
+    }
+    .wtt-focus-ringwrap svg {
+        width: 280px;
+        height: 280px;
+    }
+    .wtt-focus-end {
+        padding: 12px 30px;
+        font-size: 15px;
+    }
+}
+
+/* Focus Mode - dark theme */
+html.dark #wtt-focus-overlay {
+    background: rgba(3, 7, 18, 0.62);
+}
+
+html.dark .wtt-focus-card {
+    background: rgba(23, 30, 43, 0.96);
+    border-color: rgba(148, 163, 184, 0.22);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+    color: #f3f4f6;
+}
+
+html.dark .wtt-focus-timer {
+    color: #f8fafc;
+}
+
+html.dark .wtt-focus-earnings {
+    color: #6ee7b7;
+}
+
+html.dark .wtt-focus-rate,
+html.dark .wtt-focus-sublabel,
+html.dark .wtt-focus-goal-top {
+    color: #94a3b8;
+}
+
+html.dark .wtt-focus-ring-track {
+    stroke: rgba(148, 163, 184, 0.25);
+}
+
+html.dark .wtt-focus-goal-track {
+    background: rgba(148, 163, 184, 0.25);
+}
+
+html.dark .wtt-focus-adjust {
+    border-color: rgba(148, 163, 184, 0.3);
+    color: #f3f4f6;
+}
+
+html.dark .wtt-focus-adjust:hover {
+    background: rgba(148, 163, 184, 0.14);
+}
+
+html.dark #wtt-focus-exit-btn {
+    background: rgba(23, 30, 43, 0.96);
+    border-color: rgba(148, 163, 184, 0.22);
+    color: #f3f4f6;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.40);
+}
+
+/* Focus Mode - reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    #wtt-focus-overlay,
+    .wtt-focus-card {
+        animation: none;
+    }
+    .wtt-focus-dot::after {
+        animation: none;
+        opacity: 0.35;
+    }
+}
