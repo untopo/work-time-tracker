@@ -10992,13 +10992,14 @@ html.dark .payment-cycles-manager-panel {
 }
 
 .wtt-focus-timer {
-    font-size: 62px;
+    font-size: 54px;
     line-height: 1;
     font-weight: 700;
     letter-spacing: 0.01em;
     font-variant-numeric: tabular-nums;
     color: #0f172a;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    white-space: nowrap;
 }
 
 .wtt-focus-earnings {

@@ -2162,6 +2162,22 @@ function syncFocusModeOverlay() {
         const timerEl = overlay.querySelector('#wtt-focus-timer');
         if (timerEl) timerEl.textContent = formatTime(Math.max(0, Date.now() - liveCallStart));
     }
+    // Auto-ajuste: el texto debe caber dentro del anillo en cualquier pantalla
+    const fitEnAnillo = (el, basePx) => {
+        if (!el) return;
+        const svg = overlay.querySelector('.wtt-focus-ringwrap svg');
+        if (!svg) return;
+        el.style.fontSize = '';
+        const escala = svg.getBoundingClientRect().width / 360 || 1;
+        const diametroInterior = 2 * (FOCUS_RING_RADIUS - 8) * escala;
+        const maxW = diametroInterior - 24 * escala;
+        const ancho = el.scrollWidth;
+        if (ancho > maxW && ancho > 0) {
+            el.style.fontSize = Math.max(26, Math.floor(basePx * maxW / ancho)) + 'px';
+        }
+    };
+    fitEnAnillo(overlay.querySelector('#wtt-focus-timer'), 54);
+    fitEnAnillo(overlay.querySelector('#wtt-focus-earnings'), 34);
     const earningsEl = overlay.querySelector('#wtt-focus-earnings');
     if (earningsEl) earningsEl.textContent = formatEarnings(getFocusLiveEarnings());
     const rateEl = overlay.querySelector('#wtt-focus-rate');
@@ -3781,7 +3797,8 @@ if (storedDailyGoal) {
     }
 
     function formatEarnings(amount) {
-        return `$${amount.toFixed(2)}`;
+        const value = Number(amount);
+        return `$${(Number.isFinite(value) ? value : 0).toFixed(2)}`;
     }
 
     function normalizeTrendMode(mode) {
@@ -7176,7 +7193,7 @@ function migrateLegacyRpgCallEligibility() {
         const startDisplay = startDate.toLocaleString(DISPLAY_LOCALE, { timeZone: userTz });
         const endDisplay = endDate.toLocaleString(DISPLAY_LOCALE, { timeZone: userTz });
         const durationStr = formatTime(call.duration);
-        const earningsStr = formatEarnings(call.earned);
+        const earningsStr = formatEarnings(getCallEarnings(call));
         const noteCellHtml = getCallNoteCellHtml(call.notes);
 
         let safeRateName = escapeHTML(call.rateName || '');
