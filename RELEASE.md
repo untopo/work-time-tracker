@@ -17,9 +17,10 @@ Any other `v*` tag (for example `v0.0.0-buildtest`) runs the same builds but onl
 
 The in-app update banner is driven by `version.json` on GitHub Pages, so it must never point at a tag or release that does not exist yet:
 
-1. Open a PR that bumps the six version values in sync: `package.json`, `version.json` (`latestVersion` + `releaseUrl` with `/tag/vX.Y.Z`), `assets/js/app.js` (`APP_VERSION` + the first `CHANGELOG` entry), `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`. Android derives its version from `package.json`. Also add the `## vX.Y.Z` section to `CHANGELOG.md`.
-2. Push the `vX.Y.Z` tag and wait for the workflow to publish the release with all three installers.
-3. Only then merge the PR into `main`, which publishes the web through GitHub Pages.
+1. Open a PR that bumps the six version values in sync: `package.json`, `version.json` (`latestVersion` + `releaseUrl` with `/tag/vX.Y.Z`), `assets/js/app.js` (`APP_VERSION`), `assets/js/changelog-data.js` (head version, generated — see below), `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`. Android derives its version from `package.json`.
+2. Add the `## vX.Y.Z` section to `CHANGELOG.md` and run `npm run changelog`: `CHANGELOG.md` is the single source of truth for the release history, and the command regenerates `assets/js/changelog-data.js` (the in-app "What's New" data) from it. The readiness check fails if the two drift apart.
+3. Push the `vX.Y.Z` tag and wait for the workflow to publish the release with all three installers.
+4. Only then merge the PR into `main`, which publishes the web through GitHub Pages.
 
 ### Android signing secrets
 
@@ -50,6 +51,7 @@ Confirm:
 - `version.json.releaseUrl` points to the current GitHub tag
 - `index.html` includes the current JS modules used by the app shell
 - `CHANGELOG.md` has a `## vX.Y.Z` section for the version being released
+- `npm run changelog` was run, so `assets/js/changelog-data.js` matches `CHANGELOG.md` (enforced by the readiness check)
 
 ## Manual builds (fallback)
 
