@@ -43,10 +43,11 @@ const appVersion = extractMatch(
   /const\s+APP_VERSION\s*=\s*'([^']+)'/,
   'assets/js/app.js APP_VERSION'
 );
+const changelogDataJs = readText('assets/js/changelog-data.js');
 const appChangelogHeadVersion = extractMatch(
-  appJs,
-  /const\s+CHANGELOG\s*=\s*\[\s*\{\s*version:\s*'([^']+)'/m,
-  'assets/js/app.js CHANGELOG head version'
+  changelogDataJs,
+  /window\.WTT_CHANGELOG\s*=\s*\[\s*\{\s*version:\s*"([^"]+)"/,
+  'assets/js/changelog-data.js head version'
 );
 
 const checks = [
@@ -55,7 +56,7 @@ const checks = [
   ['src-tauri/tauri.conf.json version', tauriVersion],
   ['src-tauri/Cargo.toml package.version', cargoVersion],
   ['assets/js/app.js APP_VERSION', appVersion],
-  ['assets/js/app.js CHANGELOG head version', appChangelogHeadVersion]
+  ['assets/js/changelog-data.js head version', appChangelogHeadVersion]
 ];
 
 const mismatches = checks.filter(([, value]) => value !== pkgVersion);
