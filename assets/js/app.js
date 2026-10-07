@@ -1,4 +1,4 @@
-﻿
+
     const appStorage = window.WTTStorage || window.localStorage;
     const DISPLAY_LOCALE = 'en-US';
     const SESSION_TRACKER_KEY = 'sessionTrackerStateV1';
@@ -1814,7 +1814,9 @@ async function confirmExportOptions() {
 const featureNotesToggle = document.getElementById('feature-notes-toggle');
 const featurePaymentCyclesToggle = document.getElementById('feature-payment-cycles-toggle');
 const featureFloatingControlsToggle = document.getElementById('feature-floating-controls-toggle');
+const featureFocusModeToggle = document.getElementById('feature-focus-mode-toggle');
 const featureRpgToggle = document.getElementById('feature-rpg-toggle');
+const liveCallFocusBtn = document.getElementById('live-call-focus-btn');
 const openFloatingControlsSettingsBtn = document.getElementById('open-floating-controls-settings-btn');
 const floatingControlsSettingsModal = document.getElementById('floating-controls-settings-modal');
 const closeFloatingControlsSettingsBtn = document.getElementById('close-floating-controls-settings-modal');
@@ -2025,6 +2027,189 @@ function syncWorkstripSummary() {
     checkActiveCallIdleReminder(Date.now());
 }
 
+// ============================================
+// FOCUS MODE (optional live-call workspace)
+// ============================================
+let focusModeActive = false;
+const FOCUS_RING_RADIUS = 150;
+const FOCUS_RING_CIRCUMFERENCE = 2 * Math.PI * FOCUS_RING_RADIUS;
+
+function isFocusModeEnabled() {
+    return featureFlags?.focusMode !== false && isUiRefreshEnabled(featureFlags);
+}
+
+function getFocusSavedTodayEarnings() {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const dayStartMs = startOfDay.getTime();
+    let total = 0;
+    for (let i = 0; i < calls.length; i += 1) {
+        const call = calls[i];
+        if (!call) continue;
+        const startMs = Number.isFinite(call._startMs)
+            ? call._startMs
+            : Date.parse(call.startTime || '');
+        if (!Number.isFinite(startMs) || startMs < dayStartMs) continue;
+        const savedEarnings = Number(call.earnings);
+        if (Number.isFinite(savedEarnings)) {
+            total += savedEarnings;
+            continue;
+        }
+        const savedEarned = Number(call.earned);
+        if (Number.isFinite(savedEarned)) {
+            total += savedEarned;
+            continue;
+        }
+        const rate = Number(call.rate) || 0;
+        const endMs = Date.parse(call.endTime || '');
+        const durationSeconds = Number.isFinite(endMs) && endMs > startMs
+            ? Math.round((endMs - startMs) / 1000)
+            : (Number(call.duration) || 0);
+        total += (durationSeconds / 60) * rate;
+    }
+    return total;
+}
+
+function getFocusLiveEarnings() {
+    if (!liveCallStart) return 0;
+    const elapsedMs = Math.max(0, Date.now() - liveCallStart);
+    return calculateEarnings(elapsedMs, currentCallRate);
+}
+
+function getFocusGoalProgress() {
+    const goalAmount = Number(dailyGoal?.amount) || 0;
+    if (goalAmount <= 0) return null;
+    const earned = getFocusSavedTodayEarnings() + getFocusLiveEarnings();
+    const progress = Math.min((earned / goalAmount) * 100, 100);
+    return { earned, goalAmount, progress };
+}
+
+function buildFocusModeOverlay() {
+    if (document.getElementById('wtt-focus-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'wtt-focus-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', 'Focus Mode');
+    overlay.innerHTML = `
+        <div class="wtt-focus-card">
+            <span class="wtt-focus-eyebrow"><span class="wtt-focus-dot"></span> On call</span>
+            <div class="wtt-focus-rate" id="wtt-focus-rate"></div>
+            <div class="wtt-focus-ringwrap">
+                <svg width="360" height="360" viewBox="0 0 360 360" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="wtt-focus-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#10b981"/>
+                            <stop offset="100%" stop-color="#059669"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="180" cy="180" r="${FOCUS_RING_RADIUS}" fill="none" class="wtt-focus-ring-track" stroke-width="16"/>
+                    <circle cx="180" cy="180" r="${FOCUS_RING_RADIUS}" fill="none" stroke="url(#wtt-focus-ring-grad)" stroke-width="16"
+                        stroke-linecap="round" id="wtt-focus-ring-fill"
+                        stroke-dasharray="${FOCUS_RING_CIRCUMFERENCE.toFixed(1)}"
+                        stroke-dashoffset="${FOCUS_RING_CIRCUMFERENCE.toFixed(1)}"
+                        transform="rotate(-90 180 180)"/>
+                </svg>
+                <div class="wtt-focus-center">
+                    <div class="wtt-focus-timer" id="wtt-focus-timer">00:00:00</div>
+                    <div class="wtt-focus-earnings" id="wtt-focus-earnings">$0.00</div>
+                    <div class="wtt-focus-sublabel">Earned this call</div>
+                </div>
+            </div>
+            <div class="wtt-focus-goal">
+                <div class="wtt-focus-goal-top">
+                    <span>Daily goal</span>
+                    <span id="wtt-focus-goal-text"></span>
+                </div>
+                <div class="wtt-focus-goal-track"><div class="wtt-focus-goal-fill" id="wtt-focus-goal-fill"></div></div>
+            </div>
+            <div class="wtt-focus-actions">
+                <button type="button" class="wtt-focus-adjust" id="wtt-focus-minus-btn" aria-label="Subtract one second"><i class="fas fa-minus"></i></button>
+                <button type="button" class="wtt-focus-end" id="wtt-focus-end-btn"><i class="fas fa-stop"></i>&nbsp; End Call</button>
+                <button type="button" class="wtt-focus-adjust" id="wtt-focus-plus-btn" aria-label="Add one second"><i class="fas fa-plus"></i></button>
+            </div>
+        </div>
+        <button type="button" id="wtt-focus-exit-btn" aria-label="Exit Focus Mode"><i class="fas fa-eye"></i> Exit Focus</button>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#wtt-focus-exit-btn').addEventListener('click', () => {
+        // Exiting focus never touches the live call; it only restores the workspace.
+        exitFocusMode();
+    });
+    overlay.querySelector('#wtt-focus-end-btn').addEventListener('click', () => {
+        runWithViewportLock(endLiveCall);
+    });
+    overlay.querySelector('#wtt-focus-minus-btn').addEventListener('click', () => {
+        document.getElementById('focus-workstrip-minus-second-btn')?.click();
+    });
+    overlay.querySelector('#wtt-focus-plus-btn').addEventListener('click', () => {
+        document.getElementById('focus-workstrip-plus-second-btn')?.click();
+    });
+}
+
+function syncFocusModeOverlay() {
+    if (!focusModeActive) return;
+    const overlay = document.getElementById('wtt-focus-overlay');
+    if (!overlay) {
+        focusModeActive = false;
+        return;
+    }
+    const activeState = LiveCallSession.getState(Date.now());
+    if (!activeState) {
+        exitFocusMode();
+        return;
+    }
+    if (liveCallStart) {
+        const timerEl = overlay.querySelector('#wtt-focus-timer');
+        if (timerEl) timerEl.textContent = formatTime(Math.max(0, Date.now() - liveCallStart));
+    }
+    const earningsEl = overlay.querySelector('#wtt-focus-earnings');
+    if (earningsEl) earningsEl.textContent = formatEarnings(getFocusLiveEarnings());
+    const rateEl = overlay.querySelector('#wtt-focus-rate');
+    if (rateEl) {
+        const label = (focusWorkstripRate?.textContent || '').trim();
+        rateEl.textContent = label
+            || (rateSelect?.value ? `${rateSelect.value} - $${Number(currentCallRate || 0).toFixed(2)}/min` : 'Live call');
+    }
+    const goal = getFocusGoalProgress();
+    const goalText = overlay.querySelector('#wtt-focus-goal-text');
+    const goalFill = overlay.querySelector('#wtt-focus-goal-fill');
+    const ringFill = overlay.querySelector('#wtt-focus-ring-fill');
+    if (goal) {
+        if (goalText) goalText.textContent = `$${goal.earned.toFixed(2)} / $${goal.goalAmount.toFixed(2)} - ${goal.progress.toFixed(0)}%`;
+        if (goalFill) goalFill.style.width = `${goal.progress}%`;
+        if (ringFill) ringFill.style.strokeDashoffset = (FOCUS_RING_CIRCUMFERENCE * (1 - goal.progress / 100)).toFixed(1);
+    } else {
+        if (goalText) goalText.textContent = 'No goal set';
+        if (goalFill) goalFill.style.width = '0%';
+        if (ringFill) ringFill.style.strokeDashoffset = FOCUS_RING_CIRCUMFERENCE.toFixed(1);
+    }
+}
+
+function enterFocusMode() {
+    if (!isFocusModeEnabled()) return;
+    if (!LiveCallSession.getState(Date.now())) return;
+    if (focusModeActive) {
+        syncFocusModeOverlay();
+        return;
+    }
+    focusModeActive = true;
+    buildFocusModeOverlay();
+    syncFocusModeOverlay();
+}
+
+function exitFocusMode() {
+    focusModeActive = false;
+    const overlay = document.getElementById('wtt-focus-overlay');
+    if (overlay) overlay.remove();
+}
+
+function syncFocusModeButtonVisibility() {
+    if (liveCallFocusBtn) {
+        liveCallFocusBtn.style.display = isFocusModeEnabled() ? '' : 'none';
+    }
+    if (!isFocusModeEnabled() && focusModeActive) exitFocusMode();
+}
+
 function isEditableShortcutTarget(target) {
     if (!target) return false;
     if (target.isContentEditable) return true;
@@ -2067,6 +2252,7 @@ function loadFeatureFlags() {
             notes: true,
             paymentCycles: paymentCyclesEnabled,
             floatingCallControls: true,
+            focusMode: true,
             rpg: true,
             uiRefresh: true,
             floatingControlsSizeMode: 'auto',
@@ -2084,6 +2270,7 @@ function loadFeatureFlags() {
             notes: typeof parsed.notes === 'boolean' ? parsed.notes : true,
             paymentCycles: typeof parsed.paymentCycles === 'boolean' ? parsed.paymentCycles : paymentCyclesEnabled,
             floatingCallControls: typeof parsed.floatingCallControls === 'boolean' ? parsed.floatingCallControls : true,
+            focusMode: typeof parsed.focusMode === 'boolean' ? parsed.focusMode : true,
             rpg: typeof parsed.rpg === 'boolean' ? parsed.rpg : true,
             uiRefresh: true,
             floatingControlsSizeMode: ['auto', 'full', 'compact', 'icon'].includes(parsed.floatingControlsSizeMode) ? parsed.floatingControlsSizeMode : 'auto',
@@ -2101,6 +2288,7 @@ function loadFeatureFlags() {
             notes: true,
             paymentCycles: paymentCyclesEnabled,
             floatingCallControls: true,
+            focusMode: true,
             rpg: true,
             uiRefresh: true,
             floatingControlsSizeMode: 'auto',
@@ -2382,6 +2570,7 @@ let featureFlags = {
     notes: true,
     paymentCycles: false,
     floatingCallControls: true,
+    focusMode: true,
     rpg: true,
     uiRefresh: true,
     floatingControlsSizeMode: 'auto',
@@ -2884,6 +3073,7 @@ settingsManager = window.WTTSettingsManager?.create({
         doneFloatingControlsSettingsBtn,
         donePaymentCyclesSettingsBtn,
         featureFloatingControlsToggle,
+        featureFocusModeToggle,
         featureNotesToggle,
         featurePaymentCyclesToggle,
         featureRpgToggle,
@@ -2931,6 +3121,8 @@ settingsManager = window.WTTSettingsManager?.create({
         closeOtherDetailModals,
         detailModals,
         displayCalls,
+        exitFocusMode,
+        syncFocusModeButtonVisibility,
         getAchievementById,
         getFeatureFlags: () => featureFlags,
         getPaymentCyclesCount: () => Array.isArray(paymentCycles) ? paymentCycles.length : 0,
@@ -6571,6 +6763,7 @@ function restoreLiveCallUi() {
       renderSessionTracker();
     }
     queueWorkstripSync();
+    syncFocusModeOverlay();
   }, 1000);
 
   saveActiveCallState(true);
@@ -10625,6 +10818,8 @@ function saveCalls() {
             showToast('Live call saved!');
         }
         showPostCallReview(stopResult.callData, stopResult.elapsedMs, stopResult.earnings);
+        // Ending the call also leaves Focus Mode so the post-call review is visible.
+        exitFocusMode();
         clearActiveCallState();
         void syncAndroidWidgetActiveSession();
         updateFloatingCallControls(featureFlags);
@@ -11854,6 +12049,11 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
                 runWithViewportLock(endLiveCall);
             });
         }
+        if (liveCallFocusBtn) {
+            liveCallFocusBtn.addEventListener('click', () => {
+                enterFocusMode();
+            });
+        }
         if (workstripAddCallBtn) {
             workstripAddCallBtn.addEventListener('click', () => {
                 addCallBtn?.click();
@@ -11897,6 +12097,12 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             postCallDismissBtn.addEventListener('click', () => hidePostCallReview(true));
         }
         document.addEventListener('keydown', handleGlobalProductivityShortcuts);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && focusModeActive) {
+                event.preventDefault();
+                exitFocusMode();
+            }
+        });
         document.addEventListener('pointerdown', markUserActivity, true);
         document.addEventListener('focusin', markUserActivity, true);
         document.addEventListener('keydown', markUserActivity, true);
@@ -12181,6 +12387,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             migrateLegacyRpgCallEligibility();
             settingsManager?.syncFeatureControlInputs(featureFlags);
             applyFeatureFlags(featureFlags);
+            syncFocusModeButtonVisibility();
             queueWorkstripSync();
             settingsManager?.bindFeatureToggleControls();
             settingsManager?.bindViewListeners();
