@@ -1,7 +1,6 @@
 {
-    "latestVersion":  "1.5.0",
-    "releaseUrl":  "https://github.com/untopo/work-time-tracker/releases/tag/v1.5.0",
-    "downloadsUrl":  "https://github.com/untopo/work-time-tracker/releases",
-    "notes":  "Session Tracker now supports adding, editing, and deleting completed sessions, with automatic session metrics rebuilt from calls in the selected time window."
+    "latestVersion": "1.5.1",
+    "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.5.1",
+    "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
+    "notes": "Desktop and Android catch up with the web: safer imported rate names, clearer warnings when local saving fails, an updated Ko-fi link, and a lighter package under the MIT license."
 }
-

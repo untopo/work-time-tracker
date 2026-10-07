@@ -5,6 +5,19 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.5.1 - 2026-10-06
+
+### Highlights
+- Desktop and Android now include every improvement already live on the web.
+
+### Reliability & Privacy
+- Imported rate names are safely escaped before rendering.
+- A clear, non-blocking warning appears when saving data locally fails.
+
+### Other
+- The support button now points to the updated Ko-fi page.
+- Lighter app package after repository cleanup; the project is now under the MIT license.
+
 ## v1.5.0 - 2026-04-15
 
 ### Highlights
