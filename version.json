@@ -1,6 +1,6 @@
 {
-    "latestVersion": "1.5.1",
-    "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.5.1",
-    "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-    "notes": "Desktop and Android catch up with the web: safer imported rate names, clearer warnings when local saving fails, an updated Ko-fi link, and a lighter package under the MIT license."
+  "latestVersion": "1.6.0",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.0",
+  "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
+  "notes": "New optional Focus Mode for live calls, a Call Log crash fix for imported data, fully self-hosted styles and icons, and a visual README."
 }

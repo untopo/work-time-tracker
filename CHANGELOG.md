@@ -5,16 +5,23 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
-## v1.5.1 - 2026-10-06
+## v1.6.0 - 2026-10-07
 
 ### Highlights
+- New Focus Mode: during live calls, blur the workspace and center a big live timer, real-time earnings, and a ring that fills toward your daily goal. It is optional (Settings -> Features), works in light and dark themes, and exits with one tap or the Esc key without ever touching the call.
 - Desktop and Android now include every improvement already live on the web.
+- The project README is now a visual tour with real screenshots of every section.
+
+### Fixes
+- The Call Log no longer crashes when a call has no saved earnings field (for example rows imported from a company CSV); earnings are computed from the rate and duration instead, and currency formatting is protected against bad values.
 
 ### Reliability & Privacy
 - Imported rate names are safely escaped before rendering.
 - A clear, non-blocking warning appears when saving data locally fails.
+- Styles and icons are fully self-hosted: opening the app no longer contacts any CDN.
 
 ### Other
+- Single-source changelog: releases are documented only in CHANGELOG.md, and the in-app What's New data is generated from it.
 - The support button now points to the updated Ko-fi page.
 - Lighter app package after repository cleanup; the project is now under the MIT license.
 
