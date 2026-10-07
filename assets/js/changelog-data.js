@@ -3,12 +3,17 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
-        version: "1.5.1",
-        date: "2026-10-06",
+        version: "1.6.0",
+        date: "2026-10-07",
         changes: [
+        "New Focus Mode: during live calls, blur the workspace and center a big live timer, real-time earnings, and a ring that fills toward your daily goal. It is optional (Settings -> Features), works in light and dark themes, and exits with one tap or the Esc key without ever touching the call",
         "Desktop and Android now include every improvement already live on the web",
+        "The project README is now a visual tour with real screenshots of every section",
+        "The Call Log no longer crashes when a call has no saved earnings field (for example rows imported from a company CSV); earnings are computed from the rate and duration instead, and currency formatting is protected against bad values",
         "Imported rate names are safely escaped before rendering",
         "A clear, non-blocking warning appears when saving data locally fails",
+        "Styles and icons are fully self-hosted: opening the app no longer contacts any CDN",
+        "Single-source changelog: releases are documented only in CHANGELOG.md, and the in-app What's New data is generated from it",
         "The support button now points to the updated Ko-fi page",
         "Lighter app package after repository cleanup; the project is now under the MIT license"
         ]
