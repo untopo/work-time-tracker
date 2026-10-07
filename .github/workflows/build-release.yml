@@ -135,7 +135,9 @@ jobs:
             exit 0
           fi
           mkdir -p "$RUNNER_TEMP/android-signing"
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/android-signing/release.jks"
+          # Tolerate Windows `certutil -encode` output (BEGIN/END header lines,
+          # CRLF line endings) as well as plain single-line base64.
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '\r' | sed '/^-----/d' | tr -d '\n' | base64 --decode > "$RUNNER_TEMP/android-signing/release.jks"
           echo "WTT_ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/android-signing/release.jks" >> "$GITHUB_ENV"
           echo "available=true" >> "$GITHUB_OUTPUT"
 
