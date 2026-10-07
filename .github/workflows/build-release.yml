@@ -1,0 +1,265 @@
+name: Build installers
+
+# Builds the Windows installers and the Android APK whenever a tag starting
+# with "v" is pushed.
+#
+# - Tags that look exactly like "vX.Y.Z" (for example "v1.5.1") are official
+#   releases: once both builds succeed, the workflow creates the GitHub
+#   Release for that tag, attaches the three installers, and publishes it.
+# - Any other "v*" tag (for example "v0.0.0-buildtest") runs the same builds
+#   but only creates a draft release to verify the upload, then deletes it.
+#   Nothing becomes public. Use these tags for practice runs and delete them
+#   afterwards.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-installers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Work out release info
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.info.outputs.version }}
+      is-official: ${{ steps.info.outputs.is_official }}
+    steps:
+      - name: Read the version from the tag
+        id: info
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            official="true"
+          else
+            official="false"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "is_official=$official" >> "$GITHUB_OUTPUT"
+          echo "Tag: $tag | version: $version | official release: $official"
+
+  build-windows:
+    name: Build Windows installers
+    needs: prepare
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache the Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Build the desktop installers (Tauri)
+        run: npx tauri build
+
+      - name: Collect the installers
+        shell: pwsh
+        run: |
+          $bundle = "src-tauri/target/release/bundle"
+          New-Item -ItemType Directory -Force -Path staging | Out-Null
+          if (Test-Path "$bundle/nsis") { Copy-Item "$bundle/nsis/*.exe" staging/ }
+          if (Test-Path "$bundle/msi") { Copy-Item "$bundle/msi/*.msi" staging/ }
+          Get-ChildItem staging | ForEach-Object { Write-Host "Built installer: $($_.Name)" }
+          if (-not (Get-ChildItem staging -Filter *.exe -ErrorAction SilentlyContinue)) {
+            throw "The .exe installer was not produced."
+          }
+          if (-not (Get-ChildItem staging -Filter *.msi -ErrorAction SilentlyContinue)) {
+            throw "The .msi installer was not produced."
+          }
+
+      - name: Upload the installers as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: staging/
+          if-no-files-found: error
+
+  build-android:
+    name: Build Android APK
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build the web assets (also verifies version sync)
+        run: npm run build:web
+
+      - name: Sync the web assets into the Android project
+        run: npx cap sync android
+
+      - name: Prepare the Android signing key
+        id: signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.WTT_ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "No signing key configured (WTT_ANDROID_KEYSTORE_BASE64 is not set)."
+            exit 0
+          fi
+          mkdir -p "$RUNNER_TEMP/android-signing"
+          # Tolerate Windows `certutil -encode` output (BEGIN/END header lines,
+          # CRLF line endings) as well as plain single-line base64.
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '\r' | sed '/^-----/d' | tr -d '\n' | base64 --decode > "$RUNNER_TEMP/android-signing/release.jks"
+          echo "WTT_ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/android-signing/release.jks" >> "$GITHUB_ENV"
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Refuse official releases without the signing key
+        if: ${{ steps.signing.outputs.available != 'true' && needs.prepare.outputs.is-official == 'true' }}
+        run: |
+          echo "::error::This is an official release tag, but the Android signing key is not configured. Add the WTT_ANDROID_KEYSTORE_* repository secrets. The build stops here instead of producing an unsigned APK."
+          exit 1
+
+      - name: Build the release APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+        env:
+          WTT_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.WTT_ANDROID_KEYSTORE_PASSWORD }}
+          WTT_ANDROID_KEY_ALIAS: ${{ secrets.WTT_ANDROID_KEY_ALIAS }}
+          WTT_ANDROID_KEY_PASSWORD: ${{ secrets.WTT_ANDROID_KEY_PASSWORD }}
+
+      - name: Check the built APK
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          apk_dir="android/app/build/outputs/apk/release"
+          ls -la "$apk_dir"
+          if [ "${{ needs.prepare.outputs.is-official }}" = "true" ]; then
+            expected="$apk_dir/Work.Time.Tracker_${version}_signed.apk"
+            if [ ! -f "$expected" ]; then
+              echo "::error::Expected a signed APK at $expected."
+              exit 1
+            fi
+          fi
+          if ! ls "$apk_dir"/Work.Time.Tracker_*.apk > /dev/null 2>&1; then
+            echo "::error::No APK was produced."
+            exit 1
+          fi
+
+      - name: Collect the APK
+        run: |
+          mkdir -p staging
+          cp android/app/build/outputs/apk/release/Work.Time.Tracker_*.apk staging/
+
+      - name: Upload the APK as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: staging/
+          if-no-files-found: error
+
+  publish:
+    name: Publish the GitHub release
+    needs: [prepare, build-windows, build-android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the built installers
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+
+      - name: Gather the release files
+        run: |
+          mkdir -p files
+          find release-assets -type f \( -name '*.exe' -o -name '*.msi' -o -name '*.apk' \) -exec cp {} files/ \;
+          ls -la files
+          count=$(find files -type f | wc -l)
+          if [ "$count" -ne 3 ]; then
+            echo "::error::Expected exactly 3 release files (.exe, .msi, .apk), found $count."
+            exit 1
+          fi
+
+      - name: Extract the release notes for this version
+        run: |
+          version="${{ needs.prepare.outputs.version }}"
+          awk -v ver="v$version" '
+            $1 == "##" && $2 == ver { in_section = 1; next }
+            $1 == "##" && $2 ~ /^v[0-9]/ { in_section = 0 }
+            in_section { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ]; then
+            echo "Installers for Work Time Tracker $version." > release-notes.md
+          fi
+
+      - name: Create the release as a draft with all files attached
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            echo "A release for $tag already exists; refreshing its files."
+            gh release upload "$tag" files/* --clobber
+          else
+            gh release create "$tag" \
+              --draft \
+              --title "v${{ needs.prepare.outputs.version }}" \
+              --notes-file release-notes.md \
+              files/*
+          fi
+
+      - name: Verify all three installers are attached
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          assets=$(gh release view "$tag" --json assets --jq '.assets | length')
+          echo "Assets attached to the release: $assets"
+          if [ "$assets" -ne 3 ]; then
+            echo "::error::Expected 3 assets on the release, found $assets."
+            exit 1
+          fi
+
+      - name: Publish the release (official versions only)
+        if: ${{ needs.prepare.outputs.is-official == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$GITHUB_REF_NAME" --draft=false
+
+      - name: Delete the practice release (non-official tags)
+        if: ${{ needs.prepare.outputs.is-official != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Practice run: deleting the draft release for $GITHUB_REF_NAME (the tag and the built files stay as workflow artifacts)."
+          gh release delete "$GITHUB_REF_NAME" --yes
