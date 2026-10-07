@@ -8,8 +8,9 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.5.0';
+    const APP_VERSION = '1.5.1';
     const CHANGELOG = [
+        { version: '1.5.1', date: '2026-10-06', changes: ['Desktop and Android now include every improvement already live on the web', 'Imported rate names are safely escaped before rendering', 'A clear, non-blocking warning appears when saving data locally fails', 'The support button now points to the updated Ko-fi page', 'Lighter app package after repository cleanup, now under the MIT license'] },
         { version: '1.5.0', date: '2026-04-15', changes: ['Session Tracker history now supports adding manual sessions directly from the log', 'Completed sessions can now be edited after the fact, making it easier to correct sessions that ran too long or ended late', 'Session Tracker history now also supports deleting individual completed sessions when the user wants to remove them completely', 'Manual and edited sessions now rebuild calls, talk time, idle time, utilization, and earnings automatically from the calls inside the selected time window'] },
         { version: '1.4.2', date: '2026-04-01', changes: ['Fixed Call Log date picker initialization so the selector starts with a valid date and responds more reliably when choosing a specific day', 'Improved Call Log date navigation stability across web, desktop, and Android by wiring the picker earlier and handling both input and change events'] },
         { version: '1.4.1', date: '2026-04-01', changes: ['Call Log now includes a restored date picker and previous/next period navigation for day, week, and month views', 'Call Log period navigation now moves in the same unit as the active filter instead of forcing a separate analytics date flow', 'Contact Us now includes a direct support email so users can reach out without the form if needed'] },
