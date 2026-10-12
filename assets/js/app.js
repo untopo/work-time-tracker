@@ -989,8 +989,61 @@ function loadGoatCounterScript(siteCode) {
     return true;
 }
 
+// Anonymous usage counts are on by default (as before) and can be switched off in
+// Settings -> Features. This uses its own storage key, so saved calls, rates,
+// goals and feature flags are never read or rewritten by this setting.
+const ANALYTICS_ENABLED_KEY = 'wtt_analytics_enabled';
+
+function isAnalyticsEnabled() {
+    try {
+        return appStorage.getItem(ANALYTICS_ENABLED_KEY) !== '0';
+    } catch {
+        return true;
+    }
+}
+
+function setAnalyticsEnabled(enabled) {
+    try {
+        appStorage.setItem(ANALYTICS_ENABLED_KEY, enabled ? '1' : '0');
+    } catch (error) {
+        console.warn('Could not persist analytics preference', error);
+    }
+}
+
+// Sends only the name of an action (for example "call-started"). Never any
+// call, earnings, rate, note or history data.
+function trackEvent(name) {
+    try {
+        if (isDesktopTauri || Boolean(window.Capacitor)) return;
+        if (!isAnalyticsEnabled()) return;
+        const counter = window.goatcounter;
+        if (!counter || typeof counter.count !== 'function') return;
+        counter.count({ path: `event/${name}`, title: name, event: true });
+    } catch (error) {
+        // Analytics must never affect the app.
+    }
+}
+
+function setupAnalyticsToggle() {
+    const row = document.getElementById('analytics-setting-row');
+    const toggle = document.getElementById('feature-analytics-toggle');
+    if (!row || !toggle) return;
+    if (isDesktopTauri || Boolean(window.Capacitor)) {
+        row.style.display = 'none';
+        return;
+    }
+    toggle.checked = isAnalyticsEnabled();
+    toggle.addEventListener('change', () => {
+        setAnalyticsEnabled(toggle.checked);
+        showToast(toggle.checked
+            ? 'Anonymous usage counts are on.'
+            : 'Anonymous usage counts are off. Takes full effect on next reload.');
+    });
+}
+
 function setupGoatCounterAnalytics() {
     if (isDesktopTauri || Boolean(window.Capacitor)) return;
+    if (!isAnalyticsEnabled()) return;
     applyGoatCounterUrlOverrides();
     const siteCode = readGoatCounterSiteCode();
     if (!siteCode) return;
@@ -2209,6 +2262,7 @@ function enterFocusMode() {
         return;
     }
     focusModeActive = true;
+    trackEvent('focus-mode');
     buildFocusModeOverlay();
     syncFocusModeOverlay();
 }
@@ -6809,6 +6863,7 @@ function beginLiveCallWithRate(rateName, rateAmount) {
     renderSessionTracker();
   }
   markOnboardingStepComplete('call');
+  trackEvent('call-started');
   queueWorkstripSync();
 }
 
@@ -10819,6 +10874,7 @@ function saveCalls() {
         }
         calls.push(stopResult.callData);
         saveCalls();
+        trackEvent('call-ended');
         setLiveCallInfoVisibility(false);
         startCallBtn.style.display = 'block';
         endCallBtn.style.display = 'none';
@@ -13013,6 +13069,7 @@ goalMinutesInput.addEventListener('input', () => {
             }, 10000);
         }
         registerGoatCounterDebugApi();
+        setupAnalyticsToggle();
         setupGoatCounterAnalytics();
         void updateManager?.check?.();
         scheduleReleaseSpotlightBanner();
