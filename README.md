@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.5.1-blue)
+![Version](https://img.shields.io/badge/version-1.6.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Privacy](https://img.shields.io/badge/privacy-local--first-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
@@ -124,7 +124,7 @@ your calls, earnings, rates, or history.
 
 | Feature | Destination | What is sent | How to avoid it |
 |---|---|---|---|
-| Usage analytics (web only) | GoatCounter (`gc.zgo.at`) | Anonymous page-view ping. No app data | Use the desktop or Android build |
+| Usage analytics (web only) | GoatCounter (`gc.zgo.at`) | Anonymous page-view ping and the name of a few actions (`call-started`, `call-ended`, `focus-mode`). No app data | Turn it off in `Settings -> Features`, or use the desktop or Android build |
 | Update check | `untopo.github.io`, `api.github.com` | Nothing. Only reads the published version | Ignore the banner |
 | US ZIP / Address Lookup | `api.zippopotam.us`, `nominatim.openstreetmap.org` | The ZIP or address you type | Do not use the tool |
 | Interpreter Language Assistant | `api.mymemory.translated.net`, `api.dictionaryapi.dev`, `api.datamuse.com` | The term you look up | Do not use the tool |
@@ -138,10 +138,12 @@ other third-party lookup: the term you search is sent to the provider above.
 ### Analytics
 
 The web version at GitHub Pages loads GoatCounter for anonymous page-view
-counts. It records no personal data, no work data, and no cross-site profile.
+counts and a few anonymous action counts. It records no personal data, no work
+data, and no cross-site profile.
 
+- Actions counted: call started, call ended, Focus Mode opened. Only the action name is sent, never durations, earnings, rates, notes, or history
+- Turn it off any time in `Settings -> Features -> Share anonymous usage counts`; the choice is stored under its own key and never touches your work data
 - The desktop (Tauri) and Android (Capacitor) builds skip analytics entirely
-- There is no in-app opt-out toggle yet; a browser content blocker stops it today
 - Self-hosted copies can remove the analytics call from `assets/js/app.js`
 
 ## Backup and Restore
