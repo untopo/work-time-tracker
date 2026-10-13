@@ -2,7 +2,7 @@ name: Checks
 
 # Fast verification for every pull request and every push to main: version
 # sync across the six version locations, release readiness, JS syntax, and
-# the web build. The heavy installer builds live in build-release.yml.
+# the web build, and end-to-end data-safety tests. The heavy installer builds live in build-release.yml.
 
 on:
   pull_request:
@@ -17,7 +17,7 @@ jobs:
   verify:
     name: Version and release checks
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -43,3 +43,12 @@ jobs:
 
       - name: Web build
         run: npm run build:web
+
+      # Opens the real app in Chromium and checks that saved data survives,
+      # calls are recorded and every screen opens. Network is blocked inside
+      # the tests, so no analytics are ever sent.
+      - name: Install Chromium for end-to-end tests
+        run: npx playwright-core install --with-deps chromium
+
+      - name: End-to-end data safety tests
+        run: npm run test:e2e

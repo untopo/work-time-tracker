@@ -14,7 +14,8 @@
     "tauri:build": "node scripts/tauri-win.mjs build",
     "cap:sync": "npm run build:web && npm run android:icons && npx cap sync",
     "cap:sync:android": "npm run build:web && npm run android:icons && npx cap sync android",
-    "cap:open:android": "npx cap open android"
+    "cap:open:android": "npx cap open android",
+    "test:e2e": "node --test tests/e2e/*.test.mjs"
   },
   "keywords": [
     "tracker",
@@ -34,10 +35,7 @@
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
     "@tauri-apps/cli": "^2.10.0",
+    "playwright-core": "1.56.1",
     "serve": "^14.2.5"
   }
 }
-
-
-
-
