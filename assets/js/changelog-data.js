@@ -3,6 +3,17 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.6.1",
+        date: "2026-10-12",
+        changes: [
+        "Faster, lighter app: the first load is about 400 KB smaller, and the session panel no longer redraws twice per second during a live call",
+        "First desktop and Android installers since v1.5.0: they include everything from v1.6.0, such as Focus Mode, the Call Log fix for imported data, and fully self-hosted styles and icons",
+        "New \"Share anonymous usage counts\" switch in Settings -> Features (web only). When on, only the name of a few actions is counted (call started, call ended, Focus Mode), never your calls, earnings, rates, or notes. Your saved data is not touched",
+        "The footer clock now pauses while the tab is hidden and updates right away when you come back",
+        "Lighter app package after removing unused images and trimming the icon font to the icons the app uses"
+        ]
+    },
+    {
         version: "1.6.0",
         date: "2026-10-07",
         changes: [
