@@ -35,6 +35,9 @@ jobs:
       - name: Release readiness
         run: npm run verify:release-ready
 
+      - name: Icons present in trimmed Font Awesome
+        run: npm run verify:icons
+
       - name: JavaScript syntax
         run: node --check assets/js/app.js
 

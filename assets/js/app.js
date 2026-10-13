@@ -6830,7 +6830,9 @@ function restoreLiveCallUi() {
     updateFloatingActiveCard(featureFlags, true);
     saveActiveCallState();
     scheduleDesktopOverlayRefresh();
-    if (sessionTrackerState?.active) {
+    // The session panel already refreshes from its own 1s timer while a session is
+    // active; render here only as a fallback so it is never drawn twice per second.
+    if (sessionTrackerState?.active && !sessionTrackerTimerId) {
       renderSessionTracker();
     }
     queueWorkstripSync();
@@ -13073,7 +13075,15 @@ goalMinutesInput.addEventListener('input', () => {
         setupGoatCounterAnalytics();
         void updateManager?.check?.();
         scheduleReleaseSpotlightBanner();
-        setInterval(updateLocalTime, 1000);
+        // The footer clock is display-only: skip it while the tab is hidden and
+        // refresh it right away when the tab comes back.
+        setInterval(() => {
+            if (document.visibilityState === 'hidden') return;
+            updateLocalTime();
+        }, 1000);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') updateLocalTime();
+        });
         window.addEventListener('scroll', () => {
             flushPendingLiveCallInfoVisibilityIfVisible();
             scheduleFloatingControlsRefresh();
