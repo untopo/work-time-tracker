@@ -11204,3 +11204,21 @@ html.dark #wtt-focus-exit-btn {
         opacity: 0.35;
     }
 }
+
+/* +/- second buttons: press and hold repeats (see setupLiveCallHoldToAdjust) */
+[data-adjust-ms] {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+[data-adjust-ms].is-holding {
+    transform: scale(0.94);
+    filter: brightness(1.12);
+}
+@media (prefers-reduced-motion: no-preference) {
+    [data-adjust-ms] {
+        transition: transform 0.08s ease-out, filter 0.08s ease-out;
+    }
+}
