@@ -3,6 +3,16 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.6.2",
+        date: "2026-10-14",
+        changes: [
+        "Hold the +1s / -1s buttons to adjust the live call time smoothly: one tap still adds or removes a second, and keeping it pressed repeats, starting gently and speeding up. It stops when you let go, at 00:00:00, or when the call ends, and works in the call card, the floating controls, and Focus Mode",
+        "The big timer in Focus Mode now updates immediately when you adjust the time, instead of lagging up to a second behind",
+        "Your saved calls, rates, and goals are not touched: the adjusted time is saved when you release the button, so a refresh keeps the exact time shown",
+        "New automated end-to-end checks open the real app and confirm that saved data survives a reload, calls are recorded correctly, and the time adjustment never breaks the timer"
+        ]
+    },
+    {
         version: "1.6.1",
         date: "2026-10-12",
         changes: [
