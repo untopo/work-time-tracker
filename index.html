@@ -175,10 +175,10 @@
                             <div class="focus-workstrip-metric-mainline">
                                 <span id="focus-workstrip-timer" class="focus-workstrip-metric-value">00:00:00</span>
                                 <div class="focus-workstrip-timer-adjust" aria-label="Adjust live call time">
-                                    <button id="focus-workstrip-plus-second-btn" type="button" class="focus-workstrip-timer-adjust-btn focus-workstrip-plus-btn" aria-label="Add one second">
+                                    <button id="focus-workstrip-plus-second-btn" type="button" data-adjust-ms="1000" class="focus-workstrip-timer-adjust-btn focus-workstrip-plus-btn" aria-label="Add one second">
                                         <i class="fas fa-plus"></i>
                                     </button>
-                                    <button id="focus-workstrip-minus-second-btn" type="button" class="focus-workstrip-timer-adjust-btn focus-workstrip-minus-btn" aria-label="Subtract one second">
+                                    <button id="focus-workstrip-minus-second-btn" type="button" data-adjust-ms="-1000" class="focus-workstrip-timer-adjust-btn focus-workstrip-minus-btn" aria-label="Subtract one second">
                                         <i class="fas fa-minus"></i>
                                     </button>
                                 </div>
@@ -288,10 +288,10 @@
                     <i class="fas fa-bullseye"></i> Focus
                 </button>
                 <div id="live-call-adjust-controls" class="live-call-adjust-controls mt-3">
-                    <button id="live-call-minus-second-btn" type="button" class="live-call-adjust-btn live-call-adjust-minus" aria-label="Subtract one second">
+                    <button id="live-call-minus-second-btn" type="button" data-adjust-ms="-1000" class="live-call-adjust-btn live-call-adjust-minus" aria-label="Subtract one second">
                         <i class="fas fa-minus"></i><span>1s</span>
                     </button>
-                    <button id="live-call-plus-second-btn" type="button" class="live-call-adjust-btn live-call-adjust-plus" aria-label="Add one second">
+                    <button id="live-call-plus-second-btn" type="button" data-adjust-ms="1000" class="live-call-adjust-btn live-call-adjust-plus" aria-label="Add one second">
                         <i class="fas fa-plus"></i><span>1s</span>
                     </button>
                 </div>
@@ -1261,10 +1261,10 @@
             <div id="floating-active-timer" class="text-sm font-mono font-bold text-green-800 dark:text-green-100">00:00:00</div>
             <div id="floating-active-earnings" class="text-sm font-semibold text-green-800 dark:text-green-100">$0.00</div>
             <div id="floating-active-adjust-controls" class="floating-active-adjust-controls" style="display:none;">
-                <button id="floating-minus-second-btn" type="button" class="floating-active-adjust-btn floating-active-adjust-minus" aria-label="Subtract one second">
+                <button id="floating-minus-second-btn" type="button" data-adjust-ms="-1000" class="floating-active-adjust-btn floating-active-adjust-minus" aria-label="Subtract one second">
                     <i class="fas fa-minus"></i>
                 </button>
-                <button id="floating-plus-second-btn" type="button" class="floating-active-adjust-btn floating-active-adjust-plus" aria-label="Add one second">
+                <button id="floating-plus-second-btn" type="button" data-adjust-ms="1000" class="floating-active-adjust-btn floating-active-adjust-plus" aria-label="Add one second">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>

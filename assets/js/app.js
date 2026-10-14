@@ -2176,9 +2176,9 @@ function buildFocusModeOverlay() {
                 <div class="wtt-focus-goal-track"><div class="wtt-focus-goal-fill" id="wtt-focus-goal-fill"></div></div>
             </div>
             <div class="wtt-focus-actions">
-                <button type="button" class="wtt-focus-adjust" id="wtt-focus-minus-btn" aria-label="Subtract one second"><i class="fas fa-minus"></i></button>
+                <button type="button" class="wtt-focus-adjust" id="wtt-focus-minus-btn" data-adjust-ms="-1000" aria-label="Subtract one second"><i class="fas fa-minus"></i></button>
                 <button type="button" class="wtt-focus-end" id="wtt-focus-end-btn"><i class="fas fa-stop"></i>&nbsp; End Call</button>
-                <button type="button" class="wtt-focus-adjust" id="wtt-focus-plus-btn" aria-label="Add one second"><i class="fas fa-plus"></i></button>
+                <button type="button" class="wtt-focus-adjust" id="wtt-focus-plus-btn" data-adjust-ms="1000" aria-label="Add one second"><i class="fas fa-plus"></i></button>
             </div>
         </div>
         <button type="button" id="wtt-focus-exit-btn" aria-label="Exit Focus Mode"><i class="fas fa-eye"></i> Exit Focus</button>
@@ -2191,12 +2191,7 @@ function buildFocusModeOverlay() {
     overlay.querySelector('#wtt-focus-end-btn').addEventListener('click', () => {
         runWithViewportLock(endLiveCall);
     });
-    overlay.querySelector('#wtt-focus-minus-btn').addEventListener('click', () => {
-        document.getElementById('focus-workstrip-minus-second-btn')?.click();
-    });
-    overlay.querySelector('#wtt-focus-plus-btn').addEventListener('click', () => {
-        document.getElementById('focus-workstrip-plus-second-btn')?.click();
-    });
+    // The +/- second buttons here are handled by the shared hold-to-adjust logic (data-adjust-ms).
 }
 
 function syncFocusModeOverlay() {
@@ -10843,27 +10838,139 @@ function saveCalls() {
         beginLiveCallWithRate(rateSelect.value, selectedRate ? Number(selectedRate.amount) || 0 : 0);
     }
 
-    function adjustLiveCallElapsedByMs(deltaMs) {
+    // Shifts the running call's elapsed time by deltaMs (positive = more time).
+    // Returns true when the time actually changed (false at the 00:00:00 floor or
+    // when no call is running), so a held button knows when to stop repeating.
+    // While a button is held (options.holding) the heavy work (storage write,
+    // Android widget sync) is throttled and finished once on release.
+    function adjustLiveCallElapsedByMs(deltaMs, options = {}) {
+        const holding = options.holding === true;
         markUserActivity();
-        if (!LiveCallSession.isActive()) return;
+        if (!LiveCallSession.isActive()) return false;
         const currentSession = buildCurrentActiveCallSession();
-        if (!currentSession) return;
+        if (!currentSession) return false;
         const now = Date.now();
         const requestedStart = Math.round((currentSession.start || now) - Number(deltaMs || 0));
         const clampedStart = Math.min(now, Math.max(1, requestedStart));
+        const changed = clampedStart !== currentSession.start;
         const updated = setLiveCallRuntimeState({
             ...currentSession,
             start: clampedStart,
             lastPing: now
         });
-        if (!updated) return;
-        saveActiveCallState(true);
+        if (!updated) return false;
+        if (!holding || now - lastHoldAdjustPersistAt >= HOLD_ADJUST_PERSIST_EVERY_MS) {
+            saveActiveCallState(true);
+            lastHoldAdjustPersistAt = now;
+        }
         const elapsedMs = Math.max(0, now - updated.start);
         liveCallTimerDisplay.textContent = formatTime(elapsedMs);
         liveCallEarningsDisplay.textContent = formatEarnings(calculateEarnings(elapsedMs, currentCallRate || getSelectedRateAmount()));
         updateFloatingActiveCard(featureFlags, true);
         queueWorkstripSync();
-        void syncAndroidWidgetActiveSession();
+        // Focus Mode has its own big timer; refresh it now instead of waiting for its next tick.
+        if (focusModeActive) syncFocusModeOverlay();
+        if (!holding) void syncAndroidWidgetActiveSession();
+        return changed;
+    }
+
+    // ---- Hold-to-adjust (+/- 1 second) ---------------------------------------
+    // Press = one second right away. Keep pressing = after a short delay the time
+    // keeps moving, starting gently and speeding up. Steps are driven by the clock
+    // (not by timers), so the pace is the same on slow and fast devices.
+    const HOLD_ADJUST_DELAY_MS = 380;
+    const HOLD_ADJUST_START_RATE = 4;     // seconds per second when repeating begins
+    const HOLD_ADJUST_MAX_RATE = 26;      // seconds per second after the ramp
+    const HOLD_ADJUST_RAMP_MS = 2600;
+    const HOLD_ADJUST_PERSIST_EVERY_MS = 400;
+    let lastHoldAdjustPersistAt = 0;
+    let activeAdjustHold = null;
+
+    function stopAdjustHold() {
+        const hold = activeAdjustHold;
+        if (!hold) return;
+        activeAdjustHold = null;
+        cancelAnimationFrame(hold.frameId);
+        hold.button.classList.remove('is-holding');
+        try {
+            if (hold.button.hasPointerCapture?.(hold.pointerId)) hold.button.releasePointerCapture(hold.pointerId);
+        } catch (_) { /* the pointer may already be gone */ }
+        // One final, complete save so a refresh or crash keeps the exact time shown.
+        if (LiveCallSession.isActive()) {
+            saveActiveCallState(true);
+            void syncAndroidWidgetActiveSession();
+        }
+    }
+
+    function runAdjustHoldFrame(timestamp) {
+        const hold = activeAdjustHold;
+        if (!hold) return;
+        hold.frameId = requestAnimationFrame(runAdjustHoldFrame);
+        const heldMs = timestamp - hold.startedAt - HOLD_ADJUST_DELAY_MS;
+        if (heldMs < 0) { hold.lastFrameAt = timestamp; return; }
+        // Cap the gap between frames so a stalled tab cannot cause a big jump.
+        const frameMs = Math.min(100, Math.max(0, timestamp - hold.lastFrameAt));
+        hold.lastFrameAt = timestamp;
+        const progress = Math.min(1, heldMs / HOLD_ADJUST_RAMP_MS);
+        const eased = progress * progress * (3 - 2 * progress);
+        const rate = HOLD_ADJUST_START_RATE + (HOLD_ADJUST_MAX_RATE - HOLD_ADJUST_START_RATE) * eased;
+        hold.carry += rate * frameMs / 1000;
+        const steps = Math.floor(hold.carry);
+        if (steps < 1) return;
+        hold.carry -= steps;
+        if (!adjustLiveCallElapsedByMs(hold.direction * 1000 * steps, { holding: true })) {
+            stopAdjustHold(); // reached 00:00:00 or the call ended
+        }
+    }
+
+    function setupLiveCallHoldToAdjust() {
+        const findButton = (event) => event.target?.closest?.('[data-adjust-ms]') || null;
+
+        document.addEventListener('pointerdown', (event) => {
+            const button = findButton(event);
+            if (!button || button.disabled) return;
+            if (event.pointerType === 'mouse' && event.button !== 0) return;
+            stopAdjustHold();
+            const direction = Number(button.dataset.adjustMs) < 0 ? -1 : 1;
+            if (!adjustLiveCallElapsedByMs(direction * 1000, { holding: true })) {
+                return;
+            }
+            try { button.setPointerCapture(event.pointerId); } catch (_) { /* optional */ }
+            button.classList.add('is-holding');
+            const now = performance.now();
+            activeAdjustHold = {
+                button,
+                pointerId: event.pointerId,
+                direction,
+                startedAt: now,
+                lastFrameAt: now,
+                carry: 0,
+                frameId: requestAnimationFrame(runAdjustHoldFrame)
+            };
+        });
+
+        ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((name) => {
+            document.addEventListener(name, (event) => {
+                if (activeAdjustHold && event.pointerId === activeAdjustHold.pointerId) stopAdjustHold();
+            });
+        });
+        window.addEventListener('blur', stopAdjustHold);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') stopAdjustHold();
+        });
+
+        // Keyboard (Enter/Space) and screen readers arrive as a click with detail 0.
+        // Real mouse/touch presses are already handled on pointerdown, so skip those.
+        document.addEventListener('click', (event) => {
+            const button = findButton(event);
+            if (!button || event.detail !== 0) return;
+            adjustLiveCallElapsedByMs(Number(button.dataset.adjustMs) < 0 ? -1000 : 1000);
+        });
+
+        // Long-press on touch screens must not open the context menu or select text.
+        document.addEventListener('contextmenu', (event) => {
+            if (findButton(event)) event.preventDefault();
+        });
     }
 
     function endLiveCall() {
@@ -12213,24 +12320,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
                 );
             });
         }
-        if (liveCallMinusSecondBtn) {
-            liveCallMinusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(-1000));
-        }
-        if (liveCallPlusSecondBtn) {
-            liveCallPlusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(1000));
-        }
-        if (floatingMinusSecondBtn) {
-            floatingMinusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(-1000));
-        }
-        if (floatingPlusSecondBtn) {
-            floatingPlusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(1000));
-        }
-        if (focusWorkstripMinusSecondBtn) {
-            focusWorkstripMinusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(-1000));
-        }
-        if (focusWorkstripPlusSecondBtn) {
-            focusWorkstripPlusSecondBtn.addEventListener('click', () => adjustLiveCallElapsedByMs(1000));
-        }
+        setupLiveCallHoldToAdjust();
         if (floatingStartCallBtn) {
             floatingStartCallBtn.addEventListener('click', () => {
                 runWithViewportLock(startLiveCall);
