@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.6.1",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.1",
+  "latestVersion": "1.6.2",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.2",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "A lighter, faster app, a new switch to turn off anonymous usage counts, and the first desktop and Android installers with everything from 1.6.0 (including Focus Mode)."
+  "notes": "Hold the +1s / -1s buttons to adjust a live call smoothly, with a faster Focus Mode timer."
 }
