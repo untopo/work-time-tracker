@@ -1304,6 +1304,118 @@ async function exportCallsAsCsv(exportCalls) {
     return true;
 }
 
+// ---- Data protection (web only): persistent storage and backup reminder ----------
+// The web version keeps everything in this browser. Two safety nets:
+//  1) ask the browser to mark our storage as persistent, so it is not cleared when space runs low;
+//  2) remind the user, gently and rarely, to export a backup file.
+// Nothing here reads, changes, or deletes calls, rates, goals, or any other saved data.
+const LAST_BACKUP_KEY = 'wtt_last_backup_at';
+const BACKUP_REMINDER_SNOOZE_KEY = 'wtt_backup_reminder_snooze_until';
+const BACKUP_REMINDER_OFF_KEY = 'wtt_backup_reminder_off';
+const PERSIST_ATTEMPTS_KEY = 'wtt_persist_attempts';
+const BACKUP_REMINDER_AFTER_MS = 14 * 24 * 60 * 60 * 1000;
+const BACKUP_REMINDER_SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+const BACKUP_REMINDER_MIN_CALLS = 10;
+const PERSIST_MAX_ATTEMPTS = 3;
+let persistentStorageRequestedThisSession = false;
+
+function readSafetySetting(key) {
+    try {
+        return appStorage.getItem(key);
+    } catch (error) {
+        return null;
+    }
+}
+
+function writeSafetySetting(key, value) {
+    try {
+        appStorage.setItem(key, String(value));
+    } catch (error) {
+        // These are conveniences only; never interrupt the user if they cannot be saved.
+    }
+}
+
+function readSafetyNumber(key) {
+    const value = Number(readSafetySetting(key));
+    return Number.isFinite(value) ? value : 0;
+}
+
+function hideBackupReminder() {
+    const banner = document.getElementById('backup-reminder-banner');
+    if (banner) banner.classList.add('hidden');
+}
+
+function markBackupCompleted() {
+    writeSafetySetting(LAST_BACKUP_KEY, Date.now());
+    hideBackupReminder();
+}
+
+async function requestPersistentStorageOnce() {
+    if (persistentStorageRequestedThisSession || isNativeAppShell()) return;
+    persistentStorageRequestedThisSession = true;
+    try {
+        const storage = navigator.storage;
+        if (!storage || typeof storage.persist !== 'function' || typeof storage.persisted !== 'function') return;
+        if (await storage.persisted()) return;
+        const attempts = readSafetyNumber(PERSIST_ATTEMPTS_KEY);
+        if (attempts >= PERSIST_MAX_ATTEMPTS) return;
+        writeSafetySetting(PERSIST_ATTEMPTS_KEY, attempts + 1);
+        await storage.persist();
+    } catch (error) {
+        // Not supported or refused: the app keeps working exactly as before.
+    }
+}
+
+function shouldShowBackupReminder() {
+    if (isNativeAppShell()) return false;
+    if (readSafetySetting(BACKUP_REMINDER_OFF_KEY) === '1') return false;
+    if (!Array.isArray(calls) || calls.length < BACKUP_REMINDER_MIN_CALLS) return false;
+    const now = Date.now();
+    if (now < readSafetyNumber(BACKUP_REMINDER_SNOOZE_KEY)) return false;
+    return now - readSafetyNumber(LAST_BACKUP_KEY) >= BACKUP_REMINDER_AFTER_MS;
+}
+
+// Called right after a call is saved: the best moment to ask the browser to keep our data.
+// (The reminder itself is not shown here, so it never covers the "Call saved / Undo" strip.)
+function afterCallSavedSafetyChecks() {
+    void requestPersistentStorageOnce();
+}
+
+// Shown a moment after the app opens, never over What's New and never during a live call.
+function maybeShowBackupReminderOnLoad() {
+    if (!shouldShowBackupReminder()) return;
+    if (releaseSpotlightBannerEl && document.body.contains(releaseSpotlightBannerEl)) return;
+    if (typeof LiveCallSession !== 'undefined' && LiveCallSession.isActive && LiveCallSession.isActive()) return;
+    const banner = document.getElementById('backup-reminder-banner');
+    if (banner) banner.classList.remove('hidden');
+}
+
+function setupBackupReminderBanner() {
+    const nowBtn = document.getElementById('backup-reminder-now-btn');
+    const laterBtn = document.getElementById('backup-reminder-later-btn');
+    const offBtn = document.getElementById('backup-reminder-off-btn');
+    if (nowBtn) {
+        nowBtn.addEventListener('click', () => {
+            hideBackupReminder();
+            writeSafetySetting(BACKUP_REMINDER_SNOOZE_KEY, Date.now() + BACKUP_REMINDER_SNOOZE_MS);
+            openExportOptionsModal('json');
+        });
+    }
+    if (laterBtn) {
+        laterBtn.addEventListener('click', () => {
+            writeSafetySetting(BACKUP_REMINDER_SNOOZE_KEY, Date.now() + BACKUP_REMINDER_SNOOZE_MS);
+            hideBackupReminder();
+        });
+    }
+    if (offBtn) {
+        offBtn.addEventListener('click', () => {
+            writeSafetySetting(BACKUP_REMINDER_OFF_KEY, '1');
+            hideBackupReminder();
+            showToast('Backup reminders turned off. You can still export a backup any time from Settings.');
+        });
+    }
+}
+
 async function exportCallsAsJson(exportCalls) {
     const exportCallsClone = exportCalls.map((call) => ({ ...call }));
     try {
@@ -1520,6 +1632,8 @@ async function confirmExportOptions() {
     } else {
         const didExport = await exportCallsAsJson(exportCalls);
         if (!didExport) return;
+        // Only a backup of every call counts as "backed up" (a date-range export does not).
+        if (Array.isArray(calls) && exportCalls.length >= calls.length) markBackupCompleted();
         showToast(`Backup JSON exported with ${exportCalls.length} call${exportCalls.length === 1 ? '' : 's'} in scope.`);
     }
 
@@ -10984,6 +11098,7 @@ function saveCalls() {
         calls.push(stopResult.callData);
         saveCalls();
         trackEvent('call-ended');
+        afterCallSavedSafetyChecks();
         setLiveCallInfoVisibility(false);
         startCallBtn.style.display = 'block';
         endCallBtn.style.display = 'none';
@@ -12321,6 +12436,8 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             });
         }
         setupLiveCallHoldToAdjust();
+        setupBackupReminderBanner();
+        setTimeout(maybeShowBackupReminderOnLoad, 2500);
         if (floatingStartCallBtn) {
             floatingStartCallBtn.addEventListener('click', () => {
                 runWithViewportLock(startLiveCall);
