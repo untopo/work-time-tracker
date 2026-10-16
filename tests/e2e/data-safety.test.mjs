@@ -111,6 +111,7 @@ test('a live call is saved with its duration and never overwrites old calls', as
 
 test('a running work session comes back after closing and reopening the page', async () => {
   await withPage(async (page) => {
+    await page.click('[data-work-panel-toggle="session-tracker-card"]'); // panels are folded by default
     await page.click('#session-start-btn');
     await page.waitForTimeout(2200);
     const state = await readStorage(page);

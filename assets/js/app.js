@@ -8743,6 +8743,7 @@ function saveCalls() {
         }
     }
     function updateStatistics() {
+        updateWorkTodayStrip();
         const now = new Date();
         const nowMs = now.getTime();
         const dayMs = 24 * 60 * 60 * 1000;
@@ -10988,6 +10989,105 @@ function saveCalls() {
         return changed;
     }
 
+    // ---- Work screen: one-line summary strip and collapsible panels ------------------
+    // Presentation only: these functions read what is already on screen / in memory and
+    // never write calls, rates, goals, or sessions.
+    const WORK_PANEL_CARD_IDS = ['daily-goal-card', 'session-tracker-card', 'rates-card'];
+    const WORK_PANEL_SUMMARY_IDS = {
+        'daily-goal-card': 'goal-panel-summary',
+        'session-tracker-card': 'session-panel-summary',
+        'rates-card': 'rates-panel-summary'
+    };
+
+    function formatWorkStripDuration(ms) {
+        const totalMinutes = Math.max(0, Math.floor((Number(ms) || 0) / 60000));
+        return `${Math.floor(totalMinutes / 60)}h ${String(totalMinutes % 60).padStart(2, '0')}m`;
+    }
+
+    function updateWorkTodayStrip() {
+        const earningsEl = document.getElementById('work-today-earnings');
+        const timeEl = document.getElementById('work-today-time');
+        const callsEl = document.getElementById('work-today-calls');
+        if (!earningsEl || !timeEl || !callsEl || !Array.isArray(calls)) return;
+        const dayStartMs = getDayStartMs(new Date());
+        const dayEndMs = dayStartMs + 24 * 60 * 60 * 1000;
+        let earned = 0;
+        let durationMs = 0;
+        let count = 0;
+        for (let i = 0; i < calls.length; i += 1) {
+            const startMs = getCallStartMs(calls[i]);
+            if (startMs >= dayStartMs && startMs < dayEndMs) {
+                earned += Number(calls[i].earned) || 0;
+                durationMs += Number(calls[i].duration) || 0;
+                count += 1;
+            }
+        }
+        earningsEl.textContent = formatEarnings(earned);
+        timeEl.textContent = formatWorkStripDuration(durationMs);
+        callsEl.textContent = `${count} ${count === 1 ? 'call' : 'calls'}`;
+    }
+
+    function setWorkPanelOpen(cardId, open) {
+        const card = document.getElementById(cardId);
+        if (!card) return;
+        card.classList.toggle('is-collapsed', !open);
+        const toggle = card.querySelector('[data-work-panel-toggle]');
+        if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    // Opens one panel and folds the others (one open at a time keeps the screen calm).
+    function openWorkPanel(cardId) {
+        WORK_PANEL_CARD_IDS.forEach((id) => setWorkPanelOpen(id, id === cardId));
+    }
+
+    function toggleWorkPanel(cardId) {
+        const card = document.getElementById(cardId);
+        if (!card) return;
+        if (card.classList.contains('is-collapsed')) {
+            openWorkPanel(cardId);
+        } else {
+            setWorkPanelOpen(cardId, false);
+        }
+    }
+
+    function refreshWorkPanelSummaries() {
+        const text = (id) => (document.getElementById(id)?.textContent || '').replace(/\s+/g, ' ').trim();
+        const set = (cardId, value) => {
+            const el = document.getElementById(WORK_PANEL_SUMMARY_IDS[cardId]);
+            if (el) el.textContent = value;
+        };
+        const goalAmount = text('goal-amount-display');
+        const hasGoal = goalAmount && !/^\$0(\.00)? \/ \$0(\.00)?$/.test(goalAmount);
+        set('daily-goal-card', hasGoal ? `${text('goal-progress-text')} · ${goalAmount}` : 'Set a goal');
+        const stateLabel = document.querySelector('#session-live-state .session-state-label')?.textContent?.trim() || 'Idle';
+        const elapsed = text('session-live-elapsed');
+        set('session-tracker-card', elapsed && elapsed !== '00:00:00' ? `${stateLabel} · ${elapsed}` : stateLabel);
+        const rateCount = Array.isArray(rates) ? rates.length : 0;
+        set('rates-card', rateCount === 0 ? 'Add a rate' : `${rateCount} saved`);
+    }
+
+    function setupWorkPanels() {
+        WORK_PANEL_CARD_IDS.forEach((cardId) => {
+            const toggle = document.querySelector(`[data-work-panel-toggle="${cardId}"]`);
+            if (!toggle) return;
+            toggle.addEventListener('click', () => toggleWorkPanel(cardId));
+            toggle.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    toggleWorkPanel(cardId);
+                }
+            });
+        });
+        const watch = ['goal-progress-text', 'goal-amount-display', 'session-live-state', 'session-live-elapsed', 'rates-list'];
+        const observer = new MutationObserver(refreshWorkPanelSummaries);
+        watch.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) observer.observe(el, { childList: true, characterData: true, subtree: true });
+        });
+        refreshWorkPanelSummaries();
+        updateWorkTodayStrip();
+    }
+
     // ---- Hold-to-adjust (+/- 1 second) ---------------------------------------
     // Press = one second right away. Keep pressing = after a short delay the time
     // keeps moving, starting gently and speeding up. Steps are driven by the clock
@@ -11874,6 +11974,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
 
     function runQuickStartFlow() {
         if (rates.length === 0) {
+            openWorkPanel('rates-card');
             ratesCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             showRateAddBtn?.click();
             highlightOnboardingTarget(ratesCard || showRateAddBtn);
@@ -12292,6 +12393,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         });
         if (cueAddRateBtn) {
             cueAddRateBtn.addEventListener('click', () => {
+                openWorkPanel('rates-card');
                 ratesCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 showRateAddBtn?.click();
                 highlightOnboardingTarget(ratesCard || showRateAddBtn);
@@ -12437,6 +12539,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         }
         setupLiveCallHoldToAdjust();
         setupBackupReminderBanner();
+        setupWorkPanels();
         setTimeout(maybeShowBackupReminderOnLoad, 2500);
         if (floatingStartCallBtn) {
             floatingStartCallBtn.addEventListener('click', () => {
@@ -12876,6 +12979,7 @@ callEndTimeInput.addEventListener('input', syncCallDateFromDateTime);
             scheduleDesktopOverlayRefresh();
         });
         showRateAddBtn.addEventListener('click', () => {
+            openWorkPanel('rates-card');
             resetRateFormMode();
             rateForm.style.display = 'block';
             showRateAddBtn.style.display = 'none';
