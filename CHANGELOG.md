@@ -5,6 +5,11 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.6.3 - Unreleased
+
+### Fixes
+- Payment cycles: the last day of a cycle now counts as part of that cycle. Before, that day belonged to no cycle, so its calls were left out of your cycle earnings and the card looked empty. On the last day the card now says "Last day (today)" and keeps adding up everything you earn; the next day the new cycle starts from zero.
+
 ## v1.6.2 - 2026-10-14
 
 ### Highlights
