@@ -38,7 +38,7 @@ function call(id, startIso, dollars) {
 }
 
 // cycle: from `startOffset` to `endOffset` days from today (0 = today), pay 5 days after the end.
-async function openCycleCard({ startOffset, endOffset, calls }) {
+async function openCycleCard({ startOffset, endOffset, calls, extraCycles = [] }) {
   const { context, page, problems } = await newPage(browser, baseUrl, { timezoneId: 'America/Lima' });
   const seed = makeSeed(0);
   seed.calls = JSON.stringify(calls);
@@ -46,6 +46,7 @@ async function openCycleCard({ startOffset, endOffset, calls }) {
   seed.paymentCyclesEnabled = 'true';
   seed.paymentCycles = JSON.stringify([
     { startDate: limaMidnightIso(startOffset), endDate: limaMidnightIso(endOffset), payDate: limaMidnightIso(endOffset + 5) },
+    ...extraCycles.map(([s, e]) => ({ startDate: limaMidnightIso(s), endDate: limaMidnightIso(e), payDate: limaMidnightIso(e + 5) })),
   ]);
   seed[`releaseSpotlightSeen:${VERSION}`] = '1';
   await seedStorage(page, baseUrl, seed);
@@ -64,7 +65,8 @@ test('on the LAST day of the cycle it is still the active cycle and counts today
     assert.equal(await text(page, 'cycle-state-chip'), 'Active', 'cycle is active on its last day');
     assert.equal(await text(page, 'cycle-earnings'), '$12.00', 'earnings include today\'s call');
     assert.match(await text(page, 'cycle-earnings-meta'), /^2 calls/);
-    assert.equal(await text(page, 'days-until-end'), '1 day', 'today counts as the last day left');
+    assert.equal(await text(page, 'days-until-end'), 'Last day (today)', 'the last day says so');
+    assert.match(await text(page, 'cycle-progress-meta'), /Last day of this cycle/);
     assert.deepEqual(problems, []);
   } finally {
     await context.close();
@@ -96,5 +98,21 @@ test('the first day of a cycle counts, and a finished cycle is no longer active'
     assert.notEqual(await text(opened.page, 'cycle-state-chip'), 'Active', 'yesterday\'s cycle is over');
   } finally {
     await opened.context.close();
+  }
+});
+
+test('the day a new cycle starts, it begins from zero and the old cycle\'s last day is not counted in it', async () => {
+  const lastDayOfOld = call('old-last-day', new Date(Date.parse(limaMidnightIso(-1)) + 12 * 3600000).toISOString(), 5);
+  const todayCall = call('today', new Date(Date.now() - 60000).toISOString(), 7);
+  const { context, page } = await openCycleCard({
+    startOffset: -14, endOffset: -1, extraCycles: [[0, 13]], calls: [lastDayOfOld, todayCall],
+  });
+  try {
+    assert.equal(await text(page, 'cycle-state-chip'), 'Active');
+    assert.equal(await text(page, 'cycle-earnings'), '$7.00', 'new cycle counts only its own days');
+    assert.match(await text(page, 'cycle-earnings-meta'), /^1 call/);
+    assert.match(await text(page, 'cycle-earnings-trend'), /\$7\.00|\$2\.00/, 'compared with the previous cycle ($5)');
+  } finally {
+    await context.close();
   }
 });

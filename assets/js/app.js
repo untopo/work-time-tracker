@@ -7679,8 +7679,8 @@ function saveCalls() {
                 ? `Next Pay Date: ${formatDate(nextPayCycle.payDate)}`
                 : 'Next Pay Date: --';
             paymentCyclesCurrentDays.textContent = daysUntilPay === null
-                ? `Ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}`
-                : `Ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'} | Next pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`;
+                ? (daysUntilEnd <= 1 ? 'Last day of this cycle' : `Ends in ${daysUntilEnd} days`)
+                : `${daysUntilEnd <= 1 ? 'Last day of this cycle' : `Ends in ${daysUntilEnd} days`} | Next pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`;
         } else if (context.next || nextPayCycle) {
             const upcomingCycle = context.next || nextPayCycle;
             const hasUpcomingStart = Number.isFinite(upcomingCycle?._startMs) && upcomingCycle._startMs > nowMs;
@@ -9002,7 +9002,8 @@ function saveCalls() {
             cycleEndDateDisplay.textContent = formatDate(currentCycle.endDate);
 
             const daysLeft = Math.max(0, Math.ceil((currentCycle._endMs - nowMs) / dayMs));
-            daysUntilEndDisplay.textContent = `${daysLeft} day${daysLeft === 1 ? '' : 's'}`;
+            // Today counts as a day of the cycle, so 1 means "today is the last day".
+            daysUntilEndDisplay.textContent = daysLeft <= 1 ? 'Last day (today)' : `${daysLeft} days`;
 
             const cycleDurationMs = Math.max(dayMs, (currentCycle._endMs - currentCycle._startMs) + 1);
             const elapsedMs = Math.max(0, Math.min(cycleDurationMs, nowMs - currentCycle._startMs));
@@ -9011,7 +9012,9 @@ function saveCalls() {
             if (cycleStateChipDisplay) cycleStateChipDisplay.textContent = 'Active';
             if (cycleProgressBarDisplay) cycleProgressBarDisplay.style.width = `${cycleProgressPct.toFixed(1)}%`;
             if (cycleProgressMetaDisplay) {
-                cycleProgressMetaDisplay.textContent = `${cycleProgressPct.toFixed(0)}% elapsed | ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`;
+                cycleProgressMetaDisplay.textContent = daysLeft <= 1
+                    ? 'Last day of this cycle | a new cycle starts tomorrow'
+                    : `${cycleProgressPct.toFixed(0)}% elapsed | ${daysLeft} days left`;
             }
             if (cycleEarningsMetaDisplay) {
                 cycleEarningsMetaDisplay.textContent = `${cycleCallCount} call${cycleCallCount === 1 ? '' : 's'} in current cycle`;
