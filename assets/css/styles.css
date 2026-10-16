@@ -11222,3 +11222,59 @@ html.dark #wtt-focus-exit-btn {
         transition: transform 0.08s ease-out, filter 0.08s ease-out;
     }
 }
+
+/* ===== Work screen: one calm column, one main action, folded secondary panels ===== */
+#view-work .container { max-width: 680px; }
+#view-work .work-layout-grid { grid-template-columns: 1fr !important; gap: 0.9rem; }
+#call-controls-card { order: 0; }
+#daily-goal-card { order: 1; }
+#session-tracker-card { order: 2; }
+#rates-card { order: 3; }
+
+/* Start / End call is the main action; Add Call is secondary and sits below it. */
+#start-call-btn, #end-call-btn { order: 0; padding-top: 1rem; padding-bottom: 1rem; font-size: 1.2rem; font-weight: 700; }
+#add-call-btn {
+    order: 1; background: transparent !important; color: #2563eb; border: 1px solid rgba(37, 99, 235, 0.45);
+    font-size: 0.95rem; padding-top: 0.55rem; padding-bottom: 0.55rem;
+}
+#add-call-btn:hover { background: rgba(37, 99, 235, 0.08) !important; }
+html.dark #add-call-btn { color: #93c5fd; border-color: rgba(147, 197, 253, 0.4); }
+
+/* Today strip */
+.work-today-strip {
+    display: flex; align-items: baseline; gap: 0.9rem; flex-wrap: wrap; justify-content: center;
+    max-width: 680px; margin: 0 auto 1rem; padding: 0.55rem 1rem; border-radius: 0.75rem;
+    background: rgba(148, 163, 184, 0.12); font-size: 0.95rem;
+}
+.work-today-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.65; }
+.work-today-value { font-weight: 700; font-size: 1.1rem; }
+.work-today-muted { opacity: 0.75; }
+
+/* Collapsible secondary panels */
+.work-collapsible { padding-top: 0.9rem !important; padding-bottom: 0.9rem !important; }
+.work-collapsible .work-panel-toggle { cursor: pointer; align-items: center; margin-bottom: 0 !important; user-select: none; }
+.work-collapsible:not(.is-collapsed) .work-panel-toggle { margin-bottom: 0.9rem !important; }
+.work-collapsible .work-card-icon { width: 2.4rem; height: 2.4rem; min-width: 2.4rem; flex-basis: 2.4rem; }
+.work-collapsible .work-card-icon i { font-size: 1.15rem !important; }
+.work-collapsible .work-card-title { font-size: 1.1rem !important; margin: 0; }
+.work-panel-summary { margin-left: auto; font-size: 0.85rem; opacity: 0.75; text-align: right; }
+.work-panel-chevron { transition: transform 0.2s ease; opacity: 0.6; }
+.work-collapsible:not(.is-collapsed) .work-panel-chevron { transform: rotate(180deg); }
+.work-collapsible.is-collapsed .work-panel-body { display: none !important; }
+.work-panel-toggle:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; border-radius: 0.5rem; }
+
+/* Quick notes label (notes are cleared when the call ends) */
+.work-notes-label { display: flex; justify-content: space-between; font-size: 0.8rem; opacity: 0.75; }
+.work-notes-label span:first-child { font-weight: 600; }
+
+/* Force the single column at every width (older multi-column rules use areas / spans). */
+#view-work .container { max-width: 680px !important; }
+#primary-work-grid.work-layout-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: none !important;
+    align-items: start !important;
+}
+#primary-work-grid > #call-controls-card,
+#primary-work-grid > #daily-goal-card,
+#primary-work-grid > #session-tracker-card,
+#primary-work-grid > #rates-card { grid-area: auto !important; grid-column: auto !important; height: auto !important; }

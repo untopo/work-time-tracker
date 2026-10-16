@@ -276,6 +276,13 @@
     </div>
 </section>
 
+<div id="work-today-strip" class="work-today-strip" aria-label="Today">
+    <span class="work-today-label">Today</span>
+    <span id="work-today-earnings" class="work-today-value">$0.00</span>
+    <span id="work-today-time" class="work-today-muted">0h 00m</span>
+    <span id="work-today-calls" class="work-today-muted">0 calls</span>
+</div>
+
 <div id="primary-work-grid" class="work-layout-grid mb-8">
     <div id="call-controls-card" class="dashboard-surface work-primary-card rounded-xl shadow-lg p-6 w-full">
         <div class="work-card-header mb-4">
@@ -317,6 +324,7 @@
                         <i class="fas fa-plus"></i><span>1s</span>
                     </button>
                 </div>
+                <div class="work-notes-label mt-3 w-full"><span>Quick notes</span><span>cleared when the call ends</span></div>
                 <textarea id="live-call-notes" rows="4" placeholder="Quick notes" class="mt-3 w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-green-500"></textarea>
             </div>
         </div>
@@ -338,13 +346,16 @@
         </div>
     </div>
 
-    <div id="daily-goal-card" class="dashboard-surface work-support-card rounded-xl shadow-lg p-6 w-full">
-        <div class="work-card-header work-card-header-support mb-4">
+    <div id="daily-goal-card" class="work-collapsible is-collapsed dashboard-surface work-support-card rounded-xl shadow-lg p-6 w-full">
+        <div role="button" tabindex="0" aria-expanded="false" aria-controls="goal-panel-body" data-work-panel-toggle="daily-goal-card" class="work-panel-toggle work-card-header work-card-header-support mb-4">
             <div class="panel-icon-shell work-card-icon bg-green-100 dark:bg-green-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
                 <i class="fas fa-bullseye text-3xl text-green-500 dark:text-green-300"></i>
             </div>
             <h2 class="section-heading work-card-title text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Daily Goal</h2>
+            <span id="goal-panel-summary" class="work-panel-summary"></span>
+            <i class="fas fa-chevron-down work-panel-chevron" aria-hidden="true"></i>
         </div>
+        <div id="goal-panel-body" class="work-panel-body">
         <form id="goal-form" class="work-goal-form flex flex-col gap-3">
             <div class="flex items-center">
                 <span class="text-gray-600 dark:text-gray-300 mr-2 text-xl font-bold w-6 inline-flex justify-center">$</span>
@@ -391,14 +402,18 @@
                 </div>
             </div>
         </div>
+            </div>
     </div>
-    <div id="rates-card" class="dashboard-surface work-support-card rounded-xl shadow-lg p-6 w-full">
-        <div class="work-card-header work-card-header-support mb-4">
+    <div id="rates-card" class="work-collapsible is-collapsed dashboard-surface work-support-card rounded-xl shadow-lg p-6 w-full">
+        <div role="button" tabindex="0" aria-expanded="false" aria-controls="rates-panel-body" data-work-panel-toggle="rates-card" class="work-panel-toggle work-card-header work-card-header-support mb-4">
             <div class="panel-icon-shell work-card-icon bg-purple-100 dark:bg-purple-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
                 <i class="fas fa-dollar-sign text-3xl text-purple-500 dark:text-purple-300"></i>
             </div>
             <h2 class="section-heading work-card-title text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Rates</h2>
+            <span id="rates-panel-summary" class="work-panel-summary"></span>
+            <i class="fas fa-chevron-down work-panel-chevron" aria-hidden="true"></i>
         </div>
+        <div id="rates-panel-body" class="work-panel-body">
         <div id="rates-list" class="mb-4">
         </div>
         <button id="show-rate-add" class="work-support-action w-full flex items-center justify-center gap-2 py-1">
@@ -424,15 +439,19 @@
                 </button>
             </div>
         </form>
+            </div>
     </div>
 
-    <div id="session-tracker-card" class="dashboard-surface work-primary-card rounded-xl shadow-lg p-6 w-full">
-        <div class="work-card-header mb-4">
+    <div id="session-tracker-card" class="work-collapsible is-collapsed dashboard-surface work-primary-card rounded-xl shadow-lg p-6 w-full">
+        <div role="button" tabindex="0" aria-expanded="false" aria-controls="session-panel-body" data-work-panel-toggle="session-tracker-card" class="work-panel-toggle work-card-header mb-4">
             <div class="panel-icon-shell work-card-icon bg-indigo-100 dark:bg-indigo-950 rounded-full w-16 h-16 flex items-center justify-center mb-3">
                 <i class="fas fa-business-time text-3xl text-indigo-500 dark:text-indigo-300"></i>
             </div>
             <h2 class="section-heading work-card-title text-2xl font-poppins font-semibold text-dark dark:text-gray-200">Session Tracker</h2>
+            <span id="session-panel-summary" class="work-panel-summary"></span>
+            <i class="fas fa-chevron-down work-panel-chevron" aria-hidden="true"></i>
         </div>
+        <div id="session-panel-body" class="work-panel-body">
         <p class="session-tracker-intro text-xs text-gray-500 dark:text-gray-400 mb-3">
             Start and end your session with one click. Shift times are captured automatically.
         </p>
@@ -498,7 +517,8 @@
             <div id="session-live-utilization-hint" class="session-utilization-hint">Available 00:00:00 | Paused 00:00:00</div>
         </div>
     </div>
-</div>
+        </div>
+    </div>
 
                 </div>
                 </section>
