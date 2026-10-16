@@ -7579,10 +7579,15 @@ function saveCalls() {
     function getPaymentCyclesTimelineContext(nowMs = Date.now()) {
         const normalized = (Array.isArray(paymentCycles) ? paymentCycles : [])
             .map((cycle, originalIndex) => {
-                const startMs = Number(Date.parse(cycle?.startDate || ''));
-                const endMs = Number(Date.parse(cycle?.endDate || ''));
+                const rawStartMs = Number(Date.parse(cycle?.startDate || ''));
+                const rawEndMs = Number(Date.parse(cycle?.endDate || ''));
                 const payMs = Number(Date.parse(cycle?.payDate || ''));
-                if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return null;
+                if (!Number.isFinite(rawStartMs) || !Number.isFinite(rawEndMs)) return null;
+                // A cycle covers whole days. The saved end date is the midnight that BEGINS the last
+                // day, so the cycle must run until the END of that day; otherwise the last day
+                // belongs to no cycle (its calls are not counted and "days left" is one short).
+                const startMs = getDayStartMs(new Date(rawStartMs));
+                const endMs = new Date(getDayStartMs(new Date(rawEndMs)) + 24 * 60 * 60 * 1000).getTime() - 1;
                 return {
                     ...cycle,
                     _startMs: startMs,
@@ -8999,7 +9004,7 @@ function saveCalls() {
             const daysLeft = Math.max(0, Math.ceil((currentCycle._endMs - nowMs) / dayMs));
             daysUntilEndDisplay.textContent = `${daysLeft} day${daysLeft === 1 ? '' : 's'}`;
 
-            const cycleDurationMs = Math.max(dayMs, (currentCycle._endMs - currentCycle._startMs) + dayMs);
+            const cycleDurationMs = Math.max(dayMs, (currentCycle._endMs - currentCycle._startMs) + 1);
             const elapsedMs = Math.max(0, Math.min(cycleDurationMs, nowMs - currentCycle._startMs));
             const cycleProgressPct = (elapsedMs / cycleDurationMs) * 100;
 

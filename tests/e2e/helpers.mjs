@@ -51,8 +51,8 @@ export async function launchBrowser() {
 
 // A fresh page that only talks to the local server. Anything else (GoatCounter,
 // fonts, etc.) is blocked, so tests can never send analytics or depend on the network.
-export async function newPage(browser, baseUrl) {
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+export async function newPage(browser, baseUrl, options = {}) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, ...options });
   await context.route('**/*', (route) =>
     route.request().url().startsWith(baseUrl.replace(/\/$/, '')) ? route.continue() : route.abort());
   const page = await context.newPage();
