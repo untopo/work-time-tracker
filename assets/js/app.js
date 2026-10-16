@@ -7579,10 +7579,15 @@ function saveCalls() {
     function getPaymentCyclesTimelineContext(nowMs = Date.now()) {
         const normalized = (Array.isArray(paymentCycles) ? paymentCycles : [])
             .map((cycle, originalIndex) => {
-                const startMs = Number(Date.parse(cycle?.startDate || ''));
-                const endMs = Number(Date.parse(cycle?.endDate || ''));
+                const rawStartMs = Number(Date.parse(cycle?.startDate || ''));
+                const rawEndMs = Number(Date.parse(cycle?.endDate || ''));
                 const payMs = Number(Date.parse(cycle?.payDate || ''));
-                if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return null;
+                if (!Number.isFinite(rawStartMs) || !Number.isFinite(rawEndMs)) return null;
+                // A cycle covers whole days. The saved end date is the midnight that BEGINS the last
+                // day, so the cycle must run until the END of that day; otherwise the last day
+                // belongs to no cycle (its calls are not counted and "days left" is one short).
+                const startMs = getDayStartMs(new Date(rawStartMs));
+                const endMs = new Date(getDayStartMs(new Date(rawEndMs)) + 24 * 60 * 60 * 1000).getTime() - 1;
                 return {
                     ...cycle,
                     _startMs: startMs,
@@ -7674,8 +7679,8 @@ function saveCalls() {
                 ? `Next Pay Date: ${formatDate(nextPayCycle.payDate)}`
                 : 'Next Pay Date: --';
             paymentCyclesCurrentDays.textContent = daysUntilPay === null
-                ? `Ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'}`
-                : `Ends in ${daysUntilEnd} day${daysUntilEnd === 1 ? '' : 's'} | Next pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`;
+                ? (daysUntilEnd <= 1 ? 'Last day of this cycle' : `Ends in ${daysUntilEnd} days`)
+                : `${daysUntilEnd <= 1 ? 'Last day of this cycle' : `Ends in ${daysUntilEnd} days`} | Next pay in ${daysUntilPay} day${daysUntilPay === 1 ? '' : 's'}`;
         } else if (context.next || nextPayCycle) {
             const upcomingCycle = context.next || nextPayCycle;
             const hasUpcomingStart = Number.isFinite(upcomingCycle?._startMs) && upcomingCycle._startMs > nowMs;
@@ -8997,16 +9002,19 @@ function saveCalls() {
             cycleEndDateDisplay.textContent = formatDate(currentCycle.endDate);
 
             const daysLeft = Math.max(0, Math.ceil((currentCycle._endMs - nowMs) / dayMs));
-            daysUntilEndDisplay.textContent = `${daysLeft} day${daysLeft === 1 ? '' : 's'}`;
+            // Today counts as a day of the cycle, so 1 means "today is the last day".
+            daysUntilEndDisplay.textContent = daysLeft <= 1 ? 'Last day (today)' : `${daysLeft} days`;
 
-            const cycleDurationMs = Math.max(dayMs, (currentCycle._endMs - currentCycle._startMs) + dayMs);
+            const cycleDurationMs = Math.max(dayMs, (currentCycle._endMs - currentCycle._startMs) + 1);
             const elapsedMs = Math.max(0, Math.min(cycleDurationMs, nowMs - currentCycle._startMs));
             const cycleProgressPct = (elapsedMs / cycleDurationMs) * 100;
 
             if (cycleStateChipDisplay) cycleStateChipDisplay.textContent = 'Active';
             if (cycleProgressBarDisplay) cycleProgressBarDisplay.style.width = `${cycleProgressPct.toFixed(1)}%`;
             if (cycleProgressMetaDisplay) {
-                cycleProgressMetaDisplay.textContent = `${cycleProgressPct.toFixed(0)}% elapsed | ${daysLeft} day${daysLeft === 1 ? '' : 's'} left`;
+                cycleProgressMetaDisplay.textContent = daysLeft <= 1
+                    ? 'Last day of this cycle | a new cycle starts tomorrow'
+                    : `${cycleProgressPct.toFixed(0)}% elapsed | ${daysLeft} days left`;
             }
             if (cycleEarningsMetaDisplay) {
                 cycleEarningsMetaDisplay.textContent = `${cycleCallCount} call${cycleCallCount === 1 ? '' : 's'} in current cycle`;
