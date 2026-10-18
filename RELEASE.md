@@ -42,6 +42,8 @@ npm run verify:version-sync
 npm run verify:release-ready
 node --check assets/js/app.js
 node --check assets/js/data-core.js
+node --check assets/js/session-core.js
+node --check assets/js/progress-core.js
 ```
 
 `.github/workflows/checks.yml` runs the same checks on every pull request and push to `main`.

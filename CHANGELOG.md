@@ -12,6 +12,7 @@ For downloadable installers/APKs and release metadata, use:
 
 ### Reliability & Privacy
 - More automated end-to-end checks now confirm that what you see matches what is saved: the Call Log shows every saved call for Today, Week and Month, Analytics totals add up, a backup contains all your calls, importing it restores them once without duplicates, and deleting a call removes only that call.
+- Under the hood, the code that repairs your saved work sessions and unfinished call, and the level and streak math, also moved to their own files with direct automated tests. Nothing changes in how the app looks or behaves.
 - Under the hood, the code that reads, merges and formats your calls, rates and goals now lives in its own file with direct automated tests, so future changes to it are safer. Nothing changes in how the app looks or behaves.
 
 ## v1.6.2 - 2026-10-14
