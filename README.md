@@ -235,6 +235,8 @@ gradlew assembleRelease
 |   |-- js/
 |   |   |-- app.js
 |   |   |-- data-core.js
+|   |   |-- progress-core.js
+|   |   |-- session-core.js
 |   |   |-- resources-data.js
 |   |   |-- resources-helpers.js
 |   |   |-- settings-manager.js
