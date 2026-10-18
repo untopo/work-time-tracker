@@ -15,7 +15,8 @@
     "cap:sync": "npm run build:web && npm run android:icons && npx cap sync",
     "cap:sync:android": "npm run build:web && npm run android:icons && npx cap sync android",
     "cap:open:android": "npx cap open android",
-    "test:e2e": "node --test tests/e2e/*.test.mjs"
+    "test:e2e": "node --test tests/e2e/*.test.mjs",
+    "test:unit": "node --test tests/unit/*.test.mjs"
   },
   "keywords": [
     "tracker",

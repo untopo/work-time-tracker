@@ -39,7 +39,12 @@ jobs:
         run: npm run verify:icons
 
       - name: JavaScript syntax
-        run: node --check assets/js/app.js
+        run: |
+          node --check assets/js/app.js
+          node --check assets/js/data-core.js
+
+      - name: Unit tests (data logic)
+        run: npm run test:unit
 
       - name: Web build
         run: npm run build:web
