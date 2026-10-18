@@ -3749,27 +3749,6 @@ if (storedDailyGoal) {
     const RPG_CALL_ELIGIBILITY_MIGRATION_KEY = 'wtt_rpg_call_eligibility_migrated_v1';
     const FLOATING_DOCK_POSITION_KEY = 'floatingDockManualPosition';
 
-    function normalizeTrendMode(mode) {
-        return mode === 'monthly' ? 'monthly' : 'weekly';
-    }
-
-    function normalizePatternsMode(mode) {
-        return ['hourly', 'weekly', 'monthly'].includes(mode) ? mode : 'hourly';
-    }
-
-    function normalizeHourlyHeatmapMetric(metric) {
-        return ['calls', 'minutes', 'earnings'].includes(metric) ? metric : 'earnings';
-    }
-
-    function clampTrendAnchorToToday(dateObj) {
-        const today = new Date();
-        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const candidate = dateObj instanceof Date && Number.isFinite(dateObj.getTime())
-            ? new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate())
-            : todayStart;
-        return candidate.getTime() > todayStart.getTime() ? todayStart : candidate;
-    }
-
     function getTrendAnchorStorageDate() {
         const raw = parseDateInput(appStorage.getItem('trendAnchorDate') || '');
         return clampTrendAnchorToToday(raw || new Date());
@@ -3797,55 +3776,6 @@ if (storedDailyGoal) {
         queueStorageWrite('hourlyHeatmapAnchorDate', formatDateForInput(hourlyHeatmapAnchorDate));
     }
 
-    function getSessionDefaultState() {
-        return {
-            active: false,
-            paused: false,
-            startMs: 0,
-            pausedTotalMs: 0,
-            pauseStartedMs: 0,
-            pauseCount: 0,
-            scheduleStart: '',
-            scheduleEnd: ''
-        };
-    }
-
-    function normalizeSessionScheduleTime(value) {
-        const parsed = parseOptionalTime(value);
-        if (!parsed) return '';
-        return `${String(parsed.hours).padStart(2, '0')}:${String(parsed.minutes).padStart(2, '0')}`;
-    }
-
-    function getCurrentSessionClockTime(nowMs = Date.now()) {
-        const now = new Date(nowMs);
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        return `${hours}:${minutes}`;
-    }
-
-    function normalizeSessionTrackerState(input) {
-        const base = getSessionDefaultState();
-        const source = input && typeof input === 'object' ? input : {};
-        const startMs = Number(source.startMs);
-        const pausedTotalMs = Number(source.pausedTotalMs);
-        const pauseStartedMs = Number(source.pauseStartedMs);
-        const pauseCount = Number(source.pauseCount);
-        const active = !!source.active && Number.isFinite(startMs) && startMs > 0;
-        const paused = active && !!source.paused;
-
-        return {
-            ...base,
-            active,
-            paused,
-            startMs: active ? startMs : 0,
-            pausedTotalMs: active ? Math.max(0, Number.isFinite(pausedTotalMs) ? pausedTotalMs : 0) : 0,
-            pauseStartedMs: active && paused && Number.isFinite(pauseStartedMs) && pauseStartedMs > 0 ? pauseStartedMs : 0,
-            pauseCount: active ? Math.max(0, Number.isFinite(pauseCount) ? pauseCount : 0) : 0,
-            scheduleStart: normalizeSessionScheduleTime(source.scheduleStart),
-            scheduleEnd: normalizeSessionScheduleTime(source.scheduleEnd)
-        };
-    }
-
     function loadSessionTrackerState() {
         try {
             const raw = JSON.parse(appStorage.getItem(SESSION_TRACKER_KEY) || '{}');
@@ -3859,33 +3789,6 @@ if (storedDailyGoal) {
         const normalized = normalizeSessionTrackerState(sessionTrackerState);
         sessionTrackerState = normalized;
         queueStorageWrite(SESSION_TRACKER_KEY, JSON.stringify(normalized));
-    }
-
-    function normalizeSessionHistoryEntries(input) {
-        const source = Array.isArray(input) ? input : [];
-        return source
-            .map((entry, index) => {
-                const startedAtMs = Number(entry?.startedAtMs);
-                const endedAtMs = Number(entry?.endedAtMs);
-                if (!Number.isFinite(startedAtMs) || !Number.isFinite(endedAtMs) || endedAtMs < startedAtMs) return null;
-                const safeCallCount = Math.max(0, Math.round(Number(entry?.callCount) || 0));
-                const safePauseCount = Math.max(0, Math.round(Number(entry?.pauseCount) || 0));
-                return {
-                    id: String(entry?.id || `${endedAtMs}-${index}`),
-                    startedAtMs,
-                    endedAtMs,
-                    talkMs: Math.max(0, Number(entry?.talkMs) || 0),
-                    idleMs: Math.max(0, Number(entry?.idleMs) || 0),
-                    availableMs: Math.max(0, Number(entry?.availableMs) || 0),
-                    utilization: Math.max(0, Math.min(100, Number(entry?.utilization) || 0)),
-                    callCount: safeCallCount,
-                    pauseCount: safePauseCount,
-                    earned: Math.max(0, Number(entry?.earned) || 0)
-                };
-            })
-            .filter(Boolean)
-            .sort((a, b) => b.endedAtMs - a.endedAtMs)
-            .slice(0, 60);
     }
 
     function loadSessionHistoryState() {
@@ -4091,12 +3994,6 @@ if (storedDailyGoal) {
             renderSessionTracker();
         }, 1000);
         activeTimers.add(sessionTrackerTimerId);
-    }
-
-    function formatSessionPercent(value) {
-        const n = Number(value);
-        if (!Number.isFinite(n) || n <= 0) return '0.0%';
-        return `${Math.min(100, n).toFixed(1)}%`;
     }
 
     function getSessionCallCount(state, now = Date.now()) {
@@ -4344,37 +4241,6 @@ if (storedDailyGoal) {
         evaluateAchievements({ notify: true });
     }
 
-    function getDefaultSessionRpgStatsState() {
-        return {
-            sessionsCompleted: 0,
-            totalTalkMs: 0,
-            totalIdleMs: 0,
-            totalAvailableMs: 0,
-            highUtilSessions: 0,
-            focusedSessions: 0,
-            longSessions4h: 0,
-            pauseAwareSessions: 0,
-            daysWorked: {}
-        };
-    }
-
-    function normalizeSessionRpgStatsState(input) {
-        const base = getDefaultSessionRpgStatsState();
-        const source = input && typeof input === 'object' ? input : {};
-        const daysWorked = source.daysWorked && typeof source.daysWorked === 'object' ? source.daysWorked : {};
-        return {
-            sessionsCompleted: Math.max(0, Number(source.sessionsCompleted) || 0),
-            totalTalkMs: Math.max(0, Number(source.totalTalkMs) || 0),
-            totalIdleMs: Math.max(0, Number(source.totalIdleMs) || 0),
-            totalAvailableMs: Math.max(0, Number(source.totalAvailableMs) || 0),
-            highUtilSessions: Math.max(0, Number(source.highUtilSessions) || 0),
-            focusedSessions: Math.max(0, Number(source.focusedSessions) || 0),
-            longSessions4h: Math.max(0, Number(source.longSessions4h) || 0),
-            pauseAwareSessions: Math.max(0, Number(source.pauseAwareSessions) || 0),
-            daysWorked: { ...daysWorked, ...base.daysWorked }
-        };
-    }
-
     function getSessionRpgStatsState() {
         try {
             const raw = JSON.parse(appStorage.getItem(SESSION_RPG_STATS_KEY) || '{}');
@@ -4419,58 +4285,10 @@ if (storedDailyGoal) {
         return selectedRate ? selectedRate.amount : 0;
     }
 
-    // Work RPG leveling (foundation)
-    function getXpToNextLevel(level) {
-        if (level < 5) return 100 + ((level - 1) * 25);       // 100, 125, 150, 175
-        if (level < 10) return 200 + ((level - 5) * 35);      // 200..340
-        if (level < 20) return 380 + ((level - 10) * 45);     // 380..785
-        if (level <= 50) return 850 + ((level - 20) * 60);    // keep legacy pacing through 50
-        if (level <= 75) return 2710 + ((level - 51) * 70);   // mid-game extension
-        return 4460 + ((level - 76) * 85);                    // late-game extension to 100
-    }
-
-    function buildLevelCurve(maxLevel = 100) {
-        const curve = [];
-        let cumulative = 0;
-        for (let level = 1; level <= maxLevel; level += 1) {
-            const xpToNext = getXpToNextLevel(level);
-            curve.push({
-                level,
-                xpToReach: cumulative,
-                xpToNext
-            });
-            cumulative += xpToNext;
-        }
-        return curve;
-    }
-
     const LEVEL_CURVE = buildLevelCurve(100);
 
     function isRpgEnabled() {
         return !!featureFlags.rpg;
-    }
-
-    function isCallRpgEligible(call) {
-        return !!call?.rpgEligible;
-    }
-
-    function getRpgEligibleCalls(callRows) {
-        return Array.isArray(callRows) ? callRows.filter(isCallRpgEligible) : [];
-    }
-
-    function computeBaseXpFromCalls(callRows) {
-        // Fair, non-grindy baseline:
-        // - 10 XP per completed call (consistency reward)
-        // - 2 XP per minute worked (time reward)
-        return Math.max(0, Math.round(callRows.reduce((acc, call) => {
-            const minutes = Math.max(0, (Number(call.duration) || 0) / (1000 * 60));
-            return acc + 10 + (minutes * 2);
-        }, 0)));
-    }
-
-    function getBaseXpForCallDuration(durationMs) {
-        const minutes = Math.max(0, Number(durationMs) || 0) / (1000 * 60);
-        return Math.max(0, Math.round(10 + (minutes * 2)));
     }
 
     function getCallXpForDurationWithStreak(durationMs, currentStreak = 0) {
@@ -5001,32 +4819,6 @@ if (storedDailyGoal) {
         appStorage.removeItem(ACHIEVEMENTS_STATE_KEY);
     }
 
-    function getCurrentLocalDayKey() {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-    }
-
-    function seededHashFromString(input) {
-        let h = 2166136261;
-        for (let i = 0; i < input.length; i += 1) {
-            h ^= input.charCodeAt(i);
-            h = Math.imul(h, 16777619);
-        }
-        return h >>> 0;
-    }
-
-    function mulberry32(seed) {
-        return function rand() {
-            let t = seed += 0x6D2B79F5;
-            t = Math.imul(t ^ (t >>> 15), t | 1);
-            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-        };
-    }
-
     function getDailyQuestState() {
         try {
             const raw = JSON.parse(appStorage.getItem(DAILY_QUESTS_STATE_KEY) || '{}');
@@ -5051,16 +4843,6 @@ if (storedDailyGoal) {
     function clearDailyQuestState() {
         pendingStorageWrites.delete(DAILY_QUESTS_STATE_KEY);
         appStorage.removeItem(DAILY_QUESTS_STATE_KEY);
-    }
-
-    function pickWeightedQuest(pool, rng) {
-        const totalWeight = pool.reduce((sum, q) => sum + Math.max(0.01, Number(q.weight) || 0.01), 0);
-        let roll = rng() * totalWeight;
-        for (let i = 0; i < pool.length; i += 1) {
-            roll -= Math.max(0.01, Number(pool[i].weight) || 0.01);
-            if (roll <= 0) return i;
-        }
-        return pool.length - 1;
     }
 
     function pickDailyQuestIds(dayKey, count = 4) {
@@ -5101,36 +4883,6 @@ if (storedDailyGoal) {
             .filter(Boolean);
         if (selected.length > 0) return selected;
         return DAILY_QUEST_POOL.slice(0, 4);
-    }
-
-    function getCallLocalDayStamp(call) {
-        const d = new Date(call.startTime);
-        if (!Number.isFinite(d.getTime())) return NaN;
-        return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-    }
-
-    function getWeekStartStampFromDate(dateObj) {
-        if (!(dateObj instanceof Date) || !Number.isFinite(dateObj.getTime())) return NaN;
-        const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
-        const day = d.getDay(); // 0 Sunday ... 6 Saturday
-        const diffToMonday = day === 0 ? -6 : (1 - day);
-        d.setDate(d.getDate() + diffToMonday);
-        return d.getTime();
-    }
-
-    function computeLongestStreak(dayStamps) {
-        if (!dayStamps.length) return 0;
-        let longest = 1;
-        let current = 1;
-        for (let i = 1; i < dayStamps.length; i += 1) {
-            if (dayStamps[i] - dayStamps[i - 1] === 24 * 60 * 60 * 1000) {
-                current += 1;
-                longest = Math.max(longest, current);
-            } else {
-                current = 1;
-            }
-        }
-        return longest;
     }
 
     function computeAchievementStats() {
@@ -5258,67 +5010,6 @@ if (storedDailyGoal) {
             todayEarnings,
             todayLongestCallMinutes
         };
-    }
-
-    function computeCurrentStreak(dayStamps) {
-        if (!dayStamps.length) return 0;
-        const oneDayMs = 24 * 60 * 60 * 1000;
-        const daySet = new Set(dayStamps);
-        const now = new Date();
-        const todayStamp = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-        const yesterdayStamp = todayStamp - oneDayMs;
-
-        let cursor = daySet.has(todayStamp) ? todayStamp : (daySet.has(yesterdayStamp) ? yesterdayStamp : null);
-        if (cursor === null) return 0;
-
-        let streak = 0;
-        while (daySet.has(cursor)) {
-            streak += 1;
-            cursor -= oneDayMs;
-        }
-        return streak;
-    }
-
-    function getTierClasses(tier, unlocked) {
-        if (!unlocked) return {
-            badge: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-            card: 'border-gray-200 dark:border-gray-700',
-            progress: 'achievement-progress-fill-locked'
-        };
-        if (tier === 'Gold') return {
-            badge: 'bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100',
-            card: 'border-amber-300 dark:border-amber-700',
-            progress: 'achievement-progress-fill-gold'
-        };
-        if (tier === 'Silver') return {
-            badge: 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
-            card: 'border-slate-300 dark:border-slate-600',
-            progress: 'achievement-progress-fill-silver'
-        };
-        return {
-            badge: 'bg-orange-200 text-orange-900 dark:bg-orange-800 dark:text-orange-100',
-            card: 'border-orange-300 dark:border-orange-700',
-            progress: 'achievement-progress-fill-bronze'
-        };
-    }
-
-    function getAchievementBaseXp(tier) {
-        if (tier === 'Gold') return 220;
-        if (tier === 'Silver') return 120;
-        return 65;
-    }
-
-    function getLevelRewardMultiplier(level) {
-        // Small but meaningful: +2% every 3 levels, capped at +40%
-        const bumps = Math.floor(Math.max(0, level - 1) / 3);
-        return 1 + Math.min(0.40, bumps * 0.02);
-    }
-
-    function getStreakRewardMultiplier(streak) {
-        // Starts at 3-day streak and scales gently up to +35%
-        if (streak < 3) return 1;
-        const extra = 0.05 + (Math.max(0, streak - 3) * 0.02);
-        return 1 + Math.min(0.35, extra);
     }
 
     function getAchievementById(id) {
@@ -6292,22 +5983,6 @@ function importJsonBackup(importedData) {
 const ACTIVE_CALL_KEY = 'activeLiveCallState';
 const ACTIVE_CALL_CLOSE_INTENT_KEY = 'activeLiveCallClosedExplicitly';
 
-function normalizeActiveCallSession(input) {
-  const start = Number(input?.start);
-  const rate = Number(input?.rate);
-  const rateName = String(input?.rateName || '').trim() || null;
-  const lastPing = Number(input?.lastPing);
-
-  if (!Number.isFinite(start) || start <= 0) return null;
-
-  return {
-    start,
-    rate: Number.isFinite(rate) && rate > 0 ? rate : 0,
-    rateName,
-    lastPing: Number.isFinite(lastPing) && lastPing > 0 ? lastPing : start
-  };
-}
-
 function buildCurrentActiveCallSession(now = Date.now()) {
   if (!liveCallStart) return null;
   return normalizeActiveCallSession({
@@ -7096,36 +6771,6 @@ function saveCalls() {
     }
 
     const scheduleStorageInfoRefresh = createRafScheduler(() => updateStorageInfo());
-
-    function formatMinutesLabel(totalMinutes) {
-        if (!Number.isFinite(totalMinutes) || totalMinutes < 0) return '--';
-        if (totalMinutes < 1) return '<1 min';
-        if (totalMinutes < 60) return `${Math.round(totalMinutes)} min`;
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = Math.round(totalMinutes % 60);
-        return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-    }
-
-    function formatSupportiveCurrencyDelta(value) {
-        if (!Number.isFinite(value)) return 'no baseline yet';
-        if (Math.abs(value) < 0.005) return 'on par';
-        if (value > 0) return `${formatEarnings(value)} ahead`;
-        return `${formatEarnings(Math.abs(value))} behind`;
-    }
-
-    function formatSupportiveDurationDelta(milliseconds) {
-        if (!Number.isFinite(milliseconds)) return 'no baseline yet';
-        if (Math.abs(milliseconds) < 1000) return 'on par';
-        const value = formatTime(Math.abs(milliseconds));
-        return milliseconds > 0 ? `${value} longer` : `${value} shorter`;
-    }
-
-    function formatSupportivePercentDelta(value) {
-        if (!Number.isFinite(value)) return 'no baseline yet';
-        if (Math.abs(value) < 0.5) return 'on par';
-        const rounded = Math.round(Math.abs(value));
-        return value > 0 ? `${rounded}% ahead` : `${rounded}% behind`;
-    }
 
     function applyDeltaTone(element, deltaValue) {
         if (!element) return;
