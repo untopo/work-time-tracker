@@ -108,6 +108,7 @@ export function makeSeed(callCount = 120) {
       rate,
       rateName: rate === 0.12 ? 'Propio' : 'Voyce',
       earnings: Math.round((durationSeconds / 60) * rate * 100) / 100,
+      earned: Math.round((durationSeconds / 60) * rate * 100) / 100,
       notes: notes[Math.floor(rand() * notes.length)],
       rpgEligible: true,
     });
