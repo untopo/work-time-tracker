@@ -124,7 +124,7 @@ your calls, earnings, rates, or history.
 
 | Feature | Destination | What is sent | How to avoid it |
 |---|---|---|---|
-| Usage analytics (web only) | GoatCounter (`gc.zgo.at`) | Anonymous page-view ping, the name of a few actions (`call-started`, `call-ended`, `focus-mode`), which optional features are on, and coarse ranges (for example call length `5-10m`, calls per day `6-10`, hours per day `2-4h`). No exact values, no app data | Turn it off in `Settings -> Features`, or use the desktop or Android build |
+| Usage analytics (web only) | GoatCounter (`gc.zgo.at`) | Anonymous page-view ping, the name of a few actions (`call-started`, `call-ended`, `focus-mode`), which optional features are on, and coarse ranges (for example call length `5-7m`, calls per day `7-10`, hours per day `2.5-3h`). No exact values, no app data | Turn it off in `Settings -> Features`, or use the desktop or Android build |
 | Update check | `untopo.github.io`, `api.github.com` | Nothing. Only reads the published version | Ignore the banner |
 | US ZIP / Address Lookup | `api.zippopotam.us`, `nominatim.openstreetmap.org` | The ZIP or address you type | Do not use the tool |
 | Interpreter Language Assistant | `api.mymemory.translated.net`, `api.dictionaryapi.dev`, `api.datamuse.com` | The term you look up | Do not use the tool |
@@ -142,7 +142,7 @@ counts and a few anonymous action counts. It records no personal data, no work
 data, and no cross-site profile.
 
 - Actions counted: call started, call ended, Focus Mode opened
-- Coarse ranges only, never exact values. When a call ends, only its length range is counted (`under-1m`, `1-5m`, `5-10m`, `10-20m`, `20-40m`, `40m-plus`). Once a day, the web version also counts the call-count range (`1-5`, `6-10`, `11-20`, `21-40`, `41-plus`) and hours range (`under-1h`, `1-2h`, `2-4h`, `4-6h`, `6-8h`, `8h-plus`) of your most recent finished day, plus which optional features are switched on (Focus Mode, payment cycles, notes, RPG, floating controls, daily goal, backup done)
+- Coarse ranges only, never exact values. When a call ends, only its length range is counted (1-minute steps up to 3 minutes, then `3-5m`, `5-7m`, `7-10m`, `10-15m`, `15-20m`, `20-30m`, `30-45m`, `45-60m`, `60m-plus`). Once a day, the web version also counts the call-count range (`1-3`, `4-6`, `7-10`, `11-15`, ... up to `51-plus`) and the hours range in half-hour steps (`0-0.5h`, `0.5-1h`, ... up to `10h-plus`) of your most recent finished day, plus which optional features are switched on (Focus Mode, payment cycles, notes, RPG, floating controls, daily goal, backup done)
 - Never sent: exact durations, times, earnings, rates, notes, call history, or anything that identifies you. The ranges are added up across all visitors, so they cannot be traced to one person
 - Turn it off any time in `Settings -> Features -> Share anonymous usage counts`; the choice is stored under its own key and never touches your work data
 - The desktop (Tauri) and Android (Capacitor) builds skip analytics entirely

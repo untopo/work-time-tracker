@@ -5,6 +5,7 @@ import { test, before, after } from 'node:test';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { startServer, launchBrowser, newPage, seedStorage, readStorage, makeSeed } from './helpers.mjs';
+import { loadCore, allLabels } from '../unit/load-core.mjs';
 
 let server;
 let baseUrl;
@@ -20,8 +21,11 @@ after(async () => {
   server?.close();
 });
 
-// Every path the app may send. Anything else (an exact number, a note, a rate...) fails the test.
-const ALLOWED = /^event\/(call-started|call-ended|focus-mode|call-length\/(under-1m|1-5m|5-10m|10-20m|20-40m|40m-plus)|day-calls\/(1-5|6-10|11-20|21-40|41-plus)|day-hours\/(under-1h|1-2h|2-4h|4-6h|6-8h|8h-plus)|feature-on\/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done))$/;
+// Every path the app may send, built from the real list of ranges. Anything else
+// (an exact number, a note, a rate...) fails the test.
+const labels = allLabels(loadCore().core);
+const list = (set) => [...set].map((label) => label.replace(/[.]/g, '\\.')).join('|');
+const ALLOWED = new RegExp(`^event/(call-started|call-ended|focus-mode|call-length/(${list(labels.length)})|day-calls/(${list(labels.calls)})|day-hours/(${list(labels.hours)})|feature-on/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done))$`);
 
 async function openApp(seed) {
   const { context, page, problems } = await newPage(browser, baseUrl, { timezoneId: 'America/Lima' });

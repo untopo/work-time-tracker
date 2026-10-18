@@ -14,3 +14,14 @@ export function loadCore() {
 }
 
 export const plain = (value) => JSON.parse(JSON.stringify(value)); // drop VM prototypes for deepEqual
+
+// Every label the app can ever send, found by sweeping all plausible values.
+export function allLabels(core) {
+  const MIN = 60000;
+  const HOUR = 3600000;
+  const labels = { length: new Set(), calls: new Set(), hours: new Set() };
+  for (let ms = 0; ms < 3 * HOUR; ms += 5000) labels.length.add(core.bucketCallLength(ms));
+  for (let n = 0; n < 300; n += 1) labels.calls.add(core.bucketDayCalls(n));
+  for (let ms = 0; ms < 14 * HOUR; ms += 60000) labels.hours.add(core.bucketDayHours(ms));
+  return labels;
+}
