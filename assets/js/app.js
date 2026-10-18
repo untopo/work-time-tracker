@@ -813,11 +813,54 @@ function setAnalyticsEnabled(enabled) {
 // call, earnings, rate, note or history data.
 function trackEvent(name) {
     try {
-        if (isDesktopTauri || Boolean(window.Capacitor)) return;
-        if (!isAnalyticsEnabled()) return;
+        if (isDesktopTauri || Boolean(window.Capacitor)) return false;
+        if (!isAnalyticsEnabled()) return false;
         const counter = window.goatcounter;
-        if (!counter || typeof counter.count !== 'function') return;
+        if (!counter || typeof counter.count !== 'function') return false;
         counter.count({ path: `event/${name}`, title: name, event: true });
+        return true;
+    } catch (error) {
+        // Analytics must never affect the app.
+        return false;
+    }
+}
+
+// Once per day (web only, only if anonymous counts are on): which optional features are
+// switched on, and the call-count and hours RANGES of the most recent finished day.
+// Own storage keys, so saved calls, rates and goals are never read back or rewritten.
+const USAGE_FEATURES_DAY_KEY = 'wtt_usage_features_day';
+const USAGE_SUMMARY_DAY_KEY = 'wtt_usage_summary_day';
+
+function sendDailyUsageMetrics() {
+    try {
+        if (isDesktopTauri || Boolean(window.Capacitor) || !isAnalyticsEnabled()) return;
+        if (typeof window.goatcounter?.count !== 'function') return; // not loaded: try again next time
+        const today = getLocalDateKey(new Date());
+
+        if (appStorage.getItem(USAGE_FEATURES_DAY_KEY) !== today) {
+            const events = buildFeatureUsageEvents({
+                'focus-mode': isFocusModeEnabled(),
+                'payment-cycles': !!paymentCyclesEnabled,
+                'notes': featureFlags?.notes === true,
+                'rpg': featureFlags?.rpg === true,
+                'floating-controls': featureFlags?.floatingCallControls === true,
+                'daily-goal': Number(dailyGoal?.amount) > 0 || Number(dailyGoal?.minutes) > 0,
+                'backup-done': !!appStorage.getItem('wtt_last_backup_at')
+            });
+            events.forEach((eventName) => trackEvent(eventName));
+            appStorage.setItem(USAGE_FEATURES_DAY_KEY, today);
+        }
+
+        const summary = buildDailyUsageSummary(
+            calls,
+            appStorage.getItem(USAGE_SUMMARY_DAY_KEY) || '',
+            today,
+            (call) => getLocalDateKey(getCallStartMs(call))
+        );
+        if (summary) {
+            summary.events.forEach((eventName) => trackEvent(eventName));
+            appStorage.setItem(USAGE_SUMMARY_DAY_KEY, summary.dayKey);
+        }
     } catch (error) {
         // Analytics must never affect the app.
     }
@@ -10309,6 +10352,7 @@ function saveCalls() {
         calls.push(stopResult.callData);
         saveCalls();
         trackEvent('call-ended');
+        trackEvent(`call-length/${bucketCallLength(stopResult.callData?.duration)}`);
         afterCallSavedSafetyChecks();
         setLiveCallInfoVisibility(false);
         startCallBtn.style.display = 'block';
@@ -11648,6 +11692,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         }
         setupLiveCallHoldToAdjust();
         setupBackupReminderBanner();
+        setTimeout(sendDailyUsageMetrics, 5000);
         setTimeout(maybeShowBackupReminderOnLoad, 2500);
         if (floatingStartCallBtn) {
             floatingStartCallBtn.addEventListener('click', () => {
