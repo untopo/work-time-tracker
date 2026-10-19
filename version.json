@@ -2,5 +2,5 @@
   "latestVersion": "1.6.3",
   "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.3",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Hold the +1s / -1s buttons to adjust a live call smoothly, with a faster Focus Mode timer."
+  "notes": "The last day of a payment cycle now counts for that cycle, plus safer saved data and optional anonymous usage counts."
 }
