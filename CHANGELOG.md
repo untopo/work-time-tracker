@@ -5,12 +5,13 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
-## v1.6.3 - Unreleased
+## v1.6.3 - 2026-10-18
 
 ### Fixes
 - Payment cycles: the last day of a cycle now counts as part of that cycle. Before, that day belonged to no cycle, so its calls were left out of your cycle earnings and the card looked empty. On the last day the card now says "Last day (today)" and keeps adding up everything you earn; the next day the new cycle starts from zero.
 
 ### Reliability & Privacy
+- On the web, the app now asks your browser to keep your saved data permanently and gently reminds you to download a backup from time to time, so your calls are safer if the browser ever clears its storage.
 - Anonymous usage counts (web only) now include fairly narrow ranges, so the project can show how the app is used without ever seeing your data: the length range of each finished call (for example 5-7 min), once a day the range of calls and hours of your last finished day (for example 7-10 calls, 2.5-3 hours), and which optional features are switched on. Never exact values, times, earnings, rates, notes, or call history. It uses the same "Share anonymous usage counts" switch in Settings -> Features: turn it off and nothing is sent. The desktop and Android apps send nothing.
 - More automated end-to-end checks now confirm that what you see matches what is saved: the Call Log shows every saved call for Today, Week and Month, Analytics totals add up, a backup contains all your calls, importing it restores them once without duplicates, and deleting a call removes only that call.
 - Under the hood, the code that repairs your saved work sessions and unfinished call, and the level and streak math, also moved to their own files with direct automated tests. Nothing changes in how the app looks or behaves.
