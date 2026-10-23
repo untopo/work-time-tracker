@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.6.3",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.3",
+  "latestVersion": "1.6.4",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.4",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "The last day of a payment cycle now counts for that cycle, plus safer saved data and optional anonymous usage counts."
+  "notes": "New Monthly Report and a shareable summary card, both made on your device."
 }

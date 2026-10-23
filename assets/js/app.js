@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.6.3';
+    const APP_VERSION = '1.6.4';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -1789,6 +1789,31 @@ async function confirmExportOptions() {
     const sessionHistoryList = document.getElementById('session-history-list');
     const sessionHistoryClearBtn = document.getElementById('session-history-clear-btn');
     const sessionHistoryModal = document.getElementById('session-history-modal');
+    const reportModal = document.getElementById('report-modal');
+    const openReportBtn = document.getElementById('open-report-btn');
+    const closeReportBtn = document.getElementById('close-report-modal');
+    const reportBody = document.getElementById('report-body');
+    const reportScroll = document.getElementById('report-scroll');
+    const reportMonthLabel = document.getElementById('report-month-label');
+    const reportPrevBtn = document.getElementById('report-prev-btn');
+    const reportNextBtn = document.getElementById('report-next-btn');
+    const reportPrintBtn = document.getElementById('report-print-btn');
+    const reportPrintHint = document.getElementById('report-print-hint');
+    const reportThemeDarkBtn = document.getElementById('report-theme-dark-btn');
+    const reportThemeLightBtn = document.getElementById('report-theme-light-btn');
+    const reportShareCardBtn = document.getElementById('report-share-card-btn');
+    const openShareCardBtn = document.getElementById('open-share-card-btn');
+    const shareModal = document.getElementById('share-modal');
+    const closeShareBtn = document.getElementById('close-share-modal');
+    const shareCanvas = document.getElementById('share-canvas');
+    const shareMonthLabel = document.getElementById('share-month-label');
+    const sharePrevBtn = document.getElementById('share-prev-btn');
+    const shareNextBtn = document.getElementById('share-next-btn');
+    const shareShowEarnings = document.getElementById('share-show-earnings');
+    const shareNativeBtn = document.getElementById('share-native-btn');
+    const shareDownloadBtn = document.getElementById('share-download-btn');
+    const shareEmpty = document.getElementById('share-empty');
+    const shareNote = document.getElementById('share-note');
     const closeSessionHistoryModalBtn = document.getElementById('close-session-history-modal');
     const doneSessionHistoryBtn = document.getElementById('done-session-history-btn');
     const sessionHistoryAddBtn = document.getElementById('session-history-add-btn');
@@ -10935,6 +10960,203 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         });
     }
 
+    // ---- Monthly report (read-only: it only reads saved data and never changes it) ----
+    let reportYear = new Date().getFullYear();
+    let reportMonth = new Date().getMonth();
+    let reportTheme = 'dark';
+
+    function getReportGeneratedLabel() {
+        return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function buildReportForSelectedMonth() {
+        return buildMonthlyReport({
+            year: reportYear,
+            month: reportMonth,
+            calls,
+            dailyGoal,
+            paymentCycles: paymentCyclesEnabled ? paymentCycles : [],
+            sessions: sessionHistoryEntries
+        });
+    }
+
+    function fitReportToWidth() {
+        if (!reportScroll || !reportBody) return;
+        const available = reportScroll.clientWidth - 24;
+        const zoom = available > 0 ? Math.min(1, available / 794) : 1;
+        reportBody.style.setProperty('--wtt-report-zoom', String(Math.max(0.3, zoom)));
+    }
+
+    function renderReportModal() {
+        if (!reportBody) return;
+        const report = buildReportForSelectedMonth();
+        const now = new Date();
+        const isCurrentMonth = reportYear === now.getFullYear() && reportMonth === now.getMonth();
+        if (reportMonthLabel) reportMonthLabel.textContent = report.range.label;
+        if (reportNextBtn) reportNextBtn.disabled = isCurrentMonth;
+        if (reportThemeDarkBtn) {
+            reportThemeDarkBtn.classList.toggle('is-active', reportTheme === 'dark');
+            reportThemeDarkBtn.setAttribute('aria-pressed', reportTheme === 'dark' ? 'true' : 'false');
+        }
+        if (reportThemeLightBtn) {
+            reportThemeLightBtn.classList.toggle('is-active', reportTheme === 'light');
+            reportThemeLightBtn.setAttribute('aria-pressed', reportTheme === 'light' ? 'true' : 'false');
+        }
+        if (reportPrintBtn) reportPrintBtn.disabled = !report.hasData;
+        if (!report.hasData) {
+            reportBody.innerHTML = '<div class="wtt-report-empty">No calls saved in ' + escapeHTML(report.range.label) + '. Pick another month with the arrows.</div>';
+            return;
+        }
+        reportBody.innerHTML = renderMonthlyReportHtml(report, reportTheme, getReportGeneratedLabel());
+        fitReportToWidth();
+    }
+
+    function pickDefaultReportMonth() {
+        const now = new Date();
+        reportYear = now.getFullYear();
+        reportMonth = now.getMonth();
+        // Opening on a month with no calls would show an empty page, so start at the latest month that has calls.
+        if (!buildReportForSelectedMonth().hasData) {
+            const latest = (Array.isArray(calls) ? calls : []).reduce((max, c) => Math.max(max, getCallStartMs(c)), 0);
+            if (latest > 0 && latest <= now.getTime()) {
+                const d = new Date(latest);
+                reportYear = d.getFullYear();
+                reportMonth = d.getMonth();
+            }
+        }
+    }
+
+    function openReportModal(triggerEl = null) {
+        if (!reportModal) return;
+        pickDefaultReportMonth();
+        if (reportPrintBtn && window.Capacitor) reportPrintBtn.style.display = 'none';
+        if (reportPrintHint && window.Capacitor) reportPrintHint.style.display = 'none';
+        renderReportModal();
+        ModalManager.open(reportModal, { focusSelector: '#report-prev-btn', triggerEl });
+        fitReportToWidth();
+    }
+
+    // ---- Share card (a picture of the month; earnings are hidden unless the person turns them on) ----
+    function renderShareCard() {
+        if (!shareCanvas) return;
+        const report = buildReportForSelectedMonth();
+        const now = new Date();
+        const isCurrentMonth = reportYear === now.getFullYear() && reportMonth === now.getMonth();
+        if (shareMonthLabel) shareMonthLabel.textContent = report.range.label;
+        if (shareNextBtn) shareNextBtn.disabled = isCurrentMonth;
+        const canShareFiles = typeof navigator !== 'undefined' && typeof navigator.canShare === 'function' && typeof File === 'function'
+            && (() => { try { return navigator.canShare({ files: [new File([''], 'a.png', { type: 'image/png' })] }); } catch (error) { return false; } })();
+        const canDownload = !window.Capacitor;
+        if (shareNativeBtn) shareNativeBtn.style.display = canShareFiles && report.hasData ? '' : 'none';
+        if (shareDownloadBtn) shareDownloadBtn.style.display = canDownload && report.hasData ? '' : 'none';
+        if (shareNote) {
+            const noWay = report.hasData && !canShareFiles && !canDownload;
+            shareNote.style.display = noWay ? '' : 'none';
+            shareNote.textContent = noWay ? 'Sharing pictures is not available in this app yet. Open the web version to save the card.' : '';
+        }
+        shareCanvas.style.display = report.hasData ? '' : 'none';
+        if (shareEmpty) {
+            shareEmpty.style.display = report.hasData ? 'none' : '';
+            shareEmpty.textContent = report.hasData ? '' : `No calls saved in ${report.range.label}. Pick another month with the arrows.`;
+        }
+        if (!report.hasData) return;
+        drawShareCard(shareCanvas, buildShareCardData(report, { showEarnings: Boolean(shareShowEarnings && shareShowEarnings.checked) }));
+    }
+
+    function openShareModal(triggerEl = null) {
+        if (!shareModal) return;
+        pickDefaultReportMonth();
+        if (shareShowEarnings) shareShowEarnings.checked = false; // earnings always start hidden
+        renderShareCard();
+        ModalManager.open(shareModal, { focusSelector: '#share-prev-btn', triggerEl });
+    }
+
+    function closeShareModal() {
+        if (!shareModal) return;
+        ModalManager.close(shareModal);
+    }
+
+    function shiftShareMonth(delta) {
+        const next = new Date(reportYear, reportMonth + delta, 1);
+        const now = new Date();
+        if (next.getTime() > new Date(now.getFullYear(), now.getMonth(), 1).getTime()) return;
+        reportYear = next.getFullYear();
+        reportMonth = next.getMonth();
+        renderShareCard();
+    }
+
+    function getShareCardBlob() {
+        return new Promise((resolve) => {
+            if (!shareCanvas) { resolve(null); return; }
+            try {
+                shareCanvas.toBlob((blob) => resolve(blob), 'image/png');
+            } catch (error) {
+                resolve(null);
+            }
+        });
+    }
+
+    function getShareCardFileName() {
+        return `work-time-tracker-${reportYear}-${String(reportMonth + 1).padStart(2, '0')}.png`;
+    }
+
+    async function downloadShareCard() {
+        const blob = await getShareCardBlob();
+        if (!blob) { showToast('Could not create the image.'); return; }
+        downloadBlob(blob, getShareCardFileName());
+    }
+
+    async function shareShareCard() {
+        const blob = await getShareCardBlob();
+        if (!blob) { showToast('Could not create the image.'); return; }
+        const file = new File([blob], getShareCardFileName(), { type: 'image/png' });
+        try {
+            await navigator.share({ files: [file], title: 'My month in calls' });
+        } catch (error) {
+            if (error && error.name === 'AbortError') return; // the person closed the share sheet
+            showToast('Could not open the share sheet.');
+        }
+    }
+
+    function closeReportModal() {
+        if (!reportModal) return;
+        ModalManager.close(reportModal);
+    }
+
+    function shiftReportMonth(delta) {
+        const next = new Date(reportYear, reportMonth + delta, 1);
+        const now = new Date();
+        if (next.getTime() > new Date(now.getFullYear(), now.getMonth(), 1).getTime()) return;
+        reportYear = next.getFullYear();
+        reportMonth = next.getMonth();
+        renderReportModal();
+    }
+
+    function printReport() {
+        const report = buildReportForSelectedMonth();
+        if (!report.hasData) return;
+        let root = document.getElementById('report-print-root');
+        if (!root) {
+            root = document.createElement('div');
+            root.id = 'report-print-root';
+            document.body.appendChild(root);
+        }
+        root.innerHTML = renderMonthlyReportHtml(report, reportTheme, getReportGeneratedLabel());
+        document.body.classList.add('is-printing-report');
+        const cleanup = () => {
+            document.body.classList.remove('is-printing-report');
+            root.innerHTML = '';
+            window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
+        try {
+            window.print();
+        } catch (error) {
+            cleanup();
+            showToast('Printing is not available here.');
+        }
+    }
+
     function closeSessionHistoryModal() {
         if (!sessionHistoryModal) return;
         ModalManager.close(sessionHistoryModal);
@@ -11319,6 +11541,22 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     if (openSessionHistoryBtn) {
         openSessionHistoryBtn.addEventListener('click', () => openSessionHistoryModal(openSessionHistoryBtn));
     }
+    if (openReportBtn) openReportBtn.addEventListener('click', () => openReportModal(openReportBtn));
+    if (closeReportBtn) closeReportBtn.addEventListener('click', closeReportModal);
+    if (reportPrevBtn) reportPrevBtn.addEventListener('click', () => shiftReportMonth(-1));
+    if (reportNextBtn) reportNextBtn.addEventListener('click', () => shiftReportMonth(1));
+    if (reportPrintBtn) reportPrintBtn.addEventListener('click', printReport);
+    if (reportThemeDarkBtn) reportThemeDarkBtn.addEventListener('click', () => { reportTheme = 'dark'; renderReportModal(); });
+    if (reportThemeLightBtn) reportThemeLightBtn.addEventListener('click', () => { reportTheme = 'light'; renderReportModal(); });
+    window.addEventListener('resize', fitReportToWidth);
+    if (reportShareCardBtn) reportShareCardBtn.addEventListener('click', () => { closeReportModal(); openShareModal(reportShareCardBtn); });
+    if (openShareCardBtn) openShareCardBtn.addEventListener('click', () => openShareModal(openShareCardBtn));
+    if (closeShareBtn) closeShareBtn.addEventListener('click', closeShareModal);
+    if (sharePrevBtn) sharePrevBtn.addEventListener('click', () => shiftShareMonth(-1));
+    if (shareNextBtn) shareNextBtn.addEventListener('click', () => shiftShareMonth(1));
+    if (shareShowEarnings) shareShowEarnings.addEventListener('change', renderShareCard);
+    if (shareDownloadBtn) shareDownloadBtn.addEventListener('click', downloadShareCard);
+    if (shareNativeBtn) shareNativeBtn.addEventListener('click', shareShareCard);
     if (sessionHistoryAddBtn) {
         sessionHistoryAddBtn.addEventListener('click', () => openSessionHistoryEditor(null, sessionHistoryAddBtn));
     }
@@ -11483,6 +11721,8 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(supportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#support-modal-paypal-btn' });
         ModalManager.register(sessionHistoryModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-clear-btn' });
+        if (reportModal) ModalManager.register(reportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#report-prev-btn' });
+        if (shareModal) ModalManager.register(shareModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#share-prev-btn' });
         ModalManager.register(sessionHistoryEditorModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-editor-start' });
         ModalManager.register(patternsDetailModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#patterns-detail-prev-btn' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
