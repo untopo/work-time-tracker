@@ -1789,6 +1789,18 @@ async function confirmExportOptions() {
     const sessionHistoryList = document.getElementById('session-history-list');
     const sessionHistoryClearBtn = document.getElementById('session-history-clear-btn');
     const sessionHistoryModal = document.getElementById('session-history-modal');
+    const reportModal = document.getElementById('report-modal');
+    const openReportBtn = document.getElementById('open-report-btn');
+    const closeReportBtn = document.getElementById('close-report-modal');
+    const reportBody = document.getElementById('report-body');
+    const reportScroll = document.getElementById('report-scroll');
+    const reportMonthLabel = document.getElementById('report-month-label');
+    const reportPrevBtn = document.getElementById('report-prev-btn');
+    const reportNextBtn = document.getElementById('report-next-btn');
+    const reportPrintBtn = document.getElementById('report-print-btn');
+    const reportPrintHint = document.getElementById('report-print-hint');
+    const reportThemeDarkBtn = document.getElementById('report-theme-dark-btn');
+    const reportThemeLightBtn = document.getElementById('report-theme-light-btn');
     const closeSessionHistoryModalBtn = document.getElementById('close-session-history-modal');
     const doneSessionHistoryBtn = document.getElementById('done-session-history-btn');
     const sessionHistoryAddBtn = document.getElementById('session-history-add-btn');
@@ -10935,6 +10947,117 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         });
     }
 
+    // ---- Monthly report (read-only: it only reads saved data and never changes it) ----
+    let reportYear = new Date().getFullYear();
+    let reportMonth = new Date().getMonth();
+    let reportTheme = 'dark';
+
+    function getReportGeneratedLabel() {
+        return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function buildReportForSelectedMonth() {
+        return buildMonthlyReport({
+            year: reportYear,
+            month: reportMonth,
+            calls,
+            dailyGoal,
+            paymentCycles: paymentCyclesEnabled ? paymentCycles : [],
+            sessions: sessionHistoryEntries
+        });
+    }
+
+    function fitReportToWidth() {
+        if (!reportScroll || !reportBody) return;
+        const available = reportScroll.clientWidth - 24;
+        const zoom = available > 0 ? Math.min(1, available / 794) : 1;
+        reportBody.style.setProperty('--wtt-report-zoom', String(Math.max(0.3, zoom)));
+    }
+
+    function renderReportModal() {
+        if (!reportBody) return;
+        const report = buildReportForSelectedMonth();
+        const now = new Date();
+        const isCurrentMonth = reportYear === now.getFullYear() && reportMonth === now.getMonth();
+        if (reportMonthLabel) reportMonthLabel.textContent = report.range.label;
+        if (reportNextBtn) reportNextBtn.disabled = isCurrentMonth;
+        if (reportThemeDarkBtn) {
+            reportThemeDarkBtn.classList.toggle('is-active', reportTheme === 'dark');
+            reportThemeDarkBtn.setAttribute('aria-pressed', reportTheme === 'dark' ? 'true' : 'false');
+        }
+        if (reportThemeLightBtn) {
+            reportThemeLightBtn.classList.toggle('is-active', reportTheme === 'light');
+            reportThemeLightBtn.setAttribute('aria-pressed', reportTheme === 'light' ? 'true' : 'false');
+        }
+        if (reportPrintBtn) reportPrintBtn.disabled = !report.hasData;
+        if (!report.hasData) {
+            reportBody.innerHTML = '<div class="wtt-report-empty">No calls saved in ' + escapeHTML(report.range.label) + '. Pick another month with the arrows.</div>';
+            return;
+        }
+        reportBody.innerHTML = renderMonthlyReportHtml(report, reportTheme, getReportGeneratedLabel());
+        fitReportToWidth();
+    }
+
+    function openReportModal(triggerEl = null) {
+        if (!reportModal) return;
+        const now = new Date();
+        reportYear = now.getFullYear();
+        reportMonth = now.getMonth();
+        // Opening on a month with no calls would show an empty page, so start at the latest month that has calls.
+        if (!buildReportForSelectedMonth().hasData) {
+            const latest = (Array.isArray(calls) ? calls : []).reduce((max, c) => Math.max(max, getCallStartMs(c)), 0);
+            if (latest > 0 && latest <= now.getTime()) {
+                const d = new Date(latest);
+                reportYear = d.getFullYear();
+                reportMonth = d.getMonth();
+            }
+        }
+        if (reportPrintBtn && isNativeAppShell()) reportPrintBtn.style.display = 'none';
+        if (reportPrintHint && isNativeAppShell()) reportPrintHint.style.display = 'none';
+        renderReportModal();
+        ModalManager.open(reportModal, { focusSelector: '#report-prev-btn', triggerEl });
+        fitReportToWidth();
+    }
+
+    function closeReportModal() {
+        if (!reportModal) return;
+        ModalManager.close(reportModal);
+    }
+
+    function shiftReportMonth(delta) {
+        const next = new Date(reportYear, reportMonth + delta, 1);
+        const now = new Date();
+        if (next.getTime() > new Date(now.getFullYear(), now.getMonth(), 1).getTime()) return;
+        reportYear = next.getFullYear();
+        reportMonth = next.getMonth();
+        renderReportModal();
+    }
+
+    function printReport() {
+        const report = buildReportForSelectedMonth();
+        if (!report.hasData) return;
+        let root = document.getElementById('report-print-root');
+        if (!root) {
+            root = document.createElement('div');
+            root.id = 'report-print-root';
+            document.body.appendChild(root);
+        }
+        root.innerHTML = renderMonthlyReportHtml(report, reportTheme, getReportGeneratedLabel());
+        document.body.classList.add('is-printing-report');
+        const cleanup = () => {
+            document.body.classList.remove('is-printing-report');
+            root.innerHTML = '';
+            window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
+        try {
+            window.print();
+        } catch (error) {
+            cleanup();
+            showToast('Printing is not available here.');
+        }
+    }
+
     function closeSessionHistoryModal() {
         if (!sessionHistoryModal) return;
         ModalManager.close(sessionHistoryModal);
@@ -11319,6 +11442,14 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     if (openSessionHistoryBtn) {
         openSessionHistoryBtn.addEventListener('click', () => openSessionHistoryModal(openSessionHistoryBtn));
     }
+    if (openReportBtn) openReportBtn.addEventListener('click', () => openReportModal(openReportBtn));
+    if (closeReportBtn) closeReportBtn.addEventListener('click', closeReportModal);
+    if (reportPrevBtn) reportPrevBtn.addEventListener('click', () => shiftReportMonth(-1));
+    if (reportNextBtn) reportNextBtn.addEventListener('click', () => shiftReportMonth(1));
+    if (reportPrintBtn) reportPrintBtn.addEventListener('click', printReport);
+    if (reportThemeDarkBtn) reportThemeDarkBtn.addEventListener('click', () => { reportTheme = 'dark'; renderReportModal(); });
+    if (reportThemeLightBtn) reportThemeLightBtn.addEventListener('click', () => { reportTheme = 'light'; renderReportModal(); });
+    window.addEventListener('resize', fitReportToWidth);
     if (sessionHistoryAddBtn) {
         sessionHistoryAddBtn.addEventListener('click', () => openSessionHistoryEditor(null, sessionHistoryAddBtn));
     }
@@ -11483,6 +11614,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(supportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#support-modal-paypal-btn' });
         ModalManager.register(sessionHistoryModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-clear-btn' });
+        if (reportModal) ModalManager.register(reportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#report-prev-btn' });
         ModalManager.register(sessionHistoryEditorModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-editor-start' });
         ModalManager.register(patternsDetailModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#patterns-detail-prev-btn' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });

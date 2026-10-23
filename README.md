@@ -239,6 +239,7 @@ gradlew assembleRelease
 |   |   |-- data-core.js
 |   |   |-- metrics-core.js
 |   |   |-- progress-core.js
+|   |   |-- report-core.js
 |   |   |-- session-core.js
 |   |   |-- resources-data.js
 |   |   |-- resources-helpers.js

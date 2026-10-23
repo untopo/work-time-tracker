@@ -535,6 +535,11 @@
                 Current Date
             </button>
         </div>
+        <div class="analytics-report-row">
+            <button id="open-report-btn" type="button" class="analytics-report-btn" aria-label="Open monthly report">
+                <i class="fas fa-calendar-days"></i><span>Monthly report</span>
+            </button>
+        </div>
         </div>
     </div>
 
@@ -2087,6 +2092,38 @@
     </div>
 </div>
 
+<div id="report-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal report-modal p-6 w-full relative">
+        <button id="close-report-modal" type="button" aria-label="Close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-1">
+            <i class="fas fa-calendar-days text-blue-500 mr-2"></i>Monthly Report
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            Built on this device from your saved calls. Nothing is uploaded.
+        </p>
+        <div class="report-toolbar">
+            <div class="report-toolbar-group">
+                <button id="report-prev-btn" type="button" title="Previous month" aria-label="Previous month" class="analytics-date-btn px-3 py-2 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><i class="fas fa-chevron-left"></i></button>
+                <span id="report-month-label" class="report-month-label">Month</span>
+                <button id="report-next-btn" type="button" title="Next month" aria-label="Next month" class="analytics-date-btn px-3 py-2 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="report-toolbar-group">
+                <div class="report-theme-switch" role="group" aria-label="Report theme">
+                    <button id="report-theme-dark-btn" type="button" class="report-theme-btn is-active" aria-pressed="true">Dark</button>
+                    <button id="report-theme-light-btn" type="button" class="report-theme-btn" aria-pressed="false">Light</button>
+                </div>
+                <button id="report-print-btn" type="button" class="report-print-btn"><i class="fas fa-file-export mr-2"></i>Print or save PDF</button>
+            </div>
+        </div>
+        <div id="report-scroll" class="report-scroll">
+            <div id="report-body"></div>
+        </div>
+        <p id="report-print-hint" class="text-xs text-gray-500 dark:text-gray-400 mt-3">Tip: choose the Light theme for printing. In the print window, pick "Save as PDF" to keep a copy.</p>
+    </div>
+</div>
+
 <div id="session-history-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
     <div class="modal modal-wide p-6 max-w-3xl w-full relative">
         <button id="close-session-history-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
@@ -2274,6 +2311,7 @@
 <script defer src="assets/js/session-core.js"></script>
 <script defer src="assets/js/progress-core.js"></script>
 <script defer src="assets/js/metrics-core.js"></script>
+<script defer src="assets/js/report-core.js"></script>
 <script defer src="assets/js/app.js"></script>
 </body>
 </html>
