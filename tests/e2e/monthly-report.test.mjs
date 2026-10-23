@@ -116,3 +116,56 @@ test('printing produces exactly two A4 pages of the report', async () => {
     await context.close();
   }
 });
+
+test('the share card starts with earnings hidden, downloads a PNG and leaves data untouched', async () => {
+  const now = Date.now();
+  const { context, page, problems, before } = await openReport([call('a', now - 3600000, 7), call('b', now - 2 * 3600000, 5)]);
+  try {
+    await page.click('#report-share-card-btn');
+    await page.waitForSelector('#share-modal canvas', { state: 'visible' });
+    assert.equal(await page.isChecked('#share-show-earnings'), false, 'earnings off by default');
+    const size = await page.evaluate(() => { const c = document.getElementById('share-canvas'); return [c.width, c.height]; });
+    assert.deepEqual(size, [1080, 1350]);
+    const hash = () => page.evaluate(() => {
+      const c = document.getElementById('share-canvas');
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      let h = 0;
+      for (let i = 0; i < d.length; i += 97) h = (h * 31 + d[i]) | 0;
+      return h;
+    });
+    const hidden = await hash();
+    await page.check('#share-show-earnings');
+    const shown = await hash();
+    assert.notEqual(hidden, shown, 'turning earnings on changes the picture');
+    await page.uncheck('#share-show-earnings');
+    assert.equal(await hash(), hidden, 'and turning it off brings the hidden version back');
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#share-download-btn')]);
+    assert.match(download.suggestedFilename(), /^work-time-tracker-\d{4}-\d{2}\.png$/);
+    const bytes = fs.readFileSync(await download.path());
+    assert.equal(bytes.subarray(1, 4).toString('latin1'), 'PNG');
+    const after = await readStorage(page);
+    assert.equal(after.calls, before.calls);
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('reopening the share card hides earnings again, and an empty month has no picture to share', async () => {
+  const { context, page, problems } = await openReport([call('a', Date.now() - 3600000, 7)]);
+  try {
+    await page.click('#report-share-card-btn');
+    await page.check('#share-show-earnings');
+    await page.click('#close-share-modal');
+    await page.waitForTimeout(400);
+    await page.click('#open-share-card-btn');
+    await page.waitForSelector('#share-modal canvas', { state: 'visible' });
+    assert.equal(await page.isChecked('#share-show-earnings'), false);
+    await page.click('#share-prev-btn');
+    assert.equal(await page.isVisible('#share-download-btn'), false);
+    assert.match(await page.innerText('#share-empty'), /No calls saved in/);
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});

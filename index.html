@@ -539,6 +539,9 @@
             <button id="open-report-btn" type="button" class="analytics-report-btn" aria-label="Open monthly report">
                 <i class="fas fa-calendar-days"></i><span>Monthly report</span>
             </button>
+            <button id="open-share-card-btn" type="button" class="analytics-report-btn" aria-label="Open shareable summary card">
+                <i class="fas fa-download"></i><span>Share card</span>
+            </button>
         </div>
         </div>
     </div>
@@ -2114,6 +2117,7 @@
                     <button id="report-theme-dark-btn" type="button" class="report-theme-btn is-active" aria-pressed="true">Dark</button>
                     <button id="report-theme-light-btn" type="button" class="report-theme-btn" aria-pressed="false">Light</button>
                 </div>
+                <button id="report-share-card-btn" type="button" class="report-card-btn"><i class="fas fa-layer-group mr-2"></i>Share card</button>
                 <button id="report-print-btn" type="button" class="report-print-btn"><i class="fas fa-file-export mr-2"></i>Print or save PDF</button>
             </div>
         </div>
@@ -2121,6 +2125,39 @@
             <div id="report-body"></div>
         </div>
         <p id="report-print-hint" class="text-xs text-gray-500 dark:text-gray-400 mt-3">Tip: choose the Light theme for printing. In the print window, pick "Save as PDF" to keep a copy.</p>
+    </div>
+</div>
+
+<div id="share-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
+    <div class="modal share-modal p-6 w-full relative">
+        <button id="close-share-modal" type="button" aria-label="Close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-1">
+            <i class="fas fa-layer-group text-emerald-500 mr-2"></i>Share Card
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+            A picture of your month to share. It is made on this device and never uploaded.
+        </p>
+        <div class="report-toolbar">
+            <div class="report-toolbar-group">
+                <button id="share-prev-btn" type="button" title="Previous month" aria-label="Previous month" class="analytics-date-btn px-3 py-2 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><i class="fas fa-chevron-left"></i></button>
+                <span id="share-month-label" class="report-month-label">Month</span>
+                <button id="share-next-btn" type="button" title="Next month" aria-label="Next month" class="analytics-date-btn px-3 py-2 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+        <label class="share-toggle">
+            <input id="share-show-earnings" type="checkbox">
+            <span>Show my earnings on the card</span>
+        </label>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Off by default: the card shows time, calls and streaks, never money, unless you turn this on.</p>
+        <div class="share-preview-wrap"><canvas id="share-canvas" class="share-canvas" aria-label="Share card preview"></canvas></div>
+        <div id="share-empty" class="wtt-report-empty" style="display:none;"></div>
+        <div class="share-actions">
+            <button id="share-native-btn" type="button" class="report-print-btn"><i class="fas fa-upload mr-2"></i>Share</button>
+            <button id="share-download-btn" type="button" class="report-print-btn"><i class="fas fa-download mr-2"></i>Download image</button>
+        </div>
+        <p id="share-note" class="text-xs text-gray-500 dark:text-gray-400 mt-3" style="display:none;"></p>
     </div>
 </div>
 

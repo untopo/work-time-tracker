@@ -11338,3 +11338,17 @@ html.dark .report-scroll { background: rgba(2, 6, 23, 0.5); }
     .report-modal { padding: 1rem; }
     .report-month-label { min-width: 7.5rem; }
 }
+
+/* ---------- Share card ---------- */
+.report-card-btn { padding: 0.45rem 0.9rem; border-radius: 0.5rem; font-size: 0.85rem; font-weight: 600; color: #047857; background: #d1fae5; }
+.report-card-btn:hover { background: #a7f3d0; }
+html.dark .report-card-btn { color: #6ee7b7; background: rgba(6, 95, 70, 0.45); }
+.share-modal { max-width: 34rem; max-height: 92vh; overflow-y: auto; }
+.share-toggle { display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; font-weight: 600; color: #111827; margin: 0.25rem 0; cursor: pointer; }
+html.dark .share-toggle { color: #f3f4f6; }
+.share-toggle input { width: 1.1rem; height: 1.1rem; accent-color: #059669; }
+.share-preview-wrap { display: flex; justify-content: center; background: rgba(15, 23, 42, 0.06); border-radius: 0.75rem; padding: 0.75rem; }
+html.dark .share-preview-wrap { background: rgba(2, 6, 23, 0.5); }
+.share-canvas { width: 100%; max-width: 360px; height: auto; border-radius: 0.5rem; }
+.share-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; margin-top: 0.9rem; }
+.report-toolbar-group .report-card-btn { white-space: nowrap; }
