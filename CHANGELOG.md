@@ -5,6 +5,15 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.6.4 - Unreleased
+
+### Highlights
+- New Monthly Report in Analytics. Open it with the "Monthly report" button and get a clean two-page summary of any month: earnings, calls, time on calls, average call, earnings by week and by rate, your payment cycles, how often you reached your daily goal, your longest streak, time on the platform (what you earn per connected hour), and a "when you work" heatmap with your best window and best day. Use the arrows to switch months.
+- Dark theme to match the app, or Light theme for printing. "Print or save PDF" prints the two pages in A4 (on the web and desktop app; choose "Save as PDF" in the print window to keep a copy).
+
+### Reliability & Privacy
+- The report is built entirely on your device from your saved calls and only reads them: it never changes your data and nothing is uploaded.
+
 ## v1.6.3 - 2026-10-18
 
 ### Fixes

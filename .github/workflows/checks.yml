@@ -45,6 +45,7 @@ jobs:
           node --check assets/js/session-core.js
           node --check assets/js/progress-core.js
           node --check assets/js/metrics-core.js
+          node --check assets/js/report-core.js
 
       - name: Unit tests (data logic)
         run: npm run test:unit
