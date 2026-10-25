@@ -1,0 +1,171 @@
+// The monthly report only reads saved data: it must show the right numbers and never change storage.
+// Run with: npm run test:e2e
+import { test, before, after } from 'node:test';
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import { startServer, launchBrowser, newPage, seedStorage, readStorage, makeSeed } from './helpers.mjs';
+
+let server;
+let baseUrl;
+let browser;
+const VERSION = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version;
+
+before(async () => {
+  ({ server, url: baseUrl } = await startServer());
+  browser = await launchBrowser();
+});
+after(async () => {
+  await browser?.close();
+  server?.close();
+});
+
+// $1 per minute, so `dollars` is also the number of minutes.
+function call(id, startMs, dollars) {
+  const duration = dollars * 60000;
+  return {
+    id, startTime: new Date(startMs).toISOString(), endTime: new Date(startMs + duration).toISOString(),
+    duration, rate: 1, rateName: 'Propio', earnings: dollars, earned: dollars, notes: '', rpgEligible: true,
+  };
+}
+
+async function openReport(calls) {
+  const { context, page, problems } = await newPage(browser, baseUrl, { timezoneId: 'America/Lima' });
+  const seed = makeSeed(0);
+  seed.calls = JSON.stringify(calls);
+  seed[`releaseSpotlightSeen:${VERSION}`] = '1';
+  await seedStorage(page, baseUrl, seed);
+  await page.click('.app-nav-link[data-app-nav="analytics"]');
+  await page.waitForTimeout(400);
+  const before = await readStorage(page);
+  await page.click('#open-report-btn');
+  await page.waitForSelector('#report-modal .wtt-report-page, #report-modal .wtt-report-empty');
+  return { context, page, problems, before };
+}
+
+test('the report shows the month totals and leaves saved data untouched', async () => {
+  const now = Date.now();
+  const { context, page, problems, before } = await openReport([
+    call('a', now - 3600000, 7),
+    call('b', now - 2 * 3600000, 5),
+  ]);
+  try {
+    assert.equal(await page.locator('#report-modal .wtt-report-page').count(), 2);
+    const text = await page.innerText('#report-body');
+    assert.match(text, /\$12\.00/);
+    assert.match(text, /Monthly report/);
+    assert.match(text, /Your data is never uploaded/);
+    assert.equal(await page.getAttribute('#report-body .wtt-report', 'data-theme'), 'dark');
+    await page.click('#report-theme-light-btn');
+    assert.equal(await page.getAttribute('#report-body .wtt-report', 'data-theme'), 'light');
+    await page.click('#close-report-modal');
+    await page.waitForTimeout(200);
+    assert.equal(await page.isVisible('#report-modal'), false);
+    const after = await readStorage(page);
+    assert.equal(after.calls, before.calls, 'calls must not change');
+    assert.equal(after.dailyGoal, before.dailyGoal);
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('with no calls the report explains it instead of showing an empty sheet', async () => {
+  const { context, page, problems } = await openReport([]);
+  try {
+    assert.match(await page.innerText('#report-body'), /No calls saved in/);
+    assert.equal(await page.isDisabled('#report-print-btn'), true);
+    assert.equal(await page.isDisabled('#report-next-btn'), true, 'cannot go past the current month');
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('previous month works, and an older call never leaks into this month', async () => {
+  const now = new Date();
+  const lastMonthMid = new Date(now.getFullYear(), now.getMonth() - 1, 15, 12).getTime();
+  const { context, page, problems } = await openReport([call('old', lastMonthMid, 9)]);
+  try {
+    // opens on the latest month that has calls, which is last month
+    assert.match(await page.innerText('#report-body'), /\$9\.00/);
+    await page.click('#report-next-btn');
+    assert.match(await page.innerText('#report-body'), /No calls saved in/);
+    await page.click('#report-prev-btn');
+    assert.match(await page.innerText('#report-body'), /\$9\.00/);
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('printing produces exactly two A4 pages of the report', async () => {
+  const { context, page, problems } = await openReport([call('a', Date.now() - 3600000, 7)]);
+  try {
+    await page.evaluate(() => {
+      const root = document.createElement('div');
+      root.id = 'report-print-root';
+      root.innerHTML = document.getElementById('report-body').innerHTML;
+      document.body.appendChild(root);
+      document.body.classList.add('is-printing-report');
+    });
+    const pdf = await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true });
+    const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
+    assert.equal(pages, 2);
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('the share card starts with earnings hidden, downloads a PNG and leaves data untouched', async () => {
+  const now = Date.now();
+  const { context, page, problems, before } = await openReport([call('a', now - 3600000, 7), call('b', now - 2 * 3600000, 5)]);
+  try {
+    await page.click('#report-share-card-btn');
+    await page.waitForSelector('#share-modal canvas', { state: 'visible' });
+    assert.equal(await page.isChecked('#share-show-earnings'), false, 'earnings off by default');
+    const size = await page.evaluate(() => { const c = document.getElementById('share-canvas'); return [c.width, c.height]; });
+    assert.deepEqual(size, [1080, 1350]);
+    const hash = () => page.evaluate(() => {
+      const c = document.getElementById('share-canvas');
+      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+      let h = 0;
+      for (let i = 0; i < d.length; i += 97) h = (h * 31 + d[i]) | 0;
+      return h;
+    });
+    const hidden = await hash();
+    await page.check('#share-show-earnings');
+    const shown = await hash();
+    assert.notEqual(hidden, shown, 'turning earnings on changes the picture');
+    await page.uncheck('#share-show-earnings');
+    assert.equal(await hash(), hidden, 'and turning it off brings the hidden version back');
+    const [download] = await Promise.all([page.waitForEvent('download'), page.click('#share-download-btn')]);
+    assert.match(download.suggestedFilename(), /^work-time-tracker-\d{4}-\d{2}\.png$/);
+    const bytes = fs.readFileSync(await download.path());
+    assert.equal(bytes.subarray(1, 4).toString('latin1'), 'PNG');
+    const after = await readStorage(page);
+    assert.equal(after.calls, before.calls);
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('reopening the share card hides earnings again, and an empty month has no picture to share', async () => {
+  const { context, page, problems } = await openReport([call('a', Date.now() - 3600000, 7)]);
+  try {
+    await page.click('#report-share-card-btn');
+    await page.check('#share-show-earnings');
+    await page.click('#close-share-modal');
+    await page.waitForTimeout(400);
+    await page.click('#open-share-card-btn');
+    await page.waitForSelector('#share-modal canvas', { state: 'visible' });
+    assert.equal(await page.isChecked('#share-show-earnings'), false);
+    await page.click('#share-prev-btn');
+    assert.equal(await page.isVisible('#share-download-btn'), false);
+    assert.match(await page.innerText('#share-empty'), /No calls saved in/);
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});

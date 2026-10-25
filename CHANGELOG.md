@@ -5,6 +5,16 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.6.4 - 2026-10-23
+
+### Highlights
+- New Monthly Report in Analytics. Open it with the "Monthly report" button and get a clean two-page summary of any month: earnings, calls, time on calls, average call, earnings by week and by rate, your payment cycles, how often you reached your daily goal, your longest streak, time on the platform (what you earn per connected hour), and a "when you work" heatmap with your best window and best day. Use the arrows to switch months.
+- New Share Card: a picture of your month to post or send. It shows your time on calls, calls, average call, active days, longest streak and your busiest weeks. Your earnings are hidden by default; there is a switch to show them, and it turns itself off every time you open the card. Open it from Analytics ("Share card") or from the report. Share it with your phone's share sheet or download it as an image.
+- Dark theme to match the app, or Light theme for printing. "Print or save PDF" prints the two pages in A4 (not available in the Android app yet; choose "Save as PDF" in the print window to keep a copy).
+
+### Reliability & Privacy
+- The report and the card are built entirely on your device from your saved calls and only reads them: it never changes your data and nothing is uploaded.
+
 ## v1.6.3 - 2026-10-18
 
 ### Fixes

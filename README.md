@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.6.3-blue)
+![Version](https://img.shields.io/badge/version-1.6.4-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Privacy](https://img.shields.io/badge/privacy-local--first-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
@@ -239,6 +239,7 @@ gradlew assembleRelease
 |   |   |-- data-core.js
 |   |   |-- metrics-core.js
 |   |   |-- progress-core.js
+|   |   |-- report-core.js
 |   |   |-- session-core.js
 |   |   |-- resources-data.js
 |   |   |-- resources-helpers.js
