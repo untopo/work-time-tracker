@@ -25,7 +25,7 @@ after(async () => {
 // (an exact number, a note, a rate...) fails the test.
 const labels = allLabels(loadCore().core);
 const list = (set) => [...set].map((label) => label.replace(/[.]/g, '\\.')).join('|');
-const ALLOWED = new RegExp(`^event/(call-started|call-ended|focus-mode|call-length/(${list(labels.length)})|day-calls/(${list(labels.calls)})|day-hours/(${list(labels.hours)})|feature-on/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done))$`);
+const ALLOWED = new RegExp(`^event/(call-started|call-ended|focus-mode|report-opened|card-opened|card-saved|call-length/(${list(labels.length)})|day-calls/(${list(labels.calls)})|day-hours/(${list(labels.hours)})|feature-on/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done))$`);
 
 async function openApp(seed) {
   const { context, page, problems } = await newPage(browser, baseUrl, { timezoneId: 'America/Lima' });
@@ -85,6 +85,27 @@ test('finishing a call sends only the action names and the length range', async 
     assert.ok(paths.includes('event/call-started'));
     assert.ok(paths.includes('event/call-ended'));
     assert.ok(paths.includes('event/call-length/under-1m'), 'a 1-second call is in the shortest range');
+    for (const path of paths) assert.match(path, ALLOWED);
+  } finally {
+    await context.close();
+  }
+});
+
+test('opening the report and the card, and saving the card, send only their action names', async () => {
+  const { context, page } = await openApp(makeSeed(60));
+  try {
+    await page.evaluate(() => document.getElementById('backup-reminder-banner')?.remove());
+    await page.click('.app-nav-link[data-app-nav="analytics"]');
+    await page.click('#open-report-btn');
+    await page.waitForSelector('#report-modal .wtt-report-page', { state: 'visible' });
+    await page.click('#report-share-card-btn');
+    await page.waitForSelector('#share-modal canvas', { state: 'visible' });
+    await Promise.all([page.waitForEvent('download'), page.click('#share-download-btn')]);
+    await page.waitForTimeout(300);
+    const paths = await sent(page);
+    assert.ok(paths.includes('event/report-opened'));
+    assert.ok(paths.includes('event/card-opened'));
+    assert.ok(paths.includes('event/card-saved'));
     for (const path of paths) assert.match(path, ALLOWED);
   } finally {
     await context.close();

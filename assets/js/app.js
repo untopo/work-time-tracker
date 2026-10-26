@@ -11038,6 +11038,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         renderReportModal();
         ModalManager.open(reportModal, { focusSelector: '#report-prev-btn', triggerEl });
         fitReportToWidth();
+        trackEvent('report-opened');
     }
 
     // ---- Share card (a picture of the month; earnings are hidden unless the person turns them on) ----
@@ -11081,6 +11082,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         if (shareShowEarnings) shareShowEarnings.checked = false; // earnings always start hidden
         renderShareCard();
         ModalManager.open(shareModal, { focusSelector: '#share-prev-btn', triggerEl });
+        trackEvent('card-opened');
     }
 
     function closeShareModal() {
@@ -11116,6 +11118,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         const blob = await getShareCardBlob();
         if (!blob) { showToast('Could not create the image.'); return; }
         downloadBlob(blob, getShareCardFileName());
+        trackEvent('card-saved');
     }
 
     async function shareShareCard() {
@@ -11124,6 +11127,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         const file = new File([blob], getShareCardFileName(), { type: 'image/png' });
         try {
             await navigator.share({ files: [file], title: 'My month in calls' });
+            trackEvent('card-saved');
         } catch (error) {
             if (error && error.name === 'AbortError') return; // the person closed the share sheet
             showToast('Could not open the share sheet.');
