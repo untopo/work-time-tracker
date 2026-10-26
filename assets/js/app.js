@@ -1814,6 +1814,9 @@ async function confirmExportOptions() {
     const shareDownloadBtn = document.getElementById('share-download-btn');
     const shareEmpty = document.getElementById('share-empty');
     const shareNote = document.getElementById('share-note');
+    const shareThemeDarkBtn = document.getElementById('share-theme-dark-btn');
+    const shareThemeLightBtn = document.getElementById('share-theme-light-btn');
+    const shareReportBtn = document.getElementById('share-report-btn');
     const closeSessionHistoryModalBtn = document.getElementById('close-session-history-modal');
     const doneSessionHistoryBtn = document.getElementById('done-session-history-btn');
     const sessionHistoryAddBtn = document.getElementById('session-history-add-btn');
@@ -10964,6 +10967,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     let reportYear = new Date().getFullYear();
     let reportMonth = new Date().getMonth();
     let reportTheme = 'dark';
+    let shareTheme = 'dark';
 
     function getReportGeneratedLabel() {
         return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -11026,9 +11030,9 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         }
     }
 
-    function openReportModal(triggerEl = null) {
+    function openReportModal(triggerEl = null, keepMonth = false) {
         if (!reportModal) return;
-        pickDefaultReportMonth();
+        if (!keepMonth) pickDefaultReportMonth();
         if (reportPrintBtn && window.Capacitor) reportPrintBtn.style.display = 'none';
         if (reportPrintHint && window.Capacitor) reportPrintHint.style.display = 'none';
         renderReportModal();
@@ -11060,12 +11064,20 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             shareEmpty.textContent = report.hasData ? '' : `No calls saved in ${report.range.label}. Pick another month with the arrows.`;
         }
         if (!report.hasData) return;
-        drawShareCard(shareCanvas, buildShareCardData(report, { showEarnings: Boolean(shareShowEarnings && shareShowEarnings.checked) }));
+        if (shareThemeDarkBtn) {
+            shareThemeDarkBtn.classList.toggle('is-active', shareTheme === 'dark');
+            shareThemeDarkBtn.setAttribute('aria-pressed', shareTheme === 'dark' ? 'true' : 'false');
+        }
+        if (shareThemeLightBtn) {
+            shareThemeLightBtn.classList.toggle('is-active', shareTheme === 'light');
+            shareThemeLightBtn.setAttribute('aria-pressed', shareTheme === 'light' ? 'true' : 'false');
+        }
+        drawShareCard(shareCanvas, buildShareCardData(report, { showEarnings: Boolean(shareShowEarnings && shareShowEarnings.checked) }), shareTheme);
     }
 
-    function openShareModal(triggerEl = null) {
+    function openShareModal(triggerEl = null, keepMonth = false) {
         if (!shareModal) return;
-        pickDefaultReportMonth();
+        if (!keepMonth) pickDefaultReportMonth();
         if (shareShowEarnings) shareShowEarnings.checked = false; // earnings always start hidden
         renderShareCard();
         ModalManager.open(shareModal, { focusSelector: '#share-prev-btn', triggerEl });
@@ -11549,7 +11561,10 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     if (reportThemeDarkBtn) reportThemeDarkBtn.addEventListener('click', () => { reportTheme = 'dark'; renderReportModal(); });
     if (reportThemeLightBtn) reportThemeLightBtn.addEventListener('click', () => { reportTheme = 'light'; renderReportModal(); });
     window.addEventListener('resize', fitReportToWidth);
-    if (reportShareCardBtn) reportShareCardBtn.addEventListener('click', () => { closeReportModal(); openShareModal(reportShareCardBtn); });
+    if (reportShareCardBtn) reportShareCardBtn.addEventListener('click', () => { closeReportModal(); openShareModal(reportShareCardBtn, true); });
+    if (shareReportBtn) shareReportBtn.addEventListener('click', () => { closeShareModal(); openReportModal(shareReportBtn, true); });
+    if (shareThemeDarkBtn) shareThemeDarkBtn.addEventListener('click', () => { shareTheme = 'dark'; renderShareCard(); });
+    if (shareThemeLightBtn) shareThemeLightBtn.addEventListener('click', () => { shareTheme = 'light'; renderShareCard(); });
     if (openShareCardBtn) openShareCardBtn.addEventListener('click', () => openShareModal(openShareCardBtn));
     if (closeShareBtn) closeShareBtn.addEventListener('click', closeShareModal);
     if (sharePrevBtn) sharePrevBtn.addEventListener('click', () => shiftShareMonth(-1));

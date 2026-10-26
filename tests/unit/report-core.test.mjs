@@ -162,6 +162,12 @@ test('share card hides earnings by default and shows them only when asked', () =
   const shown = plain(core.buildShareCardData(r, { showEarnings: true }));
   assert.ok(JSON.stringify(shown).includes('$90.00'));
   assert.equal(shown.showsEarnings, true);
-  // bars are time, not money
+  // bars are time, not money, each one says which week and how much time, and exactly one is the busiest
   assert.equal(shown.bars.length, r.weeks.length);
+  assert.deepEqual(shown.bars.map((b) => b.label), plain(r.weeks).map((w) => w.label));
+  assert.equal(shown.bars[0].value, '0h 30m');
+  assert.equal(shown.bars[1].value, '0h 15m');
+  assert.equal(shown.bars.filter((b) => b.best).length, 1);
+  assert.equal(shown.bars[0].best, true);
+  assert.ok(!JSON.stringify(shown.bars).includes('$'));
 });
