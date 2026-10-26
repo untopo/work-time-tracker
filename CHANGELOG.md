@@ -5,6 +5,11 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.6.5 - Unreleased
+
+### Reliability & Privacy
+- The optional anonymous usage counts now also count how often the Monthly Report and the Share Card are opened and how often a card is saved or shared, so the project can see if they are useful. Only the name of the action is sent, never any of your data, and it follows the same "Share anonymous usage counts" switch in Settings -> Features (web only; the desktop and Android apps send nothing).
+
 ## v1.6.4 - 2026-10-23
 
 ### Highlights
