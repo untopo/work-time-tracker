@@ -453,6 +453,8 @@ function buildShareCardData(report, options) {
     const t = r.totals;
     const utilization = r.time ? r.time.utilization : null;
     const maxWeek = Math.max(1, ...r.weeks.map((w) => w.talkMs));
+    let busiestIndex = -1;
+    r.weeks.forEach((w, i) => { if (w.talkMs > 0 && (busiestIndex < 0 || w.talkMs > r.weeks[busiestIndex].talkMs)) busiestIndex = i; });
     return {
         title: r.range.label,
         heroLabel: 'Time on calls',
@@ -470,7 +472,13 @@ function buildShareCardData(report, options) {
                 : (r.goal ? ['Days on my goal', `${r.goal.reachedDays} of ${r.goal.activeDays}`, true] : ['Best week', r.bestWeekIndex >= 0 ? r.weeks[r.bestWeekIndex].label : '-', true])
         ],
         // Bars show time on calls, never money, so hiding earnings really hides them.
-        bars: r.weeks.map((w, i) => ({ label: w.label, ratio: w.talkMs / maxWeek, best: i === r.bestWeekIndex })),
+        bars: r.weeks.map((w, i) => ({
+            label: w.label,
+            value: w.talkMs > 0 ? reportFormatHoursMinutes(w.talkMs) : '-',
+            ratio: w.talkMs / maxWeek,
+            best: i === busiestIndex
+        })),
+        barsTitle: 'Time on calls by week',
         showsEarnings: showEarnings
     };
 }
@@ -486,9 +494,21 @@ function reportRoundRect(ctx, x, y, w, h, radius) {
     ctx.closePath();
 }
 
-function drawShareCard(canvas, card) {
+const SHARE_CARD_THEMES = {
+    dark: {
+        bgTop: '#020617', bgBottom: '#0f172a', glow: 'rgba(59,130,246,0.18)', panel: '#1e293b', border: 'rgba(148,163,184,0.22)',
+        strong: '#ffffff', muted: '#94a3b8', soft: '#cbd5e1', accent: '#34d399', brand: '#60a5fa', bar: 'rgba(52,211,153,0.45)'
+    },
+    light: {
+        bgTop: '#f8fbff', bgBottom: '#edf4ff', glow: 'rgba(29,78,216,0.08)', panel: '#ffffff', border: 'rgba(15,23,42,0.14)',
+        strong: '#0f172a', muted: '#475569', soft: '#334155', accent: '#047857', brand: '#1d4ed8', bar: 'rgba(4,120,87,0.4)'
+    }
+};
+
+function drawShareCard(canvas, card, theme) {
     const W = 1080;
     const H = 1350;
+    const T = SHARE_CARD_THEMES[theme === 'light' ? 'light' : 'dark'];
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext('2d');
@@ -496,47 +516,50 @@ function drawShareCard(canvas, card) {
     const font = (size, weight) => `${weight || 400} ${size}px ${MONO}`;
 
     const bg = ctx.createLinearGradient(0, 0, 0, H);
-    bg.addColorStop(0, '#020617');
-    bg.addColorStop(1, '#0f172a');
+    bg.addColorStop(0, T.bgTop);
+    bg.addColorStop(1, T.bgBottom);
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
     const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 520);
-    glow.addColorStop(0, 'rgba(59,130,246,0.18)');
+    glow.addColorStop(0, T.glow);
     glow.addColorStop(1, 'rgba(59,130,246,0)');
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, W, H);
 
     ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#60a5fa';
+    ctx.fillStyle = T.brand;
     ctx.font = font(24, 700);
     ctx.fillText('MY MONTH IN CALLS', 72, 120);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = T.strong;
     ctx.font = font(62, 700);
     ctx.fillText(card.title, 72, 196);
 
     const panel = (x, y, w, h, radius) => {
         reportRoundRect(ctx, x, y, w, h, radius);
-        ctx.fillStyle = '#1e293b';
+        ctx.fillStyle = T.panel;
         ctx.fill();
-        ctx.strokeStyle = 'rgba(148,163,184,0.22)';
+        ctx.strokeStyle = T.border;
         ctx.lineWidth = 2;
         ctx.stroke();
     };
+    const fitText = (text, maxWidth, startSize, minSize, weight) => {
+        let size = startSize;
+        ctx.font = font(size, weight);
+        while (ctx.measureText(text).width > maxWidth && size > minSize) {
+            size -= 2;
+            ctx.font = font(size, weight);
+        }
+    };
 
     panel(72, 250, 936, 300, 20);
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = T.muted;
     ctx.font = font(26, 400);
     ctx.fillText(card.heroLabel, 116, 312);
-    ctx.fillStyle = '#34d399';
-    ctx.font = font(128, 700);
-    let heroSize = 128;
-    while (ctx.measureText(card.hero).width > 848 && heroSize > 60) {
-        heroSize -= 4;
-        ctx.font = font(heroSize, 700);
-    }
+    ctx.fillStyle = T.accent;
+    fitText(card.hero, 848, 128, 60, 700);
     ctx.fillText(card.hero, 116, 440);
-    ctx.fillStyle = '#cbd5e1';
+    ctx.fillStyle = T.soft;
     ctx.font = font(24, 400);
     ctx.fillText(card.heroNote, 116, 506);
 
@@ -544,16 +567,11 @@ function drawShareCard(canvas, card) {
     card.tiles.forEach(([label, value], i) => {
         const x = 72 + i * (tileW + 20);
         panel(x, 590, tileW, 170, 16);
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = T.muted;
         ctx.font = font(22, 400);
         ctx.fillText(label, x + 28, 640);
-        ctx.fillStyle = '#ffffff';
-        let size = 60;
-        ctx.font = font(size, 700);
-        while (ctx.measureText(value).width > tileW - 56 && size > 28) {
-            size -= 2;
-            ctx.font = font(size, 700);
-        }
+        ctx.fillStyle = T.strong;
+        fitText(value, tileW - 56, 60, 28, 700);
         ctx.fillText(value, x + 28, 725);
     });
 
@@ -561,45 +579,64 @@ function drawShareCard(canvas, card) {
     card.lastTiles.forEach(([label, value, accent], i) => {
         const x = 72 + i * (halfW + 20);
         panel(x, 780, halfW, 170, 16);
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = T.muted;
         ctx.font = font(22, 400);
         ctx.fillText(label, x + 28, 830);
-        ctx.fillStyle = accent ? '#34d399' : '#ffffff';
-        let size = 54;
-        ctx.font = font(size, 700);
-        while (ctx.measureText(value).width > halfW - 56 && size > 26) {
-            size -= 2;
-            ctx.font = font(size, 700);
-        }
+        ctx.fillStyle = accent ? T.accent : T.strong;
+        fitText(value, halfW - 56, 54, 26, 700);
         ctx.fillText(value, x + 28, 912);
     });
 
-    ctx.fillStyle = '#94a3b8';
+    // Weekly bars: a title, a legend for the two bar colors, the time above each bar and the week under it.
+    ctx.fillStyle = T.muted;
     ctx.font = font(22, 400);
-    ctx.fillText('Busiest weeks', 72, 1008);
-    const chartTop = 1030;
-    const chartBottom = 1196;
+    ctx.fillText(card.barsTitle, 72, 1000);
+    ctx.textAlign = 'right';
+    ctx.font = font(18, 400);
+    ctx.fillText('Busiest week', 1008, 1000);
+    const legendBest = 1008 - ctx.measureText('Busiest week').width - 28;
+    reportRoundRect(ctx, legendBest, 985, 16, 16, 4);
+    ctx.fillStyle = T.accent;
+    ctx.fill();
+    ctx.fillStyle = T.muted;
+    ctx.fillText('Other weeks', legendBest - 44, 1000);
+    const legendOther = legendBest - 44 - ctx.measureText('Other weeks').width - 28;
+    reportRoundRect(ctx, legendOther, 985, 16, 16, 4);
+    ctx.fillStyle = T.bar;
+    ctx.fill();
+    ctx.textAlign = 'left';
+
+    const chartTop = 1062;
+    const chartBottom = 1176;
     const count = Math.max(1, card.bars.length);
-    const gap = 20;
+    const gap = 16;
     const barW = (936 - gap * (count - 1)) / count;
     card.bars.forEach((bar, i) => {
         const h = Math.max(6, Math.round((chartBottom - chartTop) * bar.ratio));
         const x = 72 + i * (barW + gap);
         reportRoundRect(ctx, x, chartBottom - h, barW, h, 8);
-        ctx.fillStyle = bar.best ? '#34d399' : 'rgba(52,211,153,0.45)';
+        ctx.fillStyle = bar.best ? T.accent : T.bar;
         ctx.fill();
+        ctx.textAlign = 'center';
+        ctx.fillStyle = bar.best ? T.accent : T.soft;
+        fitText(bar.value, barW, 20, 12, bar.best ? 700 : 400);
+        ctx.fillText(bar.value, x + barW / 2, chartBottom - h - 10);
+        ctx.fillStyle = T.muted;
+        fitText(bar.label, barW, 18, 11, 400);
+        ctx.fillText(bar.label, x + barW / 2, chartBottom + 28);
     });
+    ctx.textAlign = 'left';
 
-    ctx.strokeStyle = 'rgba(148,163,184,0.22)';
+    ctx.strokeStyle = T.border;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(72, 1244);
     ctx.lineTo(1008, 1244);
     ctx.stroke();
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = T.strong;
     ctx.font = font(26, 700);
     ctx.fillText('Work Time Tracker', 72, 1292);
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = T.muted;
     ctx.font = font(20, 400);
     ctx.textAlign = 'right';
     ctx.fillText('untopo.github.io/work-time-tracker', 1008, 1292);

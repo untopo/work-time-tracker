@@ -169,3 +169,29 @@ test('reopening the share card hides earnings again, and an empty month has no p
     await context.close();
   }
 });
+
+test('the share card has Dark and Light, and you can jump between the report and the card', async () => {
+  const { context, page, problems } = await openReport([call('a', Date.now() - 3600000, 7)]);
+  try {
+    await page.click('#report-share-card-btn');
+    await page.waitForSelector('#share-modal canvas', { state: 'visible' });
+    const corner = () => page.evaluate(() => {
+      const c = document.getElementById('share-canvas');
+      return Array.from(c.getContext('2d').getImageData(5, 1340, 1, 1).data).slice(0, 3);
+    });
+    const dark = await corner();
+    await page.click('#share-theme-light-btn');
+    const light = await corner();
+    assert.ok(dark[0] < 60 && light[0] > 200, `dark ${dark} light ${light}`);
+    await page.click('#share-theme-dark-btn');
+    // the month stays the same when switching screens
+    const monthLabel = await page.innerText('#share-month-label');
+    await page.click('#share-report-btn');
+    await page.waitForSelector('#report-modal .wtt-report-page', { state: 'visible' });
+    assert.equal(await page.innerText('#report-month-label'), monthLabel);
+    assert.equal(await page.isVisible('#share-modal'), false);
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});
