@@ -1817,6 +1817,8 @@ async function confirmExportOptions() {
     const shareThemeDarkBtn = document.getElementById('share-theme-dark-btn');
     const shareThemeLightBtn = document.getElementById('share-theme-light-btn');
     const shareReportBtn = document.getElementById('share-report-btn');
+    const syncSurveyModal = document.getElementById('sync-survey-modal');
+    const syncSurveyDialog = document.getElementById('sync-survey-dialog');
     const closeSessionHistoryModalBtn = document.getElementById('close-session-history-modal');
     const doneSessionHistoryBtn = document.getElementById('done-session-history-btn');
     const sessionHistoryAddBtn = document.getElementById('session-history-add-btn');
@@ -3105,6 +3107,7 @@ let pendingConfirmOptions = {};
             open,
             close,
             isOpen,
+            hasOpen: () => getOpenModals().length > 0,
             setupGlobalKeyboard,
             refreshLayout
         };
@@ -11134,6 +11137,234 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         }
     }
 
+    // ---- Optional sync survey (asks once, anonymous counts only, never touches saved data) ----
+    const SYNC_SURVEY_STATE_KEY = 'wtt_sync_survey_state';
+    const SYNC_SURVEY_DELAY_MS = 4000;
+    const SYNC_SURVEY_RETRY_MS = 15000;
+    const SYNC_SURVEY_MAX_TRIES = 40; // about ten minutes of waiting for a quiet moment
+    const SYNC_SURVEY_FALLBACK_ENDPOINT = 'https://formspree.io/f/xwvqagvg';
+    let syncSurveyBannerEl = null;
+    let syncSurveyStep = 0;
+    let syncSurveyAnswers = { devices: '', sync: '', comment: '' };
+
+    function readSyncSurveyState() {
+        try {
+            return normalizeSyncSurveyState(appStorage.getItem(SYNC_SURVEY_STATE_KEY));
+        } catch (error) {
+            return normalizeSyncSurveyState(null);
+        }
+    }
+
+    function writeSyncSurveyState(action) {
+        try {
+            appStorage.setItem(SYNC_SURVEY_STATE_KEY, JSON.stringify(nextSyncSurveyState(action, Date.now())));
+        } catch (error) {
+            console.warn('Could not persist survey state', error);
+        }
+    }
+
+    function isBackupReminderShowing() {
+        const el = document.getElementById('backup-reminder-banner');
+        return Boolean(el && !el.classList.contains('hidden'));
+    }
+
+    function canShowSyncSurveyNow() {
+        return shouldShowSyncSurvey({
+            state: readSyncSurveyState(),
+            nowMs: Date.now(),
+            callCount: Array.isArray(calls) ? calls.length : 0,
+            analyticsOn: isAnalyticsEnabled(),
+            isNative: isDesktopTauri || Boolean(window.Capacitor),
+            callActive: LiveCallSession.isActive(),
+            modalOpen: ModalManager.hasOpen(),
+            otherBannerOpen: Boolean(releaseSpotlightBannerEl || syncSurveyBannerEl || isBackupReminderShowing())
+        });
+    }
+
+    function hideSyncSurveyBanner() {
+        if (syncSurveyBannerEl && syncSurveyBannerEl.parentNode) syncSurveyBannerEl.parentNode.removeChild(syncSurveyBannerEl);
+        syncSurveyBannerEl = null;
+    }
+
+    function renderSyncSurveyBanner() {
+        if (syncSurveyBannerEl) return;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'release-spotlight-banner';
+        wrapper.id = 'sync-survey-banner';
+        wrapper.setAttribute('role', 'status');
+        wrapper.setAttribute('aria-live', 'polite');
+        wrapper.innerHTML = `
+            <div class="release-spotlight-content">
+                <div>
+                    <div class="release-spotlight-title">Help decide a future feature</div>
+                    <p class="release-spotlight-text">Would you want your calls on more than one device? A few quick questions, anonymous and completely optional.</p>
+                    <div class="release-spotlight-actions">
+                        <button type="button" class="release-spotlight-btn release-spotlight-btn-primary" data-survey-action="take">Take the survey</button>
+                        <button type="button" class="release-spotlight-btn release-spotlight-btn-muted" data-survey-action="later">Maybe later</button>
+                        <button type="button" class="release-spotlight-btn release-spotlight-btn-muted" data-survey-action="never">No thanks</button>
+                    </div>
+                </div>
+                <button type="button" class="release-spotlight-close" aria-label="Close survey notice" data-survey-action="later">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        wrapper.querySelectorAll('[data-survey-action]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const action = btn.getAttribute('data-survey-action');
+                hideSyncSurveyBanner();
+                if (action === 'take') {
+                    // Opening counts as "later" until it is finished, so closing it any way never nags again right away.
+                    writeSyncSurveyState('later');
+                    openSyncSurveyModal();
+                    return;
+                }
+                writeSyncSurveyState(action);
+            });
+        });
+        document.body.appendChild(wrapper);
+        syncSurveyBannerEl = wrapper;
+    }
+
+    function scheduleSyncSurveyBanner(tries = 0) {
+        window.setTimeout(() => {
+            if (syncSurveyBannerEl) return;
+            if (readSyncSurveyState().status === 'never' || readSyncSurveyState().status === 'done') return;
+            if (canShowSyncSurveyNow()) {
+                renderSyncSurveyBanner();
+                return;
+            }
+            // Busy right now (a call, another window, another notice): try again a little later, a few times only.
+            if (tries + 1 < SYNC_SURVEY_MAX_TRIES) scheduleSyncSurveyBanner(tries + 1);
+        }, tries === 0 ? SYNC_SURVEY_DELAY_MS : SYNC_SURVEY_RETRY_MS);
+    }
+
+    function renderSyncSurveyOptions(name, list, current) {
+        return `<div class="survey-opts" role="radiogroup">${list.map((o) => `
+            <label class="survey-opt">
+                <input type="radio" name="${name}" value="${escapeHTML(o.value)}"${current === o.value ? ' checked' : ''}>
+                <span class="survey-opt-body">
+                    <b>${escapeHTML(o.label)}</b>
+                    <em>${escapeHTML(o.hint)}</em>
+                    ${Array.isArray(o.tags) ? `<span class="survey-tags">${o.tags.map((t, i) => `<span class="survey-tag${i === 0 ? ' is-good' : ''}">${escapeHTML(t)}</span>`).join('')}</span>` : ''}
+                </span>
+            </label>`).join('')}</div>`;
+    }
+
+    function renderSyncSurveyProgress(n) {
+        return `<div class="survey-progress" aria-hidden="true">${[1, 2, 3].map((i) => `<i class="${i <= n ? 'is-on' : ''}"></i>`).join('')}</div>`;
+    }
+
+    function renderSyncSurveyHead(eyebrow, title) {
+        return `<button type="button" id="survey-close" aria-label="Close" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"><i class="fas fa-times"></i></button>
+            <div class="survey-eyebrow">${escapeHTML(eyebrow)}</div>
+            <h2 id="sync-survey-title" class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-3">${escapeHTML(title)}</h2>`;
+    }
+
+    const SYNC_SURVEY_PRIVACY = '<p class="survey-privacy">Anonymous. No name, no email, no calls and no earnings. Only the option you pick is counted. It follows your "Share anonymous usage counts" setting.</p>';
+    const SYNC_SURVEY_BTN_BACK = 'bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition';
+    const SYNC_SURVEY_BTN_NEXT = 'survey-primary btn-primary text-white px-4 py-2 rounded transition';
+
+    function renderSyncSurveyModal() {
+        if (!syncSurveyDialog) return;
+        let html = '';
+        if (syncSurveyStep === 0) {
+            html = `${renderSyncSurveyHead('Future feature', 'Your calls on more than one device')}
+                <p class="survey-lead">Today everything stays on your device. We are thinking about ways to keep two devices in sync. Nothing changes unless you choose it. These are the options:</p>
+                <div class="survey-explain">
+                    <div><h3>1. Keep it as it is</h3><p>All data stays on your device. You use backups to move it.</p></div>
+                    <div><h3>2. Direct connection</h3><p>Link two devices with a QR code. They share data directly and nothing is stored online. Both need to be open to sync.</p></div>
+                    <div><h3>3. Optional account</h3><p>Your data is also stored online so every device stays in sync, even when one is off. You can choose how it is protected.</p></div>
+                    <div><h3>4. Both</h3><p>Use the direct connection with no account, or add an account if you want sync even when a device is off. You choose.</p></div>
+                </div>${SYNC_SURVEY_PRIVACY}
+                <div class="flex gap-2 justify-end mt-4"><button type="button" id="survey-cancel" class="${SYNC_SURVEY_BTN_BACK}">Not now</button><button type="button" id="survey-next" class="${SYNC_SURVEY_BTN_NEXT}">Start</button></div>`;
+        } else if (syncSurveyStep === 1) {
+            html = `${renderSyncSurveyHead('Question 1', 'Do you use Work Time Tracker on more than one device?')}${renderSyncSurveyProgress(1)}
+                ${renderSyncSurveyOptions('devices', SYNC_SURVEY_DEVICES, syncSurveyAnswers.devices)}
+                <div class="flex gap-2 justify-between mt-4"><button type="button" id="survey-back" class="${SYNC_SURVEY_BTN_BACK}">Back</button><button type="button" id="survey-next" class="${SYNC_SURVEY_BTN_NEXT}"${syncSurveyAnswers.devices ? '' : ' disabled'}>Next</button></div>`;
+        } else if (syncSurveyStep === 2) {
+            html = `${renderSyncSurveyHead('Question 2', 'Which option would you prefer?')}${renderSyncSurveyProgress(2)}
+                ${renderSyncSurveyOptions('sync', SYNC_SURVEY_OPTIONS, syncSurveyAnswers.sync)}
+                <div class="flex gap-2 justify-between mt-4"><button type="button" id="survey-back" class="${SYNC_SURVEY_BTN_BACK}">Back</button><button type="button" id="survey-next" class="${SYNC_SURVEY_BTN_NEXT}"${syncSurveyAnswers.sync ? '' : ' disabled'}>Next</button></div>`;
+        } else if (syncSurveyStep === 3) {
+            html = `${renderSyncSurveyHead('Last one, optional', 'Anything you want us to know?')}${renderSyncSurveyProgress(3)}
+                <label for="survey-comment" class="survey-lead">What would worry you, or what would you need to feel comfortable?</label>
+                <textarea id="survey-comment" maxlength="1000" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mt-2" placeholder="Optional. Written in your own words.">${escapeHTML(syncSurveyAnswers.comment)}</textarea>
+                <p class="survey-privacy">A written comment is separate from the anonymous counts. It is sent as a message to the project only if you write something. Do not include personal details. Leave it empty to skip.</p>
+                <div class="flex gap-2 justify-between mt-4"><button type="button" id="survey-back" class="${SYNC_SURVEY_BTN_BACK}">Back</button><button type="button" id="survey-send" class="${SYNC_SURVEY_BTN_NEXT}">Send answers</button></div>`;
+        } else {
+            html = `${renderSyncSurveyHead('Done', 'Thank you')}
+                <p class="survey-lead">Your answers help decide what gets built, or whether anything does. You will not be asked again.</p>
+                <div class="flex justify-end mt-4"><button type="button" id="survey-finish" class="${SYNC_SURVEY_BTN_NEXT}">Close</button></div>`;
+        }
+        syncSurveyDialog.innerHTML = html;
+        bindSyncSurveyModal();
+        const focusTarget = syncSurveyDialog.querySelector('input:checked') || syncSurveyDialog.querySelector('textarea') || syncSurveyDialog.querySelector('.survey-primary:not(:disabled)') || syncSurveyDialog.querySelector('#survey-close');
+        if (focusTarget) focusTarget.focus({ preventScroll: true });
+    }
+
+    function saveSyncSurveyComment() {
+        const field = document.getElementById('survey-comment');
+        if (field) syncSurveyAnswers.comment = field.value;
+    }
+
+    async function sendSyncSurveyComment(comment) {
+        const text = String(comment || '').trim().slice(0, 1000);
+        if (!text) return true;
+        try {
+            const body = new FormData();
+            body.append('name', 'Sync survey (anonymous)');
+            body.append('message', text);
+            body.append('_subject', 'Sync survey comment');
+            const response = await fetch(feedbackForm?.action || SYNC_SURVEY_FALLBACK_ENDPOINT, { method: 'POST', body, headers: { 'Accept': 'application/json' } });
+            return response.ok;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    async function finishSyncSurvey() {
+        saveSyncSurveyComment();
+        const answers = { ...syncSurveyAnswers };
+        writeSyncSurveyState('done'); // first, so a second tap can never count twice
+        buildSyncSurveyEvents(answers).forEach((name) => trackEvent(name));
+        syncSurveyStep = 4;
+        renderSyncSurveyModal();
+        if (!(await sendSyncSurveyComment(answers.comment))) {
+            showToast('Your answers were counted, but your comment could not be sent.');
+        }
+    }
+
+    function bindSyncSurveyModal() {
+        const on = (id, fn) => { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); };
+        on('survey-close', closeSyncSurveyModal);
+        on('survey-cancel', closeSyncSurveyModal);
+        on('survey-finish', closeSyncSurveyModal);
+        on('survey-back', () => { saveSyncSurveyComment(); syncSurveyStep -= 1; renderSyncSurveyModal(); });
+        on('survey-next', () => { syncSurveyStep += 1; renderSyncSurveyModal(); });
+        on('survey-send', () => { void finishSyncSurvey(); });
+        syncSurveyDialog.querySelectorAll('input[type="radio"]').forEach((radio) => {
+            radio.addEventListener('change', () => {
+                syncSurveyAnswers[radio.name] = radio.value;
+                const next = document.getElementById('survey-next');
+                if (next) next.disabled = false;
+            });
+        });
+    }
+
+    function openSyncSurveyModal() {
+        if (!syncSurveyModal) return;
+        syncSurveyStep = 0;
+        syncSurveyAnswers = { devices: '', sync: '', comment: '' };
+        renderSyncSurveyModal();
+        ModalManager.open(syncSurveyModal, { focusSelector: '#survey-next' });
+    }
+
+    function closeSyncSurveyModal() {
+        if (!syncSurveyModal) return;
+        ModalManager.close(syncSurveyModal);
+    }
+
     function closeReportModal() {
         if (!reportModal) return;
         ModalManager.close(reportModal);
@@ -11742,6 +11973,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         ModalManager.register(sessionHistoryModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-clear-btn' });
         if (reportModal) ModalManager.register(reportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#report-prev-btn' });
         if (shareModal) ModalManager.register(shareModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#share-prev-btn' });
+        if (syncSurveyModal) ModalManager.register(syncSurveyModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#survey-next' });
         ModalManager.register(sessionHistoryEditorModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-editor-start' });
         ModalManager.register(patternsDetailModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#patterns-detail-prev-btn' });
         ModalManager.register(changelogModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#close-changelog-modal' });
@@ -12797,6 +13029,7 @@ goalMinutesInput.addEventListener('input', () => {
         setupGoatCounterAnalytics();
         void updateManager?.check?.();
         scheduleReleaseSpotlightBanner();
+        scheduleSyncSurveyBanner();
         // The footer clock is display-only: skip it while the tab is hidden and
         // refresh it right away when the tab comes back.
         setInterval(() => {

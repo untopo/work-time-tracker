@@ -7,6 +7,9 @@ For downloadable installers/APKs and release metadata, use:
 
 ## v1.6.5 - Unreleased
 
+### Highlights
+- A short, optional survey asks if you would like your calls on more than one device, and how: keep things as they are, a direct connection between your own devices, an optional account, or a choice of both. It appears once as a notice (web only, only if you already have saved calls and "Share anonymous usage counts" is on), and you can answer, pick "Maybe later" (it waits a week) or "No thanks" (never again). Nothing about the app changes unless you choose it later. Your answers are counted anonymously, with no name or email, and an optional written comment is sent as a message to the project only if you write one.
+
 ### Reliability & Privacy
 - The optional anonymous usage counts now also count how often the Monthly Report and the Share Card are opened and how often a card is saved or shared, so the project can see if they are useful. Only the name of the action is sent, never any of your data, and it follows the same "Share anonymous usage counts" switch in Settings -> Features (web only; the desktop and Android apps send nothing).
 
