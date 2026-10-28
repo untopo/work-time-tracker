@@ -41,6 +41,7 @@ const indexHtml = readText('index.html');
   'assets/js/progress-core.js',
   'assets/js/metrics-core.js',
   'assets/js/report-core.js',
+  'assets/js/survey-core.js',
   'assets/js/app.js'
 ].forEach((scriptPath) => {
   assert(indexHtml.includes(scriptPath), `index.html must include ${scriptPath}`);
@@ -56,6 +57,7 @@ const indexHtml = readText('index.html');
   'assets/js/progress-core.js',
   'assets/js/metrics-core.js',
   'assets/js/report-core.js',
+  'assets/js/survey-core.js',
   'android/keystore.properties.example',
   'RELEASE.md'
 ].forEach((filePath) => {

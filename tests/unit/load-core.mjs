@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-const FILES = ['data-core.js', 'session-core.js', 'progress-core.js', 'metrics-core.js', 'report-core.js'];
+const FILES = ['data-core.js', 'session-core.js', 'progress-core.js', 'metrics-core.js', 'report-core.js', 'survey-core.js'];
 
 export function loadCore() {
   const sandbox = vm.createContext({ console });

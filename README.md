@@ -241,6 +241,7 @@ gradlew assembleRelease
 |   |   |-- progress-core.js
 |   |   |-- report-core.js
 |   |   |-- session-core.js
+|   |   |-- survey-core.js
 |   |   |-- resources-data.js
 |   |   |-- resources-helpers.js
 |   |   |-- settings-manager.js
