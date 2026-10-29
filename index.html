@@ -71,7 +71,7 @@
             <i class="fas fa-download mt-1 text-green-600" aria-hidden="true"></i>
             <div>
                 <div class="text-sm font-semibold text-gray-900 dark:text-gray-100">Back up your data</div>
-                <p class="mt-1 text-xs text-gray-600 dark:text-gray-300">Your calls are saved only in this browser. Export a backup file now and again from time to time so you never lose them.</p>
+                <p class="mt-1 text-xs text-gray-600 dark:text-gray-300">You have <span id="backup-reminder-count" class="font-semibold">your</span> calls saved only in this browser. If you clear your browser data or switch computers, they are gone. Download a backup in a few seconds.</p>
             </div>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
@@ -1626,6 +1626,7 @@
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">
                     Full app safety copy with calls, rates, goals, and payment cycle settings.
                 </p>
+                <p id="data-hub-last-backup" class="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-3"></p>
                 <div class="flex flex-col gap-2">
                     <button id="data-hub-export-json-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">
                         <i class="fas fa-download"></i> Export Backup JSON

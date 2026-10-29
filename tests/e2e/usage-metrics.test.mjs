@@ -25,7 +25,7 @@ after(async () => {
 // (an exact number, a note, a rate...) fails the test.
 const labels = allLabels(loadCore().core);
 const list = (set) => [...set].map((label) => label.replace(/[.]/g, '\\.')).join('|');
-const ALLOWED = new RegExp(`^event/(call-started|call-ended|focus-mode|report-opened|card-opened|card-saved|survey/devices/(one|two|three-plus)|survey/sync/(as-is|direct|account|both)|call-length/(${list(labels.length)})|day-calls/(${list(labels.calls)})|day-hours/(${list(labels.hours)})|feature-on/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done))$`);
+const ALLOWED = new RegExp(`^event/(call-started|call-ended|focus-mode|report-opened|card-opened|card-saved|survey/devices/(one|two|three-plus)|survey/sync/(as-is|direct|account|both)|backup-reminder/(shown|now|later|off)|call-length/(${list(labels.length)})|day-calls/(${list(labels.calls)})|day-hours/(${list(labels.hours)})|feature-on/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done))$`);
 
 async function openApp(seed) {
   const { context, page, problems } = await newPage(browser, baseUrl, { timezoneId: 'America/Lima' });

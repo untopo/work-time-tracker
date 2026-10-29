@@ -447,3 +447,14 @@ function parseDateInput(dateString) {
     if (!year || !month || !day) return null;
     return new Date(year, month - 1, day);
 }
+
+// Plain-words age of the last full backup, for the Data Hub ("Today", "Yesterday", "12 days ago").
+function describeBackupAge(lastBackupMs, nowMs) {
+    const last = Number(lastBackupMs);
+    if (!Number.isFinite(last) || last <= 0) return 'No backup yet';
+    const now = Number.isFinite(Number(nowMs)) ? Number(nowMs) : Date.now();
+    const days = Math.round((getDayStartMs(new Date(now)) - getDayStartMs(new Date(last))) / 86400000);
+    if (days <= 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    return `${days} days ago`;
+}
