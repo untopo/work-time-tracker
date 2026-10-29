@@ -26,7 +26,7 @@ concurrency:
 jobs:
   prepare:
     name: Work out release info
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       version: ${{ steps.info.outputs.version }}
@@ -98,7 +98,7 @@ jobs:
   build-android:
     name: Build Android APK
     needs: prepare
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -189,7 +189,7 @@ jobs:
   publish:
     name: Publish the GitHub release
     needs: [prepare, build-windows, build-android]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
