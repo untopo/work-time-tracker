@@ -117,3 +117,15 @@ test('getDayStartMs returns local midnight of the given day', () => {
   const noon = vm.runInContext('new Date(2026, 9, 16, 12, 34, 56)', sandbox);
   assert.equal(core.getDayStartMs(noon), new Date(2026, 9, 16).getTime());
 });
+
+test('describeBackupAge says "No backup yet", "Today", "Yesterday" or how many days ago', () => {
+  const now = new Date(2026, 9, 28, 15, 0).getTime();
+  const at = (days, hour = 9) => new Date(2026, 9, 28 - days, hour, 0).getTime();
+  assert.equal(core.describeBackupAge(0, now), 'No backup yet');
+  assert.equal(core.describeBackupAge(undefined, now), 'No backup yet');
+  assert.equal(core.describeBackupAge('junk', now), 'No backup yet');
+  assert.equal(core.describeBackupAge(at(0), now), 'Today');
+  assert.equal(core.describeBackupAge(at(1, 23), now), 'Yesterday');
+  assert.equal(core.describeBackupAge(at(12), now), '12 days ago');
+  assert.equal(core.describeBackupAge(now + 5 * 3600000, now), 'Today', 'a clock set in the future never shows a negative age');
+});

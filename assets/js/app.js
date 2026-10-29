@@ -1187,9 +1187,15 @@ function hideBackupReminder() {
     if (banner) banner.classList.add('hidden');
 }
 
+function updateLastBackupLine() {
+    const el = document.getElementById('data-hub-last-backup');
+    if (el) el.textContent = `Last full backup: ${describeBackupAge(readSafetyNumber(LAST_BACKUP_KEY), Date.now())}`;
+}
+
 function markBackupCompleted() {
     writeSafetySetting(LAST_BACKUP_KEY, Date.now());
     hideBackupReminder();
+    updateLastBackupLine();
 }
 
 async function requestPersistentStorageOnce() {
@@ -1229,7 +1235,11 @@ function maybeShowBackupReminderOnLoad() {
     if (releaseSpotlightBannerEl && document.body.contains(releaseSpotlightBannerEl)) return;
     if (typeof LiveCallSession !== 'undefined' && LiveCallSession.isActive && LiveCallSession.isActive()) return;
     const banner = document.getElementById('backup-reminder-banner');
-    if (banner) banner.classList.remove('hidden');
+    if (!banner) return;
+    const countEl = document.getElementById('backup-reminder-count');
+    if (countEl) countEl.textContent = `${calls.length.toLocaleString('en-US')}`;
+    banner.classList.remove('hidden');
+    trackEvent('backup-reminder/shown');
 }
 
 function setupBackupReminderBanner() {
@@ -1238,6 +1248,7 @@ function setupBackupReminderBanner() {
     const offBtn = document.getElementById('backup-reminder-off-btn');
     if (nowBtn) {
         nowBtn.addEventListener('click', () => {
+            trackEvent('backup-reminder/now');
             hideBackupReminder();
             writeSafetySetting(BACKUP_REMINDER_SNOOZE_KEY, Date.now() + BACKUP_REMINDER_SNOOZE_MS);
             openExportOptionsModal('json');
@@ -1245,12 +1256,14 @@ function setupBackupReminderBanner() {
     }
     if (laterBtn) {
         laterBtn.addEventListener('click', () => {
+            trackEvent('backup-reminder/later');
             writeSafetySetting(BACKUP_REMINDER_SNOOZE_KEY, Date.now() + BACKUP_REMINDER_SNOOZE_MS);
             hideBackupReminder();
         });
     }
     if (offBtn) {
         offBtn.addEventListener('click', () => {
+            trackEvent('backup-reminder/off');
             writeSafetySetting(BACKUP_REMINDER_OFF_KEY, '1');
             hideBackupReminder();
             showToast('Backup reminders turned off. You can still export a backup any time from Settings.');
@@ -1285,6 +1298,7 @@ async function exportCallsAsJson(exportCalls) {
 }
 
 function openDataHubModal() {
+    updateLastBackupLine();
     ModalManager.open(dataHubModal, { focusSelector: '#data-hub-export-json-btn' });
 }
 
