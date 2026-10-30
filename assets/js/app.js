@@ -6407,6 +6407,7 @@ function restoreLiveCallUi() {
     }
     queueWorkstripSync();
     syncFocusModeOverlay();
+    refreshLiveGoalProgress();
   }, 1000);
 
   saveActiveCallState(true);
@@ -8096,6 +8097,94 @@ function saveCalls() {
             trendNextBtn.disabled = weekStartMs >= currentWeekStartMs;
         }
     }
+    // Draws the daily goal card. The numbers passed in already include the call that is
+    // running right now (if any), so the goal moves while you are on a call.
+    // Nothing is saved: the call is only added to the goal when it ends.
+    function renderGoalProgress(todaysEarnings, todaysMinutes) {
+        const hasAmountGoal = dailyGoal.amount > 0;
+        const hasMinutesGoal = dailyGoal.minutes > 0;
+        const selectedRateAmount = getSelectedRateAmount();
+        const derivedGoalMinutes = hasAmountGoal && selectedRateAmount > 0
+            ? Math.ceil(dailyGoal.amount / selectedRateAmount)
+            : dailyGoal.minutes;
+
+    if (hasAmountGoal || hasMinutesGoal) {
+        const goalSummary = [];
+        const ratePerMinute = todaysMinutes > 0 ? todaysEarnings / todaysMinutes : 0;
+        const targetMinutes = derivedGoalMinutes;
+
+        if (hasAmountGoal) {
+            const remainingAmount = dailyGoal.amount - todaysEarnings;
+            if (remainingAmount <= 0) {
+                goalEstimateDisplay.textContent = 'Goal reached!';
+            } else {
+                const minutesNeeded = ratePerMinute > 0 ? (remainingAmount / ratePerMinute).toFixed(0) : '--';
+                goalEstimateDisplay.textContent = `${minutesNeeded} mins to goal`;
+            }
+            goalSummary.push(`$${todaysEarnings.toFixed(2)} / $${dailyGoal.amount.toFixed(2)}`);
+        } else {
+            const remainingMinutes = targetMinutes - todaysMinutes;
+            if (remainingMinutes <= 0) {
+                goalEstimateDisplay.textContent = 'Goal reached!';
+            } else {
+                goalEstimateDisplay.textContent = `${Math.ceil(remainingMinutes)} mins to goal`;
+            }
+        }
+
+        if (hasMinutesGoal || targetMinutes > 0) {
+            goalSummary.push(`${Math.round(todaysMinutes)} / ${targetMinutes} Min`);
+        }
+
+        const primaryGoal = hasAmountGoal ? {
+            earned: todaysEarnings,
+            target: dailyGoal.amount
+        } : {
+            earned: todaysMinutes,
+            target: derivedGoalMinutes
+        };
+        const progress = primaryGoal.target > 0
+            ? Math.min((primaryGoal.earned / primaryGoal.target) * 100, 100)
+            : 0;
+
+        goalAmountDisplay.textContent = goalSummary[0] || '$0.00 / $0.00';
+        goalMinutesDisplay.textContent = goalSummary[1] || '0 / 0 Min';
+        goalProgressBar.style.width = `${progress}%`;
+        goalProgressText.textContent = `${progress.toFixed(0)}%`;
+        if (focusWorkstripGoalBar) focusWorkstripGoalBar.style.width = `${progress}%`;
+        if (focusWorkstripGoalProgress) focusWorkstripGoalProgress.textContent = `${progress.toFixed(0)}%`;
+        if (focusWorkstripGoalSummary) {
+            focusWorkstripGoalSummary.textContent = hasAmountGoal
+                ? (goalSummary[0] || '$0.00 / $0.00')
+                : (goalSummary[1] || '0 / 0 Min');
+        }
+    } else {
+        goalEstimateDisplay.textContent = 'No goal set';
+        goalProgressBar.style.width = '0%';
+        goalProgressText.textContent = '0%';
+        goalAmountDisplay.textContent = '$0.00 / $0.00';
+        goalMinutesDisplay.textContent = '0 / 0 Min';
+        if (focusWorkstripGoalBar) focusWorkstripGoalBar.style.width = '0%';
+        if (focusWorkstripGoalProgress) focusWorkstripGoalProgress.textContent = '0%';
+        if (focusWorkstripGoalSummary) focusWorkstripGoalSummary.textContent = 'No goal set';
+    }
+    }
+
+    let goalBaseSnapshot = null;
+
+    function getLiveCallGoalExtra() {
+        // The timer is stopped just before a call is saved, so a call that is ending is never counted twice.
+        if (!liveCallStart || !liveCallTimerId) return { earnings: 0, minutes: 0 };
+        const elapsedMs = Math.max(0, Date.now() - liveCallStart);
+        return { earnings: calculateEarnings(elapsedMs, currentCallRate), minutes: elapsedMs / 60000 };
+    }
+
+    // Called every second during a call.
+    function refreshLiveGoalProgress() {
+        if (!goalBaseSnapshot || !goalBaseSnapshot.viewingToday || !liveCallStart) return;
+        const extra = getLiveCallGoalExtra();
+        renderGoalProgress(goalBaseSnapshot.earnings + extra.earnings, goalBaseSnapshot.minutes + extra.minutes);
+    }
+
     function updateStatistics() {
         const now = new Date();
         const nowMs = now.getTime();
@@ -8234,66 +8323,9 @@ function saveCalls() {
         const derivedGoalMinutes = hasAmountGoal && selectedRateAmount > 0
             ? Math.ceil(dailyGoal.amount / selectedRateAmount)
             : dailyGoal.minutes;
-
-        if (hasAmountGoal || hasMinutesGoal) {
-            const goalSummary = [];
-            const ratePerMinute = todaysMinutes > 0 ? todaysEarnings / todaysMinutes : 0;
-            const targetMinutes = derivedGoalMinutes;
-
-            if (hasAmountGoal) {
-                const remainingAmount = dailyGoal.amount - todaysEarnings;
-                if (remainingAmount <= 0) {
-                    goalEstimateDisplay.textContent = 'Goal reached!';
-                } else {
-                    const minutesNeeded = ratePerMinute > 0 ? (remainingAmount / ratePerMinute).toFixed(0) : '--';
-                    goalEstimateDisplay.textContent = `${minutesNeeded} mins to goal`;
-                }
-                goalSummary.push(`$${todaysEarnings.toFixed(2)} / $${dailyGoal.amount.toFixed(2)}`);
-            } else {
-                const remainingMinutes = targetMinutes - todaysMinutes;
-                if (remainingMinutes <= 0) {
-                    goalEstimateDisplay.textContent = 'Goal reached!';
-                } else {
-                    goalEstimateDisplay.textContent = `${Math.ceil(remainingMinutes)} mins to goal`;
-                }
-            }
-
-            if (hasMinutesGoal || targetMinutes > 0) {
-                goalSummary.push(`${Math.round(todaysMinutes)} / ${targetMinutes} Min`);
-            }
-
-            const primaryGoal = hasAmountGoal ? {
-                earned: todaysEarnings,
-                target: dailyGoal.amount
-            } : {
-                earned: todaysMinutes,
-                target: derivedGoalMinutes
-            };
-            const progress = primaryGoal.target > 0
-                ? Math.min((primaryGoal.earned / primaryGoal.target) * 100, 100)
-                : 0;
-
-            goalAmountDisplay.textContent = goalSummary[0] || '$0.00 / $0.00';
-            goalMinutesDisplay.textContent = goalSummary[1] || '0 / 0 Min';
-            goalProgressBar.style.width = `${progress}%`;
-            goalProgressText.textContent = `${progress.toFixed(0)}%`;
-            if (focusWorkstripGoalBar) focusWorkstripGoalBar.style.width = `${progress}%`;
-            if (focusWorkstripGoalProgress) focusWorkstripGoalProgress.textContent = `${progress.toFixed(0)}%`;
-            if (focusWorkstripGoalSummary) {
-                focusWorkstripGoalSummary.textContent = hasAmountGoal
-                    ? (goalSummary[0] || '$0.00 / $0.00')
-                    : (goalSummary[1] || '0 / 0 Min');
-            }
-        } else {
-            goalEstimateDisplay.textContent = 'No goal set';
-            goalProgressBar.style.width = '0%';
-            goalProgressText.textContent = '0%';
-            goalAmountDisplay.textContent = '$0.00 / $0.00';
-            goalMinutesDisplay.textContent = '0 / 0 Min';
-            if (focusWorkstripGoalBar) focusWorkstripGoalBar.style.width = '0%';
-            if (focusWorkstripGoalProgress) focusWorkstripGoalProgress.textContent = '0%';
-            if (focusWorkstripGoalSummary) focusWorkstripGoalSummary.textContent = 'No goal set';
-        }
+        goalBaseSnapshot = { earnings: todaysEarnings, minutes: todaysMinutes, viewingToday: isViewingToday };
+        const liveExtra = isViewingToday ? getLiveCallGoalExtra() : { earnings: 0, minutes: 0 };
+        renderGoalProgress(todaysEarnings + liveExtra.earnings, todaysMinutes + liveExtra.minutes);
 
         if (goalEstimateDeltaDisplay) {
             if (hasAmountGoal || hasMinutesGoal) {
