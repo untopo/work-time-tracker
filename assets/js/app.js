@@ -977,7 +977,7 @@ function renderReleaseSpotlightBanner() {
 
     const topChanges = Array.isArray(releaseEntry.changes) ? releaseEntry.changes.slice(0, 3) : [];
     const summary = topChanges.length
-        ? topChanges.map(shortenReleaseChange).filter(Boolean).join(' \u00B7 ')
+        ? topChanges.map((change) => shortenReleaseChange(change)).filter(Boolean).join(' \u00B7 ')
         : 'This release includes improvements and fixes.';
 
     const wrapper = document.createElement('div');
