@@ -87,5 +87,6 @@ test('on a wide window the sections use two columns instead of leaving empty sid
   assert.ok(left('st-data') > left('st-features') + 200, 'data should sit in a second column');
   assert.equal(left('st-time'), left('st-features'));
   assert.equal(left('st-danger'), left('st-data'));
+  assert.equal(await page.isVisible('.st-nav'), false, 'the side menu is hidden when everything fits on screen');
   await context.close();
 });

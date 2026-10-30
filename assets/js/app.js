@@ -953,14 +953,31 @@ function shouldShowReleaseSpotlightBanner() {
     return !!releaseEntry;
 }
 
+// The banner shows one short line per change; "View details" has the full text.
+function shortenReleaseChange(text, maxLength = 110) {
+    let line = String(text || '').replace(/\s+/g, ' ').trim();
+    const sentenceEnd = line.search(/[.!?](\s|$)/);
+    if (sentenceEnd > 0) line = line.slice(0, sentenceEnd);
+    if (line.length > maxLength) {
+        const colon = line.indexOf(':');
+        if (colon > 20 && colon <= maxLength) {
+            line = line.slice(0, colon);
+        } else {
+            const cut = line.lastIndexOf(' ', maxLength - 1);
+            line = `${line.slice(0, cut > 40 ? cut : maxLength).replace(/[,;:\s]+$/, '')}\u2026`;
+        }
+    }
+    return line;
+}
+
 function renderReleaseSpotlightBanner() {
     if (releaseSpotlightBannerEl || !shouldShowReleaseSpotlightBanner()) return;
     const releaseEntry = getCurrentReleaseEntry();
     if (!releaseEntry) return;
 
-    const topChanges = Array.isArray(releaseEntry.changes) ? releaseEntry.changes.slice(0, 2) : [];
+    const topChanges = Array.isArray(releaseEntry.changes) ? releaseEntry.changes.slice(0, 3) : [];
     const summary = topChanges.length
-        ? topChanges.join(' ')
+        ? topChanges.map(shortenReleaseChange).filter(Boolean).join(' \u00B7 ')
         : 'This release includes improvements and fixes.';
 
     const wrapper = document.createElement('div');
