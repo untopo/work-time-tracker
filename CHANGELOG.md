@@ -5,6 +5,11 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.6.6 - Unreleased
+
+### Highlights
+- The "What's New" notice that appears after an update is now short: one line per change instead of the full text. Press "View details" to read everything. In Settings, on a wide window the side menu is now hidden because all sections are already in view.
+
 ## v1.6.5 - 2026-10-29
 
 ### Highlights

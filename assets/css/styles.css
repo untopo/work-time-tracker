@@ -11504,6 +11504,9 @@ body.ui-refresh-v1 #view-settings .st-row #reset-all { width: auto; }
 #view-settings #st-time { order: 4; }
 #view-settings #st-danger { order: 5; }
 @media (min-width: 1360px) {
+    /* Everything is visible at once on a wide window, so the side menu is not needed. */
+    #view-settings .st-nav { display: none; }
+    #view-settings .st-layout { grid-template-columns: minmax(0, 1fr); }
     #view-settings .st-cols { flex-direction: row; align-items: flex-start; }
     #view-settings .st-col { display: flex; flex-direction: column; gap: 1.5rem; flex: 1 1 0; min-width: 0; }
 }
