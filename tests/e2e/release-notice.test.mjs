@@ -29,5 +29,8 @@ test('the What\'s New notice is a few short lines, not the whole changelog', asy
   await page.waitForSelector('.release-spotlight-text', { state: 'visible' });
   const text = (await page.textContent('.release-spotlight-text')).trim();
   assert.ok(text.length > 10 && text.length < 360, `notice should be short, got ${text.length} characters`);
+  assert.ok(!/…\s·|…$/.test(text) || text.length > 60, 'lines must not be cut down to a few letters');
+  assert.match(text, /survey/i);
+  assert.match(text, /Settings/);
   await context.close();
 });
