@@ -5,7 +5,7 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
-## v1.6.5 - Unreleased
+## v1.6.5 - 2026-10-29
 
 ### Highlights
 - A short, optional survey asks if you would like your calls on more than one device, and how: keep things as they are, a direct connection between your own devices, an optional account, or a choice of both. It appears once as a notice (web only, only if you already have saved calls and "Share anonymous usage counts" is on), and you can answer, pick "Maybe later" (it waits a week) or "No thanks" (never again). Nothing about the app changes unless you choose it later. Your answers are counted anonymously, with no name or email, and an optional written comment is sent as a message to the project only if you write one.
