@@ -3,6 +3,16 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.6.5",
+        date: "2026-10-29",
+        changes: [
+        "A short, optional survey asks if you would like your calls on more than one device, and how: keep things as they are, a direct connection between your own devices, an optional account, or a choice of both. It appears once as a notice (web only, only if you already have saved calls and \"Share anonymous usage counts\" is on), and you can answer, pick \"Maybe later\" (it waits a week) or \"No thanks\" (never again). Nothing about the app changes unless you choose it later. Your answers are counted anonymously, with no name or email, and an optional written comment is sent as a message to the project only if you write one",
+        "Settings is easier to use. Everything is now grouped in clear sections with a menu on the side (a bar on top on the phone): Features, My data, Privacy, Time zone & help, and Danger zone. In \"My data\" you see when you last made a full backup and how much space is used, and you can open the Data Hub or export a backup right away. The buttons that delete data moved to their own Danger zone with clearer names (\"Delete calls...\" and \"Reset all data...\") and still ask you to confirm. On wide windows the sections spread into two columns so the page is not left with empty sides. Your saved data and settings are not changed",
+        "The backup reminder is now clearer: it tells you how many calls are saved only in this browser and what would make you lose them (clearing your browser data or switching computers). The Data Hub now also shows when your last full backup was (\"Today\", \"Yesterday\", \"12 days ago\" or \"No backup yet\"). When it is on, the optional anonymous usage counts also count how often the reminder is shown and which button is chosen (Back up now, Later, or Don't remind me again), so the project can see if people find it useful; only the name of the action is sent, never any of your data. Nothing changes about when the reminder appears, and your saved calls, rates and goals are never touched",
+        "The optional anonymous usage counts now also count how often the Monthly Report and the Share Card are opened and how often a card is saved or shared, so the project can see if they are useful. Only the name of the action is sent, never any of your data, and it follows the same \"Share anonymous usage counts\" switch in Settings -> Features (web only; the desktop and Android apps send nothing)"
+        ]
+    },
+    {
         version: "1.6.4",
         date: "2026-10-23",
         changes: [

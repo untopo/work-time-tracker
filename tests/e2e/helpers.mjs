@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const APP_VERSION = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -122,5 +123,7 @@ export function makeSeed(callCount = 120) {
     timeZone: 'America/Lima',
     featureFlags: JSON.stringify({ notes: true, paymentCycles: false, floatingCallControls: true, focusMode: false, rpg: true, uiRefresh: true }),
     paymentCyclesEnabled: 'false',
+    // The "What's New" banner of the current version would otherwise cover the buttons.
+    [`releaseSpotlightSeen:${APP_VERSION}`]: '1',
   };
 }

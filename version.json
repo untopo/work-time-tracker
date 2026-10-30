@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.6.4",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.4",
+  "latestVersion": "1.6.5",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.5",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "New Monthly Report and a shareable summary card, both made on your device."
+  "notes": "Clearer Settings, a clearer backup reminder, and an optional survey about using your calls on more than one device."
 }
