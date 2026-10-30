@@ -11396,7 +11396,10 @@ html.dark .survey-privacy { color: #94a3b8; border-left-color: #34d399; }
 
 /* ---- Settings page (grouped layout) ---- */
 #view-settings .st-page { max-width: 1400px; margin: 0 auto; }
+<<<<<<< HEAD
 @media (min-width: 821px) and (max-width: 1499px) { #view-settings .st-page { max-width: 980px; } }
+=======
+>>>>>>> 9a3c683 (Settings: two columns on wide windows)
 #view-settings .st-subtitle { margin: 0 0 1rem; font-size: 0.85rem; color: #64748b; }
 html.dark #view-settings .st-subtitle { color: #a5b4c7; }
 #view-settings .st-layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 1.5rem; align-items: start; }
@@ -11497,7 +11500,20 @@ body.ui-refresh-v1 #view-settings .st-row #reset-all { width: auto; }
 }
 #view-settings .st-page { padding-bottom: 8rem; }
 
+<<<<<<< HEAD
 @media (min-width: 1500px) {
     #view-settings .st-main { display: block; column-count: 2; column-gap: 1.5rem; }
     #view-settings .st-main > .st-section { break-inside: avoid; margin-bottom: 1.5rem; }
+=======
+#view-settings .st-cols { display: flex; flex-direction: column; gap: 1.5rem; }
+#view-settings .st-col { display: contents; }
+#view-settings #st-features { order: 1; }
+#view-settings #st-data { order: 2; }
+#view-settings #st-privacy { order: 3; }
+#view-settings #st-time { order: 4; }
+#view-settings #st-danger { order: 5; }
+@media (min-width: 1360px) {
+    #view-settings .st-cols { flex-direction: row; align-items: flex-start; }
+    #view-settings .st-col { display: flex; flex-direction: column; gap: 1.5rem; flex: 1 1 0; min-width: 0; }
+>>>>>>> 9a3c683 (Settings: two columns on wide windows)
 }

@@ -37,7 +37,9 @@ async function openSettings(seed = seedWithoutDock()) {
 
 test('Settings shows the five sections in order and the controls are in the right place', async () => {
   const { context, page, problems } = await openSettings();
-  const ids = await page.$$eval('#view-settings .st-section', (els) => els.map((e) => e.id));
+  // Reading order follows the CSS "order" (the wide layout splits them into two columns).
+  const ids = await page.$$eval('#view-settings .st-section', (els) => els
+    .sort((a, b) => Number(getComputedStyle(a).order) - Number(getComputedStyle(b).order)).map((e) => e.id));
   assert.deepEqual(ids, ['st-features', 'st-data', 'st-privacy', 'st-time', 'st-danger']);
   const where = (sel) => page.$eval(sel, (el) => el.closest('.st-section').id);
   assert.equal(await where('#feature-focus-mode-toggle'), 'st-features');
@@ -73,5 +75,17 @@ test('Open Data Hub and the side menu work', async () => {
   assert.ok(await page.$eval('[data-st-link="st-danger"]', (a) => a.classList.contains('active')));
   await page.click('#open-data-hub-btn');
   await page.waitForSelector('#data-hub-last-backup', { state: 'visible' });
+  await context.close();
+});
+
+test('on a wide window the sections use two columns instead of leaving empty sides', async () => {
+  const { context, page } = await openSettings();
+  await page.setViewportSize({ width: 1900, height: 900 });
+  await page.waitForTimeout(300);
+  const xs = await page.$$eval('#view-settings .st-section', (els) => els.map((e) => [e.id, Math.round(e.getBoundingClientRect().left)]));
+  const left = (id) => xs.find(([k]) => k === id)[1];
+  assert.ok(left('st-data') > left('st-features') + 200, 'data should sit in a second column');
+  assert.equal(left('st-time'), left('st-features'));
+  assert.equal(left('st-danger'), left('st-data'));
   await context.close();
 });

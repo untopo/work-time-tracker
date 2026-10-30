@@ -918,6 +918,8 @@
                             <a href="#st-danger" data-st-link="st-danger" class="st-nav-danger">Danger zone</a>
                         </nav>
                         <div class="st-main">
+<div class="st-cols">
+<div class="st-col">
                             <section id="st-features" class="st-section settings-main-modal-panel">
                                 <p class="st-eyebrow">Features</p>
                                 <div class="st-card">
@@ -968,7 +970,28 @@
                                 </div>
                             </section>
 
-                            <section id="st-data" class="st-section settings-card-data">
+                                                        <section id="st-time" class="st-section settings-card-timezone">
+                                <p class="st-eyebrow">Time zone &amp; help</p>
+                                <div class="st-card">
+                                    <div class="st-row st-row-stack">
+                                        <div class="st-title">Time zone</div>
+                                        <div class="st-inline">
+                                            <select id="timezone-select" class="st-select"></select>
+                                            <button id="reset-timezone" type="button" class="st-btn">Reset</button>
+                                        </div>
+                                    </div>
+                                    <div class="st-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">First-time guide</div>
+                                            <div class="st-desc">Review the setup flow again.</div>
+                                        </div>
+                                        <button id="restart-onboarding-btn" type="button" class="st-btn">Restart onboarding</button>
+                                    </div>
+                                </div>
+                            </section>
+</div>
+<div class="st-col">
+<section id="st-data" class="st-section settings-card-data">
                                 <p class="st-eyebrow">My data</p>
                                 <div class="st-card">
                                     <div class="st-status">
@@ -1009,25 +1032,6 @@
                                 </div>
                             </section>
 
-                            <section id="st-time" class="st-section settings-card-timezone">
-                                <p class="st-eyebrow">Time zone &amp; help</p>
-                                <div class="st-card">
-                                    <div class="st-row st-row-stack">
-                                        <div class="st-title">Time zone</div>
-                                        <div class="st-inline">
-                                            <select id="timezone-select" class="st-select"></select>
-                                            <button id="reset-timezone" type="button" class="st-btn">Reset</button>
-                                        </div>
-                                    </div>
-                                    <div class="st-row">
-                                        <div class="st-copy">
-                                            <div class="st-title">First-time guide</div>
-                                            <div class="st-desc">Review the setup flow again.</div>
-                                        </div>
-                                        <button id="restart-onboarding-btn" type="button" class="st-btn">Restart onboarding</button>
-                                    </div>
-                                </div>
-                            </section>
 
                             <section id="st-danger" class="st-section">
                                 <p class="st-eyebrow st-eyebrow-danger">Danger zone</p>
@@ -1049,6 +1053,8 @@
                                     </div>
                                 </div>
                             </section>
+</div>
+</div>
                         </div>
                     </div>
                         <div id="payment-cycles-settings-modal" class="payment-cycles-manager-panel dashboard-surface rounded-xl shadow-lg p-6 mt-2" style="display:none;">
