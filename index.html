@@ -907,149 +907,150 @@
                 </section>
 
                 <section id="view-settings" class="app-view" data-app-view="settings" aria-label="Settings">
-                    <div class="settings-view-stack">
-                        <div class="settings-section-card settings-card-general settings-overview-strip">
-                            <div class="settings-overview-copy">
-                                <p class="settings-card-eyebrow">Control Center</p>
-                                <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Workspace Settings</h3>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">Control features, recovery tools, time zone behavior, and payment-cycle setup from one place.</p>
-                            </div>
-                            <div class="settings-overview-meta">
-                                <span class="settings-overview-chip">Local-first</span>
-                                <span class="settings-overview-chip">Safe exports</span>
-                                <span class="settings-overview-chip">Feature toggles</span>
-                            </div>
-                        </div>
-                        <div class="settings-section-card settings-card-features settings-main-modal-panel">
-                            <p class="settings-card-eyebrow">Workspace</p>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Features</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                Enable workspace features here. Each one keeps its own customization panel when needed.
-                            </p>
-                            <div class="settings-feature-list">
-                                <div class="settings-feature-row">
-                                    <div>
-                                        <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Notes textbox</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">Show the small notes textarea when starting a live call and in the Add Call form. <span class="block mt-1 text-green-600 dark:text-green-400 font-semibold">Quick Notes stay volatile; manual Add/Edit Call notes are saved in the Call Log.</span></div>
+                    <div class="st-page">
+                    <p class="st-subtitle">Features, your data, privacy and time zone. Everything stays on this device.</p>
+                    <div class="st-layout">
+                        <nav class="st-nav" aria-label="Settings sections">
+                            <a href="#st-features" data-st-link="st-features" class="active">Features</a>
+                            <a href="#st-data" data-st-link="st-data">My data</a>
+                            <a href="#st-privacy" data-st-link="st-privacy">Privacy</a>
+                            <a href="#st-time" data-st-link="st-time">Time zone &amp; help</a>
+                            <a href="#st-danger" data-st-link="st-danger" class="st-nav-danger">Danger zone</a>
+                        </nav>
+                        <div class="st-main">
+                            <section id="st-features" class="st-section settings-main-modal-panel">
+                                <p class="st-eyebrow">Features</p>
+                                <div class="st-card">
+                                    <div class="st-group">During calls</div>
+                                    <div class="st-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">Floating call controls</div>
+                                            <div class="st-desc">Show floating Start/End buttons when Call Controls are out of view.</div>
+                                            <button id="open-floating-controls-settings-btn" type="button" aria-controls="floating-controls-settings-modal" class="st-link">Floating controls settings</button>
+                                        </div>
+                                        <label class="settings-feature-switch st-switch">
+                                            <input type="checkbox" id="feature-floating-controls-toggle">
+                                            <span class="slider round"></span>
+                                        </label>
                                     </div>
-                                    <label class="settings-feature-switch">
-                                        <input type="checkbox" id="feature-notes-toggle">
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
-
-                                <div class="settings-feature-row">
-                                    <div>
-                                        <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Payment Cycles</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">Enable payment cycle tracking</div>
+                                    <div class="st-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">Focus mode</div>
+                                            <div class="st-desc">During live calls, blur the workspace and center a big timer, live earnings, and your daily-goal ring. Exit anytime without touching the call.</div>
+                                        </div>
+                                        <label class="settings-feature-switch st-switch">
+                                            <input type="checkbox" id="feature-focus-mode-toggle">
+                                            <span class="slider round"></span>
+                                        </label>
                                     </div>
-                                    <label class="settings-feature-switch">
-                                        <input type="checkbox" id="feature-payment-cycles-toggle">
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
-
-                                <div class="settings-feature-row">
-                                    <div>
-                                        <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Floating Call Controls</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">Show floating Start/End buttons when Call Controls are out of view.</div>
+                                    <div class="st-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">Notes</div>
+                                            <div class="st-desc">Show the small notes box when starting a live call and in the Add Call form. Quick Notes stay temporary; notes added or edited in a call are saved in the Call Log.</div>
+                                        </div>
+                                        <label class="settings-feature-switch st-switch">
+                                            <input type="checkbox" id="feature-notes-toggle">
+                                            <span class="slider round"></span>
+                                        </label>
                                     </div>
-                                    <label class="settings-feature-switch">
-                                        <input type="checkbox" id="feature-floating-controls-toggle">
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
-
-                                <div class="settings-feature-row">
-                                    <div>
-                                        <div class="text-gray-700 dark:text-gray-300 font-medium">Enable Focus Mode</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">During live calls, blur the workspace and center a big timer, live earnings, and your daily-goal ring. Exit anytime without touching the call.</div>
+                                    <div class="st-group">Earnings</div>
+                                    <div class="st-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">Payment cycles</div>
+                                            <div class="st-desc">Track earnings by pay period.</div>
+                                            <button id="open-payment-cycles-settings-btn" type="button" class="hidden st-link">Manage payment cycles</button>
+                                        </div>
+                                        <label class="settings-feature-switch st-switch">
+                                            <input type="checkbox" id="feature-payment-cycles-toggle">
+                                            <span class="slider round"></span>
+                                        </label>
                                     </div>
-                                    <label class="settings-feature-switch">
-                                        <input type="checkbox" id="feature-focus-mode-toggle">
-                                        <span class="slider round"></span>
-                                    </label>
                                 </div>
+                            </section>
 
-                                <div class="settings-feature-row" id="analytics-setting-row">
-                                    <div>
-                                        <div class="text-gray-700 dark:text-gray-300 font-medium">Share anonymous usage counts</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">Web version only. Counts page views, a few actions (call started, call ended, Focus Mode), which optional features are on, and rough ranges like &quot;call length 5-7 min&quot; or &quot;2.5-3 hours that day&quot;. Never exact times, your calls, earnings, rates, or notes.</div>
+                            <section id="st-data" class="st-section settings-card-data">
+                                <p class="st-eyebrow">My data</p>
+                                <div class="st-card">
+                                    <div class="st-status">
+                                        <div class="st-status-box">
+                                            <div class="st-status-label">Last full backup</div>
+                                            <div id="settings-last-backup" class="st-status-value">No backup yet</div>
+                                        </div>
+                                        <div class="st-status-box">
+                                            <div class="st-status-label">Storage used <span id="storage-used" class="st-status-num">0 KB / 5.0 MB</span></div>
+                                            <div class="st-bar"><div id="storage-bar" class="st-bar-fill" style="width:0%"></div></div>
+                                        </div>
                                     </div>
-                                    <label class="settings-feature-switch">
-                                        <input type="checkbox" id="feature-analytics-toggle" checked>
-                                        <span class="slider round"></span>
-                                    </label>
+                                    <p class="st-desc st-pad">Backups, CSV imports and exports live in the Data Hub.</p>
+                                    <div class="st-actions">
+                                        <button id="open-data-hub-btn" type="button" class="st-btn st-btn-primary"><i class="fas fa-database"></i> Open Data Hub</button>
+                                        <button id="settings-export-backup-btn" type="button" class="st-btn"><i class="fas fa-download"></i> Export backup now</button>
+                                    </div>
                                 </div>
-                            </div>
+                            </section>
 
-                            <div class="settings-feature-actions grid grid-cols-1 gap-3">
-                                <button id="open-payment-cycles-settings-btn" type="button"
-                                        class="hidden bg-violet-600 text-white px-3 py-2 rounded-lg hover:bg-violet-700 transition text-sm">
-                                    <i class="fas fa-calendar-alt mr-1"></i> Manage Payment Cycles
-                                </button>
-                                <button id="open-floating-controls-settings-btn" type="button"
-                                        aria-controls="floating-controls-settings-modal"
-                                        class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-3 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition text-sm">
-                                    <i class="fas fa-sliders-h mr-1"></i> Floating Controls Settings
-                                </button>
-                            </div>
-                        </div>
+                            <section id="st-privacy" class="st-section">
+                                <p class="st-eyebrow">Privacy</p>
+                                <div class="st-card">
+                                    <div class="st-row" id="analytics-setting-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">Share anonymous usage counts</div>
+                                            <div class="st-desc">Web version only. Helps improve the app. Never your calls, earnings, rates or notes.</div>
+                                            <details class="st-details">
+                                                <summary>What is counted?</summary>
+                                                <p>Page views, a few actions (call started, call ended, Focus Mode), which optional features are on, and rough ranges like &quot;call length 5-7 min&quot; or &quot;2.5-3 hours that day&quot;. Never exact times, your calls, earnings, rates, or notes.</p>
+                                            </details>
+                                        </div>
+                                        <label class="settings-feature-switch st-switch">
+                                            <input type="checkbox" id="feature-analytics-toggle" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </section>
 
-                        <div class="settings-section-card settings-card-timezone">
-                            <p class="settings-card-eyebrow">Time</p>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Time Zone</h3>
-                            <div class="flex items-center gap-2">
-                                <select id="timezone-select" class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                </select>
-                                <button id="reset-timezone" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
-                                    Reset
-                                </button>
-                            </div>
-                        </div>
+                            <section id="st-time" class="st-section settings-card-timezone">
+                                <p class="st-eyebrow">Time zone &amp; help</p>
+                                <div class="st-card">
+                                    <div class="st-row st-row-stack">
+                                        <div class="st-title">Time zone</div>
+                                        <div class="st-inline">
+                                            <select id="timezone-select" class="st-select"></select>
+                                            <button id="reset-timezone" type="button" class="st-btn">Reset</button>
+                                        </div>
+                                    </div>
+                                    <div class="st-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">First-time guide</div>
+                                            <div class="st-desc">Review the setup flow again.</div>
+                                        </div>
+                                        <button id="restart-onboarding-btn" type="button" class="st-btn">Restart onboarding</button>
+                                    </div>
+                                </div>
+                            </section>
 
-                        <div class="settings-section-card settings-card-data">
-                            <p class="settings-card-eyebrow">Recovery</p>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Data Management</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                Open a single clean workspace for backups, CSV call log imports, and scoped exports.
-                            </p>
-                            <div class="flex flex-col gap-2">
-                                <button id="open-data-hub-btn" class="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 transition">
-                                    <i class="fas fa-database"></i> Open Data Hub
-                                </button>
-                                <button id="reset-calls" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition">
-                                    <i class="fas fa-trash-alt"></i> Reset Calls Only
-                                </button>
-                                <button id="reset-all" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
-                                    <i class="fas fa-exclamation-triangle"></i> Reset All Data
-                                </button>
-                            </div>
+                            <section id="st-danger" class="st-section">
+                                <p class="st-eyebrow st-eyebrow-danger">Danger zone</p>
+                                <div class="st-card st-card-danger">
+                                    <p class="st-warn">Tip: download a backup first (Open Data Hub). These actions ask for confirmation.</p>
+                                    <div class="st-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">Delete all calls</div>
+                                            <div class="st-desc">Removes your call history. Settings and payment cycles are kept.</div>
+                                        </div>
+                                        <button id="reset-calls" type="button" class="st-btn st-btn-danger-soft">Delete calls…</button>
+                                    </div>
+                                    <div class="st-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">Reset everything</div>
+                                            <div class="st-desc">Removes calls, settings and payment cycles.</div>
+                                        </div>
+                                        <button id="reset-all" type="button" class="st-btn st-btn-danger">Reset all data…</button>
+                                    </div>
+                                </div>
+                            </section>
                         </div>
-
-                        <div class="settings-section-card settings-card-onboarding">
-                            <p class="settings-card-eyebrow">Guide</p>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Onboarding</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                                Restart the first-time guide to test or review the setup flow.
-                            </p>
-                            <button id="restart-onboarding-btn" type="button"
-                                    class="w-full bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 transition">
-                                <i class="fas fa-rotate-left mr-1"></i> Restart Onboarding
-                            </button>
-                        </div>
-
-                        <div class="settings-section-card settings-card-storage">
-                            <p class="settings-card-eyebrow">Storage</p>
-                            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Storage Usage</h3>
-                            <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                <span>Storage used:</span>
-                                <span id="storage-used">0 KB / 5.0 MB</span>
-                            </div>
-                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                <div id="storage-bar" class="bg-blue-500 h-2 rounded-full" style="width:0%"></div>
-                            </div>
-                        </div>
+                    </div>
                         <div id="payment-cycles-settings-modal" class="payment-cycles-manager-panel dashboard-surface rounded-xl shadow-lg p-6 mt-2" style="display:none;">
                             <p class="settings-card-eyebrow">Payments</p>
                             <div class="payment-cycles-manager-header">
