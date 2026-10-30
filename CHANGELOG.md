@@ -9,6 +9,8 @@ For downloadable installers/APKs and release metadata, use:
 
 ### Highlights
 - The "What's New" notice that appears after an update is now short: one line per change instead of the full text. Press "View details" to read everything. In Settings, on a wide window the side menu is now hidden because all sections are already in view.
+- Your daily goal now moves while you are on a call, also outside Focus Mode: the amount, the percentage and the "mins to goal" estimate include the call that is running. Nothing is saved until the call ends, and if you press Undo after ending it, the goal goes back as it was.
+- Focus Mode: the call timer is smaller and now sits centered inside the ring instead of overlapping it.
 
 ## v1.6.5 - 2026-10-29
 
