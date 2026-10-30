@@ -184,7 +184,9 @@ test('none of this changes saved calls, rates, or goals', async () => {
 test('the reminder waits while the What\'s New notice is open, so they never overlap', async () => {
   const { context, page } = await newPage(browser, baseUrl);
   try {
-    await seedStorage(page, baseUrl, makeSeed(12));
+    const seed = makeSeed(12);
+    delete seed[`releaseSpotlightSeen:${APP_VERSION}`]; // this test needs the What's New notice open
+    await seedStorage(page, baseUrl, seed);
     await settle(page);
     assert.equal(await bannerVisible(page), false, 'no reminder on top of What\'s New');
   } finally {
