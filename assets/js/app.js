@@ -1189,7 +1189,41 @@ function hideBackupReminder() {
 
 function updateLastBackupLine() {
     const el = document.getElementById('data-hub-last-backup');
-    if (el) el.textContent = `Last full backup: ${describeBackupAge(readSafetyNumber(LAST_BACKUP_KEY), Date.now())}`;
+    const age = describeBackupAge(readSafetyNumber(LAST_BACKUP_KEY), Date.now());
+    if (el) el.textContent = `Last full backup: ${age}`;
+    const settingsEl = document.getElementById('settings-last-backup');
+    if (settingsEl) settingsEl.textContent = age;
+}
+
+function setupSettingsPage() {
+    updateLastBackupLine();
+    const exportBtn = document.getElementById('settings-export-backup-btn');
+    if (exportBtn) exportBtn.addEventListener('click', () => openExportOptionsModal('json'));
+    const toggle = document.getElementById('settings-toggle');
+    if (toggle) toggle.addEventListener('click', updateLastBackupLine);
+    const links = Array.from(document.querySelectorAll('[data-st-link]'));
+    if (!links.length) return;
+    const setActive = (id) => links.forEach((a) => a.classList.toggle('active', a.dataset.stLink === id));
+    let lockUntil = 0;
+    links.forEach((a) => a.addEventListener('click', (event) => {
+        event.preventDefault();
+        lockUntil = Date.now() + 900;
+        const target = document.getElementById(a.dataset.stLink);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setActive(a.dataset.stLink);
+    }));
+    if (typeof IntersectionObserver !== 'function') return;
+    const observer = new IntersectionObserver((entries) => {
+        if (Date.now() < lockUntil) return;
+        const visible = entries.filter((entry) => entry.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible) setActive(visible.target.id);
+    }, { rootMargin: '-10% 0px -70% 0px' });
+    links.forEach((a) => {
+        const section = document.getElementById(a.dataset.stLink);
+        if (section) observer.observe(section);
+    });
 }
 
 function markBackupCompleted() {
@@ -13040,6 +13074,7 @@ goalMinutesInput.addEventListener('input', () => {
         }
         registerGoatCounterDebugApi();
         setupAnalyticsToggle();
+        setupSettingsPage();
         setupGoatCounterAnalytics();
         void updateManager?.check?.();
         scheduleReleaseSpotlightBanner();
