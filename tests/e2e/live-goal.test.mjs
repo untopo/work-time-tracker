@@ -30,8 +30,8 @@ function seedFastRate() {
 
 const earnedInGoal = async (page) => {
   const text = (await page.textContent('#goal-amount-display')).trim();
-  const match = text.match(/^\\$([\\d.]+)\\s*\\/\\s*\\$/);
-  assert.ok(match, `unexpected goal text: ${text}`);
+  const match = text.match(/^\$([\d.]+)\s*\/\s*\$/);
+  assert.ok(match, 'unexpected goal text: ' + text);
   return Number(match[1]);
 };
 const goalPercent = async (page) => Number((await page.textContent('#goal-progress-text')).replace('%', '').trim());
@@ -46,9 +46,9 @@ test('the goal amount, percentage and estimate update live without saving the ca
     await page.waitForTimeout(3500);
 
     const during = await earnedInGoal(page);
-    assert.ok(during >= 2, `goal should already include the running call, got ${during}`);
+    assert.ok(during >= 2, 'goal should already include the running call, got ' + during);
     assert.ok(await goalPercent(page) > 0, 'the progress percentage must include the live call');
-    assert.match((await page.textContent('#goal-minutes-display')).trim(), /\\/ 1 Min$/, 'the goal time target remains visible');
+    assert.match((await page.textContent('#goal-minutes-display')).trim(), /\/ 1 Min$/, 'the goal time target remains visible');
     assert.match((await page.textContent('#goal-estimate')).trim(), /mins to goal|Goal reached!/i, 'the remaining-time estimate is updated');
     assert.equal(JSON.parse((await readStorage(page)).calls).length, 0, 'a running call must not be saved to call history');
 
@@ -76,7 +76,7 @@ test('the goal amount, percentage and estimate update live without saving the ca
 });
 
 for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['phone', { width: 390, height: 844 }]]) {
-  test(`Focus Mode timer sits centered inside the ring (${name})`, async () => {
+  test('Focus Mode timer sits centered inside the ring (' + name + ')', async () => {
     const { context, page } = await newPage(browser, baseUrl, { viewport });
     try {
       const seed = seedFastRate();
@@ -92,9 +92,9 @@ for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['pho
       const cx = ring.x + ring.width / 2;
       const cy = ring.y + ring.height / 2;
       const inner = ring.width * (300 - 16) / 360; // inside the stroke of the ring (radius 150, stroke 16 on a 360 canvas)
-      assert.ok(t.width < inner * 0.8, `timer (${t.width}px) must leave room inside the ring (${inner}px)`);
+      assert.ok(t.width < inner * 0.8, 'timer (' + t.width + 'px) must leave room inside the ring (' + inner + 'px)');
       assert.ok(Math.abs(t.x + t.width / 2 - cx) < 3, 'timer is horizontally centered in the ring');
-      assert.ok(Math.abs(center.y + center.height / 2 - cy) < 3, 'the timer-and-earnings group is vertically centered in the ring');
+      assert.ok(Math.abs(center.y + center.height / 2 - cy) < 3, 'the timer content container is vertically centered in the ring');
     } finally {
       await context.close();
     }
