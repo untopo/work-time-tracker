@@ -143,10 +143,12 @@ test('confirming Delete calls removes call history and call-derived progress but
       'wtt_session_rpg_stats_v1',
       'wtt_rpg_progress_state_v1',
       'wtt_achievements_state_v1',
-      'wtt_daily_quests_state_v1',
     ]) {
       assert.equal(Object.hasOwn(stored, key), false, `${key} is cleared`);
     }
+    const freshQuestState = parse(stored.wtt_daily_quests_state_v1);
+    assert.notEqual(freshQuestState.activeDayKey, '2026-10-20', 'old daily quest rotation is discarded');
+    assert.deepEqual(freshQuestState.completedByDay?.['2026-10-20'] || {}, {}, 'old daily quest completions are discarded');
     assert.deepEqual(problems, []);
   } finally {
     await context.close();
@@ -199,11 +201,13 @@ test('confirming Reset all data requires RESET and clears the saved calls, rates
       'wtt_session_rpg_stats_v1',
       'wtt_rpg_progress_state_v1',
       'wtt_achievements_state_v1',
-      'wtt_daily_quests_state_v1',
-      'sessionHistoryV1',
     ]) {
       assert.equal(Object.hasOwn(stored, key), false, `${key} is cleared`);
     }
+    assert.deepEqual(parse(stored.sessionHistoryV1), [], 'session history is empty');
+    const freshQuestState = parse(stored.wtt_daily_quests_state_v1);
+    assert.notEqual(freshQuestState.activeDayKey, '2026-10-20', 'old daily quest rotation is discarded');
+    assert.deepEqual(freshQuestState.completedByDay?.['2026-10-20'] || {}, {}, 'old daily quest completions are discarded');
     assert.deepEqual(problems, []);
   } finally {
     await context.close();
