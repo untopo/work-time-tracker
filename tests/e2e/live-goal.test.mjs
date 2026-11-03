@@ -18,34 +18,44 @@ after(async () => {
   server?.close();
 });
 
-// A rate of $60/min earns $1 every second, so the changes are easy to see.
+// A rate of $60/min earns $1 every second, making the live changes easy to verify.
 function seedFastRate() {
   const seed = makeSeed(0);
   seed.calls = '[]';
   seed.rates = JSON.stringify([{ name: 'Fast', amount: 60 }]);
   seed.lastSelectedRate = 'Fast';
-  seed.dailyGoal = JSON.stringify({ amount: 1000, minutes: 0 });
+  seed.dailyGoal = JSON.stringify({ amount: 60, minutes: 0 });
   return seed;
 }
 
 const earnedInGoal = async (page) => {
   const text = (await page.textContent('#goal-amount-display')).trim();
   const match = text.match(/^\$([\d.]+)\s*\/\s*\$/);
-  assert.ok(match, `unexpected goal text: ${text}`);
+  assert.ok(match, 'unexpected goal text: ' + text);
   return Number(match[1]);
 };
+const goalPercent = async (page) => Number((await page.textContent('#goal-progress-text')).replace('%', '').trim());
 
-test('the goal grows during a call, matches the saved call after it ends, and reverts on undo', async () => {
+test('the goal amount, percentage and estimate update live without saving the call, then match and undo cleanly', async () => {
   const { context, page, problems } = await newPage(browser, baseUrl);
   try {
     await seedStorage(page, baseUrl, seedFastRate());
     assert.equal(await earnedInGoal(page), 0);
+    assert.equal(await goalPercent(page), 0);
     await page.click('#start-call-btn');
     await page.waitForTimeout(3500);
+
     const during = await earnedInGoal(page);
-    assert.ok(during >= 2, `goal should already include the running call, got ${during}`);
+    assert.ok(during >= 2, 'goal should already include the running call, got ' + during);
+    assert.ok(await goalPercent(page) > 0, 'the progress percentage must include the live call');
+    assert.match((await page.textContent('#goal-minutes-display')).trim(), /\/ 1 Min$/, 'the goal time target remains visible');
+    assert.match((await page.textContent('#goal-estimate')).trim(), /mins to goal|Goal reached!/i, 'the remaining-time estimate is updated');
+    assert.equal(JSON.parse((await readStorage(page)).calls).length, 0, 'a running call must not be saved to call history');
+
     await page.waitForTimeout(2000);
-    assert.ok((await earnedInGoal(page)) > during, 'goal keeps growing while the call runs');
+    const later = await earnedInGoal(page);
+    assert.ok(later > during, 'goal earnings keep growing while the call runs');
+    assert.ok((await goalPercent(page)) >= 5, 'the percentage continues to reflect the live call');
 
     await page.click('#end-call-btn');
     await page.waitForTimeout(800);
@@ -58,6 +68,7 @@ test('the goal grows during a call, matches the saved call after it ends, and re
     await page.waitForTimeout(800);
     assert.equal(JSON.parse((await readStorage(page)).calls).length, 0);
     assert.equal(await earnedInGoal(page), 0, 'undo takes the call out of the goal');
+    assert.equal(await goalPercent(page), 0, 'undo also restores the goal percentage');
     assert.deepEqual(problems, []);
   } finally {
     await context.close();
@@ -65,7 +76,7 @@ test('the goal grows during a call, matches the saved call after it ends, and re
 });
 
 for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['phone', { width: 390, height: 844 }]]) {
-  test(`Focus Mode timer sits centered inside the ring (${name})`, async () => {
+  test('Focus Mode timer sits centered inside the ring (' + name + ')', async () => {
     const { context, page } = await newPage(browser, baseUrl, { viewport });
     try {
       const seed = seedFastRate();
@@ -77,10 +88,13 @@ for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['pho
       await page.waitForSelector('#wtt-focus-timer', { state: 'visible' });
       const t = await page.locator('#wtt-focus-timer').boundingBox();
       const ring = await page.locator('.wtt-focus-ringwrap svg').boundingBox();
+      const center = await page.locator('.wtt-focus-center').boundingBox();
       const cx = ring.x + ring.width / 2;
+      const cy = ring.y + ring.height / 2;
       const inner = ring.width * (300 - 16) / 360; // inside the stroke of the ring (radius 150, stroke 16 on a 360 canvas)
-      assert.ok(t.width < inner * 0.8, `timer (${t.width}px) must leave room inside the ring (${inner}px)`);
+      assert.ok(t.width < inner * 0.8, 'timer (' + t.width + 'px) must leave room inside the ring (' + inner + 'px)');
       assert.ok(Math.abs(t.x + t.width / 2 - cx) < 3, 'timer is horizontally centered in the ring');
+      assert.ok(Math.abs(center.y + center.height / 2 - cy) < 3, 'the timer content container is vertically centered in the ring');
     } finally {
       await context.close();
     }
