@@ -39,7 +39,7 @@ test('the What\'s New notice stays concise and View details opens the full v1.6.
     const details = (await page.textContent('#changelog-content')).trim();
     assert.match(details, /1\.6\.6/);
     assert.match(details, /daily goal/i);
-    assert.match(details, /View details|What.s New/i);
+    assert.match(details, /call timer is smaller/i);
     assert.deepEqual(problems, []);
   } finally {
     await context.close();
