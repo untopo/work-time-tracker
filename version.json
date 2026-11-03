@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.6.5",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.5",
+  "latestVersion": "1.6.6",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.6.6",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Clearer Settings, a clearer backup reminder, and an optional survey about using your calls on more than one device."
+  "notes": "Live daily goal progress, a clearer What's New notice, and a more focused call timer."
 }
