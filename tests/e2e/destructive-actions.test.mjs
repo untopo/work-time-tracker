@@ -213,3 +213,55 @@ test('confirming Reset all data requires RESET and clears the saved calls, rates
     await context.close();
   }
 });
+
+
+async function importJsonText(page, fileName, contents) {
+  await page.click('#open-data-hub-btn');
+  await page.waitForTimeout(300);
+  const chooser = page.waitForEvent('filechooser');
+  await page.click('#data-hub-import-json-btn');
+  await (await chooser).setFiles({
+    name: fileName,
+    mimeType: 'application/json',
+    buffer: Buffer.from(contents, 'utf8'),
+  });
+  await page.waitForSelector('#confirmation-modal', { state: 'visible' });
+  await page.waitForTimeout(300);
+}
+
+test('a syntactically invalid JSON backup is rejected without changing saved data', async () => {
+  const { context, page, problems } = await openSeededApp();
+  try {
+    const before = await snapshotKeys(page);
+    await importJsonText(page, 'broken-backup.json', '{ "calls": [ ');
+    assert.equal(await page.locator('#confirmation-modal-title').innerText().then((value) => value.includes('Import Failed')), true);
+    assert.match(await page.locator('#confirmation-modal-message').innerText(), /valid JSON file from this app/i);
+
+    await page.click('#confirmation-confirm-btn');
+    await page.waitForTimeout(500);
+    assert.deepEqual(await snapshotKeys(page), before, 'rejected JSON must not change any saved data');
+    assert.deepEqual(problems.filter((problem) => problem.startsWith('pageerror:')), [], 'handled parse errors must not crash the app');
+  } finally {
+    await context.close();
+  }
+});
+
+test('valid JSON with no recognized backup data is a no-op and preserves existing records', async () => {
+  const { context, page, problems } = await openSeededApp();
+  try {
+    const before = await snapshotKeys(page);
+    await importJsonText(page, 'unrecognized-backup.json', JSON.stringify({
+      backupVersion: 1,
+      data: { calls: [], rates: [] },
+    }));
+    assert.match(await page.locator('#confirmation-modal-title').innerText(), /Nothing New To Import/i);
+    assert.match(await page.locator('#confirmation-modal-message').innerText(), /does not contain any new calls/i);
+
+    await page.click('#confirmation-confirm-btn');
+    await page.waitForTimeout(500);
+    assert.deepEqual(await snapshotKeys(page), before, 'an unrecognized backup must not change existing data');
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});
