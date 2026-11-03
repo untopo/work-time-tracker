@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.6.5-blue)
+![Version](https://img.shields.io/badge/version-1.6.6-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Privacy](https://img.shields.io/badge/privacy-local--first-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
@@ -112,7 +112,6 @@ It is built for interpreters who bill by duration, freelancers tracking time-bas
 WTT is local-first. It does not require an account, does not run a WTT cloud account or cloud database, and does not automatically sync your work records to a server.
 
 - Call records, rates, goals, sessions, payment cycles, settings, and progress are stored locally on the device/browser profile where you use the app
-- The app does not ask for patient names, diagnoses, medical-record numbers, call audio, transcripts, or other clinical details
 - Backups move your saved WTT records only when you explicitly export or import a file
 - Temporary live-call notes are not persisted or included in backups
 - Local storage is not the same as a backup: clearing browser/site data, uninstalling the app, losing the device, or storage corruption can still cause data loss
@@ -325,7 +324,7 @@ Safari generally works, but import/export behavior should always be verified in 
 
 ## Releases
 
-- Current Version: `v1.6.5`
+- Current Version: `v1.6.6`
 - In-app history: `What's New` modal
 - GitHub Releases: https://github.com/untopo/work-time-tracker/releases
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)
