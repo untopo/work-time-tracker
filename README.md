@@ -1,6 +1,6 @@
 # Work Time Tracker
 
-![Version](https://img.shields.io/badge/version-1.6.4-blue)
+![Version](https://img.shields.io/badge/version-1.6.5-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Privacy](https://img.shields.io/badge/privacy-local--first-success)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
@@ -8,7 +8,7 @@
 
 A local-first call, earnings, and workflow tracker built for interpreters.
 
-Run live calls, log manual work, track rates and goals, review your patterns, manage sessions, and use interpreter support tools — all in one workspace, with no accounts and no cloud sync. Your work data never leaves your device.
+Run live calls, log manual work, track rates and goals, review your patterns, manage sessions, and use interpreter support tools — all in one workspace, with no account and no cloud sync. Your call records and work history stay on your device. A few optional web features send limited information only when you choose to use or enable them; see [Data and Privacy](#data-and-privacy).
 
 **[/live demo on the web](https://untopo.github.io/work-time-tracker/)**
 
@@ -109,52 +109,59 @@ It is built for interpreters who bill by duration, freelancers tracking time-bas
 
 ## Data and Privacy
 
-Your work data never leaves your device.
+WTT is local-first. It does not require an account, does not run a WTT cloud account or cloud database, and does not automatically sync your work records to a server.
 
-- Calls, rates, goals, sessions, payment cycles, and progress are stored locally
-- No accounts, no login, no cloud sync
-- No backend owns your tracking data
-- Backups only move data when you explicitly export or import a file
-- Volatile notes are intentionally not persisted or exported
+- Call records, rates, goals, sessions, payment cycles, settings, and progress are stored locally on the device/browser profile where you use the app
+- The app does not ask for patient names, diagnoses, medical-record numbers, call audio, transcripts, or other clinical details
+- Backups move your saved WTT records only when you explicitly export or import a file
+- Temporary live-call notes are not persisted or included in backups
+- Local storage is not the same as a backup: clearing browser/site data, uninstalling the app, losing the device, or storage corruption can still cause data loss
 
 ### What Leaves Your Device
 
-Some optional parts of the app do talk to the internet. Nothing below ever sends
-your calls, earnings, rates, or history.
+The core work log is not uploaded. A small number of optional features connect to external services, and each sends only the information needed for that feature:
 
 | Feature | Destination | What is sent | How to avoid it |
 |---|---|---|---|
-| Usage analytics (web only) | GoatCounter (`gc.zgo.at`) | Anonymous page-view ping, the name of a few actions (`call-started`, `call-ended`, `focus-mode`), which optional features are on, and coarse ranges (for example call length `5-7m`, calls per day `7-10`, hours per day `2.5-3h`). No exact values, no app data | Turn it off in `Settings -> Features`, or use the desktop or Android build |
-| Update check | `untopo.github.io`, `api.github.com` | Nothing. Only reads the published version | Ignore the banner |
-| US ZIP / Address Lookup | `api.zippopotam.us`, `nominatim.openstreetmap.org` | The ZIP or address you type | Do not use the tool |
-| Interpreter Language Assistant | `api.mymemory.translated.net`, `api.dictionaryapi.dev`, `api.datamuse.com` | The term you look up | Do not use the tool |
-| Contact Us form | `formspree.io` | What you write in the form | Email instead |
+| Usage analytics (web only, opt-in) | GoatCounter (`gc.zgo.at`) | Fixed event names and coarse buckets for usage (such as a call-duration range, daily call-count range, daily hours range, feature toggles, and selected UI actions). No call rows, exact earnings, rates, notes, or timestamps are included in these events | Turn off `Settings -> Features -> Share anonymous usage counts` |
+| Update check | `untopo.github.io`, `api.github.com` | Requests the public version/release information so the app can check for updates; no call log or work records are included | Ignore the update notice; the request itself is part of checking for updates |
+| US ZIP / Address Lookup | `api.zippopotam.us`, `nominatim.openstreetmap.org` | The ZIP code, city, or address you enter | Do not use this tool, or avoid entering sensitive/private addresses |
+| Interpreter Language Assistant | `api.mymemory.translated.net`, `api.dictionaryapi.dev`, `api.datamuse.com` | The term you search for | Do not use this tool for confidential terms or patient-related information |
+| Contact Us form | `formspree.io` | The message and any contact details you choose to provide | Do not include patient information or confidential work details; use the published project email instead |
+| Optional sync survey | Project survey endpoint | Anonymous choice counts; a written comment is sent only if you choose to write one | Skip the survey or leave the comment field blank |
 
-Styles and icons are self-hosted: loading the app does not contact any CDN.
+Styles and icons are self-hosted. The web app does not need a third-party font or icon CDN to render.
 
-If you interpret under confidentiality rules, treat the Resources tools like any
-other third-party lookup: the term you search is sent to the provider above.
+If you work under medical, legal, or other confidentiality rules, do not enter patient-identifying information, case details, or confidential interpreting content into Resources searches, the contact form, or the optional survey comment. Those are separate services and are not part of the local call log.
 
-### Analytics
+### Analytics details
 
-The web version at GitHub Pages loads GoatCounter for anonymous page-view
-counts and a few anonymous action counts. It records no personal data, no work
-data, and no cross-site profile.
+The web version can send optional usage events only when `Share anonymous usage counts` is enabled. It sends fixed event labels and coarse ranges rather than individual call records. Depending on the enabled features, events can include call started/ended, Focus Mode, reminder choices, report/card usage, and broad daily totals. The app does not attach your name, email, rates, notes, exact earnings, or call history to these analytics events. As with any web request, the analytics provider may process ordinary connection metadata under its own privacy policy.
 
-- Actions counted: call started, call ended, Focus Mode opened
-- Coarse ranges only, never exact values. When a call ends, only its length range is counted (1-minute steps up to 3 minutes, then `3-5m`, `5-7m`, `7-10m`, `10-15m`, `15-20m`, `20-30m`, `30-45m`, `45-60m`, `60m-plus`). Once a day, the web version also counts the call-count range (`1-3`, `4-6`, `7-10`, `11-15`, ... up to `51-plus`) and the hours range in half-hour steps (`0-0.5h`, `0.5-1h`, ... up to `10h-plus`) of your most recent finished day, plus which optional features are switched on (Focus Mode, payment cycles, notes, RPG, floating controls, daily goal, backup done)
-- Never sent: exact durations, times, earnings, rates, notes, call history, or anything that identifies you. The ranges are added up across all visitors, so they cannot be traced to one person
-- Turn it off any time in `Settings -> Features -> Share anonymous usage counts`; the choice is stored under its own key and never touches your work data
-- The desktop (Tauri) and Android (Capacitor) builds skip analytics entirely
-- Self-hosted copies can remove the analytics call from `assets/js/app.js`
+- The setting is available in `Settings -> Features -> Share anonymous usage counts`
+- Turning it off prevents WTT from sending these optional usage events
+- Desktop (Tauri) and Android (Capacitor) builds skip this analytics feature
+- The app's local work records are not changed by enabling or disabling analytics
+- Self-hosted copies can remove the analytics integration from `assets/js/app.js`
 
 ## Backup and Restore
 
-- Backup and restore live in `Settings -> Data Management`
-- `Export Backup JSON` includes app data such as calls, rates, goals, and payment cycles
-- `Export Call Log CSV` exports call rows only
-- Imports are reviewed before saving
-- Exact duplicates are skipped during merge/import flows
+Open `Settings -> My data` and use `Export Backup JSON` to create a full backup file. Keep a copy somewhere separate from the device you use for WTT (for example, an encrypted folder or an external drive).
+
+- A JSON backup contains your saved app data, including call records, rates, goals, sessions, payment cycles, and progress
+- `Export Call Log CSV` exports call rows only; it is useful for spreadsheets, but it is not a full restore backup
+- Imports are previewed/reviewed before they are saved, and duplicate call entries are skipped in supported merge flows
+- WTT shows the last full-backup date and reminds you when calls exist only in the current browser/device
+- Exporting a backup is manual: WTT does not silently upload it to cloud storage
+- A backup is only useful if you keep the file safe and can find it later. Periodically make a fresh export and verify that it exists in your backup location
+
+**Recommended habit:** export a full JSON backup at the end of each workweek, and before clearing browser data, changing devices, reinstalling, or resetting the app. Keep at least one additional copy outside the device.
+
+## Onboarding
+
+New users see a first-run welcome guide with three paths: Quick Start, Customize First, or Skip. The guide tracks three practical milestones: saving a first rate, saving a first call, and opening Settings. Contextual cue cards then guide the user through adding a rate, trying a test call, and customizing the workspace. The guide can be restarted from Settings.
+
+The fastest setup is: add one billing rate, run a short test call, then review Settings. A test call is just a setup check; delete it afterward if you do not want it in your work history.
 
 ## Platforms
 
@@ -220,6 +227,26 @@ gradlew assembleRelease
 - HTML and CSS
 - Tauri for desktop packaging
 - Capacitor for Android packaging
+
+## Architecture
+
+WTT uses a shared frontend across web, desktop, and Android. The application is still a plain-script JavaScript app rather than a fully bundled ES-module application. `app.js` remains the central coordinator for UI state, DOM events, navigation, and feature wiring; domain logic that can run independently has been progressively extracted into smaller files and covered by unit tests.
+
+Current boundaries include:
+
+- `data-core.js`: data normalization, CSV parsing/import helpers, and merge logic
+- `session-core.js`: work-session and active-call recovery logic
+- `progress-core.js`: progression, achievements, and streak calculations
+- `metrics-core.js`: coarse usage-metric buckets
+- `report-core.js`: monthly report calculations
+- `survey-core.js`: survey question/configuration logic
+- `resources-data.js` and `resources-helpers.js`: interpreter resource data and helper logic
+- `storage.js`: shared storage adapter for browser storage and the Tauri native snapshot bridge
+- `settings-manager.js` and `update-manager.js`: settings and update UI coordination
+
+The next architectural step should be incremental: extract one self-contained feature at a time from `app.js`, preserve the existing storage keys and public globals during migration, and add unit/E2E coverage before changing behavior. Avoid a full rewrite; compatibility across web, Tauri, and Android is more important than reducing file size quickly.
+
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the module map and refactoring rules.
 
 ## Project Structure
 
@@ -298,7 +325,7 @@ Safari generally works, but import/export behavior should always be verified in 
 
 ## Releases
 
-- Current Version: `v1.5.1`
+- Current Version: `v1.6.5`
 - In-app history: `What's New` modal
 - GitHub Releases: https://github.com/untopo/work-time-tracker/releases
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)
