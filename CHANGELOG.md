@@ -5,6 +5,11 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.6.7 - Unreleased
+
+### Reliability & Privacy
+- Your backup now also includes your finished work sessions and your settings (theme, time zone, the Features switches and your Analytics choices), not only calls, rates, goal and payment cycles. When you import a backup on a new device, or after clearing your browser, your sessions come back and your settings are restored (the app reloads once to apply them). On a device you already set up, importing never changes your settings or the sessions you already have: it only adds what is missing. Backup files made by older versions keep working exactly as before. Things that belong to one screen or device, like panel sizes, stay out of the backup.
+
 ## v1.6.6 - 2026-11-03
 
 ### Highlights

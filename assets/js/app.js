@@ -1336,7 +1336,12 @@ async function exportCallsAsJson(exportCalls) {
         rates: rates,
         dailyGoal: dailyGoal,
         paymentCyclesEnabled: paymentCyclesEnabled,
-        paymentCycles: paymentCycles
+        paymentCycles: paymentCycles,
+        // Backup format 2: finished sessions and portable settings travel with the backup.
+        backupVersion: BACKUP_FORMAT_VERSION,
+        exportedAt: new Date().toISOString(),
+        sessionHistory: normalizeSessionHistoryEntries(sessionHistoryEntries),
+        settings: buildBackupSettings((key) => appStorage.getItem(key))
     };
     const jsonText = JSON.stringify(data, null, 2);
     const fileName = `work-time-tracker-data-${getExportFileDateSuffix()}.json`;
@@ -6066,12 +6071,20 @@ function importJsonBackup(importedData) {
     const callMerge = mergeCallsWithExisting(existingCalls, importedCalls);
     const rateMerge = mergeRatesWithExisting(rates, importedRates);
     const cycleMerge = mergePaymentCyclesWithExisting(paymentCycles, importedCycles);
+    // Backup format 2 extras. Older backups do not have them and import exactly as before.
+    const sessionMerge = mergeSessionHistoryWithExisting(
+        normalizeSessionHistoryEntries(sessionHistoryEntries),
+        normalizeSessionHistoryEntries(importedData?.sessionHistory)
+    );
+    const settingsToRestore = pickSettingsToRestore(importedData?.settings, (key) => appStorage.getItem(key) !== null);
+    const settingsRestoreCount = Object.keys(settingsToRestore).length;
     const currentGoal = normalizeDailyGoal(dailyGoal);
     const shouldApplyImportedGoal = currentGoal.amount <= 0 && currentGoal.minutes <= 0
         && (importedGoal.amount > 0 || importedGoal.minutes > 0);
 
-    if (callMerge.addedCount === 0 && rateMerge.addedCount === 0 && cycleMerge.addedCount === 0 && !shouldApplyImportedGoal) {
-        showAlertModal('Nothing New To Import', 'This backup does not contain any new calls, rates, payment cycles, or goal data to merge.');
+    if (callMerge.addedCount === 0 && rateMerge.addedCount === 0 && cycleMerge.addedCount === 0
+        && sessionMerge.addedCount === 0 && settingsRestoreCount === 0 && !shouldApplyImportedGoal) {
+        showAlertModal('Nothing New To Import', 'This backup does not contain any new calls, rates, payment cycles, sessions, settings, or goal data to merge.');
         return;
     }
 
@@ -6085,7 +6098,9 @@ function importJsonBackup(importedData) {
         rateMerge.skippedCount > 0 ? `${rateMerge.skippedCount} duplicate/invalid rate${rateMerge.skippedCount === 1 ? '' : 's'} skipped` : '',
         cycleMerge.skippedCount > 0 ? `${cycleMerge.skippedCount} duplicate cycle${cycleMerge.skippedCount === 1 ? '' : 's'} skipped` : ''
     ].filter(Boolean);
+    if (sessionMerge.addedCount > 0) summaryParts.push(`${sessionMerge.addedCount} new session${sessionMerge.addedCount === 1 ? '' : 's'}`);
     if (shouldApplyImportedGoal) summaryParts.push('daily goal applied');
+    if (settingsRestoreCount > 0) summaryParts.push('your saved settings restored (the app reloads to apply them)');
 
     showConfirmation(
         'Merge Backup Data',
@@ -6103,10 +6118,22 @@ function importJsonBackup(importedData) {
             saveCalls();
             saveDailyGoal();
             savePaymentCycles();
+            if (sessionMerge.addedCount > 0) {
+                sessionHistoryEntries = sessionMerge.merged;
+                saveSessionHistoryState();
+            }
             syncDailyGoalInputs();
             populateRateSelects();
-            showToast(`Backup merged: ${callMerge.addedCount} calls, ${rateMerge.addedCount} rates, ${cycleMerge.addedCount} cycles added.`);
+            const sessionNote = sessionMerge.addedCount > 0 ? `, ${sessionMerge.addedCount} sessions` : '';
+            showToast(`Backup merged: ${callMerge.addedCount} calls, ${rateMerge.addedCount} rates, ${cycleMerge.addedCount} cycles${sessionNote} added.`);
             closeSettingsView();
+            if (settingsRestoreCount > 0) {
+                Object.entries(settingsToRestore).forEach(([key, value]) => {
+                    appStorage.setItem(key, key === 'featureFlags' ? JSON.stringify(value) : String(value));
+                });
+                flushPendingStorageWrites();
+                setTimeout(() => window.location.reload(), 1600);
+            }
         },
         {
             icon: 'fa-upload',
