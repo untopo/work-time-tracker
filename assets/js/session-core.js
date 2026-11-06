@@ -153,3 +153,100 @@ function formatSupportivePercentDelta(value) {
     const rounded = Math.round(Math.abs(value));
     return value > 0 ? `${rounded}% ahead` : `${rounded}% behind`;
 }
+
+
+// ---- Backup of settings and session history (backup format 2) ----
+// A backup file carries the user's preferences and finished sessions along with calls, rates,
+// goal and payment cycles. Only choices that make sense on another device travel. Things tied
+// to one screen or one device (panel sizes, dock position, reminder timers, "last backup" time)
+// stay out on purpose. Older backups simply do not have these fields and still import fine.
+const BACKUP_FORMAT_VERSION = 2;
+const BACKUP_PORTABLE_SETTINGS = ['theme', 'timeZone', 'featureFlags', 'patternsMode', 'trendMode', 'hourlyHeatmapMetric'];
+
+function isValidBackupTimeZone(value) {
+    if (typeof value !== 'string' || !value.trim()) return false;
+    try {
+        new Intl.DateTimeFormat('en-US', { timeZone: value });
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+// Returns a clean value for one setting, or undefined when it is missing or not usable.
+function sanitizeBackupSetting(key, value) {
+    if (value === null || value === undefined) return undefined;
+    switch (key) {
+        case 'theme':
+            return value === 'dark' || value === 'light' ? value : undefined;
+        case 'timeZone':
+            return isValidBackupTimeZone(value) ? value : undefined;
+        case 'featureFlags':
+            return value && typeof value === 'object' && !Array.isArray(value) ? value : undefined;
+        case 'patternsMode':
+            return ['hourly', 'weekly', 'monthly'].includes(value) ? value : undefined;
+        case 'trendMode':
+            return ['weekly', 'monthly'].includes(value) ? value : undefined;
+        case 'hourlyHeatmapMetric':
+            return ['calls', 'minutes', 'earnings'].includes(value) ? value : undefined;
+        default:
+            return undefined;
+    }
+}
+
+// readItem(key) returns the raw saved text (as localStorage does) or null.
+function buildBackupSettings(readItem) {
+    const out = {};
+    BACKUP_PORTABLE_SETTINGS.forEach((key) => {
+        let raw = null;
+        try { raw = readItem(key); } catch (error) { raw = null; }
+        if (raw === null || raw === undefined) return;
+        let value = raw;
+        if (key === 'featureFlags') {
+            try { value = JSON.parse(raw); } catch (error) { return; }
+        }
+        const clean = sanitizeBackupSetting(key, value);
+        if (clean !== undefined) out[key] = clean;
+    });
+    return out;
+}
+
+// Merge rule: a setting from a backup is applied only when this device has no value for it yet,
+// so restoring on a new device brings your preferences back and importing on a device you already
+// set up never overrides your choices. hasLocalValue(key) tells whether one is saved here.
+function pickSettingsToRestore(importedSettings, hasLocalValue) {
+    const picked = {};
+    if (!importedSettings || typeof importedSettings !== 'object') return picked;
+    BACKUP_PORTABLE_SETTINGS.forEach((key) => {
+        if (!Object.prototype.hasOwnProperty.call(importedSettings, key)) return;
+        const clean = sanitizeBackupSetting(key, importedSettings[key]);
+        if (clean === undefined) return;
+        let local = false;
+        try { local = !!hasLocalValue(key); } catch (error) { local = false; }
+        if (!local) picked[key] = clean;
+    });
+    return picked;
+}
+
+// Both lists are expected to be already normalized. A session already here (same id, or the same
+// start and end) is kept as is and the imported copy is skipped.
+function mergeSessionHistoryWithExisting(existingEntries, importedEntries) {
+    const merged = Array.isArray(existingEntries) ? existingEntries.map((entry) => ({ ...entry })) : [];
+    const ids = new Set(merged.map((entry) => String(entry.id)));
+    const spans = new Set(merged.map((entry) => `${entry.startedAtMs}-${entry.endedAtMs}`));
+    let addedCount = 0;
+    let skippedCount = 0;
+    (Array.isArray(importedEntries) ? importedEntries : []).forEach((entry) => {
+        const span = `${entry.startedAtMs}-${entry.endedAtMs}`;
+        if (ids.has(String(entry.id)) || spans.has(span)) {
+            skippedCount += 1;
+            return;
+        }
+        ids.add(String(entry.id));
+        spans.add(span);
+        merged.push({ ...entry });
+        addedCount += 1;
+    });
+    merged.sort((a, b) => b.endedAtMs - a.endedAtMs);
+    return { merged, addedCount, skippedCount };
+}
