@@ -34,9 +34,85 @@ function getSessionDefaultState() {
         pausedTotalMs: 0,
         pauseStartedMs: 0,
         pauseCount: 0,
+        pauseBy: 'manual',
+        pauseLog: [],
+        origin: 'manual',
         scheduleStart: '',
         scheduleEnd: ''
     };
+}
+
+// ---- Pause intervals and who did what (manual or automatic) ----
+// A session remembers each pause as {startMs, endMs, by}. These helpers are pure: they take a
+// time (and, for a pause, a state) and return clean data, so they are tested directly in Node.
+// Sessions saved before this existed simply have no intervals; nothing is invented for them.
+const SESSION_HISTORY_MAX_ENTRIES = 5000;
+
+function normalizeSessionActor(value) {
+    return value === 'auto' ? 'auto' : 'manual';
+}
+
+// Keeps only usable pauses, cuts them to [windowStartMs, windowEndMs], puts them in order
+// and merges any that overlap. Pauses of zero length are dropped.
+function normalizeSessionPauses(input, windowStartMs, windowEndMs) {
+    const source = Array.isArray(input) ? input : [];
+    const lo = Number.isFinite(Number(windowStartMs)) ? Number(windowStartMs) : 0;
+    const hi = Number.isFinite(Number(windowEndMs)) ? Number(windowEndMs) : Number.POSITIVE_INFINITY;
+    const cleaned = [];
+    source.forEach((item) => {
+        const startMs = Math.max(lo, Number(item?.startMs));
+        const endMs = Math.min(hi, Number(item?.endMs));
+        if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return;
+        cleaned.push({ startMs, endMs, by: normalizeSessionActor(item?.by) });
+    });
+    cleaned.sort((a, b) => a.startMs - b.startMs);
+    const out = [];
+    cleaned.forEach((pause) => {
+        const last = out[out.length - 1];
+        if (last && pause.startMs < last.endMs) {
+            last.endMs = Math.max(last.endMs, pause.endMs);
+        } else {
+            out.push({ ...pause });
+        }
+    });
+    return out;
+}
+
+// Total paused time that falls inside [startMs, endMs].
+function getSessionPausedMsBetween(pauses, startMs, endMs) {
+    return normalizeSessionPauses(pauses, startMs, endMs).reduce((sum, pause) => sum + (pause.endMs - pause.startMs), 0);
+}
+
+function startSessionPause(state, nowMs, by = 'manual') {
+    return {
+        ...state,
+        paused: true,
+        pauseStartedMs: nowMs,
+        pauseCount: Math.max(0, Number(state?.pauseCount) || 0) + 1,
+        pauseBy: normalizeSessionActor(by)
+    };
+}
+
+function endSessionPause(state, nowMs) {
+    const startedMs = Number(state?.pauseStartedMs);
+    const wasPaused = !!state?.paused && Number.isFinite(startedMs) && startedMs > 0;
+    const log = Array.isArray(state?.pauseLog) ? state.pauseLog.map((pause) => ({ ...pause })) : [];
+    let pausedTotalMs = Math.max(0, Number(state?.pausedTotalMs) || 0);
+    if (wasPaused) {
+        pausedTotalMs += Math.max(0, nowMs - startedMs);
+        if (nowMs > startedMs) log.push({ startMs: startedMs, endMs: nowMs, by: normalizeSessionActor(state?.pauseBy) });
+    }
+    return { ...state, paused: false, pauseStartedMs: 0, pausedTotalMs, pauseLog: log };
+}
+
+// The pauses to save with a finished session: the closed ones plus a pause still open at the end.
+function getSessionPausesForHistory(state, endedAtMs) {
+    const closed = Array.isArray(state?.pauseLog) ? state.pauseLog : [];
+    const startedMs = Number(state?.pauseStartedMs);
+    const open = state?.paused && Number.isFinite(startedMs) && startedMs > 0
+        ? [{ startMs: startedMs, endMs: endedAtMs, by: state?.pauseBy }]
+        : [];
+    return normalizeSessionPauses([...closed, ...open], Number(state?.startMs) || 0, endedAtMs);
 }
 
 function normalizeSessionScheduleTime(value) {
@@ -70,6 +146,9 @@ function normalizeSessionTrackerState(input) {
         pausedTotalMs: active ? Math.max(0, Number.isFinite(pausedTotalMs) ? pausedTotalMs : 0) : 0,
         pauseStartedMs: active && paused && Number.isFinite(pauseStartedMs) && pauseStartedMs > 0 ? pauseStartedMs : 0,
         pauseCount: active ? Math.max(0, Number.isFinite(pauseCount) ? pauseCount : 0) : 0,
+        pauseBy: normalizeSessionActor(source.pauseBy),
+        pauseLog: active ? normalizeSessionPauses(source.pauseLog, startMs, Number.POSITIVE_INFINITY) : [],
+        origin: normalizeSessionActor(source.origin),
         scheduleStart: normalizeSessionScheduleTime(source.scheduleStart),
         scheduleEnd: normalizeSessionScheduleTime(source.scheduleEnd)
     };
@@ -83,7 +162,8 @@ function normalizeSessionHistoryEntries(input) {
             const endedAtMs = Number(entry?.endedAtMs);
             if (!Number.isFinite(startedAtMs) || !Number.isFinite(endedAtMs) || endedAtMs < startedAtMs) return null;
             const safeCallCount = Math.max(0, Math.round(Number(entry?.callCount) || 0));
-            const safePauseCount = Math.max(0, Math.round(Number(entry?.pauseCount) || 0));
+            const pauses = normalizeSessionPauses(entry?.pauses, startedAtMs, endedAtMs);
+            const safePauseCount = Math.max(pauses.length, Math.max(0, Math.round(Number(entry?.pauseCount) || 0)));
             return {
                 id: String(entry?.id || `${endedAtMs}-${index}`),
                 startedAtMs,
@@ -94,12 +174,15 @@ function normalizeSessionHistoryEntries(input) {
                 utilization: Math.max(0, Math.min(100, Number(entry?.utilization) || 0)),
                 callCount: safeCallCount,
                 pauseCount: safePauseCount,
+                pauses,
+                startedBy: normalizeSessionActor(entry?.startedBy),
+                endedBy: normalizeSessionActor(entry?.endedBy),
                 earned: Math.max(0, Number(entry?.earned) || 0)
             };
         })
         .filter(Boolean)
         .sort((a, b) => b.endedAtMs - a.endedAtMs)
-        .slice(0, 60);
+        .slice(0, SESSION_HISTORY_MAX_ENTRIES);
 }
 
 function formatSessionPercent(value) {

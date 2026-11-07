@@ -10,6 +10,10 @@ For downloadable installers/APKs and release metadata, use:
 ### Reliability & Privacy
 - Your backup now also includes your finished work sessions and your settings (theme, time zone, the Features switches and your Analytics choices), not only calls, rates, goal and payment cycles. When you import a backup on a new device, or after clearing your browser, your sessions come back and your settings are restored (the app reloads once to apply them). On a device you already set up, importing never changes your settings or the sessions you already have: it only adds what is missing. Backup files made by older versions keep working exactly as before. Things that belong to one screen or device, like panel sizes, stay out of the backup.
 
+### Fixes
+- Your work-session history no longer stops at 60 sessions: every finished session is now kept, so you can look back as far as you have been using the app.
+- Sessions now remember each pause (when it started and ended). When you edit the start or end time of a session, the time it was paused is no longer counted as available time, so utilization stays accurate. Sessions saved before this update keep their numbers as they were.
+
 ## v1.6.6 - 2026-11-03
 
 ### Highlights
