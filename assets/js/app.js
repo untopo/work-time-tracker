@@ -3998,11 +3998,13 @@ if (storedDailyGoal) {
         return Math.max(0, talkMs);
     }
 
-    function computeCompletedSessionMetricsForWindow(startMs, endMs) {
+    function computeCompletedSessionMetricsForWindow(startMs, endMs, pauses = []) {
         const safeStartMs = Number(startMs);
         const safeEndMs = Number(endMs);
         if (!Number.isFinite(safeStartMs) || !Number.isFinite(safeEndMs) || safeEndMs <= safeStartMs) return null;
-        const availableMs = Math.max(0, safeEndMs - safeStartMs);
+        // Time the session was paused inside this window does not count as available time.
+        const pausedMs = getSessionPausedMsBetween(pauses, safeStartMs, safeEndMs);
+        const availableMs = Math.max(0, safeEndMs - safeStartMs - pausedMs);
         const rawTalkMs = getSessionTalkTimeBetween(safeStartMs, safeEndMs);
         const talkMs = Math.max(0, Math.min(rawTalkMs, availableMs));
         const callCount = countSessionCallsBetween(safeStartMs, safeEndMs);
@@ -4038,7 +4040,7 @@ if (storedDailyGoal) {
         saveSessionHistoryState();
     }
 
-    function buildCompletedSessionHistoryEntry(metrics, endedAtMs = Date.now(), pauseCount = 0) {
+    function buildCompletedSessionHistoryEntry(metrics, endedAtMs = Date.now(), pauseCount = 0, endedBy = 'manual') {
         const startedFromState = Number(sessionTrackerState?.startMs);
         const fallbackStart = endedAtMs - Math.max(0, Number(metrics?.elapsedMs) || 0);
         const startedAtMs = Number.isFinite(startedFromState) && startedFromState > 0
@@ -4056,6 +4058,9 @@ if (storedDailyGoal) {
             utilization: Math.max(0, Math.min(100, Number(metrics?.utilization) || 0)),
             callCount: Math.max(0, Math.round(Number(metrics?.callCount) || 0)),
             pauseCount: Math.max(0, Math.round(Number(pauseCount) || 0)),
+            pauses: getSessionPausesForHistory(sessionTrackerState, safeEndedAtMs),
+            startedBy: normalizeSessionActor(sessionTrackerState?.origin),
+            endedBy: normalizeSessionActor(endedBy),
             earned
         };
     }
@@ -4322,6 +4327,9 @@ if (storedDailyGoal) {
         sessionTrackerState.pausedTotalMs = 0;
         sessionTrackerState.pauseStartedMs = 0;
         sessionTrackerState.pauseCount = 0;
+        sessionTrackerState.pauseBy = 'manual';
+        sessionTrackerState.pauseLog = [];
+        sessionTrackerState.origin = 'manual';
         saveSessionTrackerState();
         ensureSessionTrackerTimer();
         renderSessionTracker();
@@ -4337,16 +4345,10 @@ if (storedDailyGoal) {
         }
 
         if (sessionTrackerState.paused) {
-            if (sessionTrackerState.pauseStartedMs > 0) {
-                sessionTrackerState.pausedTotalMs += Math.max(0, now - sessionTrackerState.pauseStartedMs);
-            }
-            sessionTrackerState.paused = false;
-            sessionTrackerState.pauseStartedMs = 0;
+            sessionTrackerState = endSessionPause(sessionTrackerState, now);
             showToast('Session resumed.');
         } else {
-            sessionTrackerState.paused = true;
-            sessionTrackerState.pauseStartedMs = now;
-            sessionTrackerState.pauseCount = Math.max(0, Number(sessionTrackerState.pauseCount) || 0) + 1;
+            sessionTrackerState = startSessionPause(sessionTrackerState, now, 'manual');
             showToast('Session paused.');
         }
 
@@ -10346,12 +10348,7 @@ function saveCalls() {
     function startLiveCall() {
         markUserActivity();
         if (sessionTrackerState?.active && sessionTrackerState.paused) {
-            const now = Date.now();
-            if (sessionTrackerState.pauseStartedMs > 0) {
-                sessionTrackerState.pausedTotalMs += Math.max(0, now - sessionTrackerState.pauseStartedMs);
-            }
-            sessionTrackerState.paused = false;
-            sessionTrackerState.pauseStartedMs = 0;
+            sessionTrackerState = endSessionPause(sessionTrackerState, Date.now());
             saveSessionTrackerState();
             ensureSessionTrackerTimer();
             renderSessionTracker();
@@ -11552,7 +11549,10 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             sessionHistoryEditorPreviewBody.textContent = 'End time must be later than start time.';
             return null;
         }
-        const metrics = computeCompletedSessionMetricsForWindow(startMs, endMs);
+        const previewEntry = sessionHistoryEditingId
+            ? normalizeSessionHistoryEntries(sessionHistoryEntries).find((entry) => String(entry.id) === String(sessionHistoryEditingId))
+            : null;
+        const metrics = computeCompletedSessionMetricsForWindow(startMs, endMs, previewEntry?.pauses);
         if (!metrics) {
             sessionHistoryEditorPreviewBody.textContent = 'Could not build session metrics for this range.';
             return null;
@@ -11612,14 +11612,15 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             setSessionHistoryEditorError('End time must be later than start time.');
             return;
         }
-        const metrics = computeCompletedSessionMetricsForWindow(startMs, endMs);
+        const existingEntry = sessionHistoryEditingId
+            ? normalizeSessionHistoryEntries(sessionHistoryEntries).find((entry) => String(entry.id) === String(sessionHistoryEditingId))
+            : null;
+        const metrics = computeCompletedSessionMetricsForWindow(startMs, endMs, existingEntry?.pauses);
         if (!metrics) {
             setSessionHistoryEditorError('Could not build session metrics for this range.');
             return;
         }
-        const existingEntry = sessionHistoryEditingId
-            ? normalizeSessionHistoryEntries(sessionHistoryEntries).find((entry) => String(entry.id) === String(sessionHistoryEditingId))
-            : null;
+        const keptPauses = normalizeSessionPauses(existingEntry?.pauses, metrics.startedAtMs, metrics.endedAtMs);
         const entry = {
             id: existingEntry?.id || `${endMs}-${Math.random().toString(16).slice(2, 8)}`,
             startedAtMs: metrics.startedAtMs,
@@ -11629,7 +11630,11 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             availableMs: metrics.availableMs,
             utilization: metrics.utilization,
             callCount: metrics.callCount,
-            pauseCount: existingEntry?.pauseCount || 0,
+            // When the pauses of this session are known, the count follows them; older sessions keep their count.
+            pauseCount: Array.isArray(existingEntry?.pauses) && existingEntry.pauses.length > 0 ? keptPauses.length : (existingEntry?.pauseCount || 0),
+            pauses: keptPauses,
+            startedBy: normalizeSessionActor(existingEntry?.startedBy),
+            endedBy: normalizeSessionActor(existingEntry?.endedBy),
             earned: metrics.earned
         };
         upsertSessionHistoryEntry(entry);

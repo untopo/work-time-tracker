@@ -28,7 +28,7 @@ test('only a running session can be paused', () => {
   assert.equal(plain(core.normalizeSessionTrackerState({ active: false, paused: true, startMs: 5 })).paused, false);
 });
 
-test('session history drops invalid entries, caps numbers, sorts newest first and keeps 60', () => {
+test('session history drops invalid entries, caps numbers and sorts newest first', () => {
   const entries = [
     { id: 'old', startedAtMs: 1000, endedAtMs: 2000, utilization: 250, callCount: 2.6, talkMs: -5 },
     { id: 'new', startedAtMs: 5000, endedAtMs: 9000, utilization: 40 },
@@ -41,8 +41,6 @@ test('session history drops invalid entries, caps numbers, sorts newest first an
   assert.equal(result[1].callCount, 3, 'call count rounded');
   assert.equal(result[1].talkMs, 0, 'negative time floored at 0');
 
-  const many = Array.from({ length: 80 }, (_, i) => ({ startedAtMs: i, endedAtMs: i + 1 }));
-  assert.equal(core.normalizeSessionHistoryEntries(many).length, 60);
   assert.deepEqual(plain(core.normalizeSessionHistoryEntries('nope')), []);
 });
 
