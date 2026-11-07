@@ -86,6 +86,7 @@ for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['pho
       await page.waitForTimeout(1200);
       await page.click('#live-call-focus-btn');
       await page.waitForSelector('#wtt-focus-timer', { state: 'visible' });
+      await page.waitForTimeout(900); // let the opening animation finish before measuring positions
       const t = await page.locator('#wtt-focus-timer').boundingBox();
       const ring = await page.locator('.wtt-focus-ringwrap svg').boundingBox();
       const center = await page.locator('.wtt-focus-center').boundingBox();
