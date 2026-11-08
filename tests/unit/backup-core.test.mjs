@@ -54,7 +54,7 @@ test('pickSettingsToRestore ignores unknown keys, junk values and missing settin
 });
 
 test('the list of portable settings is fixed on purpose', () => {
-  assert.deepEqual(plain(run('BACKUP_PORTABLE_SETTINGS')), ['theme', 'timeZone', 'featureFlags', 'patternsMode', 'trendMode', 'hourlyHeatmapMetric']);
+  assert.deepEqual(plain(run('BACKUP_PORTABLE_SETTINGS')), ['theme', 'timeZone', 'featureFlags', 'patternsMode', 'trendMode', 'hourlyHeatmapMetric', 'sessionAutomationV1']);
   assert.equal(run('BACKUP_FORMAT_VERSION'), 2);
 });
 

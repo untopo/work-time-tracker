@@ -620,6 +620,7 @@ async function processNativeAndroidWidgetSyncPayload() {
                 if (mergeResult.addedCount > 0) {
                     calls = mergeResult.merged;
                     saveCalls();
+                    markSessionActivityAt(Math.max(...importedCalls.map((call) => getCallEndMs(call)).filter(Number.isFinite)));
                     LiveCallSession.clear();
                     clearActiveCallState();
                     clearActiveCallClosedExplicitly();
@@ -3888,6 +3889,7 @@ if (storedDailyGoal) {
     }
     let sessionTrackerState = loadSessionTrackerState();
     let sessionHistoryEntries = loadSessionHistoryState();
+    let sessionAutomationSettings = loadSessionAutomationSettings();
     const CALL_LOG_RENDER_CHUNK_SIZE = 120;
     const CALL_LOG_RENDER_AHEAD_PX = 180;
     const RPG_CALL_ELIGIBILITY_MIGRATION_KEY = 'wtt_rpg_call_eligibility_migrated_v1';
@@ -3933,6 +3935,19 @@ if (storedDailyGoal) {
         const normalized = normalizeSessionTrackerState(sessionTrackerState);
         sessionTrackerState = normalized;
         queueStorageWrite(SESSION_TRACKER_KEY, JSON.stringify(normalized));
+    }
+
+    function loadSessionAutomationSettings() {
+        try {
+            return normalizeSessionAutomationSettings(JSON.parse(appStorage.getItem(SESSION_AUTOMATION_KEY) || '{}'));
+        } catch (error) {
+            return getSessionAutomationDefaults();
+        }
+    }
+
+    function saveSessionAutomationSettings() {
+        sessionAutomationSettings = normalizeSessionAutomationSettings(sessionAutomationSettings);
+        queueStorageWrite(SESSION_AUTOMATION_KEY, JSON.stringify(sessionAutomationSettings));
     }
 
     function loadSessionHistoryState() {
@@ -4140,6 +4155,7 @@ if (storedDailyGoal) {
         }
         if (sessionTrackerTimerId) return;
         sessionTrackerTimerId = setInterval(() => {
+            runSessionAutomationTick();
             renderSessionTracker();
         }, 1000);
         activeTimers.add(sessionTrackerTimerId);
@@ -4314,26 +4330,33 @@ if (storedDailyGoal) {
     }
 
     function startWorkSession() {
+        startWorkSessionAt({ startMs: Date.now(), origin: 'manual' });
+    }
+
+    // Starts a session at a given moment. A manual start uses "now"; the automation uses the real
+    // start of the call that triggered it.
+    function startWorkSessionAt({ startMs, origin }) {
         if (!sessionTrackerState) sessionTrackerState = getSessionDefaultState();
         if (sessionTrackerState.active) return;
-        const autoStart = getCurrentSessionClockTime();
+        const autoStart = getCurrentSessionClockTime(startMs);
         sessionTrackerState.scheduleStart = autoStart;
         sessionTrackerState.scheduleEnd = '';
         if (sessionStartTimeInput) sessionStartTimeInput.value = autoStart;
         if (sessionEndTimeInput) sessionEndTimeInput.value = '';
         sessionTrackerState.active = true;
         sessionTrackerState.paused = false;
-        sessionTrackerState.startMs = Date.now();
+        sessionTrackerState.startMs = startMs;
+        sessionTrackerState.lastActivityMs = startMs;
         sessionTrackerState.pausedTotalMs = 0;
         sessionTrackerState.pauseStartedMs = 0;
         sessionTrackerState.pauseCount = 0;
         sessionTrackerState.pauseBy = 'manual';
         sessionTrackerState.pauseLog = [];
-        sessionTrackerState.origin = 'manual';
+        sessionTrackerState.origin = normalizeSessionActor(origin);
         saveSessionTrackerState();
         ensureSessionTrackerTimer();
         renderSessionTracker();
-        showToast('Session started.');
+        showToast(origin === 'auto' ? 'Session started automatically with your call.' : 'Session started.');
     }
 
     function toggleWorkSessionPause() {
@@ -4345,7 +4368,7 @@ if (storedDailyGoal) {
         }
 
         if (sessionTrackerState.paused) {
-            sessionTrackerState = endSessionPause(sessionTrackerState, now);
+            sessionTrackerState = markSessionActivity(endSessionPause(sessionTrackerState, now), now);
             showToast('Session resumed.');
         } else {
             sessionTrackerState = startSessionPause(sessionTrackerState, now, 'manual');
@@ -4355,6 +4378,160 @@ if (storedDailyGoal) {
         saveSessionTrackerState();
         ensureSessionTrackerTimer();
         renderSessionTracker();
+    }
+
+    // ---- Session automation (optional; off unless the user turns it on in Settings) ----
+    function hasLiveCallInProgress() {
+        return LiveCallSession.isActive() || Boolean(readActiveCallState());
+    }
+
+    function markSessionActivityAt(atMs) {
+        if (!sessionTrackerState?.active) return;
+        sessionTrackerState = markSessionActivity(sessionTrackerState, atMs);
+        saveSessionTrackerState();
+    }
+
+    // Applies whatever should already have happened by "now". Safe to call as often as we like:
+    // it only acts when a threshold has been crossed, and stamps the real time it was crossed.
+    function runSessionAutomationTick(nowMs = Date.now()) {
+        if (!sessionAutomationSettings.enabled || !sessionTrackerState?.active) return;
+        const plan = planSessionAutomation(sessionTrackerState, sessionAutomationSettings, nowMs, hasLiveCallInProgress());
+        if (!plan) return;
+        if (plan.action === 'pause') {
+            sessionTrackerState = startSessionPause(sessionTrackerState, plan.atMs, 'auto');
+            saveSessionTrackerState();
+            ensureSessionTrackerTimer();
+            renderSessionTracker();
+            showToast(`Session paused automatically after ${sessionAutomationSettings.pauseAfterMin} minutes without calls.`);
+        } else if (plan.action === 'end') {
+            endWorkSessionAutomatically(plan.atMs);
+        }
+    }
+
+    // A live call just started: begin the session with it, or bring a paused one back.
+    function handleSessionAutomationOnCallStart() {
+        if (!sessionAutomationSettings.enabled) return;
+        const callStartMs = Number(LiveCallSession.getState(Date.now())?.start) || Date.now();
+        if (!sessionTrackerState?.active) {
+            startWorkSessionAt({ startMs: callStartMs, origin: 'auto' });
+            return;
+        }
+        if (sessionTrackerState.paused) {
+            sessionTrackerState = endSessionPause(sessionTrackerState, callStartMs);
+            showToast('Session resumed automatically.');
+        }
+        sessionTrackerState = markSessionActivity(sessionTrackerState, callStartMs);
+        saveSessionTrackerState();
+        ensureSessionTrackerTimer();
+        renderSessionTracker();
+    }
+
+    // Ends the session at a past moment (where its pause began). A session that never had a call
+    // is simply closed and not saved, so empty sessions do not fill the history.
+    function endWorkSessionAutomatically(endMs) {
+        if (!sessionTrackerState?.active) return;
+        if (sessionTrackerState.paused) {
+            // The session ends where this pause began, so the open pause is not part of it.
+            sessionTrackerState = {
+                ...sessionTrackerState,
+                paused: false,
+                pauseStartedMs: 0,
+                pauseCount: Math.max(0, (Number(sessionTrackerState.pauseCount) || 0) - 1)
+            };
+        }
+        const metrics = getSessionComputedMetrics(endMs);
+        const pauseCount = Number(sessionTrackerState.pauseCount) || 0;
+        const hadCalls = metrics.callCount > 0;
+        if (hadCalls) {
+            const historyEntry = buildCompletedSessionHistoryEntry(metrics, endMs, pauseCount, 'auto');
+            recordCompletedSessionForRpg(metrics, endMs, pauseCount);
+            appendSessionHistoryEntry(historyEntry);
+        }
+        const scheduleStart = sessionTrackerState.scheduleStart;
+        const scheduleEnd = getCurrentSessionClockTime(endMs);
+        sessionTrackerState = getSessionDefaultState();
+        sessionTrackerState.scheduleStart = scheduleStart;
+        sessionTrackerState.scheduleEnd = scheduleEnd;
+        if (sessionEndTimeInput) sessionEndTimeInput.value = scheduleEnd;
+        saveSessionTrackerState();
+        clearSessionTrackerTimer();
+        renderSessionTracker();
+        renderSessionHistory();
+        showToast(hadCalls
+            ? 'Session ended automatically and saved to your history.'
+            : 'Session closed automatically. It had no calls, so it was not saved.');
+        if (hadCalls) evaluateAchievements({ notify: true });
+    }
+
+    function formatSessionAutomationMinutes(minutes) {
+        return minutes >= 120 ? `${minutes / 60} hours` : `${minutes} minutes`;
+    }
+
+    function syncSessionAutomationControls() {
+        const toggle = document.getElementById('session-automation-toggle');
+        const options = document.getElementById('session-automation-options');
+        const pauseSelect = document.getElementById('session-automation-pause-select');
+        const endSelect = document.getElementById('session-automation-end-select');
+        if (!toggle || !options || !pauseSelect || !endSelect) return;
+        toggle.checked = sessionAutomationSettings.enabled;
+        options.classList.toggle('hidden', !sessionAutomationSettings.enabled);
+        pauseSelect.value = String(sessionAutomationSettings.pauseAfterMin);
+        endSelect.value = String(sessionAutomationSettings.endAfterMin);
+    }
+
+    function setupSessionAutomationControls() {
+        const toggle = document.getElementById('session-automation-toggle');
+        const pauseSelect = document.getElementById('session-automation-pause-select');
+        const endSelect = document.getElementById('session-automation-end-select');
+        if (!toggle || !pauseSelect || !endSelect) return;
+        const fill = (select, values) => {
+            select.innerHTML = values
+                .map((minutes) => `<option value="${minutes}">${formatSessionAutomationMinutes(minutes)}</option>`)
+                .join('');
+        };
+        fill(pauseSelect, SESSION_AUTOMATION_PAUSE_OPTIONS_MIN);
+        fill(endSelect, SESSION_AUTOMATION_END_OPTIONS_MIN);
+        syncSessionAutomationControls();
+
+        toggle.addEventListener('change', () => {
+            sessionAutomationSettings = { ...sessionAutomationSettings, enabled: toggle.checked };
+            saveSessionAutomationSettings();
+            // Turning it on starts counting quiet time from now, so a session that was already
+            // running is never paused for time that passed while the feature was off.
+            if (sessionAutomationSettings.enabled) markSessionActivityAt(Date.now());
+            syncSessionAutomationControls();
+            showToast(sessionAutomationSettings.enabled ? 'Session automation is on.' : 'Session automation is off.');
+        });
+        [[pauseSelect, 'pauseAfterMin'], [endSelect, 'endAfterMin']].forEach(([select, key]) => {
+            select.addEventListener('change', () => {
+                sessionAutomationSettings = { ...sessionAutomationSettings, [key]: Number(select.value) };
+                saveSessionAutomationSettings();
+                syncSessionAutomationControls();
+            });
+        });
+
+        // The same session can be open in two tabs: follow the other tab's changes so an action is
+        // never applied twice.
+        window.addEventListener('storage', (event) => {
+            if (event.key === SESSION_TRACKER_KEY) {
+                sessionTrackerState = loadSessionTrackerState();
+                ensureSessionTrackerTimer();
+                renderSessionTracker();
+            } else if (event.key === SESSION_HISTORY_KEY) {
+                sessionHistoryEntries = loadSessionHistoryState();
+                renderSessionHistory();
+            } else if (event.key === SESSION_AUTOMATION_KEY) {
+                sessionAutomationSettings = loadSessionAutomationSettings();
+                syncSessionAutomationControls();
+            }
+        });
+    }
+
+    function scheduleSessionAutomationTick() {
+        // On Android, calls taken with the widget while the app was closed are imported a moment
+        // after the app opens; wait for them so they count as activity.
+        const delay = isAndroidCapacitorApp() ? 2600 : 0;
+        window.setTimeout(() => runSessionAutomationTick(), delay);
     }
 
     function endWorkSession() {
@@ -6131,7 +6308,7 @@ function importJsonBackup(importedData) {
             closeSettingsView();
             if (settingsRestoreCount > 0) {
                 Object.entries(settingsToRestore).forEach(([key, value]) => {
-                    appStorage.setItem(key, key === 'featureFlags' ? JSON.stringify(value) : String(value));
+                    appStorage.setItem(key, value && typeof value === 'object' ? JSON.stringify(value) : String(value));
                 });
                 flushPendingStorageWrites();
                 setTimeout(() => window.location.reload(), 1600);
@@ -6451,6 +6628,7 @@ function restoreLiveCallUi() {
 function beginLiveCallWithRate(rateName, rateAmount) {
   hidePostCallReview(true);
   markUserActivity();
+  runSessionAutomationTick();
   const result = LiveCallSession.start(rateName, rateAmount);
   if (!result.ok) {
     showAlertModal('Select Rate', 'Please select a valid rate before starting a call.');
@@ -6461,6 +6639,7 @@ function beginLiveCallWithRate(rateName, rateAmount) {
   hideActiveCallRecoveryBanner();
   if (liveCallNotesInput) liveCallNotesInput.value = '';
   restoreLiveCallUi();
+  handleSessionAutomationOnCallStart();
   if (sessionTrackerState?.active) {
     renderSessionTracker();
   }
@@ -6493,6 +6672,7 @@ function summarizeRecoveredActiveCall(state = recoveredActiveCallState) {
   calls.push(callData);
   hidePostCallReview(true);
   saveCalls();
+  markSessionActivityAt(endTime);
   showPostCallReview(callData, elapsedMs, earned);
 
   clearLiveCallRuntimeState();
@@ -10347,6 +10527,7 @@ function saveCalls() {
     // Live call functions
     function startLiveCall() {
         markUserActivity();
+        runSessionAutomationTick();
         if (sessionTrackerState?.active && sessionTrackerState.paused) {
             sessionTrackerState = endSessionPause(sessionTrackerState, Date.now());
             saveSessionTrackerState();
@@ -10503,6 +10684,7 @@ function saveCalls() {
         }
         calls.push(stopResult.callData);
         saveCalls();
+        markSessionActivityAt(Date.now());
         trackEvent('call-ended');
         trackEvent(`call-length/${bucketCallLength(stopResult.callData?.duration)}`);
         afterCallSavedSafetyChecks();
@@ -13136,9 +13318,14 @@ goalMinutesInput.addEventListener('input', () => {
         displayCalls();
         syncDailyGoalInputs();
         updateStatistics();
+        setupSessionAutomationControls();
         renderSessionTracker();
         renderSessionHistory();
         ensureSessionTrackerTimer();
+        scheduleSessionAutomationTick();
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') scheduleSessionAutomationTick();
+        });
         evaluateAchievements({ notify: false });
         updateStorageInfo();
         renderPaymentCycles();
