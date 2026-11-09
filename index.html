@@ -1214,6 +1214,11 @@
                 Showing 0 calls
             </div>
         </div>
+        <div id="call-log-tabs" class="analytics-tabs" role="tablist" aria-label="Call log view">
+            <button id="call-log-tab-calls" type="button" role="tab" aria-selected="true" class="patterns-mode-btn is-active">Calls</button>
+            <button id="call-log-tab-sessions" type="button" role="tab" aria-selected="false" class="patterns-mode-btn">Sessions</button>
+        </div>
+        <div id="call-log-calls-panel">
         <div class="call-log-toolbar-wrap mb-4">
             <div class="call-log-toolbar mb-0">
                 <div class="call-log-toolbar-primary">
@@ -1271,6 +1276,22 @@
                     <span id="total-minutes">0 min</span> •
                     <span id="total-earnings">$0.00</span>
                 </span>
+            </div>
+        </div>
+        </div>
+        <div id="call-log-sessions-panel" class="hidden" role="tabpanel" aria-labelledby="call-log-tab-sessions">
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">Review your completed work sessions here, and fix or add one when you forgot to track it.</p>
+            <div class="session-history-wrap">
+                <div class="session-history-header">
+                    <h3 class="session-history-title">Completed Sessions</h3>
+                    <div class="session-history-actions">
+                        <button id="session-history-add-btn" type="button" class="session-history-action-btn">Add Session</button>
+                        <button id="session-history-clear-btn" type="button" class="session-history-clear-btn">Clear</button>
+                    </div>
+                </div>
+                <div id="session-history-list" class="session-history-list">
+                    <p class="session-history-empty">No completed sessions yet.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -2227,37 +2248,6 @@
             <button id="share-download-btn" type="button" class="report-print-btn"><i class="fas fa-download mr-2"></i>Download image</button>
         </div>
         <p id="share-note" class="text-xs text-gray-500 dark:text-gray-400 mt-3" style="display:none;"></p>
-    </div>
-</div>
-
-<div id="session-history-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" style="display:none;">
-    <div class="modal modal-wide p-6 max-w-3xl w-full relative">
-        <button id="close-session-history-modal" type="button" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-            <i class="fas fa-times"></i>
-        </button>
-        <h2 class="text-2xl font-poppins font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            <i class="fas fa-clock-rotate-left text-indigo-500 mr-2"></i>Session History
-        </h2>
-        <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
-            Review completed work sessions without cluttering your main dashboard view.
-        </p>
-        <div class="session-history-wrap">
-            <div class="session-history-header">
-                <h3 class="session-history-title">Completed Sessions</h3>
-                <div class="session-history-actions">
-                    <button id="session-history-add-btn" type="button" class="session-history-action-btn">Add Session</button>
-                    <button id="session-history-clear-btn" type="button" class="session-history-clear-btn">Clear</button>
-                </div>
-            </div>
-            <div id="session-history-list" class="session-history-list">
-                <p class="session-history-empty">No completed sessions yet.</p>
-            </div>
-        </div>
-        <div class="mt-5 flex justify-end">
-            <button id="done-session-history-btn" type="button" class="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded hover:bg-gray-400 dark:hover:bg-gray-700 transition">
-                Done
-            </button>
-        </div>
     </div>
 </div>
 
