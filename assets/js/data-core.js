@@ -334,9 +334,36 @@ function mergeRatesWithExisting(existingRates, importedRates) {
     return { merged, addedCount, skippedCount };
 }
 
+// A cycle can apply to one rate (cycle.rate = the rate name) or, when it has no rate, to every
+// rate that does not have cycles of its own.
+function getPaymentCycleScope(cycle) {
+    return String(cycle?.rate || '').trim();
+}
+
+function samePaymentCycleScope(a, b) {
+    return String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+}
+
+function getPaymentCycleScopeNames(cycles) {
+    const names = [];
+    (Array.isArray(cycles) ? cycles : []).forEach((cycle) => {
+        const scope = getPaymentCycleScope(cycle);
+        if (scope && !names.some((name) => samePaymentCycleScope(name, scope))) names.push(scope);
+    });
+    return names;
+}
+
+// Does this call count toward cycles of the given scope? '' = every rate that has no cycles of
+// its own, so a call is never counted in two cycles at once.
+function callBelongsToPaymentCycleScope(call, scope, scopedNames) {
+    const callRate = String(call?.rateName || '').trim();
+    if (scope) return samePaymentCycleScope(callRate, scope);
+    return !(Array.isArray(scopedNames) ? scopedNames : []).some((name) => samePaymentCycleScope(name, callRate));
+}
+
 function getPaymentCycleDuplicateKey(cycle) {
     if (!cycle || typeof cycle !== 'object') return '';
-    return `${cycle.startDate || ''}|${cycle.endDate || ''}|${cycle.payDate || ''}`;
+    return `${cycle.startDate || ''}|${cycle.endDate || ''}|${cycle.payDate || ''}|${getPaymentCycleScope(cycle).toLowerCase()}`;
 }
 
 function mergePaymentCyclesWithExisting(existingCycles, importedCycles) {
