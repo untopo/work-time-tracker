@@ -11593,3 +11593,16 @@ html.dark .session-history-details-btn { color: #cbd5e1; }
   .session-hub-layout { display: grid; grid-template-columns: 17rem minmax(0, 1fr); gap: 1rem; align-items: start; }
   .session-hub-layout .session-calendar { margin-bottom: 0; position: sticky; top: 0.5rem; }
 }
+
+/* Work: lighter card headers (sizes only, same colors in light and dark) */
+body.ui-refresh-v1 .work-card-header,
+.work-card-header { align-items: center; gap: 0.7rem; margin-bottom: 0.8rem; }
+body.ui-refresh-v1 .work-primary-card .work-card-icon,
+.work-primary-card .work-card-icon { width: 2.75rem; height: 2.75rem; min-width: 2.75rem; flex-basis: 2.75rem; }
+body.ui-refresh-v1 .work-support-card .work-card-icon,
+.work-support-card .work-card-icon { width: 2.4rem; height: 2.4rem; min-width: 2.4rem; flex-basis: 2.4rem; }
+.work-primary-card .work-card-icon i { font-size: 1.3rem; }
+.work-support-card .work-card-icon i { font-size: 1.1rem; }
+.work-card-title { margin: 0; line-height: 1.15; }
+.work-primary-card .work-card-title { font-size: 1.4rem; }
+.work-support-card .work-card-title { font-size: 1.15rem; }

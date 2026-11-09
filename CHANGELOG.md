@@ -5,6 +5,11 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.7.1 - Unreleased
+
+### Fixes
+- The Work screen looks lighter: card headers are more compact and aligned, with smaller icons and consistent titles. Nothing moved or was removed.
+
 ## v1.7.0 - 2026-11-09
 
 ### Highlights
