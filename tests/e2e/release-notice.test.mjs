@@ -21,7 +21,7 @@ after(async () => {
 
 const APP_VERSION = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version;
 
-test('the What\'s New notice stays concise and View details opens the full v1.6.6 changelog', async () => {
+test('the What\'s New notice stays concise and View details opens the full changelog of the current version', async () => {
   const { context, page, problems } = await newPage(browser, baseUrl);
   try {
     const seed = makeSeed(5);
@@ -30,16 +30,15 @@ test('the What\'s New notice stays concise and View details opens the full v1.6.
     await page.waitForSelector('.release-spotlight-text', { state: 'visible' });
     const summary = (await page.textContent('.release-spotlight-text')).trim();
     assert.ok(summary.length > 10 && summary.length < 360, `notice should be short, got ${summary.length} characters`);
-    assert.ok(!/survey/i.test(summary), 'the v1.6.6 summary must describe the current release, not the previous survey');
-    assert.match(summary, /daily goal/i);
-    assert.match(summary, /Focus Mode/i);
+    assert.ok(!/survey/i.test(summary), 'the summary must describe the current release, not an older one');
+    assert.match(summary, /session automation/i);
 
     await page.click('[data-release-action="details"]');
     await page.waitForSelector('#changelog-modal', { state: 'visible' });
     const details = (await page.textContent('#changelog-content')).trim();
-    assert.match(details, /1\.6\.6/);
-    assert.match(details, /daily goal/i);
-    assert.match(details, /call timer is smaller/i);
+    assert.ok(details.includes(APP_VERSION), 'details name the current version');
+    assert.match(details, /session automation/i);
+    assert.match(details, /payment cycles per rate|different payment cycles per rate/i);
     assert.deepEqual(problems, []);
   } finally {
     await context.close();
