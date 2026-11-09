@@ -782,6 +782,12 @@
                 <section id="view-progress" class="app-view" data-app-view="progress" aria-labelledby="progress-view-title">
                     <h2 id="progress-view-title" class="sr-only">Progress</h2>
     <div class="progress-flow-stack">
+    <div id="progress-tabs" class="analytics-tabs" role="tablist" aria-label="Progress view">
+        <button id="progress-tab-today" type="button" role="tab" aria-selected="true" class="patterns-mode-btn is-active">Today</button>
+        <button id="progress-tab-week" type="button" role="tab" aria-selected="false" class="patterns-mode-btn">Week</button>
+        <button id="progress-tab-achievements" type="button" role="tab" aria-selected="false" class="patterns-mode-btn">Achievements</button>
+    </div>
+    <div id="progress-panel-today">
     <div id="rpg-progress-card" class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-lg mb-4">
         <div class="flex items-start justify-between gap-3 mb-2">
             <div>
@@ -845,13 +851,8 @@
         <div id="daily-quests-summary" class="text-sm text-gray-700 dark:text-gray-300 font-semibold mb-3">0 / 0 completed</div>
         <div id="daily-quests-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
     </div>
-    <div class="progress-meta-strip settings-section-card mb-4">
-        <div class="progress-meta-strip-copy">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Progress Summary</h3>
-            <p class="text-xs text-gray-600 dark:text-gray-400">Today first, then weekly momentum, then permanent milestones.</p>
-        </div>
-        <div id="achievements-summary" class="text-sm text-gray-700 dark:text-gray-300 font-semibold">0 / 0 unlocked</div>
     </div>
+    <div id="progress-panel-week" class="hidden">
     <div class="progress-weekly-band mb-4">
     <div id="rpg-weekly-arc-card" class="settings-section-card mb-4">
         <div class="flex items-center justify-between gap-2 mb-2">
@@ -885,10 +886,20 @@
         </div>
     </div>
     </div>
+    </div>
+    <div id="progress-panel-achievements" class="hidden">
+    <div class="progress-meta-strip settings-section-card mb-4">
+        <div class="progress-meta-strip-copy">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Progress Summary</h3>
+            <p class="text-xs text-gray-600 dark:text-gray-400">Today first, then weekly momentum, then permanent milestones.</p>
+        </div>
+        <div id="achievements-summary" class="text-sm text-gray-700 dark:text-gray-300 font-semibold">0 / 0 unlocked</div>
+    </div>
     <div class="settings-section-card mb-4">
         <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">All-Time Achievements</h3>
         <p class="text-xs text-gray-600 dark:text-gray-400 mb-3">Permanent milestones that never reset.</p>
         <div id="achievements-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+    </div>
     </div>
     </div>
 
