@@ -1859,7 +1859,6 @@ async function confirmExportOptions() {
     const sessionHistoryCountLabel = document.getElementById('session-history-count-label');
     const sessionHistoryList = document.getElementById('session-history-list');
     const sessionHistoryClearBtn = document.getElementById('session-history-clear-btn');
-    const sessionHistoryModal = document.getElementById('session-history-modal');
     const reportModal = document.getElementById('report-modal');
     const openReportBtn = document.getElementById('open-report-btn');
     const closeReportBtn = document.getElementById('close-report-modal');
@@ -1890,8 +1889,6 @@ async function confirmExportOptions() {
     const shareReportBtn = document.getElementById('share-report-btn');
     const syncSurveyModal = document.getElementById('sync-survey-modal');
     const syncSurveyDialog = document.getElementById('sync-survey-dialog');
-    const closeSessionHistoryModalBtn = document.getElementById('close-session-history-modal');
-    const doneSessionHistoryBtn = document.getElementById('done-session-history-btn');
     const sessionHistoryAddBtn = document.getElementById('session-history-add-btn');
     const sessionHistoryEditorModal = document.getElementById('session-history-editor-modal');
     const closeSessionHistoryEditorModalBtn = document.getElementById('close-session-history-editor-modal');
@@ -11330,13 +11327,32 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         ModalManager.close(supportModal);
     }
 
-    function openSessionHistoryModal(triggerEl = null) {
-        if (!sessionHistoryModal) return;
-        renderSessionHistory();
-        ModalManager.open(sessionHistoryModal, {
-            focusSelector: '#session-history-clear-btn',
-            triggerEl
+    // Session history lives in Call Log > Sessions.
+    function openSessionHistoryView() {
+        setActiveAppSection('call-log');
+        selectCallLogTab('sessions');
+    }
+
+    function selectCallLogTab(name) {
+        const tabs = { calls: document.getElementById('call-log-tab-calls'), sessions: document.getElementById('call-log-tab-sessions') };
+        const panels = { calls: document.getElementById('call-log-calls-panel'), sessions: document.getElementById('call-log-sessions-panel') };
+        if (!tabs.calls || !tabs.sessions || !panels.calls || !panels.sessions) return;
+        Object.keys(tabs).forEach((key) => {
+            const on = key === name;
+            tabs[key].classList.toggle('is-active', on);
+            tabs[key].setAttribute('aria-selected', String(on));
+            panels[key].classList.toggle('hidden', !on);
         });
+        if (name === 'sessions') renderSessionHistory();
+        try { sessionStorage.setItem('callLogTab', name); } catch (error) { /* optional convenience */ }
+    }
+
+    function setupCallLogTabs() {
+        document.getElementById('call-log-tab-calls')?.addEventListener('click', () => selectCallLogTab('calls'));
+        document.getElementById('call-log-tab-sessions')?.addEventListener('click', () => selectCallLogTab('sessions'));
+        let saved = 'calls';
+        try { saved = sessionStorage.getItem('callLogTab') === 'sessions' ? 'sessions' : 'calls'; } catch (error) { /* ignore */ }
+        selectCallLogTab(saved);
     }
 
     // ---- Monthly report (read-only: it only reads saved data and never changes it) ----
@@ -11777,10 +11793,6 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         }
     }
 
-    function closeSessionHistoryModal() {
-        if (!sessionHistoryModal) return;
-        ModalManager.close(sessionHistoryModal);
-    }
 
     function setSessionHistoryEditorError(message = '') {
         if (!sessionHistoryEditorError) return;
@@ -12167,7 +12179,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         supportKofiBtn.addEventListener('click', openSupportModal);
     }
     if (openSessionHistoryBtn) {
-        openSessionHistoryBtn.addEventListener('click', () => openSessionHistoryModal(openSessionHistoryBtn));
+        openSessionHistoryBtn.addEventListener('click', openSessionHistoryView);
     }
     if (openReportBtn) openReportBtn.addEventListener('click', () => openReportModal(openReportBtn));
     if (closeReportBtn) closeReportBtn.addEventListener('click', closeReportModal);
@@ -12190,12 +12202,6 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     if (shareNativeBtn) shareNativeBtn.addEventListener('click', shareShareCard);
     if (sessionHistoryAddBtn) {
         sessionHistoryAddBtn.addEventListener('click', () => openSessionHistoryEditor(null, sessionHistoryAddBtn));
-    }
-    if (closeSessionHistoryModalBtn) {
-        closeSessionHistoryModalBtn.addEventListener('click', closeSessionHistoryModal);
-    }
-    if (doneSessionHistoryBtn) {
-        doneSessionHistoryBtn.addEventListener('click', closeSessionHistoryModal);
     }
     if (sessionHistoryList) {
         sessionHistoryList.addEventListener('click', (event) => {
@@ -12351,7 +12357,6 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         ModalManager.register(editCycleModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#cycle-start-date-input' });
         ModalManager.register(feedbackModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#feedback-name' });
         ModalManager.register(supportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#support-modal-paypal-btn' });
-        ModalManager.register(sessionHistoryModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#session-history-clear-btn' });
         if (reportModal) ModalManager.register(reportModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#report-prev-btn' });
         if (shareModal) ModalManager.register(shareModal, { dismissOnOverlay: true, escClosable: true, focusSelector: '#share-prev-btn' });
         if (syncSurveyModal) ModalManager.register(syncSurveyModal, { dismissOnOverlay: false, escClosable: true, focusSelector: '#survey-next' });
@@ -13390,6 +13395,7 @@ goalMinutesInput.addEventListener('input', () => {
         updateStatistics();
         setupSessionAutomationControls();
         setupAnalyticsTabs();
+        setupCallLogTabs();
         renderSessionTracker();
         renderSessionHistory();
         ensureSessionTrackerTimer();
