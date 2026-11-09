@@ -5,7 +5,7 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
-## v1.6.7 - Unreleased
+## v1.7.0 - 2026-11-09
 
 ### Highlights
 - Optional session automation (Settings > Features > Work sessions, off by default). When you turn it on, your first live call starts the session at the call's real start, a new call brings a paused session back, the session pauses after a period without calls (30 minutes by default) and ends after more time paused (90 minutes by default), at the moment the pause began. Nothing is paused or ended during a call, it also works if you closed the app (times come from real clock time), and a session with no calls that ends by itself is not saved. Calls added by hand never start, resume or pause a session. Both times can be changed in Settings and travel in your backup. Your current session and history are never changed by the switch.

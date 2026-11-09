@@ -3,6 +3,21 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.7.0",
+        date: "2026-11-09",
+        changes: [
+        "Optional session automation (Settings > Features > Work sessions, off by default). When you turn it on, your first live call starts the session at the call's real start, a new call brings a paused session back, the session pauses after a period without calls (30 minutes by default) and ends after more time paused (90 minutes by default), at the moment the pause began. Nothing is paused or ended during a call, it also works if you closed the app (times come from real clock time), and a session with no calls that ends by itself is not saved. Calls added by hand never start, resume or pause a session. Both times can be changed in Settings and travel in your backup. Your current session and history are never changed by the switch",
+        "Analytics now has a Calls | Time switch. Calls keeps everything you had; the new Time tab shows your work sessions of the last 30 days: sessions, average utilization, talk and idle time, average session length, earnings per available hour, pauses (and how many sessions started or ended automatically) and utilization by weekday",
+        "Your session history moved into Call Log: it now has a Calls | Sessions switch, so completed sessions sit next to your calls instead of in a popup. The \"Session History\" button on the Work screen takes you there",
+        "Progress is easier to scan: it now has three tabs, Today (level, daily focus and Daily Quests), Week (Weekly Arc and Streak Shield) and Achievements (all-time milestones). Nothing was removed",
+        "We received feedback asking for different payment cycles per rate, and we listened: each payment cycle now has an \"Applies to\" option. Pick a rate when it is paid on its own schedule (for example, a different cycle for one agency) and Analytics shows that rate's current cycle on a separate card, with its earnings, days left and pay date. Cycles for \"All other rates\" no longer count the calls of a rate that has cycles of its own, so nothing is counted twice and cycles never overlap in your totals. The cycle generator also takes a rate and only replaces the cycles of that rate. If you do not use this, nothing changes",
+        "Call Log > Sessions now has a month calendar. Days with sessions show how many and are shaded by how much of your time was spent talking; press a day to see its sessions, and move between months to look back as far as you want. Each session has a Details button with who started and ended it (you or automation) and every pause with its times. The calendar is compact, and on wide screens it sits next to the list",
+        "Your backup now also includes your finished work sessions and your settings (theme, time zone, the Features switches and your Analytics choices), not only calls, rates, goal and payment cycles. When you import a backup on a new device, or after clearing your browser, your sessions come back and your settings are restored (the app reloads once to apply them). On a device you already set up, importing never changes your settings or the sessions you already have: it only adds what is missing. Backup files made by older versions keep working exactly as before. Things that belong to one screen or device, like panel sizes, stay out of the backup",
+        "Your work-session history no longer stops at 60 sessions: every finished session is now kept, so you can look back as far as you have been using the app",
+        "Sessions now remember each pause (when it started and ended). When you edit the start or end time of a session, the time it was paused is no longer counted as available time, so utilization stays accurate. Sessions saved before this update keep their numbers as they were"
+        ]
+    },
+    {
         version: "1.6.6",
         date: "2026-11-03",
         changes: [
