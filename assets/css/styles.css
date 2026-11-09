@@ -11577,3 +11577,19 @@ html.dark .session-history-details { color: #cbd5e1; }
 .session-details-pauses { margin: 0.3rem 0 0 1rem; list-style: disc; }
 .session-history-details-btn { font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 0.5rem; border: 1px solid rgba(148, 163, 184, 0.4); color: #475569; background: transparent; }
 html.dark .session-history-details-btn { color: #cbd5e1; }
+
+
+/* Compact sessions calendar: smaller cells, and next to the list on wide screens */
+.session-hub-layout { display: block; }
+.session-calendar { padding: 0.6rem 0.7rem; margin-bottom: 0.9rem; }
+.session-cal-head { margin-bottom: 0.35rem; }
+.session-cal-nav { width: 1.6rem; height: 1.6rem; font-size: 0.7rem; }
+.session-cal-title { font-size: 0.85rem; }
+.session-cal-grid { gap: 0.15rem; }
+.session-cal-day { aspect-ratio: auto; min-height: 0; height: 1.75rem; flex-direction: row; gap: 0.2rem; font-size: 0.72rem; border-radius: 0.4rem; }
+.session-cal-count { font-size: 0.6rem; }
+.session-cal-dow { font-size: 0.6rem; }
+@media (min-width: 900px) {
+  .session-hub-layout { display: grid; grid-template-columns: 17rem minmax(0, 1fr); gap: 1rem; align-items: start; }
+  .session-hub-layout .session-calendar { margin-bottom: 0; position: sticky; top: 0.5rem; }
+}

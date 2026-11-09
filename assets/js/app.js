@@ -4200,13 +4200,14 @@ if (storedDailyGoal) {
             cells += `<button type="button" class="session-cal-day level-${level}${selected}" data-session-cal-day="${key}" aria-pressed="${key === sessionCalendarDay}" aria-label="${slot ? `${slot.count} session${slot.count === 1 ? '' : 's'}, ` : ''}${key}">
                 <span class="session-cal-num">${day}</span>${slot ? `<span class="session-cal-count">${slot.count}</span>` : ''}</button>`;
         }
+        wrap.setAttribute('title', sessionCalendarDay ? 'Press the selected day again to see recent sessions.' : 'Press a day to see its sessions. Darker days had more time spent talking.');
         wrap.innerHTML = `<div class="session-cal-head">
                 <button type="button" class="session-cal-nav" data-session-cal-nav="-1" aria-label="Previous month"><i class="fas fa-chevron-left"></i></button>
                 <span class="session-cal-title">${escapeHTML(label)}</span>
                 <button type="button" class="session-cal-nav" data-session-cal-nav="1" aria-label="Next month"><i class="fas fa-chevron-right"></i></button>
             </div>
             <div class="session-cal-grid">${names}${cells}</div>
-            <p class="session-cal-hint">${sessionCalendarDay ? 'Press the selected day again to see recent sessions.' : 'Press a day to see its sessions. Darker days had more of your time spent talking.'}</p>`;
+`;
     }
 
     function setupSessionCalendar() {
