@@ -3866,6 +3866,8 @@ if (storedDailyGoal) {
     let callLogRenderTicket = 0;
     let callLogRenderState = null;
     let sessionHistoryEditingId = null;
+    let sessionCalendarMonth = (() => { const now = new Date(); return { year: now.getFullYear(), month: now.getMonth() }; })();
+    let sessionCalendarDay = null; // 'YYYY-MM-DD' or null (= recent sessions)
     let pendingStorageWrites = new Map();
     let storageWriteTimer = null;
     let pendingCsvImportFilter = 'all';
@@ -4152,6 +4154,82 @@ if (storedDailyGoal) {
         select(saved);
     }
 
+    function getSessionDayKey(ms) {
+        const d = new Date(ms);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function renderSessionDetails(entry) {
+        const clock = (ms) => new Date(ms).toLocaleTimeString(DISPLAY_LOCALE, { hour: '2-digit', minute: '2-digit' });
+        const who = (value) => (value === 'auto' ? 'automatically' : 'by you');
+        const pauses = Array.isArray(entry.pauses) ? entry.pauses : [];
+        const pauseLines = pauses.length === 0
+            ? '<li>No pauses.</li>'
+            : pauses.map((pause) => `<li>Paused ${escapeHTML(clock(pause.startMs))} - ${escapeHTML(clock(pause.endMs))} (${escapeHTML(formatTime(Math.max(0, pause.endMs - pause.startMs)))}), ${pause.by === 'auto' ? 'automatic' : 'manual'}</li>`).join('');
+        return `<div class="session-details-line">Started ${who(entry.startedBy)} at ${escapeHTML(clock(entry.startedAtMs))}; ended ${who(entry.endedBy)} at ${escapeHTML(clock(entry.endedAtMs))}.</div>
+            <ul class="session-details-pauses">${pauseLines}</ul>`;
+    }
+
+    // Month calendar: each day with sessions shows how many, shaded by utilization. Clicking a day lists its sessions.
+    function renderSessionCalendar(entries) {
+        const wrap = document.getElementById('session-calendar');
+        if (!wrap) return;
+        const { year, month } = sessionCalendarMonth;
+        const first = new Date(year, month, 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const lead = (first.getDay() + 6) % 7; // Monday first
+        const perDay = new Map();
+        entries.forEach((entry) => {
+            const key = getSessionDayKey(entry.startedAtMs);
+            const slot = perDay.get(key) || { count: 0, talk: 0, available: 0 };
+            slot.count += 1;
+            slot.talk += Number(entry.talkMs) || 0;
+            slot.available += Number(entry.availableMs) || 0;
+            perDay.set(key, slot);
+        });
+        const label = first.toLocaleDateString(DISPLAY_LOCALE, { month: 'long', year: 'numeric' });
+        const names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((n) => `<span class="session-cal-dow">${n}</span>`).join('');
+        let cells = '';
+        for (let i = 0; i < lead; i += 1) cells += '<span class="session-cal-empty"></span>';
+        for (let day = 1; day <= daysInMonth; day += 1) {
+            const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const slot = perDay.get(key);
+            const util = slot && slot.available > 0 ? (slot.talk / slot.available) * 100 : 0;
+            const level = !slot ? 0 : util >= 60 ? 3 : util >= 30 ? 2 : 1;
+            const selected = key === sessionCalendarDay ? ' is-selected' : '';
+            cells += `<button type="button" class="session-cal-day level-${level}${selected}" data-session-cal-day="${key}" aria-pressed="${key === sessionCalendarDay}" aria-label="${slot ? `${slot.count} session${slot.count === 1 ? '' : 's'}, ` : ''}${key}">
+                <span class="session-cal-num">${day}</span>${slot ? `<span class="session-cal-count">${slot.count}</span>` : ''}</button>`;
+        }
+        wrap.innerHTML = `<div class="session-cal-head">
+                <button type="button" class="session-cal-nav" data-session-cal-nav="-1" aria-label="Previous month"><i class="fas fa-chevron-left"></i></button>
+                <span class="session-cal-title">${escapeHTML(label)}</span>
+                <button type="button" class="session-cal-nav" data-session-cal-nav="1" aria-label="Next month"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="session-cal-grid">${names}${cells}</div>
+            <p class="session-cal-hint">${sessionCalendarDay ? 'Press the selected day again to see recent sessions.' : 'Press a day to see its sessions. Darker days had more of your time spent talking.'}</p>`;
+    }
+
+    function setupSessionCalendar() {
+        const wrap = document.getElementById('session-calendar');
+        if (!wrap) return;
+        wrap.addEventListener('click', (event) => {
+            const nav = event.target?.closest?.('[data-session-cal-nav]');
+            if (nav) {
+                const step = Number(nav.getAttribute('data-session-cal-nav')) || 0;
+                const d = new Date(sessionCalendarMonth.year, sessionCalendarMonth.month + step, 1);
+                sessionCalendarMonth = { year: d.getFullYear(), month: d.getMonth() };
+                renderSessionHistory();
+                return;
+            }
+            const dayBtn = event.target?.closest?.('[data-session-cal-day]');
+            if (dayBtn) {
+                const key = dayBtn.getAttribute('data-session-cal-day');
+                sessionCalendarDay = sessionCalendarDay === key ? null : key;
+                renderSessionHistory();
+            }
+        });
+    }
+
     function renderSessionHistory() {
         const entries = normalizeSessionHistoryEntries(sessionHistoryEntries);
         sessionHistoryEntries = entries;
@@ -4173,7 +4251,19 @@ if (storedDailyGoal) {
             return;
         }
 
-        const rows = entries.slice(0, 12).map((entry) => {
+        renderSessionCalendar(entries);
+        const heading = document.getElementById('session-history-heading');
+        const dayEntries = sessionCalendarDay ? entries.filter((entry) => getSessionDayKey(entry.startedAtMs) === sessionCalendarDay) : null;
+        if (heading) {
+            heading.textContent = dayEntries
+                ? `Sessions on ${new Date(`${sessionCalendarDay}T12:00:00`).toLocaleDateString(DISPLAY_LOCALE, { weekday: 'long', month: 'long', day: 'numeric' })}`
+                : 'Recent sessions';
+        }
+        if (dayEntries && dayEntries.length === 0) {
+            sessionHistoryList.innerHTML = '<p class="session-history-empty">No sessions on this day.</p>';
+            return;
+        }
+        const rows = (dayEntries || entries.slice(0, 12)).map((entry) => {
             const started = new Date(entry.startedAtMs);
             const ended = new Date(entry.endedAtMs);
             const dateLabel = started.toLocaleDateString(DISPLAY_LOCALE, { weekday: 'short', month: 'short', day: 'numeric' });
@@ -4194,7 +4284,11 @@ if (storedDailyGoal) {
                         <span class="session-history-chip">Util ${formatSessionPercent(entry.utilization)}</span>
                         <span class="session-history-chip">Earned ${formatEarnings(entry.earned)}</span>
                     </div>
+                    <div class="session-history-details hidden" data-session-history-details-for="${escapeHTML(entry.id)}">${renderSessionDetails(entry)}</div>
                     <div class="session-history-row session-history-row-actions">
+                        <button type="button" class="session-history-details-btn" data-session-history-details="${escapeHTML(entry.id)}" aria-expanded="false">
+                            <i class="fas fa-list mr-1"></i>Details
+                        </button>
                         <button type="button" class="session-history-edit-btn" data-session-history-edit="${escapeHTML(entry.id)}">
                             <i class="fas fa-pen mr-1"></i>Edit
                         </button>
@@ -12281,6 +12375,17 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     }
     if (sessionHistoryList) {
         sessionHistoryList.addEventListener('click', (event) => {
+            const detailsBtn = event.target?.closest?.('[data-session-history-details]');
+            if (detailsBtn) {
+                const id = detailsBtn.getAttribute('data-session-history-details');
+                const panel = Array.from(sessionHistoryList.querySelectorAll('[data-session-history-details-for]'))
+                    .find((el) => el.getAttribute('data-session-history-details-for') === id);
+                if (panel) {
+                    const open = panel.classList.toggle('hidden') === false;
+                    detailsBtn.setAttribute('aria-expanded', String(open));
+                }
+                return;
+            }
             const editBtn = event.target?.closest?.('[data-session-history-edit]');
             if (editBtn) {
                 openSessionHistoryEditor(editBtn.getAttribute('data-session-history-edit'), editBtn);
@@ -13472,6 +13577,7 @@ goalMinutesInput.addEventListener('input', () => {
         setupSessionAutomationControls();
         setupAnalyticsTabs();
         setupCallLogTabs();
+        setupSessionCalendar();
         (function setupProgressTabs() {
             const names = ['today', 'week', 'achievements'];
             const tabs = names.map((n) => document.getElementById(`progress-tab-${n}`));

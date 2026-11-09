@@ -11550,3 +11550,30 @@ html.dark .rate-cycle-amount { color: #f3e8ff; }
 html.dark .rate-cycle-line { color: #d1d5db; }
 .rate-cycle-trend { font-size: 0.75rem; color: #7e22ce; margin-top: 0.4rem; }
 html.dark .rate-cycle-trend { color: #d8b4fe; }
+
+
+/* Sessions calendar and details (light + dark) */
+.session-calendar { margin-bottom: 1.25rem; padding: 1rem; border-radius: 0.9rem; background: #f8fafc; border: 1px solid rgba(148, 163, 184, 0.28); }
+html.dark .session-calendar { background: rgba(30, 41, 59, 0.55); border-color: rgba(100, 116, 139, 0.4); }
+.session-cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+.session-cal-title { font-weight: 700; text-transform: capitalize; color: #1e293b; }
+html.dark .session-cal-title { color: #f1f5f9; }
+.session-cal-nav { width: 2rem; height: 2rem; border-radius: 0.6rem; border: 1px solid rgba(148, 163, 184, 0.4); color: #475569; background: transparent; }
+html.dark .session-cal-nav { color: #cbd5e1; }
+.session-cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 0.3rem; }
+.session-cal-dow { text-align: center; font-size: 0.68rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+html.dark .session-cal-dow { color: #94a3b8; }
+.session-cal-day { position: relative; aspect-ratio: 1 / 1; min-height: 2.4rem; border-radius: 0.6rem; border: 1px solid rgba(148, 163, 184, 0.25); background: transparent; color: #334155; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+html.dark .session-cal-day { color: #cbd5e1; }
+.session-cal-day.level-1 { background: rgba(96, 165, 250, 0.18); }
+.session-cal-day.level-2 { background: rgba(59, 130, 246, 0.34); }
+.session-cal-day.level-3 { background: rgba(37, 99, 235, 0.55); color: #ffffff; }
+.session-cal-day.is-selected { outline: 2px solid #f59e0b; outline-offset: 1px; }
+.session-cal-count { font-size: 0.62rem; font-weight: 700; opacity: 0.85; }
+.session-cal-hint { margin-top: 0.6rem; font-size: 0.72rem; color: #64748b; }
+html.dark .session-cal-hint { color: #94a3b8; }
+.session-history-details { margin-top: 0.4rem; font-size: 0.78rem; color: #475569; }
+html.dark .session-history-details { color: #cbd5e1; }
+.session-details-pauses { margin: 0.3rem 0 0 1rem; list-style: disc; }
+.session-history-details-btn { font-size: 0.75rem; padding: 0.25rem 0.6rem; border-radius: 0.5rem; border: 1px solid rgba(148, 163, 184, 0.4); color: #475569; background: transparent; }
+html.dark .session-history-details-btn { color: #cbd5e1; }
