@@ -667,6 +667,7 @@
             <p id="next-pay-cycle-context" class="text-xs text-purple-700 dark:text-purple-300 mt-2">--</p>
         </div>
     </div>
+    <div id="rate-cycle-cards" class="rate-cycle-cards hidden"></div>
     </div>
 
     <div id="patterns-panel" class="metric-surface bg-slate-50 dark:bg-slate-900/35 p-4 rounded-lg mb-4">
@@ -1153,10 +1154,14 @@
                                             <label for="payment-cycle-template-pay-offset" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Pay Offset (days after cycle end)</label>
                                             <input type="number" id="payment-cycle-template-pay-offset" min="0" max="30" step="1" value="7" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
                                         </div>
+                                        <div>
+                                            <label for="payment-cycle-template-rate" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Applies to</label>
+                                            <select id="payment-cycle-template-rate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500"></select>
+                                        </div>
                                         <div class="flex items-end">
                                             <label class="inline-flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300">
                                                 <input type="checkbox" id="payment-cycle-template-replace" checked>
-                                                Replace existing cycles
+                                                Replace existing cycles of this rate
                                             </label>
                                         </div>
                                     </div>
@@ -1182,6 +1187,7 @@
                                                 <th class="text-left py-2">Cycle Start</th>
                                                 <th class="text-left py-2">Cycle End</th>
                                                 <th class="text-left py-2">Pay Date</th>
+                                                <th class="text-left py-2">Applies to</th>
                                                 <th class="text-right py-2">Actions</th>
                                             </tr>
                                             </thead>
@@ -2095,6 +2101,10 @@
             <input type="date" id="cycle-pay-date-input" required
                 class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-4">
             
+            <label for="cycle-rate-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Applies to</label>
+            <select id="cycle-rate-input" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500 mb-1"></select>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Use a rate when it is paid on a different schedule. Cycles for "All other rates" never count that rate's calls.</p>
+
             <div class="flex gap-2">
                 <button type="submit" class="flex-1 btn-primary text-white px-4 py-2 rounded transition">
                     Save

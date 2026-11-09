@@ -11536,3 +11536,17 @@ html.dark .analytics-time-day { color: #cbd5e1; }
 .analytics-time-day-track { height: 0.6rem; border-radius: 9999px; background: rgba(148, 163, 184, 0.25); overflow: hidden; }
 .analytics-time-day-fill { display: block; height: 100%; border-radius: 9999px; background: linear-gradient(90deg, #60a5fa, #3b82f6); }
 .analytics-time-day-value { text-align: right; font-weight: 600; }
+
+
+/* Payment cycles that belong to one rate (light + dark) */
+.rate-cycle-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.rate-cycle-card { padding: 1rem; border-radius: 0.8rem; background: #faf5ff; border: 1px solid rgba(147, 51, 234, 0.22); }
+html.dark .rate-cycle-card { background: rgba(88, 28, 135, 0.28); border-color: rgba(192, 132, 252, 0.3); }
+.rate-cycle-title { font-weight: 600; font-size: 1.05rem; color: #7e22ce; margin-bottom: 0.4rem; }
+html.dark .rate-cycle-title { color: #d8b4fe; }
+.rate-cycle-amount { font-size: 1.4rem; font-weight: 700; color: #581c87; }
+html.dark .rate-cycle-amount { color: #f3e8ff; }
+.rate-cycle-line { font-size: 0.82rem; color: #374151; margin-top: 0.2rem; }
+html.dark .rate-cycle-line { color: #d1d5db; }
+.rate-cycle-trend { font-size: 0.75rem; color: #7e22ce; margin-top: 0.4rem; }
+html.dark .rate-cycle-trend { color: #d8b4fe; }

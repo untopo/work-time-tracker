@@ -7207,8 +7207,69 @@ function saveCalls() {
         rpgBreakdownToggleBtn.setAttribute('aria-expanded', rpgXpBreakdownExpanded ? 'true' : 'false');
     }
 
-    function getPaymentCyclesTimelineContext(nowMs = Date.now()) {
+    function getRateOptionNames() {
+        const names = (Array.isArray(rates) ? rates : []).map((rate) => String(rate?.name || '').trim()).filter(Boolean);
+        getPaymentCycleScopeNames(paymentCycles).forEach((name) => {
+            if (!names.some((existing) => samePaymentCycleScope(existing, name))) names.push(name);
+        });
+        return names;
+    }
+
+    function fillCycleRateSelect(select, selected = '') {
+        if (!select) return;
+        const options = ['<option value="">All other rates</option>']
+            .concat(getRateOptionNames().map((name) => `<option value="${escapeHTML(name)}">${escapeHTML(name)}</option>`));
+        select.innerHTML = options.join('');
+        const match = getRateOptionNames().find((name) => samePaymentCycleScope(name, selected));
+        select.value = match || '';
+    }
+
+    // Cycles that belong to one rate are shown as their own cards, so each rate's pay schedule stays separate.
+    function renderRateCycleCards(nowMs = Date.now()) {
+        const wrap = document.getElementById('rate-cycle-cards');
+        if (!wrap) return;
+        const scopes = paymentCyclesEnabled ? getPaymentCycleScopeNames(paymentCycles) : [];
+        const generalCount = (Array.isArray(paymentCycles) ? paymentCycles : [])
+            .filter((cycle) => !getPaymentCycleScope(cycle)).length;
+        // When only rate cycles exist there is no general cycle to show.
+        if (paymentCyclesEnabled && scopes.length > 0 && generalCount === 0) {
+            paymentCycleEarningsCards.classList.add('hidden');
+            monthlyEarningsCards.classList.add('hidden');
+        }
+        wrap.classList.toggle('hidden', scopes.length === 0);
+        if (scopes.length === 0) { wrap.innerHTML = ''; return; }
+        const dayMs = 24 * 60 * 60 * 1000;
+        const sumFor = (cycle, scope) => (Array.isArray(calls) ? calls : []).reduce((total, call) => {
+            const startMs = getCallStartMs(call);
+            return startMs >= cycle._startMs && startMs <= cycle._endMs && callBelongsToPaymentCycleScope(call, scope, scopes)
+                ? total + (Number(call.earned) || 0) : total;
+        }, 0);
+        wrap.innerHTML = scopes.map((scope) => {
+            const context = getPaymentCyclesTimelineContext(nowMs, scope);
+            const current = context.current;
+            const payCycle = context.closestUpcomingPayCycle;
+            let body;
+            if (current) {
+                const index = context.normalized.indexOf(current);
+                const previous = index > 0 ? context.normalized[index - 1] : null;
+                const daysLeft = Math.max(0, Math.ceil((current._endMs - nowMs) / dayMs));
+                const earnings = sumFor(current, scope);
+                const trend = previous ? `Previous cycle: ${formatEarnings(sumFor(previous, scope))}` : 'No previous cycle yet.';
+                body = `<div class="rate-cycle-amount">${formatEarnings(earnings)}</div>
+                    <div class="rate-cycle-line">${escapeHTML(formatDate(current.startDate))} - ${escapeHTML(formatDate(current.endDate))} · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left</div>
+                    <div class="rate-cycle-line">${payCycle ? `Pay date: ${escapeHTML(formatDate(payCycle.payDate))}` : 'No upcoming pay date'}</div>
+                    <div class="rate-cycle-trend">${escapeHTML(trend)}</div>`;
+            } else {
+                body = '<div class="rate-cycle-line">No active cycle for this rate right now.</div>';
+            }
+            return `<div class="rate-cycle-card"><div class="rate-cycle-title"><i class="fas fa-calendar-alt mr-2"></i>${escapeHTML(scope)}</div>${body}</div>`;
+        }).join('');
+    }
+
+    // `scope` '' = cycles for every rate without cycles of its own; otherwise one rate's cycles.
+    function getPaymentCyclesTimelineContext(nowMs = Date.now(), scope = '') {
         const normalized = (Array.isArray(paymentCycles) ? paymentCycles : [])
+            .filter((cycle) => samePaymentCycleScope(getPaymentCycleScope(cycle), scope))
             .map((cycle, originalIndex) => {
                 const rawStartMs = Number(Date.parse(cycle?.startDate || ''));
                 const rawEndMs = Number(Date.parse(cycle?.endDate || ''));
@@ -8503,6 +8564,7 @@ function saveCalls() {
         let cycleCallCount = 0;
 
         const cycleContext = getPaymentCyclesTimelineContext(nowMs);
+        const scopedRateNames = getPaymentCycleScopeNames(paymentCycles);
         if (paymentCyclesEnabled && cycleContext.normalized.length > 0) {
             currentCycle = cycleContext.current;
             if (currentCycle) {
@@ -8533,7 +8595,7 @@ function saveCalls() {
                 else secondHalfEarnings += earned;
             }
 
-            if (currentCycle && startMs >= cycleStartMs && startMs <= cycleEndMs) {
+            if (currentCycle && startMs >= cycleStartMs && startMs <= cycleEndMs && callBelongsToPaymentCycleScope(call, '', scopedRateNames)) {
                 cycleEarnings += earned;
                 cycleCallCount += 1;
             }
@@ -8547,7 +8609,7 @@ function saveCalls() {
             let total = 0;
             for (let i = 0; i < calls.length; i += 1) {
                 const callStartMs = getCallStartMs(calls[i]);
-                if (callStartMs >= cycle._startMs && callStartMs <= windowEndMs) {
+                if (callStartMs >= cycle._startMs && callStartMs <= windowEndMs && callBelongsToPaymentCycleScope(calls[i], '', scopedRateNames)) {
                     total += Number(calls[i].earned) || 0;
                 }
             }
@@ -8652,6 +8714,7 @@ function saveCalls() {
             }
         }
         const previousCycleEarnings = sumCycleEarnings(previousCycle);
+        renderRateCycleCards(nowMs);
 
         if (currentCycle) {
             cycleEarningsDisplay.textContent = formatEarnings(cycleEarnings);
@@ -10888,7 +10951,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         }
     }
 
-    function buildBiweeklyCyclesFromTemplate(startDate, count, payOffsetDays) {
+    function buildBiweeklyCyclesFromTemplate(startDate, count, payOffsetDays, rate = '') {
         const safeStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
         const safeCount = Math.max(1, Math.min(120, Number(count) || 26));
         const safePayOffset = Math.max(0, Math.min(30, Number(payOffsetDays) || 7));
@@ -10901,7 +10964,8 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             cycles.push({
                 startDate: toLocalMidnightIso(cycleStart),
                 endDate: toLocalMidnightIso(cycleEnd),
-                payDate: toLocalMidnightIso(payDate)
+                payDate: toLocalMidnightIso(payDate),
+                ...(rate ? { rate } : {})
             });
         }
 
@@ -10927,7 +10991,8 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             return;
         }
 
-        const generated = buildBiweeklyCyclesFromTemplate(startDate, count, payOffsetDays);
+        const templateRate = String(document.getElementById('payment-cycle-template-rate')?.value || '').trim();
+        const generated = buildBiweeklyCyclesFromTemplate(startDate, count, payOffsetDays, templateRate);
         if (!generated.length) {
             showAlertModal('Nothing Generated', 'No payment cycles were generated. Check your template values.');
             return;
@@ -10935,7 +11000,8 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
 
         const existing = Array.isArray(paymentCycles) ? paymentCycles.map((cycle) => ({ ...cycle })) : [];
         if (replaceExisting) {
-            paymentCycles = generated;
+            // Only this rate's cycles are replaced; the other schedules stay as they are.
+            paymentCycles = existing.filter((cycle) => !samePaymentCycleScope(getPaymentCycleScope(cycle), templateRate)).concat(generated);
             savePaymentCycles();
             showToast(`Generated ${generated.length} biweekly payment cycle${generated.length === 1 ? '' : 's'}.`);
             return;
@@ -10956,8 +11022,13 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         showToast(`Generated ${added} new cycle${added === 1 ? '' : 's'} (${generated.length - added} duplicate${generated.length - added === 1 ? '' : 's'} skipped).`);
     }
 
+    function getPaymentCycle_ScopeLabel(cycle) {
+        return getPaymentCycleScope(cycle) || 'All other rates';
+    }
+
     function renderPaymentCycles() {
         ensurePaymentCycleTemplateDefaults();
+        fillCycleRateSelect(document.getElementById('payment-cycle-template-rate'), document.getElementById('payment-cycle-template-rate')?.value || '');
         if (typeof paymentCyclesToggle !== 'undefined' && paymentCyclesToggle) {
             try { paymentCyclesToggle.checked = paymentCyclesEnabled; } catch (e) { /* ignore */ }
         }
@@ -11001,7 +11072,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         }
 
         if (!Array.isArray(paymentCycles) || paymentCycles.length === 0) {
-            paymentCyclesList.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500 dark:text-gray-400">No cycles configured.</td></tr>`;
+            paymentCyclesList.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500 dark:text-gray-400">No cycles configured.</td></tr>`;
             setPaymentCyclesListExpanded(false, 0);
             monthlyEarningsCards.classList.add('hidden');
             paymentCycleEarningsCards.classList.remove('hidden');
@@ -11014,7 +11085,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         sortedCycles.forEach((cycle, index) => {
             const row = document.createElement('tr');
             row.className = 'hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors';
-            const originalIndex = paymentCycles.findIndex(c => c.startDate === cycle.startDate && c.endDate === cycle.endDate);
+            const originalIndex = paymentCycles.findIndex(c => c.startDate === cycle.startDate && c.endDate === cycle.endDate && samePaymentCycleScope(getPaymentCycleScope(c), getPaymentCycleScope(cycle)));
             
             const startDisplay = new Date(cycle.startDate).toLocaleDateString(DISPLAY_LOCALE);
             const endDisplay = new Date(cycle.endDate).toLocaleDateString(DISPLAY_LOCALE);
@@ -11024,6 +11095,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
                 <td class="px-2 py-2">${startDisplay}</td>
                 <td class="px-2 py-2">${endDisplay}</td>
                 <td class="px-2 py-2">${payDisplay}</td>
+                <td class="px-2 py-2">${escapeHTML(getPaymentCycle_ScopeLabel(cycle))}</td>
                 <td class="px-2 py-2 text-right">
                     <button class="edit-cycle-btn text-blue-500 hover:text-blue-700 mr-2" data-index="${originalIndex}">
                         <i class="fas fa-edit"></i>
@@ -11043,6 +11115,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
     function addPaymentCycle() {
         isEditingCycle = false;
         document.getElementById('edit-cycle-modal-title').textContent = 'Add Payment Cycle';
+        fillCycleRateSelect(document.getElementById('cycle-rate-input'), '');
         openEditCycleModal();
     }
 
@@ -11086,6 +11159,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         cycleStartDateInput.value = cycleToEdit.startDate.split('T')[0];
         cycleEndDateInput.value = cycleToEdit.endDate.split('T')[0];
         cyclePayDateInput.value = cycleToEdit.payDate.split('T')[0];
+        fillCycleRateSelect(document.getElementById('cycle-rate-input'), getPaymentCycleScope(cycleToEdit));
         openEditCycleModal();
     }
 
@@ -11115,6 +11189,8 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             endDate: end.toISOString(),
             payDate: pay.toISOString()
         };
+        const chosenRate = String(document.getElementById('cycle-rate-input')?.value || '').trim();
+        if (chosenRate) newCycle.rate = chosenRate;
 
         if (isEditingCycle) {
             paymentCycles[editingCycleIndex] = newCycle;
