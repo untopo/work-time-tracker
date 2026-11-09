@@ -13396,6 +13396,25 @@ goalMinutesInput.addEventListener('input', () => {
         setupSessionAutomationControls();
         setupAnalyticsTabs();
         setupCallLogTabs();
+        (function setupProgressTabs() {
+            const names = ['today', 'week', 'achievements'];
+            const tabs = names.map((n) => document.getElementById(`progress-tab-${n}`));
+            const panels = names.map((n) => document.getElementById(`progress-panel-${n}`));
+            if (tabs.some((t) => !t) || panels.some((p) => !p)) return;
+            const select = (name) => {
+                names.forEach((n, i) => {
+                    const on = n === name;
+                    tabs[i].classList.toggle('is-active', on);
+                    tabs[i].setAttribute('aria-selected', String(on));
+                    panels[i].classList.toggle('hidden', !on);
+                });
+                try { sessionStorage.setItem('progressTab', name); } catch (error) { /* optional convenience */ }
+            };
+            names.forEach((n, i) => tabs[i].addEventListener('click', () => select(n)));
+            let saved = 'today';
+            try { const v = sessionStorage.getItem('progressTab'); if (names.includes(v)) saved = v; } catch (error) { /* ignore */ }
+            select(saved);
+        })();
         renderSessionTracker();
         renderSessionHistory();
         ensureSessionTrackerTimer();
