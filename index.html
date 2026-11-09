@@ -955,6 +955,32 @@
                                             <span class="slider round"></span>
                                         </label>
                                     </div>
+                                    <div class="st-group">Work sessions</div>
+                                    <div class="st-row">
+                                        <div class="st-copy">
+                                            <div class="st-title">Session automation</div>
+                                            <div class="st-desc">Let your calls start, pause and end your work session. Off by default; your current session and history are never changed by this switch.</div>
+                                        </div>
+                                        <label class="settings-feature-switch st-switch">
+                                            <input type="checkbox" id="session-automation-toggle">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <div id="session-automation-options" class="hidden">
+                                        <div class="st-row st-row-stack">
+                                            <label for="session-automation-pause-select" class="st-title">Pause after inactivity</label>
+                                            <select id="session-automation-pause-select" class="st-select"></select>
+                                            <div class="st-desc">Time without a call, counted from the end of your last call (or from when the session started or resumed).</div>
+                                        </div>
+                                        <div class="st-row st-row-stack">
+                                            <label for="session-automation-end-select" class="st-title">End session after pause</label>
+                                            <select id="session-automation-end-select" class="st-select"></select>
+                                            <div class="st-desc">Extra time paused before the session ends and is saved. This also applies to sessions you paused yourself.</div>
+                                        </div>
+                                        <div class="st-row st-row-stack">
+                                            <div class="st-desc">Your first live call starts a session at the call's real start, and a new call brings a paused session back. Nothing is paused or ended during a call. If the app was closed, these times are applied from your real call times when you return. A session with no calls that ends automatically is not saved. Calls added by hand never start, resume or pause a session.</div>
+                                        </div>
+                                    </div>
                                     <div class="st-group">Earnings</div>
                                     <div class="st-row">
                                         <div class="st-copy">

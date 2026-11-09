@@ -37,6 +37,7 @@ function getSessionDefaultState() {
         pauseBy: 'manual',
         pauseLog: [],
         origin: 'manual',
+        lastActivityMs: 0,
         scheduleStart: '',
         scheduleEnd: ''
     };
@@ -149,6 +150,7 @@ function normalizeSessionTrackerState(input) {
         pauseBy: normalizeSessionActor(source.pauseBy),
         pauseLog: active ? normalizeSessionPauses(source.pauseLog, startMs, Number.POSITIVE_INFINITY) : [],
         origin: normalizeSessionActor(source.origin),
+        lastActivityMs: active && Number.isFinite(Number(source.lastActivityMs)) && Number(source.lastActivityMs) > 0 ? Number(source.lastActivityMs) : 0,
         scheduleStart: normalizeSessionScheduleTime(source.scheduleStart),
         scheduleEnd: normalizeSessionScheduleTime(source.scheduleEnd)
     };
@@ -238,13 +240,70 @@ function formatSupportivePercentDelta(value) {
 }
 
 
+// ---- Session automation (optional, off by default) ----
+// When it is on, calls drive the session: the first live call starts it, quiet time pauses it and
+// then ends it. The decision is a pure function of the saved state, the settings and "now", so it
+// gives the same answer whether the app was open all along or was closed for hours: times are
+// stamped at the real moment each threshold was crossed, not at the moment the app noticed.
+const SESSION_AUTOMATION_KEY = 'sessionAutomationV1';
+const SESSION_AUTOMATION_PAUSE_OPTIONS_MIN = [15, 20, 30, 45, 60];
+const SESSION_AUTOMATION_END_OPTIONS_MIN = [30, 60, 90, 120, 180];
+
+function getSessionAutomationDefaults() {
+    return { enabled: false, pauseAfterMin: 30, endAfterMin: 90 };
+}
+
+function normalizeSessionAutomationSettings(input) {
+    const base = getSessionAutomationDefaults();
+    const source = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
+    const pauseAfterMin = Number(source.pauseAfterMin);
+    const endAfterMin = Number(source.endAfterMin);
+    return {
+        enabled: source.enabled === true,
+        pauseAfterMin: SESSION_AUTOMATION_PAUSE_OPTIONS_MIN.includes(pauseAfterMin) ? pauseAfterMin : base.pauseAfterMin,
+        endAfterMin: SESSION_AUTOMATION_END_OPTIONS_MIN.includes(endAfterMin) ? endAfterMin : base.endAfterMin
+    };
+}
+
+// Remembers the last moment something real happened in the session: it started, it resumed,
+// or a live call ended. Quiet time is counted from here.
+function markSessionActivity(state, atMs) {
+    const at = Number(atMs);
+    if (!state?.active || !Number.isFinite(at) || at <= 0) return state;
+    return { ...state, lastActivityMs: Math.max(Number(state.lastActivityMs) || 0, at) };
+}
+
+// What should the automation do right now? Returns null (nothing), or
+//   { action: 'pause', atMs }  pause the session, stamped when the quiet time ran out
+//   { action: 'end', atMs }    end the session where its pause began (or would have began)
+// It never acts during a live call. A pause you made yourself also counts toward the end.
+function planSessionAutomation(state, settingsInput, nowMs, hasActiveCall) {
+    const settings = normalizeSessionAutomationSettings(settingsInput);
+    if (!settings.enabled || !state?.active || hasActiveCall) return null;
+    const now = Number(nowMs);
+    if (!Number.isFinite(now)) return null;
+    const pauseAfterMs = settings.pauseAfterMin * 60000;
+    const endAfterMs = settings.endAfterMin * 60000;
+
+    if (state.paused) {
+        const pausedAt = Number(state.pauseStartedMs);
+        if (!Number.isFinite(pausedAt) || pausedAt <= 0) return null;
+        return now >= pausedAt + endAfterMs ? { action: 'end', atMs: pausedAt } : null;
+    }
+
+    const lastActivity = Math.max(Number(state.startMs) || 0, Number(state.lastActivityMs) || 0);
+    const pauseAt = lastActivity + pauseAfterMs;
+    if (now < pauseAt) return null;
+    return now >= pauseAt + endAfterMs ? { action: 'end', atMs: pauseAt } : { action: 'pause', atMs: pauseAt };
+}
+
 // ---- Backup of settings and session history (backup format 2) ----
 // A backup file carries the user's preferences and finished sessions along with calls, rates,
 // goal and payment cycles. Only choices that make sense on another device travel. Things tied
 // to one screen or one device (panel sizes, dock position, reminder timers, "last backup" time)
 // stay out on purpose. Older backups simply do not have these fields and still import fine.
 const BACKUP_FORMAT_VERSION = 2;
-const BACKUP_PORTABLE_SETTINGS = ['theme', 'timeZone', 'featureFlags', 'patternsMode', 'trendMode', 'hourlyHeatmapMetric'];
+const BACKUP_PORTABLE_SETTINGS = ['theme', 'timeZone', 'featureFlags', 'patternsMode', 'trendMode', 'hourlyHeatmapMetric', SESSION_AUTOMATION_KEY];
 
 function isValidBackupTimeZone(value) {
     if (typeof value !== 'string' || !value.trim()) return false;
@@ -272,6 +331,8 @@ function sanitizeBackupSetting(key, value) {
             return ['weekly', 'monthly'].includes(value) ? value : undefined;
         case 'hourlyHeatmapMetric':
             return ['calls', 'minutes', 'earnings'].includes(value) ? value : undefined;
+        case SESSION_AUTOMATION_KEY:
+            return value && typeof value === 'object' && !Array.isArray(value) ? normalizeSessionAutomationSettings(value) : undefined;
         default:
             return undefined;
     }
@@ -285,7 +346,7 @@ function buildBackupSettings(readItem) {
         try { raw = readItem(key); } catch (error) { raw = null; }
         if (raw === null || raw === undefined) return;
         let value = raw;
-        if (key === 'featureFlags') {
+        if (key === 'featureFlags' || key === SESSION_AUTOMATION_KEY) {
             try { value = JSON.parse(raw); } catch (error) { return; }
         }
         const clean = sanitizeBackupSetting(key, value);

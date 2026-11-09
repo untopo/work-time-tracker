@@ -7,6 +7,9 @@ For downloadable installers/APKs and release metadata, use:
 
 ## v1.6.7 - Unreleased
 
+### Highlights
+- Optional session automation (Settings > Features > Work sessions, off by default). When you turn it on, your first live call starts the session at the call's real start, a new call brings a paused session back, the session pauses after a period without calls (30 minutes by default) and ends after more time paused (90 minutes by default), at the moment the pause began. Nothing is paused or ended during a call, it also works if you closed the app (times come from real clock time), and a session with no calls that ends by itself is not saved. Calls added by hand never start, resume or pause a session. Both times can be changed in Settings and travel in your backup. Your current session and history are never changed by the switch.
+
 ### Reliability & Privacy
 - Your backup now also includes your finished work sessions and your settings (theme, time zone, the Features switches and your Analytics choices), not only calls, rates, goal and payment cycles. When you import a backup on a new device, or after clearing your browser, your sessions come back and your settings are restored (the app reloads once to apply them). On a device you already set up, importing never changes your settings or the sessions you already have: it only adds what is missing. Backup files made by older versions keep working exactly as before. Things that belong to one screen or device, like panel sizes, stay out of the backup.
 
