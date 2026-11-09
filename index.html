@@ -546,6 +546,11 @@
         </div>
     </div>
 
+    <div id="analytics-tabs" class="analytics-tabs" role="tablist" aria-label="Analytics view">
+        <button id="analytics-tab-calls" type="button" role="tab" aria-selected="true" class="patterns-mode-btn is-active">Calls</button>
+        <button id="analytics-tab-time" type="button" role="tab" aria-selected="false" class="patterns-mode-btn">Time</button>
+    </div>
+    <div id="analytics-calls-panel">
     <div class="analytics-snapshot-heading-row mb-3">
         <h3 id="stats-snapshot-heading" class="analytics-snapshot-heading text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Today Snapshot</h3>
     </div>
@@ -750,6 +755,25 @@
             </div>
         </div>
     </div>
+    </div>
+    </div>
+    <div id="analytics-time-panel" class="hidden" role="tabpanel" aria-labelledby="analytics-tab-time">
+        <div class="analytics-time-head">
+            <h3 class="analytics-snapshot-heading text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Work sessions, last 30 days</h3>
+            <p id="analytics-time-empty" class="analytics-time-empty hidden">No finished sessions in the last 30 days yet. Finish a session and its stats will show up here.</p>
+        </div>
+        <div id="analytics-time-grid" class="analytics-time-grid">
+            <div class="analytics-time-tile"><span class="analytics-time-label">Sessions</span><span id="time-stat-sessions" class="analytics-time-value">0</span><span id="time-stat-sessions-meta" class="analytics-time-meta">--</span></div>
+            <div class="analytics-time-tile"><span class="analytics-time-label">Average utilization</span><span id="time-stat-utilization" class="analytics-time-value">0.0%</span><span id="time-stat-utilization-meta" class="analytics-time-meta">Talk time over available time</span></div>
+            <div class="analytics-time-tile"><span class="analytics-time-label">Talk time</span><span id="time-stat-talk" class="analytics-time-value">00:00:00</span><span id="time-stat-idle" class="analytics-time-meta">Idle 00:00:00</span></div>
+            <div class="analytics-time-tile"><span class="analytics-time-label">Average session</span><span id="time-stat-avg-length" class="analytics-time-value">00:00:00</span><span id="time-stat-calls-per-session" class="analytics-time-meta">-- calls per session</span></div>
+            <div class="analytics-time-tile"><span class="analytics-time-label">Earned per available hour</span><span id="time-stat-per-hour" class="analytics-time-value">$0.00</span><span class="analytics-time-meta">Earnings over available time</span></div>
+            <div class="analytics-time-tile"><span class="analytics-time-label">Pauses</span><span id="time-stat-pauses" class="analytics-time-value">0</span><span id="time-stat-automation" class="analytics-time-meta">--</span></div>
+        </div>
+        <div class="analytics-time-weekdays-wrap">
+            <h4 class="analytics-time-sub">Utilization by weekday</h4>
+            <div id="time-stat-weekdays" class="analytics-time-weekdays"></div>
+        </div>
     </div>
     </div>
 

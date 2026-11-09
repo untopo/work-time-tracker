@@ -4086,9 +4086,79 @@ if (storedDailyGoal) {
         saveSessionHistoryState();
     }
 
+    // Analytics > Time: stats from finished work sessions of the last 30 days.
+    function renderAnalyticsTime(entries) {
+        const grid = document.getElementById('analytics-time-grid');
+        if (!grid) return;
+        const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+        const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
+        const recent = entries.filter((entry) => entry.endedAtMs >= since);
+        document.getElementById('analytics-time-empty')?.classList.toggle('hidden', recent.length > 0);
+        const sum = (key) => recent.reduce((total, entry) => total + (Number(entry[key]) || 0), 0);
+        const talk = sum('talkMs');
+        const idle = sum('idleMs');
+        const available = sum('availableMs');
+        const calls = sum('callCount');
+        const earned = sum('earned');
+        const pauses = sum('pauseCount');
+        const lengths = recent.reduce((total, entry) => total + Math.max(0, entry.endedAtMs - entry.startedAtMs), 0);
+        const autoStarted = recent.filter((entry) => entry.startedBy === 'auto').length;
+        const autoEnded = recent.filter((entry) => entry.endedBy === 'auto').length;
+        const n = recent.length;
+        setText('time-stat-sessions', String(n));
+        setText('time-stat-sessions-meta', n === 0 ? '--' : `${calls} call${calls === 1 ? '' : 's'} in total`);
+        setText('time-stat-utilization', formatSessionPercent(available > 0 ? Math.min(100, (talk / available) * 100) : 0));
+        setText('time-stat-talk', formatTime(talk));
+        setText('time-stat-idle', `Idle ${formatTime(idle)}`);
+        setText('time-stat-avg-length', formatTime(n > 0 ? lengths / n : 0));
+        setText('time-stat-calls-per-session', n > 0 ? `${(calls / n).toFixed(1)} calls per session` : '-- calls per session');
+        setText('time-stat-per-hour', formatEarnings(available > 0 ? earned / (available / 3600000) : 0));
+        setText('time-stat-pauses', String(pauses));
+        setText('time-stat-automation', n === 0 ? '--' : `${autoStarted} started and ${autoEnded} ended automatically`);
+
+        const days = [0, 0, 0, 0, 0, 0, 0].map(() => ({ talk: 0, available: 0 }));
+        recent.forEach((entry) => {
+            const day = new Date(entry.startedAtMs).getDay();
+            days[day].talk += Number(entry.talkMs) || 0;
+            days[day].available += Number(entry.availableMs) || 0;
+        });
+        const names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const order = [1, 2, 3, 4, 5, 6, 0];
+        const wrap = document.getElementById('time-stat-weekdays');
+        if (wrap) {
+            wrap.innerHTML = order.map((i) => {
+                const pct = days[i].available > 0 ? Math.min(100, (days[i].talk / days[i].available) * 100) : 0;
+                return `<div class="analytics-time-day"><span class="analytics-time-day-name">${names[i]}</span>
+                    <span class="analytics-time-day-track"><span class="analytics-time-day-fill" style="width:${pct.toFixed(1)}%"></span></span>
+                    <span class="analytics-time-day-value">${days[i].available > 0 ? `${pct.toFixed(0)}%` : '--'}</span></div>`;
+            }).join('');
+        }
+    }
+
+    function setupAnalyticsTabs() {
+        const tabs = { calls: document.getElementById('analytics-tab-calls'), time: document.getElementById('analytics-tab-time') };
+        const panels = { calls: document.getElementById('analytics-calls-panel'), time: document.getElementById('analytics-time-panel') };
+        if (!tabs.calls || !tabs.time || !panels.calls || !panels.time) return;
+        const select = (name) => {
+            Object.keys(tabs).forEach((key) => {
+                const on = key === name;
+                tabs[key].classList.toggle('is-active', on);
+                tabs[key].setAttribute('aria-selected', String(on));
+                panels[key].classList.toggle('hidden', !on);
+            });
+            try { sessionStorage.setItem('analyticsTab', name); } catch (error) { /* optional convenience */ }
+        };
+        tabs.calls.addEventListener('click', () => select('calls'));
+        tabs.time.addEventListener('click', () => select('time'));
+        let saved = 'calls';
+        try { saved = sessionStorage.getItem('analyticsTab') === 'time' ? 'time' : 'calls'; } catch (error) { /* ignore */ }
+        select(saved);
+    }
+
     function renderSessionHistory() {
         const entries = normalizeSessionHistoryEntries(sessionHistoryEntries);
         sessionHistoryEntries = entries;
+        renderAnalyticsTime(entries);
         if (sessionHistoryCountLabel) {
             sessionHistoryCountLabel.textContent = entries.length === 0
                 ? 'No sessions yet'
@@ -13319,6 +13389,7 @@ goalMinutesInput.addEventListener('input', () => {
         syncDailyGoalInputs();
         updateStatistics();
         setupSessionAutomationControls();
+        setupAnalyticsTabs();
         renderSessionTracker();
         renderSessionHistory();
         ensureSessionTrackerTimer();
