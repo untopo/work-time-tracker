@@ -8,7 +8,9 @@ For downloadable installers/APKs and release metadata, use:
 ## v1.7.1 - Unreleased
 
 ### Highlights
-- New icons in the same style as the logo: Call Controls, Daily Goal, Rates and Session Tracker, and the main menu (Work, Call Log, Analytics, Progress, Resources) have redrawn icons with rounded strokes and the color of each card, in light and dark mode. More sections will follow.
+- Buttons share one look across the app: the same shape and sizes, with colors that keep their meaning (green to start, amber to pause, red to end), soft blue for secondary actions and soft red for risky ones, in light and dark mode. Nothing moved and every button works as before.
+- The Dark Mode / Light Mode switch now shows a moon that turns into a sun (and back) when you change the theme.
+- New icons in the same style as the logo: Call Controls, Daily Goal, Rates and Session Tracker, and the main menu (Work, Call Log, Analytics, Progress, Resources) have redrawn icons with rounded strokes and the color of each card, in light and dark mode. The section titles in Analytics, Progress, Call Log, Settings, Payment Cycles, Monthly Report and Edit Session use the same style.
 - Work Time Tracker has a new logo: a stopwatch with an open progress arc and a dollar sign inside. You will see it in the app, the browser tab, the Android launcher and the Windows app and installer. Your data and settings are not affected.
 
 ### Fixes
