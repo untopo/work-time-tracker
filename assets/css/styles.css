@@ -11631,3 +11631,4 @@ html.dark .wtt-icon-slate { --wtt-icon-main: #cbd5e1; --wtt-icon-accent: #94a3b8
 .wtt-nav-icon .wtt-icon .wtt-a { stroke-opacity: 0.62; }
 .work-card-icon .wtt-icon { width: 1.5rem; height: 1.5rem; }
 .work-primary-card .work-card-icon .wtt-icon { width: 1.6rem; height: 1.6rem; }
+.wtt-icon-inline { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -0.2em; margin-right: 0.5rem; }

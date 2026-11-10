@@ -22,6 +22,9 @@ for (const theme of ['light', 'dark']) {
       const main = await page.$eval('.wtt-icon-green', (el) => getComputedStyle(el).getPropertyValue('--wtt-icon-main').trim());
       assert.equal(main, theme === 'dark' ? '#86efac' : '#16a34a');
       assert.equal(await page.locator('#call-controls-card i.fa-phone-volume').count(), 0, 'old Font Awesome icon is gone');
+      assert.ok(await page.locator('#session-tracker-card svg.wtt-icon').count() >= 1);
+      assert.equal(await page.locator('#call-log-section svg.wtt-icon-inline, #view-call-log svg.wtt-icon-inline').count() >= 1, true, 'Call Log title uses the new icon');
+      assert.equal(await page.locator('i.fa-chart-bar').count(), 0, 'Call Statistics no longer uses Font Awesome');
       assert.deepEqual(problems, []);
     } finally { await context.close(); }
   });
