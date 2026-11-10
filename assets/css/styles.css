@@ -11606,3 +11606,28 @@ body.ui-refresh-v1 .work-support-card .work-card-icon,
 .work-card-title { margin: 0; line-height: 1.15; }
 .work-primary-card .work-card-title { font-size: 1.4rem; }
 .work-support-card .work-card-title { font-size: 1.15rem; }
+
+/* WTT icon set: logo-style strokes, one accent detail, card palette in light + dark */
+.wtt-icon { width: 1.75rem; height: 1.75rem; display: block; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; --wtt-icon-main: currentColor; --wtt-icon-accent: currentColor; }
+.wtt-m, .wtt-a { fill: none; }
+.wtt-icon use { stroke-width: 2; }
+.wtt-m { stroke: var(--wtt-icon-main); }
+.wtt-a { stroke: var(--wtt-icon-accent); }
+.wtt-icon-blue { --wtt-icon-main: #2563eb; --wtt-icon-accent: #60a5fa; }
+html.dark .wtt-icon-blue { --wtt-icon-main: #93c5fd; --wtt-icon-accent: #60a5fa; }
+.wtt-icon-green { --wtt-icon-main: #16a34a; --wtt-icon-accent: #4ade80; }
+html.dark .wtt-icon-green { --wtt-icon-main: #86efac; --wtt-icon-accent: #4ade80; }
+.wtt-icon-purple { --wtt-icon-main: #9333ea; --wtt-icon-accent: #c084fc; }
+html.dark .wtt-icon-purple { --wtt-icon-main: #d8b4fe; --wtt-icon-accent: #c084fc; }
+.wtt-icon-indigo { --wtt-icon-main: #4f46e5; --wtt-icon-accent: #818cf8; }
+html.dark .wtt-icon-indigo { --wtt-icon-main: #a5b4fc; --wtt-icon-accent: #818cf8; }
+.wtt-icon-amber { --wtt-icon-main: #d97706; --wtt-icon-accent: #fbbf24; }
+html.dark .wtt-icon-amber { --wtt-icon-main: #fcd34d; --wtt-icon-accent: #fbbf24; }
+.wtt-icon-teal { --wtt-icon-main: #0d9488; --wtt-icon-accent: #2dd4bf; }
+html.dark .wtt-icon-teal { --wtt-icon-main: #5eead4; --wtt-icon-accent: #2dd4bf; }
+.wtt-icon-slate { --wtt-icon-main: #475569; --wtt-icon-accent: #94a3b8; }
+html.dark .wtt-icon-slate { --wtt-icon-main: #cbd5e1; --wtt-icon-accent: #94a3b8; }
+.wtt-nav-icon .wtt-icon { width: 1.1rem; height: 1.1rem; margin: 0 auto; }
+.wtt-nav-icon .wtt-icon .wtt-a { stroke-opacity: 0.62; }
+.work-card-icon .wtt-icon { width: 1.5rem; height: 1.5rem; }
+.work-primary-card .work-card-icon .wtt-icon { width: 1.6rem; height: 1.6rem; }
