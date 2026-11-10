@@ -7,6 +7,9 @@ For downloadable installers/APKs and release metadata, use:
 
 ## v1.7.1 - Unreleased
 
+### Highlights
+- Work Time Tracker has a new logo: a stopwatch with an open progress arc and a dollar sign inside. You will see it in the app, the browser tab, the Android launcher and the Windows app and installer. Your data and settings are not affected.
+
 ### Fixes
 - The Work screen looks lighter: card headers are more compact and aligned, with smaller icons and consistent titles. Nothing moved or was removed.
 

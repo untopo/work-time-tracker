@@ -1,5 +1,6 @@
 param(
     [string]$Source = "src-tauri/icon-source.png",
+    [string]$ForegroundSource = "src-tauri/icon-foreground.png",
     [string]$ResDir = "android/app/src/main/res"
 )
 
@@ -43,6 +44,7 @@ function Write-ScaledPng {
 $resolvedSource = Resolve-Path $Source
 $resolvedResDir = Resolve-Path $ResDir
 $sourceImage = [System.Drawing.Image]::FromFile($resolvedSource)
+$foregroundImage = [System.Drawing.Image]::FromFile((Resolve-Path $ForegroundSource))
 
 try {
     $densities = @{
@@ -57,10 +59,11 @@ try {
         $dir = Join-Path $resolvedResDir $entry.Key
         Write-ScaledPng -SourceImage $sourceImage -OutputPath (Join-Path $dir "ic_launcher.png") -Size $entry.Value -Scale 1.0
         Write-ScaledPng -SourceImage $sourceImage -OutputPath (Join-Path $dir "ic_launcher_round.png") -Size $entry.Value -Scale 1.0
-        Write-ScaledPng -SourceImage $sourceImage -OutputPath (Join-Path $dir "ic_launcher_foreground.png") -Size $entry.Value -Scale 0.9
+        Write-ScaledPng -SourceImage $foregroundImage -OutputPath (Join-Path $dir "ic_launcher_foreground.png") -Size $entry.Value -Scale 0.7
     }
 } finally {
     $sourceImage.Dispose()
+    $foregroundImage.Dispose()
 }
 
 Write-Host "Android launcher icons regenerated from $resolvedSource"
