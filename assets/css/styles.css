@@ -12032,3 +12032,6 @@ body #mobile-donate-btn { background: linear-gradient(180deg, #fbbf24, #d97706) 
 body .delete-call-btn, body .delete-rate-btn, body .delete-cycle-btn, body .session-history-delete-btn { min-height: 0; border-radius: 10px !important; }
 body #dark-toggle { gap: 0.4rem; padding-left: 0.6rem; padding-right: 0.6rem; }
 body #dark-toggle #theme-toggle-label { white-space: nowrap; }
+
+.rate-cycle-payday { font-size: 0.72rem; color: #6b7280; margin-top: 0.15rem; }
+html.dark .rate-cycle-payday { color: #9ca3af; }
