@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.7.2';
+    const APP_VERSION = '1.7.3';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -103,6 +103,8 @@ function applyAppShellMode() {
     const root = document.documentElement;
     if (!root) return;
     root.classList.toggle('native-app-shell', isNativeAppShell());
+    // The installed apps (Windows, Android, installed web app) hide the "get the app" buttons.
+    root.classList.toggle('installed-app', isNativeAppShell() || Boolean(window.WTTEnv?.isTauri));
     root.style.setProperty('--app-shell-vh', `${window.innerHeight * 0.01}px`);
 }
 

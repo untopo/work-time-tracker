@@ -5,6 +5,12 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.7.3 - 2026-11-14
+
+### Highlights
+- Windows and Android download buttons now sit in the sidebar of the web version, between the social icons and the version, and in the Info & Support section on mobile. A user asked if there was an app besides the web version, so we made the apps easier to find. They go to the latest release, and they are hidden inside the apps themselves.
+- Your data stays on each device, so the web version and the apps do not sync by themselves. To move, export a backup in `Settings -> My data` and import it in the app.
+
 ## v1.7.2 - 2026-11-13
 
 ### Highlights

@@ -3,6 +3,14 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.7.3",
+        date: "2026-11-14",
+        changes: [
+        "Windows and Android download buttons now sit in the sidebar of the web version, between the social icons and the version, and in the Info & Support section on mobile. A user asked if there was an app besides the web version, so we made the apps easier to find. They go to the latest release, and they are hidden inside the apps themselves",
+        "Your data stays on each device, so the web version and the apps do not sync by themselves. To move, export a backup in Settings -> My data and import it in the app"
+        ]
+    },
+    {
         version: "1.7.2",
         date: "2026-11-13",
         changes: [

@@ -8,7 +8,7 @@
 
 Run live calls, track rates and goals, understand your patterns, manage work sessions and payment cycles, and use interpreter support tools. All in one workspace, with no account and no cloud sync.
 
-![Version](https://img.shields.io/badge/version-1.7.2-blue)
+![Version](https://img.shields.io/badge/version-1.7.3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Privacy](https://img.shields.io/badge/privacy-local--first-success)
 ![Platforms](https://img.shields.io/badge/platforms-web%20%7C%20Windows%20%7C%20Android-informational)
@@ -437,7 +437,7 @@ Safari generally works, but import/export behavior should always be verified in 
 
 ## Releases
 
-- Current Version: `v1.7.2`
+- Current Version: `v1.7.3`
 - In-app history: `What's New` modal
 - GitHub Releases: https://github.com/untopo/work-time-tracker/releases
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)

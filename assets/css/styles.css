@@ -12035,3 +12035,10 @@ body #dark-toggle #theme-toggle-label { white-space: nowrap; }
 
 .rate-cycle-payday { font-size: 0.72rem; color: #6b7280; margin-top: 0.15rem; }
 html.dark .rate-cycle-payday { color: #9ca3af; }
+
+/* Get the app buttons (web only): Windows and Android downloads. */
+.get-app-link { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; text-decoration: none; }
+.get-app-link .get-app-icon { width: 14px; height: 14px; flex: none; }
+.wtt-get-app { margin: 0.5rem 0; }
+html.installed-app .wtt-get-app { display: none !important; }
+.mobile-meta-card.wtt-get-app { margin: 0; }
