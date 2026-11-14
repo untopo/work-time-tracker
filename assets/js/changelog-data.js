@@ -3,6 +3,16 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.7.4",
+        date: "2026-11-14",
+        changes: [
+        "We received feedback from a user whose import marked about 764 real calls as duplicates, and we listened: different calls that share the exact same start and end time (common when a report rounds to the minute) are no longer skipped. Importing a backup or a CSV now keeps all of them, and importing the same file again still adds nothing",
+        "Every call already has its own ID, and now WTT uses it. A backup restores each call by ID, and the Call Log CSV export has a new Call ID column (on by default), so a CSV exported by WTT is recognized exactly when you import it again",
+        "The CSV import preview marks rows that share a time with another row as \"Same time as another row (kept)\", and the summary tells you how many were kept",
+        "Restoring a JSON backup no longer drops calls that have the same start and end time as another call"
+        ]
+    },
+    {
         version: "1.7.3",
         date: "2026-11-14",
         changes: [

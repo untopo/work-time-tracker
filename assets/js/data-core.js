@@ -252,7 +252,8 @@ function getCsvImportColumnMap(headers) {
         start: findCsvColumnIndex(headers, ['start', 'start time', 'starttime', 'call start', 'time start']),
         end: findCsvColumnIndex(headers, ['end', 'end time', 'endtime', 'call end', 'time end', 'finish']),
         duration: findCsvColumnIndex(headers, ['duration', 'call duration', 'durationminutes', 'length', 'elapsed', 'talk time', 'talktime']),
-        rate: findCsvColumnIndex(headers, ['rate', 'pay rate', 'rate per min', 'ratepermin', 'amount'])
+        rate: findCsvColumnIndex(headers, ['rate', 'pay rate', 'rate per min', 'ratepermin', 'amount']),
+        id: findCsvColumnIndex(headers, ['call id', 'callid', 'wtt call id'])
     };
 }
 
@@ -269,9 +270,52 @@ function parseCsvImportFile(text) {
     };
 }
 
+// Decides whether an incoming call is one the app already has.
+// 1. The same id is the same call (a backup restored on top of itself).
+// 2. Otherwise a call matches an existing one with exactly the same start and end, one for one.
+//    Company reports often round to the minute, so different calls can share the same start and
+//    end. Each existing call can only "use up" one incoming call, so identical calls that really
+//    are different are all kept, and importing the same file twice still adds nothing.
+function createCallMatcher(existingCalls) {
+    const knownIds = new Set();
+    const idToKey = new Map();
+    const freeSlots = new Map();
+    existingCalls.forEach((existing) => {
+        const key = getCallDuplicateKey(existing);
+        if (existing.id) {
+            knownIds.add(existing.id);
+            idToKey.set(existing.id, key);
+        }
+        const list = freeSlots.get(key) || [];
+        list.push(existing.id || '');
+        freeSlots.set(key, list);
+    });
+
+    return {
+        isAlreadyThere(call) {
+            if (call.id && knownIds.has(call.id)) {
+                const key = idToKey.get(call.id);
+                const list = key !== undefined ? freeSlots.get(key) : null;
+                const at = list ? list.indexOf(call.id) : -1;
+                if (at >= 0) list.splice(at, 1);
+                return true;
+            }
+            const list = freeSlots.get(getCallDuplicateKey(call));
+            if (list && list.length > 0) {
+                list.pop();
+                return true;
+            }
+            return false;
+        },
+        remember(call) {
+            if (call.id) knownIds.add(call.id);
+        }
+    };
+}
+
 function mergeCallsWithExisting(existingCalls, importedCalls) {
     const merged = existingCalls.map(normalizeCall);
-    const existingKeys = new Set(merged.map(getCallDuplicateKey));
+    const matcher = createCallMatcher(merged);
     let addedCount = 0;
     let skippedCount = 0;
 
@@ -281,12 +325,11 @@ function mergeCallsWithExisting(existingCalls, importedCalls) {
             id: call.id || generateUUID(),
             rpgEligible: typeof call.rpgEligible === 'boolean' ? call.rpgEligible : true
         });
-        const duplicateKey = getCallDuplicateKey(normalizedCall);
-        if (existingKeys.has(duplicateKey)) {
+        if (matcher.isAlreadyThere(normalizedCall)) {
             skippedCount += 1;
             return;
         }
-        existingKeys.add(duplicateKey);
+        matcher.remember(normalizedCall);
         merged.push(normalizedCall);
         addedCount += 1;
     });

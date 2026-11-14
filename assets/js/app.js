@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.7.3';
+    const APP_VERSION = '1.7.4';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -1127,7 +1127,8 @@ function getSelectedExportCsvFields() {
         { key: 'duration', label: 'Duration', enabled: !!exportFieldDuration?.checked },
         { key: 'rateName', label: 'Rate Name', enabled: !!exportFieldRateName?.checked },
         { key: 'rateAmount', label: 'Rate Amount', enabled: !!exportFieldRateAmount?.checked },
-        { key: 'earnings', label: 'Earnings', enabled: !!exportFieldEarnings?.checked }
+        { key: 'earnings', label: 'Earnings', enabled: !!exportFieldEarnings?.checked },
+        { key: 'id', label: 'Call ID', enabled: !!exportFieldCallId?.checked }
     ];
 }
 
@@ -1151,7 +1152,8 @@ async function exportCallsAsCsv(exportCalls) {
                 duration: msToHMS(Number(call.duration) || 0),
                 rateName: call.rateName || '',
                 rateAmount: Number(call.rate || 0).toFixed(2),
-                earnings: Number(getCallEarnings(call) || 0).toFixed(2)
+                earnings: Number(getCallEarnings(call) || 0).toFixed(2),
+                id: call.id || ''
             };
             csvRows.push(selectedFields.map((field) => valueMap[field.key] ?? ''));
         });
@@ -1477,7 +1479,7 @@ function openExportOptionsModal(format) {
         exportRangeEndInput.max = getTodayDateString();
         exportRangeEndInput.value = statsDatePicker?.value || getTodayDateString();
     }
-    [exportFieldDate, exportFieldStart, exportFieldEnd, exportFieldDuration, exportFieldRateName, exportFieldRateAmount, exportFieldEarnings]
+    [exportFieldDate, exportFieldStart, exportFieldEnd, exportFieldDuration, exportFieldRateName, exportFieldRateAmount, exportFieldEarnings, exportFieldCallId]
         .filter(Boolean)
         .forEach((checkbox) => { checkbox.checked = true; });
     refreshExportOptionsModalState();
@@ -1691,6 +1693,7 @@ async function confirmExportOptions() {
     const exportFieldRateName = document.getElementById('export-field-rate-name');
     const exportFieldRateAmount = document.getElementById('export-field-rate-amount');
     const exportFieldEarnings = document.getElementById('export-field-earnings');
+    const exportFieldCallId = document.getElementById('export-field-call-id');
     const importFile = document.getElementById('import-file');
     const csvImportPreviewModal = document.getElementById('csv-import-preview-modal');
     const closeCsvImportPreviewModalBtn = document.getElementById('close-csv-import-preview-modal');
@@ -6018,7 +6021,8 @@ function parseCsvImportRows(csvImportData, columnMap = csvImportData?.columnMap 
         start: Number.isInteger(columnMap.start) ? columnMap.start : -1,
         end: Number.isInteger(columnMap.end) ? columnMap.end : -1,
         duration: Number.isInteger(columnMap.duration) ? columnMap.duration : -1,
-        rate: Number.isInteger(columnMap.rate) ? columnMap.rate : -1
+        rate: Number.isInteger(columnMap.rate) ? columnMap.rate : -1,
+        id: Number.isInteger(columnMap.id) ? columnMap.id : -1
     };
 
     return dataRows.map((cells, rowIndex) => {
@@ -6072,6 +6076,7 @@ function parseCsvImportRows(csvImportData, columnMap = csvImportData?.columnMap 
             endTime: finalEnd,
             durationMs: finalStart && finalEnd ? Math.max(0, finalEnd.getTime() - finalStart.getTime()) : 0,
             importedRate: matchedRate,
+            callId: getCell(resolvedMap.id).slice(0, 80),
             rawRate: getCell(columnMap.rate),
             issues
         };
@@ -6090,7 +6095,9 @@ function getCsvImportColumnMapFromUi() {
         start: getCsvColumnSelectValue(csvImportStartColumnSelect),
         end: getCsvColumnSelectValue(csvImportEndColumnSelect),
         duration: getCsvColumnSelectValue(csvImportDurationColumnSelect),
-        rate: getCsvColumnSelectValue(csvImportRateColumnSelect)
+        rate: getCsvColumnSelectValue(csvImportRateColumnSelect),
+        // The Call ID column (from a CSV exported by WTT) has no selector; it is detected from the header.
+        id: Number.isInteger(pendingCsvImport?.csvData?.columnMap?.id) ? pendingCsvImport.csvData.columnMap.id : -1
     };
 }
 
@@ -6144,8 +6151,11 @@ function getResolvedCsvImportRate(row) {
 }
 
 function buildCsvPreviewRows(parsedRows) {
-    const existingKeys = new Set(readCallsFromStorage().map(getCallDuplicateKey));
-    const fileKeys = new Set();
+    // A row is already there if its Call ID matches (a CSV exported by WTT), or if it matches one call
+    // in the log by exact start and end, one for one. Extra rows with the same time are kept, because
+    // company reports round to the minute and different calls can look identical.
+    const matcher = createCallMatcher(readCallsFromStorage());
+    const fileKeyCounts = new Map();
     const selectedRows = pendingCsvImport?.selectedRows || new Set();
     const selectionMode = pendingCsvImport?.selectionMode || 'default';
     const requireRate = !!csvImportRequireRateToggle?.checked;
@@ -6154,7 +6164,7 @@ function buildCsvPreviewRows(parsedRows) {
         const resolvedRate = getResolvedCsvImportRate(row);
         const normalizedCall = (row.issues.length === 0 && row.startTime && row.endTime)
             ? normalizeCall({
-                id: generateUUID(),
+                id: row.callId || generateUUID(),
                 startTime: row.startTime.toISOString(),
                 endTime: row.endTime.toISOString(),
                 duration: row.durationMs,
@@ -6166,23 +6176,27 @@ function buildCsvPreviewRows(parsedRows) {
         const duplicateKey = normalizedCall ? getCallDuplicateKey(normalizedCall) : '';
         let status = 'ready';
         let reason = '';
+        let sameTimeInFile = false;
 
         if (row.issues.length > 0) {
             status = 'invalid';
             reason = row.issues.join(', ');
-        } else if (existingKeys.has(duplicateKey)) {
+        } else if (normalizedCall && matcher.isAlreadyThere(normalizedCall)) {
             status = 'duplicate';
             reason = 'Already exists in Call Log';
-        } else if (fileKeys.has(duplicateKey)) {
-            status = 'duplicate';
-            reason = 'Duplicate inside this CSV';
         } else {
-            fileKeys.add(duplicateKey);
+            if (normalizedCall) matcher.remember(normalizedCall);
+            const seenInFile = fileKeyCounts.get(duplicateKey) || 0;
+            fileKeyCounts.set(duplicateKey, seenInFile + 1);
+            if (seenInFile > 0) {
+                sameTimeInFile = true;
+                reason = 'Same time as another row (kept)';
+            }
             if (requireRate && !(resolvedRate.amount > 0)) {
                 status = 'invalid';
                 reason = 'Rate required for import';
             } else if (!(resolvedRate.amount > 0)) {
-                reason = 'Will import without rate';
+                reason = reason ? `${reason}. Will import without rate` : 'Will import without rate';
             }
         }
 
@@ -6197,6 +6211,7 @@ function buildCsvPreviewRows(parsedRows) {
             resolvedRate,
             status,
             reason,
+            sameTimeInFile,
             selected: status === 'ready' ? isSelected : false
         };
     });
@@ -6383,6 +6398,7 @@ function confirmCsvImport() {
     const readyRows = previewRows.filter((row) => row.status === 'ready' && row.selected && row.normalizedCall);
     const duplicateCount = previewRows.filter((row) => row.status === 'duplicate').length;
     const invalidCount = previewRows.filter((row) => row.status === 'invalid').length;
+    const keptSameTimeCount = readyRows.filter((row) => row.sameTimeInFile).length;
     if (readyRows.length === 0) {
         showAlertModal('No Calls To Import', 'This CSV does not contain any new valid calls to add.');
         return;
@@ -6396,7 +6412,7 @@ function confirmCsvImport() {
     closeSettingsView();
     showAlertModal(
         'CSV Import Complete',
-        `${readyRows.length} call${readyRows.length === 1 ? '' : 's'} imported. ${duplicateCount} duplicate row${duplicateCount === 1 ? '' : 's'} skipped. ${invalidCount} invalid row${invalidCount === 1 ? '' : 's'} not imported.`,
+        `${readyRows.length} call${readyRows.length === 1 ? '' : 's'} imported. ${duplicateCount} duplicate row${duplicateCount === 1 ? '' : 's'} skipped. ${invalidCount} invalid row${invalidCount === 1 ? '' : 's'} not imported.${keptSameTimeCount > 0 ? ` ${keptSameTimeCount} row${keptSameTimeCount === 1 ? '' : 's'} had the same time as another row and ${keptSameTimeCount === 1 ? 'was' : 'were'} kept.` : ''}`,
         { severity: 'info', buttonText: 'Done' }
     );
     showToast(`${readyRows.length} call${readyRows.length === 1 ? '' : 's'} imported from CSV.`);
@@ -13398,7 +13414,7 @@ goalMinutesInput.addEventListener('input', () => {
         [exportSpecificDateInput, exportRangeStartInput, exportRangeEndInput].filter(Boolean).forEach((inputEl) => {
             inputEl.addEventListener('input', refreshExportOptionsModalState);
         });
-        [exportFieldDate, exportFieldStart, exportFieldEnd, exportFieldDuration, exportFieldRateName, exportFieldRateAmount, exportFieldEarnings]
+        [exportFieldDate, exportFieldStart, exportFieldEnd, exportFieldDuration, exportFieldRateName, exportFieldRateAmount, exportFieldEarnings, exportFieldCallId]
             .filter(Boolean)
             .forEach((inputEl) => {
                 inputEl.addEventListener('change', refreshExportOptionsModalState);
