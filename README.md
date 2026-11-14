@@ -1,88 +1,176 @@
+<div align="center">
+
+<img src="assets/img/brand-logo-192.png" alt="Work Time Tracker logo" width="96" height="96">
+
 # Work Time Tracker
+
+**A local-first call, earnings and workflow tracker built for interpreters.**
+
+Run live calls, track rates and goals, understand your patterns, manage work sessions and payment cycles, and use interpreter support tools. All in one workspace, with no account and no cloud sync.
 
 ![Version](https://img.shields.io/badge/version-1.7.2-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Privacy](https://img.shields.io/badge/privacy-local--first-success)
+![Platforms](https://img.shields.io/badge/platforms-web%20%7C%20Windows%20%7C%20Android-informational)
 ![Backend](https://img.shields.io/badge/backend-none-lightgrey)
 ![Built With](https://img.shields.io/badge/built%20with-Vanilla%20JS-yellow)
 
-A local-first call, earnings, and workflow tracker built for interpreters.
+**[Open the live demo](https://untopo.github.io/work-time-tracker/)** &nbsp;·&nbsp; **[Download for Windows and Android](https://github.com/untopo/work-time-tracker/releases/latest)** &nbsp;·&nbsp; **[Join the Discord](https://discord.gg/eRayqAkFWC)**
 
-Run live calls, log manual work, track rates and goals, review your patterns, manage sessions, and use interpreter support tools — all in one workspace, with no account and no cloud sync. Your call records and work history stay on your device. A few optional web features send limited information only when you choose to use or enable them; see [Data and Privacy](#data-and-privacy).
+<br>
 
-**[/live demo on the web](https://untopo.github.io/work-time-tracker/)**
+<img src="docs/screenshots/work-active-call.webp" alt="Work view with a live call: timer, earnings and daily goal progress" width="900">
+
+</div>
+
+Your call records and work history stay on your device. A few optional web features send limited information only when you choose to use or enable them; see [Data and Privacy](#data-and-privacy).
 
 ---
 
-## Take a Tour
+## Contents
 
-### Work — your control room
+- [At a glance](#at-a-glance)
+- [Take a tour](#take-a-tour)
+- [Why it exists](#why-it-exists)
+- [Core features](#core-features)
+- [Data and privacy](#data-and-privacy)
+- [Backup and restore](#backup-and-restore)
+- [Onboarding](#onboarding)
+- [Platforms and downloads](#platforms-and-downloads)
+- [Quick start](#quick-start)
+- [Build commands](#build-commands)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Project structure](#project-structure)
+- [FAQ](#faq)
+- [Limitations](#limitations)
+- [Browser support](#browser-support)
+- [Contributing](#contributing)
+- [Releases](#releases)
+- [Community](#community)
+- [Support the project](#support-the-project)
+- [Feedback](#feedback)
 
-Start a call and watch the timer and earnings update in real time. Rates, daily goals, and your session tracker live on the same screen, so everything you need during a live call is one glance away.
+---
 
-![Work view with an active call: live timer and earnings running](docs/screenshots/work-active-call.png)
+## At a glance
 
-- Start and end live calls with real-time timer and earnings
-- Manage multiple billing rates and daily goals in USD and minutes
-- Run work sessions with pause/resume and utilization metrics
-- Log manual calls when the call is already over
+| | |
+|---|---|
+| **Track** | Live calls with a real-time timer and earnings, manual calls, multiple rates, daily goals in USD and minutes |
+| **Organize** | Work sessions with pauses and utilization, optional session automation, payment cycles (also per rate) |
+| **Understand** | Analytics for calls and for time, a monthly report, patterns by hour, week and month, progress and streaks |
+| **Stay safe** | No account, no WTT cloud, JSON backups you control, reminders when calls only live on one device |
+| **Run anywhere** | Web app, Windows desktop app (Tauri) and Android app (Capacitor) from one shared codebase |
 
-When a call ends, a quick review strip lets you double-check the entry before moving on.
+---
 
-![Post-call review strip after ending a call](docs/screenshots/post-call.png)
+## Take a tour
 
-### Focus Mode — optional, one tap
+### Work: your control room
 
-During a live call, tap **Focus** to blur the workspace and center what matters: a big live timer, real-time earnings, and a ring that fills as you approach your daily goal. Exit anytime — with the button or the Esc key — without touching the call. Prefer the classic view? Turn Focus Mode off in `Settings -> Features`.
+Start a call and watch the timer and earnings update in real time. Rates, your daily goal and the session tracker live on the same screen, so everything you need during a live call is one glance away.
 
-| Light | Dark |
-|:---:|:---:|
-| ![Focus Mode in light theme](docs/screenshots/focus-light.png) | ![Focus Mode in dark theme](docs/screenshots/focus-dark.png) |
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/work-light.webp" alt="Work view in light theme with an active session"></td>
+<td width="50%"><img src="docs/screenshots/work-dark.webp" alt="Work view in dark theme with an active session"></td>
+</tr>
+<tr>
+<td align="center"><sub>Light theme</sub></td>
+<td align="center"><sub>Dark theme</sub></td>
+</tr>
+</table>
 
-### Call Log — your history
+- Start and end live calls with real-time timer and earnings, or log a manual call when it is already over
+- Manage multiple billing rates and a daily goal in USD and minutes
+- Run work sessions with pause and resume, and watch utilization as you go
+- Optional **session automation** (off by default): your first live call starts the session, a new call resumes it, and the session pauses and ends by itself after the idle times you choose
 
-Every saved call in one place: filter by date range, search, and edit entries. Import a company CSV history or export your own — with preview, column mapping, and dedupe before anything is saved.
+When a call ends, a quick review strip lets you undo it, edit it or dismiss it before moving on.
 
-![Call Log view listing saved calls](docs/screenshots/call-log.png)
+<img src="docs/screenshots/post-call.webp" alt="Post-call review strip with Undo, Quick Edit and Dismiss after saving a call" width="900">
 
-### Analytics — your patterns
+### Focus Mode: optional, one tap
 
-Daily earnings, average call duration, and hourly, weekly, and monthly patterns, plus payment-cycle snapshots so you know what to invoice.
+During a live call, tap **Focus** to blur the workspace and center what matters: a big live timer, real-time earnings and a ring that fills as you approach your daily goal. Exit anytime, with the button or the Esc key, without touching the call. Prefer the classic view? Turn Focus Mode off in `Settings -> Features`.
 
-![Analytics view with earnings charts](docs/screenshots/analytics.png)
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/focus-light.webp" alt="Focus Mode in light theme"></td>
+<td width="50%"><img src="docs/screenshots/focus-dark.webp" alt="Focus Mode in dark theme"></td>
+</tr>
+</table>
 
-### Progress — your consistency
+### Call Log: your history, calls and sessions
 
-Achievements, XP, streaks, and quests keep consistency visible over time. Progress is stored locally, right next to the calls that earned it.
+Every saved call in one place: filter by date range, search and edit entries. Import a company CSV history or export your own, with preview, column mapping and dedupe before anything is saved.
 
-![Progress view with achievements and streaks](docs/screenshots/progress.png)
+<img src="docs/screenshots/call-log.webp" alt="Call Log listing saved calls with filters and totals" width="900">
 
-### Resources — your support tools
+The **Sessions** tab keeps your completed work sessions next to your calls. A month calendar shades each day by how much of your time was spent talking, and every session has a Details view with who started and ended it (you or automation) and each pause.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/call-log-sessions.webp" alt="Call Log Sessions tab with a month calendar, light theme"></td>
+<td width="50%"><img src="docs/screenshots/call-log-sessions-dark.webp" alt="Call Log Sessions tab with a month calendar, dark theme"></td>
+</tr>
+</table>
+
+### Analytics: your patterns
+
+The **Calls** tab covers daily earnings, average call duration, pace against yesterday and goal progress, plus hourly, weekly and monthly patterns. Payment-cycle snapshots show what you earned in the current cycle and when it pays.
+
+<img src="docs/screenshots/analytics.webp" alt="Analytics Calls tab with today's snapshot and payment cycle cards" width="900">
+
+The **Time** tab looks at your work sessions of the last 30 days: sessions, average utilization, talk and idle time, average session length, earnings per available hour, pauses and utilization by weekday.
+
+<img src="docs/screenshots/analytics-time.webp" alt="Analytics Time tab with session metrics and utilization by weekday" width="900">
+
+### Payment cycles, per rate
+
+Paid on different schedules by different agencies? Give each payment cycle an **Applies to** rate and Analytics shows that rate's current cycle on its own card, with earnings, days left and pay date. Calls are never counted twice, and when every cycle belongs to a rate the main cycle cards step aside so only the rate cards remain.
+
+Under each rate's previous cycle a small **Pay Day** line shows when that cycle is paid and how much that payday brings, which helps when you are paid in arrears. After the date passes it reads "Paid on".
+
+<img src="docs/screenshots/rate-cycles.webp" alt="Two rate cards, each with its own cycle, pay date and a Pay Day line under the previous cycle" width="900">
+
+### Progress: your consistency
+
+Progress has three tabs: **Today** (level, daily focus and Daily Quests), **Week** (Weekly Arc and Streak Shield) and **Achievements** (all-time milestones). It is stored locally, right next to the calls that earned it.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/progress.webp" alt="Progress view, light theme"></td>
+<td width="50%"><img src="docs/screenshots/progress-dark.webp" alt="Progress view, dark theme"></td>
+</tr>
+</table>
+
+### Resources: your support tools
 
 Two interpreter support tools built into the workspace:
 
-- **US ZIP / Address Lookup** — one-bar search for ZIPs, cities, states, and partial addresses, with ranked matches and recent lookups
-- **Interpreter Language Assistant** — multilingual term lookup with ranked translation candidates, related terms, and frequent searches
+- **US ZIP / Address Lookup**: one-bar search for ZIPs, cities, states and partial addresses, with ranked matches and recent lookups
+- **Interpreter Language Assistant**: multilingual term lookup with ranked translation candidates, related terms and frequent searches
 
-![Resources view with the interpreter support tools](docs/screenshots/resources.png)
-
-### Light and dark
-
-The whole app adapts to your theme. Same data, same tools, whatever is easier on your eyes at the end of a shift.
-
-| Light | Dark |
-|:---:|:---:|
-| ![Work view in light theme](docs/screenshots/work-light.png) | ![Work view in dark theme](docs/screenshots/work-dark.png) |
+<img src="docs/screenshots/resources.webp" alt="Resources view with the interpreter support tools" width="900">
 
 ### On mobile
 
-Responsive layouts for desktop, tablet, and mobile — including floating call controls, so you can start and end calls without losing your place.
+Responsive layouts for desktop, tablet and mobile, including floating call controls so you can start and end calls without losing your place.
 
-![Work view on a mobile-sized screen](docs/screenshots/mobile-work.png)
+<table>
+<tr>
+<td width="50%" align="center"><img src="docs/screenshots/mobile-work.webp" alt="Work view on a phone, light theme" width="280"></td>
+<td width="50%" align="center"><img src="docs/screenshots/mobile-work-dark.webp" alt="Work view on a phone, dark theme" width="280"></td>
+</tr>
+</table>
+
+<sub>Screenshots use demo data generated for this page. No real call records are shown.</sub>
 
 ---
 
-## Why It Exists
+## Why it exists
 
 - Track paid calls and earnings without spreadsheets
 - Keep work data local and simple
@@ -91,21 +179,20 @@ Responsive layouts for desktop, tablet, and mobile — including floating call c
 
 It is built for interpreters who bill by duration, freelancers tracking time-based income, and anyone who wants a private tool with no account setup.
 
-## Core Features
+## Core features
 
-- Live call timer with real-time earnings
-- Optional Focus Mode during live calls
-- Manual call entry and editing
-- Multiple billing rates
-- Daily goal tracking in USD and minutes
-- Session tracking with utilization metrics
-- Call Log filtering and CSV import/export
-- JSON backup export/import
-- Payment cycle tracking
-- Floating call controls
-- Dark/light mode
-- In-app changelog
-- Responsive layouts for desktop, tablet, and mobile
+| Area | What you get |
+|---|---|
+| **Calls** | Live call timer with real-time earnings, manual call entry and editing, quick post-call review with undo, optional notes |
+| **Rates and goals** | Multiple billing rates, daily goal in USD and minutes with live progress |
+| **Sessions** | Session tracker with pause and resume, utilization metrics, optional automation, session history with a month calendar |
+| **Focus** | Optional Focus Mode and floating call controls for live calls |
+| **Call Log** | Date filters, search, CSV import with preview, column mapping and dedupe, CSV export |
+| **Analytics** | Calls and Time views, hourly, weekly and monthly patterns, monthly report, shareable card |
+| **Payments** | Payment cycles with pay dates, separate cycles per rate, Pay Day line for the previous cycle, cycle generator |
+| **Progress** | Level, XP, Daily Quests, Weekly Arc, Streak Shield and achievements |
+| **Data safety** | JSON backup export and import, last-backup date, backup reminders, duplicate-safe imports |
+| **Experience** | Light and dark themes, a consistent icon and button style, in-app changelog, responsive layouts |
 
 ## Data and Privacy
 
@@ -162,15 +249,15 @@ New users see a first-run welcome guide with three paths: Quick Start, Customize
 
 The fastest setup is: add one billing rate, run a short test call, then review Settings. A test call is just a setup check; delete it afterward if you do not want it in your work history.
 
-## Platforms
+## Platforms and downloads
 
 One version of the app, three ways to run it:
 
-| Platform | Technology | Notes |
-|---|---|---|
-| Web | Static files | Runs from the project root; works on GitHub Pages |
-| Desktop | Tauri | Native file dialogs for import/export; no analytics |
-| Android | Capacitor | Responsive mobile/tablet layouts; no analytics |
+| Platform | Technology | How to get it | Notes |
+|---|---|---|---|
+| Web | Static files | [Open the live demo](https://untopo.github.io/work-time-tracker/) | Runs from the project root; works on GitHub Pages |
+| Windows | Tauri | `.exe` or `.msi` from [Releases](https://github.com/untopo/work-time-tracker/releases/latest) | Native file dialogs for import and export; no analytics |
+| Android | Capacitor | `.apk` from [Releases](https://github.com/untopo/work-time-tracker/releases/latest) | Responsive mobile and tablet layouts; no analytics |
 
 All three share the same frontend and release-version syncing.
 
@@ -220,6 +307,15 @@ cd android
 gradlew assembleRelease
 ```
 
+### Tests and checks
+
+```bash
+npm run test:unit
+npm run test:e2e
+npm run verify:version-sync
+npm run verify:release-ready
+```
+
 ## Tech Stack
 
 - Vanilla JavaScript
@@ -233,15 +329,16 @@ WTT uses a shared frontend across web, desktop, and Android. The application is 
 
 Current boundaries include:
 
-- `data-core.js`: data normalization, CSV parsing/import helpers, and merge logic
-- `session-core.js`: work-session and active-call recovery logic
+- `data-core.js`: data normalization, CSV parsing/import helpers, payment-cycle scope helpers, and merge logic
+- `session-core.js`: work-session, session-automation and active-call recovery logic
 - `progress-core.js`: progression, achievements, and streak calculations
 - `metrics-core.js`: coarse usage-metric buckets
 - `report-core.js`: monthly report calculations
 - `survey-core.js`: survey question/configuration logic
-- `resources-data.js` and `resources-helpers.js`: interpreter resource data and helper logic
+- `resources-data.js`, `resources-helpers.js` and `medical-glossary.js`: interpreter resource data and helper logic
 - `storage.js`: shared storage adapter for browser storage and the Tauri native snapshot bridge
-- `settings-manager.js` and `update-manager.js`: settings and update UI coordination
+- `settings-manager.js`, `update-manager.js` and `update-utils.js`: settings and update UI coordination
+- `changelog-data.js`: generated from `CHANGELOG.md` by `npm run changelog`
 
 The next architectural step should be incremental: extract one self-contained feature at a time from `app.js`, preserve the existing storage keys and public globals during migration, and add unit/E2E coverage before changing behavior. Avoid a full rewrite; compatibility across web, Tauri, and Android is more important than reducing file size quickly.
 
@@ -253,6 +350,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the module map and refact
 /
 |-- index.html
 |-- package.json
+|-- version.json
 |-- capacitor.config.json
 |-- scripts/
 |-- android/
@@ -263,20 +361,29 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the module map and refact
 |   |-- js/
 |   |   |-- app.js
 |   |   |-- data-core.js
-|   |   |-- metrics-core.js
-|   |   |-- progress-core.js
-|   |   |-- report-core.js
 |   |   |-- session-core.js
+|   |   |-- progress-core.js
+|   |   |-- metrics-core.js
+|   |   |-- report-core.js
 |   |   |-- survey-core.js
 |   |   |-- resources-data.js
 |   |   |-- resources-helpers.js
+|   |   |-- medical-glossary.js
 |   |   |-- settings-manager.js
 |   |   |-- storage.js
 |   |   |-- update-utils.js
-|   |   `-- update-manager.js
-|   `-- images/
+|   |   |-- update-manager.js
+|   |   `-- changelog-data.js
+|   `-- img/
+|-- tests/
+|   |-- unit/
+|   `-- e2e/
 |-- docs/
+|   |-- ARCHITECTURE.md
 |   `-- screenshots/
+|-- .github/workflows/
+|-- CHANGELOG.md
+|-- RELEASE.md
 |-- README.md
 `-- .nojekyll
 ```
@@ -294,6 +401,12 @@ It is an in-app workspace for interpreter support tools that stay available alon
 
 ### Can I import a company call history CSV?
 Yes. The app supports preview, column mapping, dedupe, and optional rate handling before import.
+
+### Can different rates have different payment cycles?
+Yes. Each payment cycle has an "Applies to" option. Pick a rate for cycles that follow their own schedule, or leave it on "All other rates" for the rest.
+
+### Will WTT start and end my sessions for me?
+Only if you turn on session automation in `Settings -> Features`. It is off by default, and you choose the idle times for pausing and ending.
 
 ### Why did my data disappear?
 Most likely the underlying browser/site/app storage was cleared.
@@ -357,6 +470,8 @@ Use the in-app `Contact Us` modal for:
 - bug reports
 - feature requests
 - general feedback
+
+Many features in WTT started as feedback from interpreters using the app. Thank you.
 
 Direct contact reference: `worktimetrackertool@gmail.com`
 
