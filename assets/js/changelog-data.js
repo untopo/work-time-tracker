@@ -3,6 +3,14 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.7.2",
+        date: "2026-11-13",
+        changes: [
+        "We received feedback about using two rates with their own payment cycles, and we listened: when every payment cycle belongs to a rate, the main cycle cards (Current Cycle, Cycle Earnings, Next Pay Date) no longer show zeros. They are hidden and only the rate cards remain, each with its own earnings and dates. If you also keep a cycle for \"All other rates\", the main cards stay",
+        "A small Pay Day line now sits under the previous cycle: it shows the date that cycle is paid and how much that payday brings, which helps when you are paid in arrears (the money of a past period arrives later). After the date passes it reads \"Paid on\". It appears on each rate card and on the main Cycle Earnings card"
+        ]
+    },
+    {
         version: "1.7.1",
         date: "2026-11-10",
         changes: [

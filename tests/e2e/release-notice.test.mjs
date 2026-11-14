@@ -31,14 +31,14 @@ test('the What\'s New notice stays concise and View details opens the full chang
     const summary = (await page.textContent('.release-spotlight-text')).trim();
     assert.ok(summary.length > 10 && summary.length < 360, `notice should be short, got ${summary.length} characters`);
     assert.ok(!/survey/i.test(summary), 'the summary must describe the current release, not an older one');
-    assert.match(summary, /logo/i);
+    assert.match(summary, /payment cycles?/i);
 
     await page.click('[data-release-action="details"]');
     await page.waitForSelector('#changelog-modal', { state: 'visible' });
     const details = (await page.textContent('#changelog-content')).trim();
     assert.ok(details.includes(APP_VERSION), 'details name the current version');
-    assert.match(details, /new logo/i);
-    assert.match(details, /buttons share one look/i);
+    assert.match(details, /Pay Day line/i);
+    assert.match(details, /main cycle cards/i);
     assert.deepEqual(problems, []);
   } finally {
     await context.close();

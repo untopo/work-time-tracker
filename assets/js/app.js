@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.7.1';
+    const APP_VERSION = '1.7.2';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -1802,6 +1802,7 @@ async function confirmExportOptions() {
     const cycleEarningsDisplay = document.getElementById('cycle-earnings');
     const cycleEarningsMetaDisplay = document.getElementById('cycle-earnings-meta');
     const cycleEarningsTrendDisplay = document.getElementById('cycle-earnings-trend');
+    const cyclePreviousPayDayDisplay = document.getElementById('cycle-previous-payday');
     const cycleStateChipDisplay = document.getElementById('cycle-state-chip');
     const cycleProgressBarDisplay = document.getElementById('cycle-progress-bar');
     const cycleProgressMetaDisplay = document.getElementById('cycle-progress-meta');
@@ -7302,6 +7303,23 @@ function saveCalls() {
         rpgBreakdownToggleBtn.setAttribute('aria-expanded', rpgXpBreakdownExpanded ? 'true' : 'false');
     }
 
+    // True when every payment cycle belongs to a rate. The general cycle cards would then only show
+    // zeros, so they stay hidden and the rate cards are the whole picture.
+    function hasOnlyRateCycles() {
+        if (!paymentCyclesEnabled) return false;
+        const list = Array.isArray(paymentCycles) ? paymentCycles : [];
+        return list.length > 0 && list.every((cycle) => !!getPaymentCycleScope(cycle));
+    }
+
+    // Small "Pay Day" line for a closed cycle. Payment can come after the cycle ends (paid in arrears),
+    // so this shows the cycle's own pay date and the amount that date pays.
+    function formatCyclePayDayLine(cycle, amount, nowMs = Date.now()) {
+        const payMs = Number(Date.parse(cycle?.payDate || ''));
+        if (!Number.isFinite(payMs)) return '';
+        const paid = getDayStartMs(new Date(payMs)) < getDayStartMs(new Date(nowMs));
+        return `${paid ? 'Paid on' : 'Pay Day'}: ${formatDate(cycle.payDate)} · ${formatEarnings(amount)}`;
+    }
+
     function getRateOptionNames() {
         const names = (Array.isArray(rates) ? rates : []).map((rate) => String(rate?.name || '').trim()).filter(Boolean);
         getPaymentCycleScopeNames(paymentCycles).forEach((name) => {
@@ -7324,10 +7342,8 @@ function saveCalls() {
         const wrap = document.getElementById('rate-cycle-cards');
         if (!wrap) return;
         const scopes = paymentCyclesEnabled ? getPaymentCycleScopeNames(paymentCycles) : [];
-        const generalCount = (Array.isArray(paymentCycles) ? paymentCycles : [])
-            .filter((cycle) => !getPaymentCycleScope(cycle)).length;
         // When only rate cycles exist there is no general cycle to show.
-        if (paymentCyclesEnabled && scopes.length > 0 && generalCount === 0) {
+        if (hasOnlyRateCycles()) {
             paymentCycleEarningsCards.classList.add('hidden');
             monthlyEarningsCards.classList.add('hidden');
         }
@@ -7349,11 +7365,14 @@ function saveCalls() {
                 const previous = index > 0 ? context.normalized[index - 1] : null;
                 const daysLeft = Math.max(0, Math.ceil((current._endMs - nowMs) / dayMs));
                 const earnings = sumFor(current, scope);
-                const trend = previous ? `Previous cycle: ${formatEarnings(sumFor(previous, scope))}` : 'No previous cycle yet.';
+                const previousEarned = previous ? sumFor(previous, scope) : 0;
+                const trend = previous ? `Previous cycle: ${formatEarnings(previousEarned)}` : 'No previous cycle yet.';
+                const previousPay = previous ? formatCyclePayDayLine(previous, previousEarned, nowMs) : '';
                 body = `<div class="rate-cycle-amount">${formatEarnings(earnings)}</div>
                     <div class="rate-cycle-line">${escapeHTML(formatDate(current.startDate))} - ${escapeHTML(formatDate(current.endDate))} · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left</div>
                     <div class="rate-cycle-line">${payCycle ? `Pay date: ${escapeHTML(formatDate(payCycle.payDate))}` : 'No upcoming pay date'}</div>
-                    <div class="rate-cycle-trend">${escapeHTML(trend)}</div>`;
+                    <div class="rate-cycle-trend">${escapeHTML(trend)}</div>
+                    ${previousPay ? `<div class="rate-cycle-payday">${escapeHTML(previousPay)}</div>` : ''}`;
             } else {
                 body = '<div class="rate-cycle-line">No active cycle for this rate right now.</div>';
             }
@@ -8810,6 +8829,14 @@ function saveCalls() {
         }
         const previousCycleEarnings = sumCycleEarnings(previousCycle);
         renderRateCycleCards(nowMs);
+        if (cyclePreviousPayDayDisplay) {
+            // Shows when the previous (or last closed) cycle is paid, and how much that payday brings.
+            const payDayCycle = currentCycle ? previousCycle : lastClosedCycle;
+            const payDayAmount = currentCycle ? previousCycleEarnings : lastClosedCycleEarnings;
+            const payDayLine = paymentCyclesEnabled && payDayCycle ? formatCyclePayDayLine(payDayCycle, payDayAmount, nowMs) : '';
+            cyclePreviousPayDayDisplay.textContent = payDayLine;
+            cyclePreviousPayDayDisplay.classList.toggle('hidden', !payDayLine);
+        }
 
         if (currentCycle) {
             cycleEarningsDisplay.textContent = formatEarnings(cycleEarnings);
@@ -11173,7 +11200,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             paymentCycleEarningsCards.classList.remove('hidden');
             return;
         }
-        
+
         const sortedCycles = [...paymentCycles].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
         setPaymentCyclesListExpanded(paymentCyclesListExpanded, sortedCycles.length);
 
@@ -11204,7 +11231,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         });
 
         monthlyEarningsCards.classList.add('hidden');
-        paymentCycleEarningsCards.classList.remove('hidden');
+        paymentCycleEarningsCards.classList.toggle('hidden', hasOnlyRateCycles());
     }
 
     function addPaymentCycle() {
