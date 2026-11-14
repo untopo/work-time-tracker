@@ -62,6 +62,35 @@ test('mergeCallsWithExisting never loses the calls you already have', () => {
   assert.equal(twice.merged.length, 2);
 });
 
+test('mergeCallsWithExisting keeps different calls that share the same start and end (minute-rounded reports)', () => {
+  const same = '2026-10-01T10:00:00.000Z';
+  const incoming = [call('a', same, 3), call('b', same, 3), call('c', same, 3)];
+  const result = core.mergeCallsWithExisting([], incoming);
+  assert.equal(result.addedCount, 3, 'three real calls with identical times are all kept');
+  assert.equal(result.skippedCount, 0);
+});
+
+test('restoring a backup on top of itself adds nothing, even with identical-time calls', () => {
+  const same = '2026-10-01T10:00:00.000Z';
+  const backup = [call('a', same, 3), call('b', same, 3), call('c', '2026-10-02T10:00:00.000Z', 5)];
+  const first = core.mergeCallsWithExisting([], backup);
+  assert.equal(first.merged.length, 3);
+  const again = core.mergeCallsWithExisting(first.merged, backup);
+  assert.equal(again.addedCount, 0);
+  assert.equal(again.merged.length, 3);
+});
+
+test('importing matches one for one: only as many calls are skipped as the log already has', () => {
+  const same = '2026-10-01T10:00:00.000Z';
+  const existing = [call('a', same, 3)];
+  const incoming = [call('x', same, 3), call('y', same, 3), call('z', same, 3)]; // new ids (for example from a CSV)
+  const result = core.mergeCallsWithExisting(existing, incoming);
+  assert.equal(result.skippedCount, 1, 'one matches the call that is already there');
+  assert.equal(result.addedCount, 2, 'the other two are different calls and are kept');
+  const twice = core.mergeCallsWithExisting(result.merged, incoming);
+  assert.equal(twice.addedCount, 0, 'running the same import again still adds nothing');
+});
+
 test('mergeRatesWithExisting ignores duplicates (any capitalization), blank names and negative amounts', () => {
   const result = core.mergeRatesWithExisting(
     [{ name: 'A', amount: 0.1 }],
