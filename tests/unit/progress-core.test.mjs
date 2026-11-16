@@ -59,3 +59,39 @@ test('current streak is alive if you worked today or yesterday, and counts back 
   assert.equal(core.computeCurrentStreak([todayStamp - DAY, todayStamp - 2 * DAY]), 2, 'yesterday still counts');
   assert.equal(core.computeCurrentStreak([todayStamp - 2 * DAY, todayStamp - 3 * DAY]), 0, 'a gap of a full day breaks it');
 });
+
+// ---- Progress v2 ----
+const localDay = (y, m, d, h = 10) => new Date(y, m - 1, d, h).toISOString();
+const rpgCall = (iso, minutes = 5) => ({ startTime: iso, duration: minutes * 60000, rpgEligible: true });
+
+test('call XP uses the streak of each call\'s own day, so a broken streak never lowers it', () => {
+  const streak = [1, 2, 3, 4, 5].map((d) => rpgCall(localDay(2026, 3, d)));
+  const withStreak = core.computeCallXpByDay(streak);
+  // Same calls, then a long gap and a new day: earlier XP must not change.
+  const later = core.computeCallXpByDay([...streak, rpgCall(localDay(2026, 4, 20))]);
+  const one = core.computeCallXpByDay([rpgCall(localDay(2026, 4, 20))]);
+  assert.equal(later, withStreak + one);
+  // Streak days 3-5 earn a bonus; days 1-2 do not.
+  const flat = 5 * 20;
+  assert.ok(withStreak > flat);
+  assert.equal(core.computeCallXpByDay([rpgCall(localDay(2026, 3, 1)), rpgCall(localDay(2026, 3, 2))]), 40);
+});
+
+test('shield-protected days keep the streak alive for call XP', () => {
+  const calls = [rpgCall(localDay(2026, 3, 1)), rpgCall(localDay(2026, 3, 2)), rpgCall(localDay(2026, 3, 4))];
+  const noShield = core.computeCallXpByDay(calls);
+  const shield = core.computeCallXpByDay(calls, [new Date(2026, 2, 3).getTime()]);
+  assert.ok(shield > noShield);
+});
+
+test('backup progress merge never lowers anything and unions rewards', () => {
+  const a = { rpg: { achievementXp: 65, peakXp: 900, achievementRewards: { x: { xp: 65 } } }, achievements: { unlocked: { x: '2026-02-01T00:00:00.000Z' }, completed: {} }, sessionStats: { sessionsCompleted: 4 } };
+  const b = { rpg: { achievementXp: 120, peakXp: 500, achievementRewards: { y: { xp: 120 } } }, achievements: { unlocked: { x: '2026-01-01T00:00:00.000Z' }, completed: { z: '2026-03-01T00:00:00.000Z' } }, sessionStats: { sessionsCompleted: 9 } };
+  const m = plain(core.mergeBackupProgress(a, b));
+  assert.equal(m.rpg.peakXp, 900);
+  assert.equal(m.rpg.achievementXp, 185, 'rewards from both devices add up');
+  assert.equal(m.achievements.unlocked.x, '2026-01-01T00:00:00.000Z', 'earliest date wins');
+  assert.ok(m.achievements.completed.x && m.achievements.completed.z, 'claimed implies completed');
+  assert.equal(m.sessionStats.sessionsCompleted, 9);
+  assert.equal(core.hasBackupProgressChange(core.mergeBackupProgress(m, b), m), false, 'merging again changes nothing');
+});
