@@ -12042,3 +12042,41 @@ html.dark .rate-cycle-payday { color: #9ca3af; }
 .wtt-get-app { margin: 0.5rem 0; }
 html.installed-app .wtt-get-app { display: none !important; }
 .mobile-meta-card.wtt-get-app { margin: 0; }
+
+/* Achievements v2: locked / ready-to-claim / unlocked states */
+body.ui-refresh-v1 #view-progress .achievement-card-btn.achievement-card-locked { opacity: 0.85; }
+body.ui-refresh-v1 #view-progress .achievement-card-btn.achievement-card-secret { border-style: dashed; }
+body.ui-refresh-v1 #view-progress .achievement-card-btn.achievement-card-ready {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.18), rgba(251, 191, 36, 0.04));
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.55), 0 6px 18px rgba(245, 158, 11, 0.22);
+  animation: achievementReadyPulse 2.2s ease-in-out infinite;
+  cursor: pointer;
+}
+html.dark body.ui-refresh-v1 #view-progress .achievement-card-btn.achievement-card-ready {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(251, 191, 36, 0.03));
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.6), 0 6px 20px rgba(251, 191, 36, 0.18);
+}
+.achievement-claim-cta {
+  display: inline-flex; align-items: center; font-size: 0.75rem; font-weight: 700;
+  padding: 0.3rem 0.65rem; border-radius: 999px; background: #f59e0b; color: #1f1300;
+}
+.achievement-claim-all-btn {
+  display: inline-flex; align-items: center; font-size: 0.75rem; font-weight: 700;
+  padding: 0.25rem 0.65rem; border-radius: 999px; background: #f59e0b; color: #1f1300; border: 0; cursor: pointer;
+}
+.achievement-claim-all-btn:hover { background: #fbbf24; }
+.achievement-card-just-claimed { animation: achievementClaimBurst 1.1s ease-out 1 !important; }
+@keyframes achievementReadyPulse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes achievementClaimBurst {
+  0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.8); }
+  40% { transform: scale(1.04); box-shadow: 0 0 0 14px rgba(245, 158, 11, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.ui-refresh-v1 #view-progress .achievement-card-btn.achievement-card-ready,
+  .achievement-card-just-claimed { animation: none !important; }
+}

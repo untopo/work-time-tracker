@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.7.4';
+    const APP_VERSION = '1.8.0';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -1327,6 +1327,16 @@ function setupBackupReminderBanner() {
     }
 }
 
+function getCurrentBackupProgress() {
+    try {
+        computeTotalXp(calls); // refreshes the highest-level floor before it is saved
+        flushPendingStorageWrites();
+        return buildBackupProgress(getRpgProgressState(), getAchievementState(), getSessionRpgStatsState());
+    } catch (e) {
+        return buildBackupProgress({}, {}, {});
+    }
+}
+
 async function exportCallsAsJson(exportCalls) {
     const exportCallsClone = exportCalls.map((call) => ({ ...call }));
     try {
@@ -1346,7 +1356,9 @@ async function exportCallsAsJson(exportCalls) {
         backupVersion: BACKUP_FORMAT_VERSION,
         exportedAt: new Date().toISOString(),
         sessionHistory: normalizeSessionHistoryEntries(sessionHistoryEntries),
-        settings: buildBackupSettings((key) => appStorage.getItem(key))
+        settings: buildBackupSettings((key) => appStorage.getItem(key)),
+        // RPG level, XP rewards and achievements cannot be rebuilt from calls, so they travel too.
+        progress: getCurrentBackupProgress()
     };
     const jsonText = JSON.stringify(data, null, 2);
     const fileName = `work-time-tracker-data-${getExportFileDateSuffix()}.json`;
@@ -4824,6 +4836,8 @@ if (storedDailyGoal) {
                 dailyQuestXp: Math.max(0, Number(raw.dailyQuestXp) || 0),
                 weeklyArcXp: Math.max(0, Number(raw.weeklyArcXp) || 0),
                 streakShields: Math.max(0, Math.min(STREAK_SHIELD_MAX, Number(raw.streakShields) || 0)),
+                peakXp: Math.max(0, Number(raw.peakXp) || 0),
+                xpModelMigrated: !!raw.xpModelMigrated,
                 achievementRewards: raw.achievementRewards && typeof raw.achievementRewards === 'object' ? raw.achievementRewards : {},
                 dailyQuestRewards: raw.dailyQuestRewards && typeof raw.dailyQuestRewards === 'object' ? raw.dailyQuestRewards : {},
                 weeklyArcRewards: raw.weeklyArcRewards && typeof raw.weeklyArcRewards === 'object' ? raw.weeklyArcRewards : {},
@@ -4835,6 +4849,8 @@ if (storedDailyGoal) {
                 dailyQuestXp: 0,
                 weeklyArcXp: 0,
                 streakShields: 0,
+                peakXp: 0,
+                xpModelMigrated: false,
                 achievementRewards: {},
                 dailyQuestRewards: {},
                 weeklyArcRewards: {},
@@ -4856,11 +4872,11 @@ if (storedDailyGoal) {
         appStorage.removeItem(RPG_PROGRESS_STATE_KEY);
     }
 
-    function computeCallXpTotal(callRows, currentStreak = 0) {
+    // Each call is boosted by the streak of its own day (see computeCallXpByDay), so the
+    // current streak no longer matters here and a broken streak cannot lower earned XP.
+    function computeCallXpTotal(callRows) {
         if (!isRpgEnabled()) return 0;
-        const baseXp = computeBaseXpFromCalls(getRpgEligibleCalls(callRows));
-        const streakMult = getStreakRewardMultiplier(currentStreak);
-        return Math.max(0, Math.round(baseXp * streakMult));
+        return computeCallXpByDay(callRows, getShieldProtectedDayStamps());
     }
 
     function computeTotalXp(callRows, currentStreak = 0) {
@@ -4873,15 +4889,29 @@ if (storedDailyGoal) {
                 totalXp: 0
             };
         }
-        const callXp = computeCallXpTotal(callRows, currentStreak);
+        const callXp = computeCallXpTotal(callRows);
         const progressState = getRpgProgressState();
         const rewardXp = progressState.achievementXp + progressState.dailyQuestXp + progressState.weeklyArcXp;
+        const earnedXp = callXp + rewardXp;
+        if (!progressState.xpModelMigrated) {
+            // One-time: keep whatever total the previous XP model showed, so nobody drops a level on update.
+            const stamps = Array.from(new Set([...getRpgEligibleCalls(callRows).map(getCallLocalDayStamp), ...getShieldProtectedDayStamps()].filter(Number.isFinite))).sort((x, y) => x - y);
+            const legacyCallXp = Math.round(computeBaseXpFromCalls(getRpgEligibleCalls(callRows)) * getStreakRewardMultiplier(computeCurrentStreak(stamps)));
+            progressState.peakXp = Math.max(progressState.peakXp, legacyCallXp + rewardXp);
+            progressState.xpModelMigrated = true;
+            saveRpgProgressState(progressState);
+        }
+        // Level never retreats: the highest total ever reached is kept as a floor.
+        if (earnedXp > progressState.peakXp) {
+            progressState.peakXp = earnedXp;
+            saveRpgProgressState(progressState);
+        }
         return {
             callXp,
             achievementXp: progressState.achievementXp,
             dailyQuestXp: progressState.dailyQuestXp,
             weeklyArcXp: progressState.weeklyArcXp,
-            totalXp: callXp + rewardXp
+            totalXp: Math.max(earnedXp, progressState.peakXp)
         };
     }
 
@@ -5172,15 +5202,7 @@ if (storedDailyGoal) {
         if (arcChanged) {
             saveRpgProgressState(progressState);
         }
-        const callXp = computeCallXpTotal(calls, stats.currentStreak);
-        const xpTotals = {
-            callXp,
-            achievementXp: Math.max(0, Number(progressState.achievementXp) || 0),
-            dailyQuestXp: Math.max(0, Number(progressState.dailyQuestXp) || 0),
-            weeklyArcXp: Math.max(0, Number(progressState.weeklyArcXp) || 0),
-            totalXp: 0
-        };
-        xpTotals.totalXp = xpTotals.callXp + xpTotals.achievementXp + xpTotals.dailyQuestXp + xpTotals.weeklyArcXp;
+        const xpTotals = computeTotalXp(calls);
         const streakMult = getStreakRewardMultiplier(stats.currentStreak);
         const level = getLevelState(xpTotals.totalXp);
         rpgLevelSummary.textContent = `Level ${level.currentLevel} - ${level.totalXp.toLocaleString(DISPLAY_LOCALE)} XP total`;
@@ -5269,7 +5291,21 @@ if (storedDailyGoal) {
         { id: 'level_75', name: 'Grandmaster Grind', icon: 'fa-dragon', tier: 'Gold', rpgOnly: true, description: 'Reach level 75 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 75 },
         { id: 'level_100', name: 'Legendary Cap', icon: 'fa-crown', tier: 'Gold', rpgOnly: true, description: 'Reach level 100 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 100 },
         { id: 'long_call_30', name: 'Steady Session', icon: 'fa-stopwatch', tier: 'Bronze', description: 'Complete a 30+ minute call.', check: (s) => s.longestCallMinutes >= 30 },
-        { id: 'long_call_120', name: 'Iron Focus', icon: 'fa-medal', tier: 'Gold', description: 'Complete a 2+ hour call.', check: (s) => s.longestCallMinutes >= 120 }
+        { id: 'long_call_120', name: 'Iron Focus', icon: 'fa-medal', tier: 'Gold', description: 'Complete a 2+ hour call.', check: (s) => s.longestCallMinutes >= 120 },
+        { id: 'calls_500', name: 'Five Hundred Club', icon: 'fa-phone-volume', tier: 'Gold', description: 'Complete 500 calls.', check: (s) => s.totalCalls >= 500, meter: { stat: 'totalCalls', target: 500, label: 'Calls completed' } },
+        { id: 'calls_1000', name: 'Thousand Voices', icon: 'fa-users', tier: 'Gold', description: 'Complete 1,000 calls.', check: (s) => s.totalCalls >= 1000, meter: { stat: 'totalCalls', target: 1000, label: 'Calls completed' } },
+        { id: 'calls_2500', name: 'Living Legend', icon: 'fa-star', tier: 'Gold', description: 'Complete 2,500 calls.', check: (s) => s.totalCalls >= 2500, meter: { stat: 'totalCalls', target: 2500, label: 'Calls completed' } },
+        { id: 'hours_250', name: 'Quarter Thousand', icon: 'fa-clock', tier: 'Gold', description: 'Log 250 total hours.', check: (s) => s.totalMinutes >= 15000, meter: { stat: 'totalMinutes', target: 15000, label: 'Total minutes' } },
+        { id: 'hours_500', name: 'Half a Thousand', icon: 'fa-infinity', tier: 'Gold', description: 'Log 500 total hours.', check: (s) => s.totalMinutes >= 30000, meter: { stat: 'totalMinutes', target: 30000, label: 'Total minutes' } },
+        { id: 'total_10000_earned', name: 'Five Figures', icon: 'fa-money-bill-trend-up', tier: 'Gold', description: 'Earn $10,000 total.', check: (s) => s.totalEarnings >= 10000, meter: { stat: 'totalEarnings', target: 10000, label: 'All-time earnings', money: true } },
+        { id: 'total_25000_earned', name: 'Vault Keeper', icon: 'fa-vault', tier: 'Gold', description: 'Earn $25,000 total.', check: (s) => s.totalEarnings >= 25000, meter: { stat: 'totalEarnings', target: 25000, label: 'All-time earnings', money: true } },
+        { id: 'streak_30', name: 'Unbreakable', icon: 'fa-fire-flame-curved', tier: 'Gold', description: 'Work 30 days in a row.', check: (s) => s.longestStreak >= 30, meter: { stat: 'longestStreak', target: 30, label: 'Longest streak (days)' } },
+        { id: 'work_days_100', name: 'Centurion', icon: 'fa-landmark', tier: 'Gold', description: 'Work on 100 unique days.', check: (s) => s.uniqueDaysWorked >= 100, meter: { stat: 'uniqueDaysWorked', target: 100, label: 'Unique days worked' } },
+        { id: 'work_days_250', name: 'Year-Round Pro', icon: 'fa-calendar', tier: 'Gold', description: 'Work on 250 unique days.', check: (s) => s.uniqueDaysWorked >= 250, meter: { stat: 'uniqueDaysWorked', target: 250, label: 'Unique days worked' } },
+        { id: 'hidden_night_owl', name: 'Night Owl', icon: 'fa-moon', tier: 'Silver', hidden: true, hiddenHint: 'Something happens after dark...', description: 'Complete a call after 10 PM.', check: (s) => s.nightCalls >= 1 },
+        { id: 'hidden_early_bird', name: 'Early Bird', icon: 'fa-sun', tier: 'Silver', hidden: true, hiddenHint: 'Rise before the sun...', description: 'Complete a call between 4 AM and 7 AM.', check: (s) => s.earlyCalls >= 1 },
+        { id: 'hidden_weekend_warrior', name: 'Weekend Warrior', icon: 'fa-umbrella-beach', tier: 'Silver', hidden: true, hiddenHint: 'Work while others rest...', description: 'Work on 10 different weekend days.', check: (s) => s.weekendDaysWorked >= 10 },
+        { id: 'hidden_busy_day', name: 'Call Storm', icon: 'fa-bolt', tier: 'Gold', hidden: true, hiddenHint: 'One very busy day...', description: 'Complete 40 calls in a single day.', check: (s) => s.maxDayCalls >= 40 }
     ];
 
     const DAILY_QUEST_POOL = [
@@ -5287,13 +5323,16 @@ if (storedDailyGoal) {
         try {
             const raw = JSON.parse(appStorage.getItem(ACHIEVEMENTS_STATE_KEY) || '{}');
             const unlocked = raw?.unlocked && typeof raw.unlocked === 'object' ? raw.unlocked : {};
+            const completed = raw?.completed && typeof raw.completed === 'object' ? raw.completed : {};
             if (unlocked.max_100_day && !unlocked.week_100) {
                 unlocked.week_100 = unlocked.max_100_day;
                 delete unlocked.max_100_day;
             }
-            return { unlocked };
+            // unlocked = claimed by the user; completed = requirement met (may still be waiting to be claimed).
+            Object.keys(unlocked).forEach((id) => { if (!completed[id]) completed[id] = unlocked[id]; });
+            return { unlocked, completed };
         } catch {
-            return { unlocked: {} };
+            return { unlocked: {}, completed: {} };
         }
     }
 
@@ -5390,6 +5429,10 @@ if (storedDailyGoal) {
         let todayCalls = 0;
         let todayMinutes = 0;
         let todayLongestCallMinutes = 0;
+        let nightCalls = 0;
+        let earlyCalls = 0;
+        const dayCallCounts = new Map();
+        const weekendDayStamps = new Set();
 
         calls.forEach((call) => {
             totalCalls += 1;
@@ -5402,6 +5445,13 @@ if (storedDailyGoal) {
             const dayStamp = getCallLocalDayStamp(call);
             if (Number.isFinite(dayStamp)) {
                 uniqueDayStamps.add(dayStamp);
+                dayCallCounts.set(dayStamp, (dayCallCounts.get(dayStamp) || 0) + 1);
+                const startForHour = new Date(call.startTime);
+                const hour = startForHour.getHours();
+                if (hour >= 22) nightCalls += 1;
+                if (hour >= 4 && hour < 7) earlyCalls += 1;
+                const weekday = startForHour.getDay();
+                if (weekday === 0 || weekday === 6) weekendDayStamps.add(dayStamp);
                 dayEarnings.set(dayStamp, (dayEarnings.get(dayStamp) || 0) + earned);
                 dayMinutes.set(dayStamp, (dayMinutes.get(dayStamp) || 0) + durationMin);
                 const startDate = new Date(call.startTime);
@@ -5463,6 +5513,10 @@ if (storedDailyGoal) {
             goalHitDays,
             hasGoalConfigured,
             uniqueDaysWorked: uniqueDayStamps.size,
+            maxDayCalls: dayCallCounts.size ? Math.max(...Array.from(dayCallCounts.values())) : 0,
+            nightCalls,
+            earlyCalls,
+            weekendDaysWorked: weekendDayStamps.size,
             sessionsCompleted: Math.max(0, Number(sessionStats.sessionsCompleted) || 0),
             sessionDaysWorked,
             highUtilSessions: Math.max(0, Number(sessionStats.highUtilSessions) || 0),
@@ -5503,6 +5557,8 @@ if (storedDailyGoal) {
         };
     }
 
+    const justClaimedAchievementIds = new Set();
+
     function getAchievementById(id) {
         return ACHIEVEMENTS.find((a) => a.id === id) || null;
     }
@@ -5513,7 +5569,7 @@ if (storedDailyGoal) {
 
     function getCurrentRpgLevel(currentStreak = 0) {
         if (!isRpgEnabled()) return 0;
-        return getLevelState(computeTotalXp(calls, currentStreak).totalXp).currentLevel;
+        return getLevelState(computeTotalXp(calls).totalXp).currentLevel;
     }
 
     function getAchievementProgress(achievement, stats, unlocked) {
@@ -5524,7 +5580,12 @@ if (storedDailyGoal) {
             formatter: (v) => `${Math.round(v).toLocaleString(DISPLAY_LOCALE)}`
         };
 
-        switch (achievement.id) {
+        if (achievement.meter) {
+            meta.current = Number(stats[achievement.meter.stat]) || 0;
+            meta.target = achievement.meter.target;
+            meta.label = achievement.meter.label;
+            if (achievement.meter.money) meta.formatter = (v) => `$${Number(v).toLocaleString(DISPLAY_LOCALE, { maximumFractionDigits: 0 })}`;
+        } else switch (achievement.id) {
             case 'first_call':
                 meta.current = stats.totalCalls;
                 meta.target = 1;
@@ -5743,33 +5804,67 @@ if (storedDailyGoal) {
         const state = getAchievementState();
         const rpgState = getRpgProgressState();
         const stats = computeAchievementStats();
-        const streakMult = getStreakRewardMultiplier(stats.currentStreak);
         const rpgEnabled = isRpgEnabled();
         const visibleAchievements = getVisibleAchievements();
         if (rpgWeeklyArcCard) rpgWeeklyArcCard.style.display = rpgEnabled ? '' : 'none';
         if (rpgStreakShieldRow) rpgStreakShieldRow.style.display = rpgEnabled ? '' : 'none';
         renderDailyQuestsSection(computeDailyQuestStats());
         const unlockedCount = visibleAchievements.filter((a) => !!state.unlocked[a.id]).length;
+        const readyCount = visibleAchievements.filter((a) => !!state.completed[a.id] && !state.unlocked[a.id]).length;
+        const readyBtn = readyCount > 0
+            ? `<button type="button" id="achievements-claim-all-btn" class="achievement-claim-all-btn ml-2">${readyCount > 1 ? `Unlock all (${readyCount})` : 'Unlock badge'}</button>`
+            : '';
         achievementsSummary.innerHTML = rpgEnabled
             ? `
-            <span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s) | Call XP multiplier: x${streakMult.toFixed(2)}</span>
-            <span class="hint-tooltip hint-tooltip-right ml-1" data-tooltip="Streak multiplier starts at 3 days (+5%), then +2% per extra day, capped at +35%. It boosts call XP. Achievement rewards scale by level only.">?</span>
+            <span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s)</span>
+            <span class="hint-tooltip hint-tooltip-right ml-1" data-tooltip="Each call is boosted by the streak you had that day (starts at 3 days: +5%, then +2% per extra day, capped at +35%). Achievement rewards scale by level only and are paid when you unlock the badge.">?</span>${readyBtn}
         `
-            : `<span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s)</span>`;
+            : `<span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s)</span>${readyBtn}`;
 
         achievementsGrid.innerHTML = visibleAchievements.map((a) => {
             const unlocked = !!state.unlocked[a.id];
-            const tierStyles = getTierClasses(a.tier, unlocked);
+            const completed = !!state.completed[a.id];
+            const ready = completed && !unlocked;
+            const secret = !!a.hidden && !completed;
+            const tierStyles = getTierClasses(a.tier, completed);
             const earnedXp = Number(rpgState.achievementRewards?.[a.id]?.xp) || 0;
-            const statusLabel = unlocked ? 'Unlocked' : 'Locked';
+            const completedAt = completed ? formatAchievementDate(state.completed[a.id]) : '';
             const unlockedAt = unlocked ? formatAchievementDate(state.unlocked[a.id]) : '';
-            const progress = getAchievementProgress(a, stats, unlocked);
+            const progress = getAchievementProgress(a, stats, completed);
             const progressText = `${progress.formatter(progress.current)} / ${progress.formatter(progress.target)}`;
-            return `
-                <button type="button" class="achievement-card-btn settings-section-card border ${tierStyles.card} ${unlocked ? 'opacity-100' : 'opacity-80'}" data-achievement-id="${a.id}">
+            const stateClass = unlocked ? 'achievement-card-unlocked' : (ready ? 'achievement-card-ready' : 'achievement-card-locked');
+            const justClaimed = justClaimedAchievementIds.has(a.id) ? ' achievement-card-just-claimed' : '';
+            if (secret) {
+                return `
+                <button type="button" class="achievement-card-btn achievement-card-secret settings-section-card border border-gray-200 dark:border-gray-700 achievement-card-locked" data-achievement-id="${a.id}">
                     <div class="achievement-card-header">
                         <div class="achievement-card-title font-semibold text-gray-800 dark:text-gray-100">
-                            <i class="fas ${a.icon} mr-2 ${unlocked ? 'text-amber-500' : 'text-gray-400'}"></i>${a.name}
+                            <i class="fas fa-question mr-2 text-gray-400"></i>Secret achievement
+                        </div>
+                        <span class="achievement-tier-badge text-xs px-2 py-1 rounded-full ${tierStyles.badge}">${a.tier}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">${a.hiddenHint || 'Keep playing to discover it.'}</p>
+                    <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">Hidden</div>
+                </button>`;
+            }
+            let footer;
+            if (unlocked) {
+                footer = `${rpgEnabled && earnedXp ? `<div class="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-semibold">XP earned: +${earnedXp.toLocaleString(DISPLAY_LOCALE)} XP</div>` : ''}
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Completed ${completedAt}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Badge unlocked ${unlockedAt}</div>
+                    <div class="text-xs font-semibold text-green-600 dark:text-green-400">Unlocked</div>`;
+            } else if (ready) {
+                footer = `<div class="text-xs text-gray-600 dark:text-gray-300 mb-1">Completed ${completedAt}</div>
+                    <div class="achievement-claim-cta"><i class="fas fa-unlock mr-1"></i>Tap to unlock your badge${rpgEnabled ? ' + XP' : ''}</div>`;
+            } else {
+                footer = `${rpgEnabled ? '<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">XP reward revealed when unlocked</div>' : ''}
+                    <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">Locked</div>`;
+            }
+            return `
+                <button type="button" class="achievement-card-btn settings-section-card border ${tierStyles.card} ${stateClass}${justClaimed}" data-achievement-id="${a.id}" data-achievement-state="${unlocked ? 'unlocked' : (ready ? 'ready' : 'locked')}">
+                    <div class="achievement-card-header">
+                        <div class="achievement-card-title font-semibold text-gray-800 dark:text-gray-100">
+                            <i class="fas ${a.icon} mr-2 ${completed ? 'text-amber-500' : 'text-gray-400'}"></i>${a.name}
                         </div>
                         <span class="achievement-tier-badge text-xs px-2 py-1 rounded-full ${tierStyles.badge}">${a.tier}</span>
                     </div>
@@ -5783,16 +5878,7 @@ if (storedDailyGoal) {
                             <div class="achievement-progress-fill ${tierStyles.progress} h-1.5 rounded-full transition-all duration-500 ease-out" style="width:${progress.pct}%"></div>
                         </div>
                     </div>
-                    ${rpgEnabled
-                        ? (unlocked
-                            ? `<div class="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-semibold">XP earned: +${earnedXp.toLocaleString(DISPLAY_LOCALE)} XP</div>
-                               <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Earned on ${unlockedAt}</div>`
-                            : `<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">XP reward hidden until unlocked</div>`)
-                        : (unlocked
-                            ? `<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Earned on ${unlockedAt}</div>`
-                            : '')
-                    }
-                    <div class="text-xs font-semibold ${unlocked ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}">${statusLabel}</div>
+                    ${footer}
                 </button>
             `;
         }).join('');
@@ -5919,20 +6005,26 @@ if (storedDailyGoal) {
         const state = getAchievementState();
         const stats = computeAchievementStats();
         const unlocked = !!state.unlocked[achievement.id];
-        const progress = getAchievementProgress(achievement, stats, unlocked);
-        const tierStyles = getTierClasses(achievement.tier, unlocked);
-        const unlockedAt = unlocked ? formatAchievementDate(state.unlocked[achievement.id]) : '';
+        const completed = !!state.completed[achievement.id];
+        const ready = completed && !unlocked;
+        const secret = !!achievement.hidden && !completed;
+        const progress = getAchievementProgress(achievement, stats, completed);
+        const tierStyles = getTierClasses(achievement.tier, completed);
 
         if (achievementDetailTitle) {
-            achievementDetailTitle.innerHTML = `<i class="fas ${achievement.icon} mr-2 ${unlocked ? 'text-amber-500' : 'text-gray-400'}"></i>${achievement.name}`;
+            achievementDetailTitle.innerHTML = secret
+                ? '<i class="fas fa-question mr-2 text-gray-400"></i>Secret achievement'
+                : `<i class="fas ${achievement.icon} mr-2 ${completed ? 'text-amber-500' : 'text-gray-400'}"></i>${achievement.name}`;
         }
         if (achievementDetailTier) {
             achievementDetailTier.className = `achievement-tier-badge text-xs inline-block px-2 py-1 rounded-full mb-3 ${tierStyles.badge}`;
             achievementDetailTier.textContent = achievement.tier;
         }
         if (achievementDetailDescription) {
-            achievementDetailDescription.textContent = achievement.description;
+            achievementDetailDescription.textContent = secret ? (achievement.hiddenHint || 'Keep playing to discover it.') : achievement.description;
         }
+        const progressBox = achievementDetailProgressBar?.closest('.settings-section-card');
+        if (progressBox) progressBox.style.display = secret ? 'none' : '';
         if (achievementDetailProgressLabel) {
             achievementDetailProgressLabel.textContent = progress.label;
         }
@@ -5943,59 +6035,45 @@ if (storedDailyGoal) {
             achievementDetailProgressBar.style.width = `${progress.pct}%`;
         }
         if (achievementDetailEarnedRow && achievementDetailEarnedAt) {
-            if (unlocked) {
+            if (completed) {
                 achievementDetailEarnedRow.style.display = '';
-                achievementDetailEarnedAt.textContent = `Earned on ${unlockedAt}`;
+                achievementDetailEarnedAt.textContent = unlocked
+                    ? `Completed ${formatAchievementDate(state.completed[achievement.id])} | Badge unlocked ${formatAchievementDate(state.unlocked[achievement.id])}`
+                    : `Completed ${formatAchievementDate(state.completed[achievement.id])}`;
             } else {
                 achievementDetailEarnedRow.style.display = 'none';
                 achievementDetailEarnedAt.textContent = '';
             }
         }
+        const claimBtn = document.getElementById('achievement-detail-claim-btn');
+        if (claimBtn) claimBtn.style.display = ready ? '' : 'none';
     }
 
+    // Completing an achievement only marks it "ready"; the user claims (unlocks) the badge,
+    // and the XP reward is paid out at that moment.
     function evaluateAchievements({ notify = true } = {}) {
         const state = getAchievementState();
-        const rpgState = getRpgProgressState();
         const stats = computeAchievementStats();
-        const newlyUnlocked = [];
         const nowIso = new Date().toISOString();
-        const rewardEvents = [];
+        const newlyCompleted = [];
 
         ACHIEVEMENTS.forEach((a) => {
-            if (state.unlocked[a.id]) return;
+            if (state.completed[a.id]) return;
             if (a.check(stats)) {
-                state.unlocked[a.id] = nowIso;
-                newlyUnlocked.push(a);
-                if (isRpgEnabled()) {
-                    const currentXpBeforeReward = computeTotalXp(calls, stats.currentStreak).totalXp;
-                    const levelState = getLevelState(currentXpBeforeReward);
-                    const levelMult = getLevelRewardMultiplier(levelState.currentLevel);
-                    const baseXp = getAchievementBaseXp(a.tier);
-                    const rewardXp = Math.max(1, Math.round(baseXp * levelMult));
-
-                    rpgState.achievementRewards[a.id] = {
-                        xp: rewardXp,
-                        baseXp,
-                        levelAtUnlock: levelState.currentLevel,
-                        streakAtUnlock: stats.currentStreak,
-                        unlockedAt: nowIso
-                    };
-                    rpgState.achievementXp += rewardXp;
-                    rewardEvents.push({ name: a.name, xp: rewardXp });
-                }
+                state.completed[a.id] = nowIso;
+                newlyCompleted.push(a);
             }
         });
 
-        if (newlyUnlocked.length > 0) {
+        if (newlyCompleted.length > 0) {
             saveAchievementState(state);
-            if (isRpgEnabled()) {
-                saveRpgProgressState(rpgState);
-                updateRpgProgress();
-            }
-            if (notify && isRpgEnabled()) {
-                rewardEvents.forEach((r) => {
-                    showToast(`Achievement unlocked: ${r.name} | XP gained: +${r.xp}`);
-                });
+            flushPendingStorageWrites();
+            if (notify) {
+                if (newlyCompleted.length === 1) {
+                    showToast(`Achievement ready: ${newlyCompleted[0].name} | Open Progress to unlock your badge`);
+                } else {
+                    showToast(`${newlyCompleted.length} achievements ready | Open Progress to unlock your badges`);
+                }
             }
         }
 
@@ -6006,8 +6084,58 @@ if (storedDailyGoal) {
         evaluateDailyQuests({ notify });
     }
 
+    function claimAchievement(achievementId, { silent = false } = {}) {
+        const a = getAchievementById(achievementId);
+        if (!a) return null;
+        const state = getAchievementState();
+        if (!state.completed[a.id] || state.unlocked[a.id]) return null;
+        const nowIso = new Date().toISOString();
+        state.unlocked[a.id] = nowIso;
+        let rewardXp = 0;
+        if (isRpgEnabled()) {
+            const rpgState = getRpgProgressState();
+            const stats = computeAchievementStats();
+            const levelState = getLevelState(computeTotalXp(calls).totalXp);
+            const baseXp = getAchievementBaseXp(a.tier);
+            rewardXp = Math.max(1, Math.round(baseXp * getLevelRewardMultiplier(levelState.currentLevel)));
+            rpgState.achievementRewards[a.id] = {
+                xp: rewardXp,
+                baseXp,
+                levelAtUnlock: levelState.currentLevel,
+                streakAtUnlock: stats.currentStreak,
+                unlockedAt: nowIso
+            };
+            rpgState.achievementXp += rewardXp;
+            saveRpgProgressState(rpgState);
+        }
+        saveAchievementState(state);
+        flushPendingStorageWrites(); // reads go straight to storage, so write now before re-rendering
+        if (isRpgEnabled()) updateRpgProgress();
+        if (!silent) {
+            showToast(isRpgEnabled()
+                ? `Badge unlocked: ${a.name} | XP gained: +${rewardXp}`
+                : `Badge unlocked: ${a.name}`);
+        }
+        justClaimedAchievementIds.add(a.id);
+        renderAchievementsModal();
+        setTimeout(() => justClaimedAchievementIds.delete(a.id), 1500);
+        if (achievementDetailModal && ModalManager.isOpen(achievementDetailModal) && selectedAchievementId === a.id) {
+            renderAchievementDetailModal(a.id);
+        }
+        return { achievement: a, xp: rewardXp };
+    }
 
-
+    function claimAllAchievements() {
+        const state = getAchievementState();
+        const ready = ACHIEVEMENTS.filter((a) => state.completed[a.id] && !state.unlocked[a.id]);
+        let totalXp = 0;
+        ready.forEach((a) => { totalXp += claimAchievement(a.id, { silent: true })?.xp || 0; });
+        if (ready.length) {
+            showToast(isRpgEnabled()
+                ? `${ready.length} badge(s) unlocked | XP gained: +${totalXp}`
+                : `${ready.length} badge(s) unlocked`);
+        }
+    }
 
 function parseCsvImportRows(csvImportData, columnMap = csvImportData?.columnMap || {}) {
     const headers = Array.isArray(csvImportData?.headers) ? csvImportData.headers : [];
@@ -6438,12 +6566,16 @@ function importJsonBackup(importedData) {
     );
     const settingsToRestore = pickSettingsToRestore(importedData?.settings, (key) => appStorage.getItem(key) !== null);
     const settingsRestoreCount = Object.keys(settingsToRestore).length;
+    const hasImportedProgress = !!(importedData?.progress && typeof importedData.progress === 'object');
+    const currentProgress = hasImportedProgress ? getCurrentBackupProgress() : null;
+    const mergedProgress = hasImportedProgress ? mergeBackupProgress(currentProgress, importedData.progress) : null;
+    const progressChanged = hasImportedProgress && hasBackupProgressChange(currentProgress, mergedProgress);
     const currentGoal = normalizeDailyGoal(dailyGoal);
     const shouldApplyImportedGoal = currentGoal.amount <= 0 && currentGoal.minutes <= 0
         && (importedGoal.amount > 0 || importedGoal.minutes > 0);
 
     if (callMerge.addedCount === 0 && rateMerge.addedCount === 0 && cycleMerge.addedCount === 0
-        && sessionMerge.addedCount === 0 && settingsRestoreCount === 0 && !shouldApplyImportedGoal) {
+        && sessionMerge.addedCount === 0 && settingsRestoreCount === 0 && !shouldApplyImportedGoal && !progressChanged) {
         showAlertModal('Nothing New To Import', 'This backup does not contain any new calls, rates, payment cycles, sessions, settings, or goal data to merge.');
         return;
     }
@@ -6460,6 +6592,7 @@ function importJsonBackup(importedData) {
     ].filter(Boolean);
     if (sessionMerge.addedCount > 0) summaryParts.push(`${sessionMerge.addedCount} new session${sessionMerge.addedCount === 1 ? '' : 's'}`);
     if (shouldApplyImportedGoal) summaryParts.push('daily goal applied');
+    if (progressChanged) summaryParts.push('your RPG level and achievements restored');
     if (settingsRestoreCount > 0) summaryParts.push('your saved settings restored (the app reloads to apply them)');
 
     showConfirmation(
@@ -6482,8 +6615,17 @@ function importJsonBackup(importedData) {
                 sessionHistoryEntries = sessionMerge.merged;
                 saveSessionHistoryState();
             }
+            if (progressChanged) {
+                saveRpgProgressState({ ...getRpgProgressState(), ...mergedProgress.rpg });
+                saveAchievementState(mergedProgress.achievements);
+                saveSessionRpgStatsState(mergedProgress.sessionStats);
+            }
             syncDailyGoalInputs();
             populateRateSelects();
+            if (progressChanged) {
+                if (isRpgEnabled()) updateRpgProgress();
+                evaluateAchievements({ notify: false });
+            }
             const sessionNote = sessionMerge.addedCount > 0 ? `, ${sessionMerge.addedCount} sessions` : '';
             showToast(`Backup merged: ${callMerge.addedCount} calls, ${rateMerge.addedCount} rates, ${cycleMerge.addedCount} cycles${sessionNote} added.`);
             closeSettingsView();
@@ -13042,15 +13184,28 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
             if (closeAchievementDetailModalBtn) {
                 closeAchievementDetailModalBtn.addEventListener('click', closeAchievementDetailModal);
             }
+            if (achievementsSummary) {
+                achievementsSummary.addEventListener('click', (e) => {
+                    if (e.target?.closest?.('#achievements-claim-all-btn')) claimAllAchievements();
+                });
+            }
+            document.getElementById('achievement-detail-claim-btn')?.addEventListener('click', () => {
+                if (selectedAchievementId) claimAchievement(selectedAchievementId);
+            });
             if (doneAchievementDetailBtn) {
                 doneAchievementDetailBtn.addEventListener('click', closeAchievementDetailModal);
             }
             if (achievementsGrid) {
                 achievementsGrid.addEventListener('click', (e) => {
+                    if (e.target?.closest?.('#achievements-claim-all-btn')) return;
                     const target = e.target?.closest?.('[data-achievement-id]');
                     if (!target) return;
                     const achievementId = target.getAttribute('data-achievement-id');
                     if (!achievementId) return;
+                    if (target.getAttribute('data-achievement-state') === 'ready') {
+                        claimAchievement(achievementId);
+                        return;
+                    }
                     openAchievementDetailModal(achievementId, target);
                 });
             }

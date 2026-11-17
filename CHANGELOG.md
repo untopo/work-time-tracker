@@ -5,6 +5,17 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.8.0 - 2026-11-16
+
+### Highlights
+- We received feedback from a user whose RPG level dropped after moving to another device, and we listened: your RPG progress (level, XP from achievements, daily quests and weekly arcs, streak shields, achievements and session stats) now travels inside the JSON backup. Restoring a backup merges it without ever lowering what you already have.
+- Your level never goes down anymore. Each call now earns XP with the streak you had on its own day, so breaking a streak can no longer lower XP you already earned, and the highest level you reached is kept. Nobody loses a level with this update.
+- Achievements now have a claim step: when you complete one, its card lights up with "Tap to unlock your badge". Click it to unlock the badge and collect the XP. The card keeps what you did and when you completed it, and when you unlocked the badge. If several are ready, "Unlock all" claims them at once.
+- New milestone achievements for long-term goals (500, 1,000 and 2,500 calls; 250 and 500 hours; $10,000 and $25,000 earned; a 30-day streak; 100 and 250 days worked) and four secret achievements to discover. Every locked achievement shows a progress bar.
+
+### Fixes
+- The level, XP and achievements no longer reset to zero when a backup is restored on a new device.
+
 ## v1.7.4 - 2026-11-14
 
 ### Highlights

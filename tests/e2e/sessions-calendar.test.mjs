@@ -43,7 +43,12 @@ for (const theme of ['light', 'dark']) {
       await page.click('[data-session-cal-nav="-1"]');
       await page.click(`[data-session-cal-day="${key(end - 45 * 24 * HOUR)}"]`).catch(() => {});
       await page.click('[data-session-cal-nav="1"]');
-      await page.click(`[data-session-cal-day="${key(end)}"]`); // unselect
+      await page.click(`[data-session-cal-day="${key(end)}"]`);
+      // Depending on today's date, the 45-day-old session may have been selected in the month before, so this
+      // click selects today and a second one clears it. Either way the list goes back to recent sessions.
+      if (!/Recent sessions/.test(await page.textContent('#session-history-heading'))) {
+        await page.click(`[data-session-cal-day="${key(end)}"]`);
+      }
       assert.equal(await page.locator('#session-history-list .session-history-item').count(), 2);
       assert.deepEqual(problems, []);
     } finally { await context.close(); }

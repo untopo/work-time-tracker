@@ -209,3 +209,120 @@ function getStreakRewardMultiplier(streak) {
     const extra = 0.05 + (Math.max(0, streak - 3) * 0.02);
     return 1 + Math.min(0.35, extra);
 }
+
+// ---- Progress v2 (v1.8.0) ----
+
+function getPreviousLocalDayStamp(stamp) {
+    const d = new Date(stamp);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1).getTime();
+}
+
+// Call XP where each call is boosted by the streak it belonged to on ITS day, not by today's
+// streak. A broken streak therefore never lowers XP that was already earned.
+// protectedDayStamps: local-midnight stamps that keep a streak alive (streak shields).
+function computeCallXpByDay(callRows, protectedDayStamps = []) {
+    const eligible = getRpgEligibleCalls(callRows);
+    const baseByDay = new Map();
+    eligible.forEach((call) => {
+        const stamp = getCallLocalDayStamp(call);
+        if (!Number.isFinite(stamp)) return;
+        const minutes = Math.max(0, (Number(call.duration) || 0) / 60000);
+        baseByDay.set(stamp, (baseByDay.get(stamp) || 0) + 10 + (minutes * 2));
+    });
+    const activeDays = new Set([...baseByDay.keys(), ...protectedDayStamps.filter(Number.isFinite)]);
+    const streakAt = new Map();
+    const ordered = Array.from(activeDays).sort((a, b) => a - b);
+    ordered.forEach((stamp) => {
+        const prev = getPreviousLocalDayStamp(stamp);
+        streakAt.set(stamp, activeDays.has(prev) ? (streakAt.get(prev) || 0) + 1 : 1);
+    });
+    let total = 0;
+    baseByDay.forEach((base, stamp) => {
+        total += base * getStreakRewardMultiplier(streakAt.get(stamp) || 1);
+    });
+    return Math.max(0, Math.round(total));
+}
+
+// Backup of RPG progress. Only values that cannot be rebuilt from calls are stored.
+function buildBackupProgress(rpgState, achievementsState, sessionStats) {
+    const rpg = rpgState && typeof rpgState === 'object' ? rpgState : {};
+    return {
+        version: 1,
+        rpg: {
+            achievementXp: Math.max(0, Number(rpg.achievementXp) || 0),
+            dailyQuestXp: Math.max(0, Number(rpg.dailyQuestXp) || 0),
+            weeklyArcXp: Math.max(0, Number(rpg.weeklyArcXp) || 0),
+            streakShields: Math.max(0, Number(rpg.streakShields) || 0),
+            peakXp: Math.max(0, Number(rpg.peakXp) || 0),
+            xpModelMigrated: !!rpg.xpModelMigrated,
+            achievementRewards: { ...(rpg.achievementRewards || {}) },
+            dailyQuestRewards: { ...(rpg.dailyQuestRewards || {}) },
+            weeklyArcRewards: { ...(rpg.weeklyArcRewards || {}) },
+            streakShieldUses: { ...(rpg.streakShieldUses || {}) }
+        },
+        achievements: {
+            unlocked: { ...(achievementsState?.unlocked || {}) },
+            completed: { ...(achievementsState?.completed || {}) }
+        },
+        sessionStats: normalizeSessionRpgStatsState(sessionStats)
+    };
+}
+
+function mergeRecordMaps(a, b) {
+    return { ...(b || {}), ...(a || {}) };
+}
+
+// Merges backup progress into what is already on the device without ever lowering anything:
+// numbers take the larger value, reward/use records are unioned, achievements keep the
+// earliest "completed/claimed" dates.
+function mergeBackupProgress(current, incoming) {
+    const cur = buildBackupProgress(current?.rpg, current?.achievements, current?.sessionStats);
+    const inc = incoming && typeof incoming === 'object'
+        ? buildBackupProgress(incoming.rpg, incoming.achievements, incoming.sessionStats)
+        : cur;
+    const rpg = {};
+    ['achievementXp', 'dailyQuestXp', 'weeklyArcXp', 'peakXp'].forEach((k) => { rpg[k] = Math.max(cur.rpg[k], inc.rpg[k]); });
+    rpg.xpModelMigrated = cur.rpg.xpModelMigrated || inc.rpg.xpModelMigrated;
+    rpg.streakShields = Math.min(2, Math.max(cur.rpg.streakShields, inc.rpg.streakShields));
+    ['achievementRewards', 'dailyQuestRewards', 'weeklyArcRewards', 'streakShieldUses'].forEach((k) => {
+        rpg[k] = mergeRecordMaps(cur.rpg[k], inc.rpg[k]);
+    });
+    // Rewards are unioned per id, so the XP they paid out is re-summed instead of just taking the larger total.
+    [['achievementXp', 'achievementRewards'], ['dailyQuestXp', 'dailyQuestRewards'], ['weeklyArcXp', 'weeklyArcRewards']].forEach(([xpKey, mapKey]) => {
+        const summed = Object.values(rpg[mapKey]).reduce((acc, r) => acc + Math.max(0, Number(r?.xp) || 0), 0);
+        rpg[xpKey] = Math.max(rpg[xpKey], summed);
+    });
+    const achievements = { unlocked: {}, completed: {} };
+    ['unlocked', 'completed'].forEach((field) => {
+        const x = cur.achievements[field] || {};
+        const y = inc.achievements[field] || {};
+        new Set([...Object.keys(x), ...Object.keys(y)]).forEach((id) => {
+            const times = [x[id], y[id]].filter(Boolean).map((v) => ({ v, t: Date.parse(v) }));
+            const valid = times.filter((e) => Number.isFinite(e.t)).sort((p, q) => p.t - q.t);
+            achievements[field][id] = (valid[0] || times[0]).v;
+        });
+    });
+    // Anything claimed is also completed.
+    Object.keys(achievements.unlocked).forEach((id) => {
+        if (!achievements.completed[id]) achievements.completed[id] = achievements.unlocked[id];
+    });
+    const sa = cur.sessionStats;
+    const sb = inc.sessionStats;
+    const sessionStats = { ...sa, daysWorked: { ...sb.daysWorked, ...sa.daysWorked } };
+    ['sessionsCompleted', 'totalTalkMs', 'totalIdleMs', 'totalAvailableMs', 'highUtilSessions', 'focusedSessions', 'longSessions4h', 'pauseAwareSessions'].forEach((k) => {
+        sessionStats[k] = Math.max(sa[k], sb[k]);
+    });
+    return { version: 1, rpg, achievements, sessionStats };
+}
+
+function stableStringify(value) {
+    if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+    if (value && typeof value === 'object') {
+        return `{${Object.keys(value).sort().map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
+    }
+    return JSON.stringify(value);
+}
+
+function hasBackupProgressChange(before, after) {
+    return stableStringify(before) !== stableStringify(after);
+}
