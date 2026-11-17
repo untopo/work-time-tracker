@@ -3,6 +3,17 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.8.1",
+        date: "2026-11-17",
+        changes: [
+        "Achievements are now organized in families with six ranks: Bronze, Silver, Gold, Platinum, Diamond and Obsidian. Instead of dozens of separate cards, each family (calls, hours, earnings, streaks and more) is one card with a progress ring that climbs rank by rank. Nobody loses progress: every badge you already had moved to its matching rank",
+        "A new Hall of records shows your longest day, busiest day, best week, longest call and longest streak. New families and one-time achievements were added, and the secret achievements are still waiting to be found",
+        "We received feedback from a user who saw a wrong Pay date on a rate's cycle card, and we listened: the card now shows the pay date of the cycle it displays (\"This cycle pays\") instead of the nearest upcoming one, which was often the previous cycle's",
+        "Importing a backup made before this update moves its achievements to the new ranks without duplicating XP",
+        "The Pay date on rate cycle cards no longer shows the previous cycle's date"
+        ]
+    },
+    {
         version: "1.8.0",
         date: "2026-11-16",
         changes: [

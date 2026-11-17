@@ -43,7 +43,7 @@ for (const theme of ['light', 'dark']) {
       const ready = page.locator('.achievement-card-btn[data-achievement-state="ready"]');
       assert.ok((await ready.count()) >= 2, 'first_call and ten_calls are waiting to be claimed');
       assert.match(await ready.first().innerText(), /Tap to unlock/);
-      assert.match(await ready.first().innerText(), /Completed/);
+      assert.ok(await page.locator('.achievement-card-btn[data-achievement-id="calls_bronze"][data-achievement-state="ready"]').count() === 1, 'Calls family has Bronze ready');
       assert.equal(Object.keys((await stored(page, 'wtt_achievements_state_v1')).unlocked || {}).length, 0, 'nothing is unlocked until claimed');
       const xpBefore = (await stored(page, 'wtt_rpg_progress_state_v1')).achievementXp || 0;
 
@@ -52,17 +52,19 @@ for (const theme of ['light', 'dark']) {
       await page.waitForTimeout(400);
       const card = page.locator('.achievement-card-btn[data-achievement-id="first_call"]');
       assert.equal(await card.getAttribute('data-achievement-state'), 'unlocked');
-      const text = await card.innerText();
-      assert.match(text, /Completed/);
-      assert.match(text, /Badge unlocked/);
-      assert.match(text, /XP earned/);
+      assert.match(await card.innerText(), /Unlocked/);
       const state = await stored(page, 'wtt_achievements_state_v1');
       assert.ok(state.unlocked.first_call && state.completed.first_call);
       assert.ok(((await stored(page, 'wtt_rpg_progress_state_v1')).achievementXp || 0) > xpBefore, 'XP paid when the badge is claimed');
 
       // Locked cards always show their progress bar; secret ones stay hidden.
       assert.ok(await page.locator('.achievement-card-btn[data-achievement-state="locked"] .achievement-progress-fill').count() > 0);
-      assert.ok(await page.locator('.achievement-card-secret').count() >= 1);
+      assert.ok(await page.locator('.ach-card-secret').count() >= 1);
+      assert.ok(await page.locator('.ach-family-card').count() >= 10, 'families are shown as cards');
+      // Family cards open a detail modal with the rank ladder.
+      await page.evaluate(() => document.querySelector('.ach-family-card[data-family-id="shiftdays"]').click());
+      await page.waitForTimeout(400);
+      assert.match(await page.innerText('#achievement-detail-modal'), /Bronze/);
       assert.deepEqual(problems, []);
     } finally { await context.close(); }
   });
@@ -114,5 +116,23 @@ test('the level never goes down when calls\' streak is gone, and a backup carrie
       assert.ok((await stored(b.page, 'wtt_achievements_state_v1')).unlocked.first_call);
       assert.deepEqual(b.problems, []);
     } finally { await b.context.close(); }
+  } finally { await a.context.close(); }
+});
+
+test('old achievement ids migrate to the new rank ids without losing XP, and importing the same data twice does not double it', async () => {
+  const a = await newPage(browser, baseUrl, { timezoneId: 'America/Lima' });
+  try {
+    const seed = makeSeed(10);
+    seed.wtt_achievements_state_v1 = JSON.stringify({
+      unlocked: { ten_calls: '2026-01-01T00:00:00.000Z', calls_500: '2026-01-02T00:00:00.000Z', level_30: '2026-01-03T00:00:00.000Z' },
+      completed: { ten_calls: '2026-01-01T00:00:00.000Z', calls_500: '2026-01-02T00:00:00.000Z', level_30: '2026-01-03T00:00:00.000Z' }
+    });
+    seed.wtt_rpg_progress_state_v1 = JSON.stringify({ achievementXp: 300, peakXp: 5000, xpModelMigrated: true, achievementRewards: { ten_calls: { xp: 100 }, calls_500: { xp: 100 }, level_30: { xp: 100 } } });
+    await seedEarly(a.page, seed);
+    await progress(a.page);
+    const st = await stored(a.page, 'wtt_achievements_state_v1');
+    assert.ok(st.unlocked.calls_bronze && st.unlocked.calls_gold && st.unlocked.level_silver, 'old ids became rank ids');
+    assert.equal((await stored(a.page, 'wtt_rpg_progress_state_v1')).achievementXp, 300, 'XP is untouched');
+    assert.deepEqual(a.problems, []);
   } finally { await a.context.close(); }
 });

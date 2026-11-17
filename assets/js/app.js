@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.8.0';
+    const APP_VERSION = '1.8.1';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -5311,7 +5311,7 @@ if (storedDailyGoal) {
                 delete unlocked.max_100_day;
             }
             // unlocked = claimed by the user; completed = requirement met (may still be waiting to be claimed).
-            // v1.9.0: old one-by-one achievements became ranks of a family; their dates carry over.
+            // v1.8.1: old one-by-one achievements became ranks of a family; their dates carry over.
             return migrateAchievementState({ unlocked, completed });
         } catch {
             return { unlocked: {}, completed: {} };

@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.8.0",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.8.0",
+  "latestVersion": "1.8.1",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.8.1",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Live daily goal progress, a clearer What's New notice, and a more focused call timer."
+  "notes": "Achievements now come in families with six ranks, plus a Hall of records and a fix for the Pay date on rate cycle cards."
 }
