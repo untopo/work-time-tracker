@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.8.0';
+    const APP_VERSION = '1.8.1';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -5256,57 +5256,39 @@ if (storedDailyGoal) {
     // Achievements (passive)
     const ACHIEVEMENTS_STATE_KEY = 'wtt_achievements_state_v1';
     const DAILY_QUESTS_STATE_KEY = 'wtt_daily_quests_state_v1';
-    const ACHIEVEMENTS = [
-        { id: 'first_call', name: 'First Contact', icon: 'fa-phone', tier: 'Bronze', description: 'Complete your first call.', check: (s) => s.totalCalls >= 1 },
-        { id: 'ten_calls', name: 'Busy Hands', icon: 'fa-list-check', tier: 'Bronze', description: 'Complete 10 calls.', check: (s) => s.totalCalls >= 10 },
-        { id: 'fifty_calls', name: 'Flow Builder', icon: 'fa-stream', tier: 'Silver', description: 'Complete 50 calls.', check: (s) => s.totalCalls >= 50 },
-        { id: 'two_hundred_calls', name: 'Call Veteran', icon: 'fa-headset', tier: 'Gold', description: 'Complete 200 calls.', check: (s) => s.totalCalls >= 200 },
-        { id: 'one_hour', name: 'One Focused Hour', icon: 'fa-hourglass-half', tier: 'Bronze', description: 'Log 60 total minutes.', check: (s) => s.totalMinutes >= 60 },
-        { id: 'ten_hours', name: 'Deep Work', icon: 'fa-business-time', tier: 'Silver', description: 'Log 10 total hours.', check: (s) => s.totalMinutes >= 600 },
-        { id: 'hundred_hours', name: 'Marathon Mindset', icon: 'fa-mountain', tier: 'Gold', description: 'Log 100 total hours.', check: (s) => s.totalMinutes >= 6000 },
-        { id: 'week_100', name: 'Century Week', icon: 'fa-dollar-sign', tier: 'Silver', description: 'Reach $100 in a single week.', check: (s) => s.maxWeekEarnings >= 100 },
-        { id: 'total_5000_earned', name: 'Money Milestone', icon: 'fa-gem', tier: 'Gold', description: 'Earn $5,000 total.', check: (s) => s.totalEarnings >= 5000 },
-        { id: 'total_1000_earned', name: 'Four Digits', icon: 'fa-sack-dollar', tier: 'Gold', description: 'Earn $1,000 total.', check: (s) => s.totalEarnings >= 1000 },
-        { id: 'streak_3', name: 'On a Roll', icon: 'fa-fire', tier: 'Bronze', description: 'Work 3 days in a row.', check: (s) => s.longestStreak >= 3 },
-        { id: 'streak_7', name: 'Week Warrior', icon: 'fa-calendar-week', tier: 'Silver', description: 'Work 7 days in a row.', check: (s) => s.longestStreak >= 7 },
-        { id: 'streak_14', name: 'Habit Architect', icon: 'fa-layer-group', tier: 'Gold', description: 'Work 14 days in a row.', check: (s) => s.longestStreak >= 14 },
-        { id: 'recovery_habit', name: 'Bounce Back', icon: 'fa-person-walking-arrow-loop-left', tier: 'Silver', description: 'Return and complete a call after a 3+ day break.', check: (s) => s.recoveryAfterBreak3Count >= 1 },
-        { id: 'thirty_work_days', name: 'Consistency Club', icon: 'fa-calendar-check', tier: 'Silver', description: 'Work on 30 unique days.', check: (s) => s.uniqueDaysWorked >= 30 },
-        { id: 'sixty_work_days', name: 'Ritual Master', icon: 'fa-crown', tier: 'Gold', description: 'Work on 60 unique days.', check: (s) => s.uniqueDaysWorked >= 60 },
-        { id: 'goal_mastery_7', name: 'Goal Chaser', icon: 'fa-bullseye', tier: 'Silver', description: 'Hit your daily goal on 7 different days.', check: (s) => s.goalHitDays >= 7 },
-        { id: 'goal_mastery_30', name: 'Goal Master', icon: 'fa-trophy', tier: 'Gold', description: 'Hit your daily goal on 30 different days.', check: (s) => s.goalHitDays >= 30 },
-        { id: 'session_first', name: 'First Shift', icon: 'fa-business-time', tier: 'Bronze', description: 'Complete your first session in Session Tracker.', check: (s) => s.sessionsCompleted >= 1 },
-        { id: 'session_five', name: 'Shift Builder', icon: 'fa-calendar-check', tier: 'Silver', description: 'Complete 5 tracked sessions.', check: (s) => s.sessionsCompleted >= 5 },
-        { id: 'session_focus', name: 'Flow Lock', icon: 'fa-crosshairs', tier: 'Silver', description: 'Complete a focused session (30+ min available with <=5 min idle).', check: (s) => s.focusedSessions >= 1 },
-        { id: 'session_util_high', name: 'High Utilization', icon: 'fa-gauge-high', tier: 'Gold', description: 'Complete 3 sessions with 70%+ utilization.', check: (s) => s.highUtilSessions >= 3 },
-        { id: 'session_long_4h', name: 'Full Block', icon: 'fa-hourglass-end', tier: 'Gold', description: 'Complete one 4+ hour tracked session.', check: (s) => s.longSessions4h >= 1 },
-        { id: 'session_pause_discipline', name: 'Break Discipline', icon: 'fa-pause-circle', tier: 'Silver', description: 'Complete 5 sessions where you used pause/resume.', check: (s) => s.pauseAwareSessions >= 5 },
-        { id: 'session_days_20', name: 'Shift Habit', icon: 'fa-calendar-days', tier: 'Gold', description: 'Track sessions on 20 different days.', check: (s) => s.sessionDaysWorked >= 20 },
-        { id: 'level_10', name: 'Rookie Adventurer', icon: 'fa-hat-wizard', tier: 'Bronze', rpgOnly: true, description: 'Reach level 10 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 10 },
-        { id: 'level_20', name: 'Seasoned Grinder', icon: 'fa-shield-halved', tier: 'Silver', rpgOnly: true, description: 'Reach level 20 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 20 },
-        { id: 'level_30', name: 'Elite Specialist', icon: 'fa-dragon', tier: 'Gold', rpgOnly: true, description: 'Reach level 30 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 30 },
-        { id: 'level_40', name: 'Legend in Progress', icon: 'fa-crown', tier: 'Gold', rpgOnly: true, description: 'Reach level 40 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 40 },
-        { id: 'level_50', name: 'Max Momentum', icon: 'fa-star', tier: 'Gold', rpgOnly: true, description: 'Reach level 50 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 50 },
-        { id: 'level_60', name: 'Mythic Routine', icon: 'fa-hat-wizard', tier: 'Gold', rpgOnly: true, description: 'Reach level 60 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 60 },
-        { id: 'level_75', name: 'Grandmaster Grind', icon: 'fa-dragon', tier: 'Gold', rpgOnly: true, description: 'Reach level 75 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 75 },
-        { id: 'level_100', name: 'Legendary Cap', icon: 'fa-crown', tier: 'Gold', rpgOnly: true, description: 'Reach level 100 in RPG Mode.', check: (s) => getCurrentRpgLevel(s.currentStreak) >= 100 },
-        { id: 'long_call_30', name: 'Steady Session', icon: 'fa-stopwatch', tier: 'Bronze', description: 'Complete a 30+ minute call.', check: (s) => s.longestCallMinutes >= 30 },
-        { id: 'long_call_120', name: 'Iron Focus', icon: 'fa-medal', tier: 'Gold', description: 'Complete a 2+ hour call.', check: (s) => s.longestCallMinutes >= 120 },
-        { id: 'calls_500', name: 'Five Hundred Club', icon: 'fa-phone-volume', tier: 'Gold', description: 'Complete 500 calls.', check: (s) => s.totalCalls >= 500, meter: { stat: 'totalCalls', target: 500, label: 'Calls completed' } },
-        { id: 'calls_1000', name: 'Thousand Voices', icon: 'fa-users', tier: 'Gold', description: 'Complete 1,000 calls.', check: (s) => s.totalCalls >= 1000, meter: { stat: 'totalCalls', target: 1000, label: 'Calls completed' } },
-        { id: 'calls_2500', name: 'Living Legend', icon: 'fa-star', tier: 'Gold', description: 'Complete 2,500 calls.', check: (s) => s.totalCalls >= 2500, meter: { stat: 'totalCalls', target: 2500, label: 'Calls completed' } },
-        { id: 'hours_250', name: 'Quarter Thousand', icon: 'fa-clock', tier: 'Gold', description: 'Log 250 total hours.', check: (s) => s.totalMinutes >= 15000, meter: { stat: 'totalMinutes', target: 15000, label: 'Total minutes' } },
-        { id: 'hours_500', name: 'Half a Thousand', icon: 'fa-infinity', tier: 'Gold', description: 'Log 500 total hours.', check: (s) => s.totalMinutes >= 30000, meter: { stat: 'totalMinutes', target: 30000, label: 'Total minutes' } },
-        { id: 'total_10000_earned', name: 'Five Figures', icon: 'fa-money-bill-trend-up', tier: 'Gold', description: 'Earn $10,000 total.', check: (s) => s.totalEarnings >= 10000, meter: { stat: 'totalEarnings', target: 10000, label: 'All-time earnings', money: true } },
-        { id: 'total_25000_earned', name: 'Vault Keeper', icon: 'fa-vault', tier: 'Gold', description: 'Earn $25,000 total.', check: (s) => s.totalEarnings >= 25000, meter: { stat: 'totalEarnings', target: 25000, label: 'All-time earnings', money: true } },
-        { id: 'streak_30', name: 'Unbreakable', icon: 'fa-fire-flame-curved', tier: 'Gold', description: 'Work 30 days in a row.', check: (s) => s.longestStreak >= 30, meter: { stat: 'longestStreak', target: 30, label: 'Longest streak (days)' } },
-        { id: 'work_days_100', name: 'Centurion', icon: 'fa-landmark', tier: 'Gold', description: 'Work on 100 unique days.', check: (s) => s.uniqueDaysWorked >= 100, meter: { stat: 'uniqueDaysWorked', target: 100, label: 'Unique days worked' } },
-        { id: 'work_days_250', name: 'Year-Round Pro', icon: 'fa-calendar', tier: 'Gold', description: 'Work on 250 unique days.', check: (s) => s.uniqueDaysWorked >= 250, meter: { stat: 'uniqueDaysWorked', target: 250, label: 'Unique days worked' } },
+    // One-off achievements (singles) and secrets. Everything that climbs ranks lives in ACHIEVEMENT_FAMILIES.
+    const ACHIEVEMENT_SINGLES = [
+        { id: 'first_call', name: 'First Contact', icon: 'fa-phone', tier: 'Bronze', description: 'Complete your first call.', check: (s) => s.totalCalls >= 1, meter: { stat: 'totalCalls', target: 1, label: 'Calls completed' } },
+        { id: 'session_first', name: 'First Shift', icon: 'fa-business-time', tier: 'Bronze', description: 'Complete your first session in Session Tracker.', check: (s) => s.sessionsCompleted >= 1, meter: { stat: 'sessionsCompleted', target: 1, label: 'Completed sessions' } },
+        { id: 'recovery_habit', name: 'Bounce Back', icon: 'fa-person-walking-arrow-loop-left', tier: 'Silver', description: 'Return and complete a call after a 3+ day break.', check: (s) => s.recoveryAfterBreak3Count >= 1, meter: { stat: 'recoveryAfterBreak3Count', target: 1, label: 'Returns after 3+ day breaks' } },
+        { id: 'fresh_start', name: 'Fresh Start', icon: 'fa-person-walking-arrow-loop-left', tier: 'Gold', description: 'Come back and complete a call after a month away.', check: (s) => s.breakMonthReturns >= 1, meter: { stat: 'breakMonthReturns', target: 1, label: 'Returns after a month away' } },
+        { id: 'session_long_4h', name: 'Full Block', icon: 'fa-hourglass-end', tier: 'Gold', description: 'Complete one 4+ hour tracked session.', check: (s) => s.longSessions4h >= 1, meter: { stat: 'longSessions4h', target: 1, label: '4+ hour sessions' } },
+        { id: 'session_pause_discipline', name: 'Break Discipline', icon: 'fa-pause-circle', tier: 'Silver', description: 'Complete 5 sessions where you used pause/resume.', check: (s) => s.pauseAwareSessions >= 5, meter: { stat: 'pauseAwareSessions', target: 5, label: 'Pause/resume sessions' } },
+        { id: 'seven_days', name: 'Seven Days', icon: 'fa-calendar-week', tier: 'Silver', description: 'Work on every day of the week at least once.', check: (s) => s.weekdaysWorked >= 7, meter: { stat: 'weekdaysWorked', target: 7, label: 'Days of the week worked' } },
+        { id: 'full_calendar', name: 'Full Calendar', icon: 'fa-calendar', tier: 'Gold', description: 'Work in all 12 months of the same year.', check: (s) => s.bestYearMonths >= 12, meter: { stat: 'bestYearMonths', target: 12, label: 'Months worked in one year' } },
+        { id: 'toolbox', name: 'Toolbox', icon: 'fa-toolbox', tier: 'Silver', description: 'Try notes, a daily goal, Session Tracker, payment cycles and a backup.', check: (s) => s.toolboxCount >= 5, meter: { stat: 'toolboxCount', target: 5, label: 'Features tried' } },
         { id: 'hidden_night_owl', name: 'Night Owl', icon: 'fa-moon', tier: 'Silver', hidden: true, hiddenHint: 'Something happens after dark...', description: 'Complete a call after 10 PM.', check: (s) => s.nightCalls >= 1 },
         { id: 'hidden_early_bird', name: 'Early Bird', icon: 'fa-sun', tier: 'Silver', hidden: true, hiddenHint: 'Rise before the sun...', description: 'Complete a call between 4 AM and 7 AM.', check: (s) => s.earlyCalls >= 1 },
         { id: 'hidden_weekend_warrior', name: 'Weekend Warrior', icon: 'fa-umbrella-beach', tier: 'Silver', hidden: true, hiddenHint: 'Work while others rest...', description: 'Work on 10 different weekend days.', check: (s) => s.weekendDaysWorked >= 10 },
-        { id: 'hidden_busy_day', name: 'Call Storm', icon: 'fa-bolt', tier: 'Gold', hidden: true, hiddenHint: 'One very busy day...', description: 'Complete 40 calls in a single day.', check: (s) => s.maxDayCalls >= 40 }
+        { id: 'hidden_rapid_fire', name: 'Rapid Fire', icon: 'fa-bolt', tier: 'Silver', hidden: true, hiddenHint: 'Short and sweet, again and again...', description: 'Complete 10 calls under 1 minute in a single day.', check: (s) => s.maxDayShortCalls >= 10 },
+        { id: 'hidden_hour_club', name: 'Hour Club', icon: 'fa-clock', tier: 'Gold', hidden: true, hiddenHint: 'A very long call awaits...', description: 'Complete a call of 60 minutes or more.', check: (s) => s.longestCallMinutes >= 60 },
+        { id: 'hidden_marathon_day', name: 'Marathon Day', icon: 'fa-mountain', tier: 'Gold', hidden: true, hiddenHint: 'One day, many hours...', description: 'Spend 8 hours on calls in a single day.', check: (s) => s.maxDayHours >= 8 },
+        { id: 'hidden_holiday_hero', name: 'Holiday Hero', icon: 'fa-gift', tier: 'Gold', hidden: true, hiddenHint: 'Work when everyone celebrates...', description: 'Complete a call on December 25 or January 1.', check: (s) => s.holidayCalls >= 1 },
+        { id: 'hidden_midnight_call', name: 'Midnight Call', icon: 'fa-moon', tier: 'Gold', hidden: true, hiddenHint: 'A call that outlasts the day...', description: 'Complete a call that crosses midnight.', check: (s) => s.midnightCalls >= 1 }
     ];
+    const ACHIEVEMENT_FAMILY_RANKS = ACHIEVEMENT_FAMILIES.flatMap((family) => family.thresholds.map((threshold, rankIndex) => ({
+        id: getFamilyRankId(family.id, rankIndex),
+        family: family.id,
+        rankIndex,
+        name: `${family.name}: ${ACHIEVEMENT_RANKS[rankIndex]}`,
+        icon: family.icon,
+        tier: ACHIEVEMENT_RANKS[rankIndex],
+        rpgOnly: !!family.rpgOnly,
+        description: family.what.replace('{n}', formatFamilyValue(family.unit, threshold)),
+        check: (s) => (Number(s[family.stat]) || 0) >= threshold,
+        meter: { stat: family.stat, target: threshold, label: family.sub, unit: family.unit }
+    })));
+    const ACHIEVEMENTS = [...ACHIEVEMENT_SINGLES, ...ACHIEVEMENT_FAMILY_RANKS];
 
     const DAILY_QUEST_POOL = [
         { id: 'dq_calls_2', name: 'Quick Start', icon: 'fa-phone', tier: 'Bronze', weight: 1.0, rewardXp: 30, description: 'Complete 2 calls today.', label: 'Calls today', target: 2, getCurrent: (s) => s.todayCalls, format: (v) => `${Math.round(v)}` },
@@ -5329,8 +5311,8 @@ if (storedDailyGoal) {
                 delete unlocked.max_100_day;
             }
             // unlocked = claimed by the user; completed = requirement met (may still be waiting to be claimed).
-            Object.keys(unlocked).forEach((id) => { if (!completed[id]) completed[id] = unlocked[id]; });
-            return { unlocked, completed };
+            // v1.8.1: old one-by-one achievements became ranks of a family; their dates carry over.
+            return migrateAchievementState({ unlocked, completed });
         } catch {
             return { unlocked: {}, completed: {} };
         }
@@ -5432,7 +5414,14 @@ if (storedDailyGoal) {
         let nightCalls = 0;
         let earlyCalls = 0;
         const dayCallCounts = new Map();
+        const dayShortCalls = new Map();
         const weekendDayStamps = new Set();
+        const weekdaySet = new Set();
+        const monthsByYear = new Map();
+        let holidayCalls = 0;
+        let midnightCalls = 0;
+        let firstCallStamp = Infinity;
+        let notesCount = 0;
 
         calls.forEach((call) => {
             totalCalls += 1;
@@ -5446,6 +5435,16 @@ if (storedDailyGoal) {
             if (Number.isFinite(dayStamp)) {
                 uniqueDayStamps.add(dayStamp);
                 dayCallCounts.set(dayStamp, (dayCallCounts.get(dayStamp) || 0) + 1);
+                if (durationMin < 1) dayShortCalls.set(dayStamp, (dayShortCalls.get(dayStamp) || 0) + 1);
+                firstCallStamp = Math.min(firstCallStamp, dayStamp);
+                const callDate = new Date(call.startTime);
+                weekdaySet.add(callDate.getDay());
+                if (!monthsByYear.has(callDate.getFullYear())) monthsByYear.set(callDate.getFullYear(), new Set());
+                monthsByYear.get(callDate.getFullYear()).add(callDate.getMonth());
+                if ((callDate.getMonth() === 11 && callDate.getDate() === 25) || (callDate.getMonth() === 0 && callDate.getDate() === 1)) holidayCalls += 1;
+                const callEnd = new Date(call.endTime);
+                if (Number.isFinite(callEnd.getTime()) && getLocalDateKey(callEnd) !== getLocalDateKey(callDate)) midnightCalls += 1;
+                if (String(call.notes || '').trim()) notesCount += 1;
                 const startForHour = new Date(call.startTime);
                 const hour = startForHour.getHours();
                 if (hour >= 22) nightCalls += 1;
@@ -5475,6 +5474,23 @@ if (storedDailyGoal) {
         ])).sort((a, b) => a - b);
         const sessionStats = getSessionRpgStatsState();
         const sessionDaysWorked = Object.keys(sessionStats.daysWorked || {}).length;
+        const maxDayHours = dayMinutes.size ? Math.max(...Array.from(dayMinutes.values())) / 60 : 0;
+        let breakMonthReturns = 0;
+        for (let i = 1; i < sortedDays.length; i += 1) {
+            if (Math.round((sortedDays[i] - sortedDays[i - 1]) / (24 * 60 * 60 * 1000)) >= 31) breakMonthReturns += 1;
+        }
+        const bestYearMonths = monthsByYear.size ? Math.max(...Array.from(monthsByYear.values()).map((set) => set.size)) : 0;
+        const tenureDays = Number.isFinite(firstCallStamp) ? Math.max(0, Math.floor((todayStamp - firstCallStamp) / (24 * 60 * 60 * 1000))) : 0;
+        const paymentCyclesCompleted = Array.isArray(paymentCycles)
+            ? paymentCycles.filter((cycle) => { const end = new Date(cycle?.endDate).getTime(); return Number.isFinite(end) && end < todayStamp; }).length
+            : 0;
+        const toolboxCount = [
+            notesCount > 0,
+            hasGoalConfiguredForToolbox(),
+            (Number(sessionStats.sessionsCompleted) || 0) > 0,
+            Array.isArray(paymentCycles) && paymentCycles.length > 0,
+            !!appStorage.getItem(LAST_BACKUP_KEY)
+        ].filter(Boolean).length;
         const maxDayEarnings = dayEarnings.size ? Math.max(...Array.from(dayEarnings.values())) : 0;
         const maxWeekEarnings = weekEarnings.size ? Math.max(...Array.from(weekEarnings.values())) : 0;
         const todayEarnings = dayEarnings.get(todayStamp) || 0;
@@ -5525,8 +5541,26 @@ if (storedDailyGoal) {
             pauseAwareSessions: Math.max(0, Number(sessionStats.pauseAwareSessions) || 0),
             longestStreak: computeLongestStreak(streakDayStamps),
             currentStreak: computeCurrentStreak(streakDayStamps),
-            longestCallMinutes
+            longestCallMinutes,
+            totalHours: totalMinutes / 60,
+            maxDayHours,
+            maxDayShortCalls: dayShortCalls.size ? Math.max(...Array.from(dayShortCalls.values())) : 0,
+            holidayCalls,
+            midnightCalls,
+            breakMonthReturns,
+            weekdaysWorked: weekdaySet.size,
+            bestYearMonths,
+            tenureDays,
+            weeklyStreak: computeWeeklyStreak(sortedDays),
+            trackedHours: Math.max(0, Number(sessionStats.totalAvailableMs) || 0) / 3600000,
+            paymentCyclesCompleted,
+            toolboxCount,
+            level: getCurrentRpgLevel()
         };
+    }
+
+    function hasGoalConfiguredForToolbox() {
+        return (Number(dailyGoal?.amount) || 0) > 0 || (Number(dailyGoal?.minutes) || 0) > 0;
     }
 
     function computeDailyQuestStats() {
@@ -5563,9 +5597,6 @@ if (storedDailyGoal) {
         return ACHIEVEMENTS.find((a) => a.id === id) || null;
     }
 
-    function getVisibleAchievements() {
-        return isRpgEnabled() ? ACHIEVEMENTS : ACHIEVEMENTS.filter((a) => !a.rpgOnly);
-    }
 
     function getCurrentRpgLevel(currentStreak = 0) {
         if (!isRpgEnabled()) return 0;
@@ -5584,199 +5615,11 @@ if (storedDailyGoal) {
             meta.current = Number(stats[achievement.meter.stat]) || 0;
             meta.target = achievement.meter.target;
             meta.label = achievement.meter.label;
-            if (achievement.meter.money) meta.formatter = (v) => `$${Number(v).toLocaleString(DISPLAY_LOCALE, { maximumFractionDigits: 0 })}`;
-        } else switch (achievement.id) {
-            case 'first_call':
-                meta.current = stats.totalCalls;
-                meta.target = 1;
-                meta.label = 'Calls completed';
-                break;
-            case 'ten_calls':
-                meta.current = stats.totalCalls;
-                meta.target = 10;
-                meta.label = 'Calls completed';
-                break;
-            case 'fifty_calls':
-                meta.current = stats.totalCalls;
-                meta.target = 50;
-                meta.label = 'Calls completed';
-                break;
-            case 'two_hundred_calls':
-                meta.current = stats.totalCalls;
-                meta.target = 200;
-                meta.label = 'Calls completed';
-                break;
-            case 'one_hour':
-                meta.current = stats.totalMinutes;
-                meta.target = 60;
-                meta.label = 'Total minutes';
-                break;
-            case 'ten_hours':
-                meta.current = stats.totalMinutes;
-                meta.target = 600;
-                meta.label = 'Total minutes';
-                break;
-            case 'hundred_hours':
-                meta.current = stats.totalMinutes;
-                meta.target = 6000;
-                meta.label = 'Total minutes';
-                break;
-            case 'week_100':
-                meta.current = stats.maxWeekEarnings;
-                meta.target = 100;
-                meta.label = 'Best week earnings';
-                meta.formatter = (v) => `$${Number(v).toFixed(2)}`;
-                break;
-            case 'total_1000_earned':
-                meta.current = stats.totalEarnings;
-                meta.target = 1000;
-                meta.label = 'All-time earnings';
-                meta.formatter = (v) => `$${Number(v).toFixed(2)}`;
-                break;
-            case 'total_5000_earned':
-                meta.current = stats.totalEarnings;
-                meta.target = 5000;
-                meta.label = 'All-time earnings';
-                meta.formatter = (v) => `$${Number(v).toFixed(2)}`;
-                break;
-            case 'streak_3':
-                meta.current = stats.longestStreak;
-                meta.target = 3;
-                meta.label = 'Longest streak (days)';
-                break;
-            case 'streak_7':
-                meta.current = stats.longestStreak;
-                meta.target = 7;
-                meta.label = 'Longest streak (days)';
-                break;
-            case 'streak_14':
-                meta.current = stats.longestStreak;
-                meta.target = 14;
-                meta.label = 'Longest streak (days)';
-                break;
-            case 'recovery_habit':
-                meta.current = stats.recoveryAfterBreak3Count;
-                meta.target = 1;
-                meta.label = 'Returns after 3+ day breaks';
-                break;
-            case 'thirty_work_days':
-                meta.current = stats.uniqueDaysWorked;
-                meta.target = 30;
-                meta.label = 'Unique days worked';
-                break;
-            case 'sixty_work_days':
-                meta.current = stats.uniqueDaysWorked;
-                meta.target = 60;
-                meta.label = 'Unique days worked';
-                break;
-            case 'goal_mastery_7':
-                meta.current = stats.goalHitDays;
-                meta.target = 7;
-                meta.label = stats.hasGoalConfigured ? 'Days with goal reached' : 'Set a daily goal to track';
-                break;
-            case 'goal_mastery_30':
-                meta.current = stats.goalHitDays;
-                meta.target = 30;
-                meta.label = stats.hasGoalConfigured ? 'Days with goal reached' : 'Set a daily goal to track';
-                break;
-            case 'session_first':
-                meta.current = stats.sessionsCompleted;
-                meta.target = 1;
-                meta.label = 'Completed sessions';
-                break;
-            case 'session_five':
-                meta.current = stats.sessionsCompleted;
-                meta.target = 5;
-                meta.label = 'Completed sessions';
-                break;
-            case 'session_focus':
-                meta.current = stats.focusedSessions;
-                meta.target = 1;
-                meta.label = 'Focused sessions';
-                break;
-            case 'session_util_high':
-                meta.current = stats.highUtilSessions;
-                meta.target = 3;
-                meta.label = '70%+ utilization sessions';
-                break;
-            case 'session_long_4h':
-                meta.current = stats.longSessions4h;
-                meta.target = 1;
-                meta.label = '4+ hour sessions';
-                break;
-            case 'session_pause_discipline':
-                meta.current = stats.pauseAwareSessions;
-                meta.target = 5;
-                meta.label = 'Pause/resume sessions';
-                break;
-            case 'session_days_20':
-                meta.current = stats.sessionDaysWorked;
-                meta.target = 20;
-                meta.label = 'Session days tracked';
-                break;
-            case 'level_10':
-                meta.current = getCurrentRpgLevel(stats.currentStreak);
-                meta.target = 10;
-                meta.label = 'Current level';
-                meta.formatter = (v) => `Lv ${Math.round(v)}`;
-                break;
-            case 'level_20':
-                meta.current = getCurrentRpgLevel(stats.currentStreak);
-                meta.target = 20;
-                meta.label = 'Current level';
-                meta.formatter = (v) => `Lv ${Math.round(v)}`;
-                break;
-            case 'level_30':
-                meta.current = getCurrentRpgLevel(stats.currentStreak);
-                meta.target = 30;
-                meta.label = 'Current level';
-                meta.formatter = (v) => `Lv ${Math.round(v)}`;
-                break;
-            case 'level_40':
-                meta.current = getCurrentRpgLevel(stats.currentStreak);
-                meta.target = 40;
-                meta.label = 'Current level';
-                meta.formatter = (v) => `Lv ${Math.round(v)}`;
-                break;
-            case 'level_50':
-                meta.current = getCurrentRpgLevel(stats.currentStreak);
-                meta.target = 50;
-                meta.label = 'Current level';
-                meta.formatter = (v) => `Lv ${Math.round(v)}`;
-                break;
-            case 'level_60':
-                meta.current = getCurrentRpgLevel(stats.currentStreak);
-                meta.target = 60;
-                meta.label = 'Current level';
-                meta.formatter = (v) => `Lv ${Math.round(v)}`;
-                break;
-            case 'level_75':
-                meta.current = getCurrentRpgLevel(stats.currentStreak);
-                meta.target = 75;
-                meta.label = 'Current level';
-                meta.formatter = (v) => `Lv ${Math.round(v)}`;
-                break;
-            case 'level_100':
-                meta.current = getCurrentRpgLevel(stats.currentStreak);
-                meta.target = 100;
-                meta.label = 'Current level';
-                meta.formatter = (v) => `Lv ${Math.round(v)}`;
-                break;
-            case 'long_call_30':
-                meta.current = stats.longestCallMinutes;
-                meta.target = 30;
-                meta.label = 'Longest call (minutes)';
-                break;
-            case 'long_call_120':
-                meta.current = stats.longestCallMinutes;
-                meta.target = 120;
-                meta.label = 'Longest call (minutes)';
-                break;
-            default:
-                meta.current = unlocked ? 1 : 0;
-                meta.target = 1;
-                break;
+            if (achievement.meter.unit) meta.formatter = (v) => formatFamilyValue(achievement.meter.unit, v, { short: true });
+        } else {
+            meta.current = unlocked ? 1 : 0;
         }
+        if (achievement.id === 'dailygoal_bronze' && !stats.hasGoalConfigured) meta.label = 'Set a daily goal to track';
 
         const cappedCurrent = unlocked ? meta.target : Math.min(meta.current, meta.target);
         const pct = meta.target > 0 ? Math.max(0, Math.min(100, (cappedCurrent / meta.target) * 100)) : 0;
@@ -5799,10 +5642,145 @@ if (storedDailyGoal) {
         });
     }
 
+    function getVisibleAchievements() {
+        return ACHIEVEMENTS.filter((a) => (isRpgEnabled() || !a.rpgOnly) && isAchievementFeatureAvailable(a));
+    }
+
+    function isAchievementFeatureAvailable(achievement) {
+        const family = achievement.family ? ACHIEVEMENT_FAMILIES.find((f) => f.id === achievement.family) : null;
+        if (family?.feature === 'paymentCycles' && !paymentCyclesEnabled) {
+            const state = getAchievementState();
+            return !!state.completed[achievement.id];
+        }
+        return true;
+    }
+
+    function getFamilyStatus(family, state, stats) {
+        const value = Number(stats[family.stat]) || 0;
+        const ranks = family.thresholds.map((threshold, index) => {
+            const id = getFamilyRankId(family.id, index);
+            return { id, index, rank: ACHIEVEMENT_RANKS[index], threshold, claimed: !!state.unlocked[id], completed: !!state.completed[id] || value >= threshold };
+        });
+        let held = 0;
+        ranks.forEach((r) => { if (r.claimed) held = r.index + 1; });
+        const ready = ranks.find((r) => r.completed && !r.claimed) || null;
+        const next = ranks.find((r) => !r.completed) || null;
+        return { family, value, ranks, held, ready, next, maxed: !ready && !next };
+    }
+
+    function achievementRingHtml({ pct, icon, rankClass, ringState, size = 100 }) {
+        const circumference = 251.3;
+        const arc = Math.round((Math.max(0, Math.min(100, pct)) / 100) * circumference * 10) / 10;
+        return `<div class="ach-ring ${rankClass} ach-ring-${ringState}" style="width:${size}px;height:${size}px">
+            <svg viewBox="0 0 96 96" aria-hidden="true"><circle class="ach-ring-track" cx="48" cy="48" r="40" fill="none" stroke-width="7"/><circle class="ach-ring-arc" cx="48" cy="48" r="40" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="${arc} ${circumference}"/></svg>
+            <div class="ach-ring-disc"><i class="fas ${icon}"></i></div>
+            ${ringState === 'max' ? '<span class="ach-ring-check"><i class="fas fa-check"></i></span>' : ''}
+        </div>`;
+    }
+
+    function renderFamilyCardHtml(status, state, rpgEnabled) {
+        const { family, value, ranks, held, ready, next, maxed } = status;
+        const heldName = held > 0 ? ACHIEVEMENT_RANKS[held - 1] : 'Unranked';
+        const discClass = held > 0 ? `rank-${heldName.toLowerCase()}` : 'rank-locked';
+        const feature = family.feature === 'paymentCycles' && !paymentCyclesEnabled;
+        let cardState = 'locked';
+        let ringState = 'progress';
+        let ringRank = next ? `rank-${next.rank.toLowerCase()}` : discClass;
+        let pct = 0;
+        let progLabel = '';
+        let progText = '';
+        let foot = 'In progress';
+        let footClass = 'ach-foot-quiet';
+        if (ready) {
+            cardState = 'ready';
+            ringState = 'ready';
+            pct = 100;
+            progLabel = `${ready.rank} reached`;
+            progText = `${formatFamilyValue(family.unit, value, { short: true })} / ${formatFamilyValue(family.unit, ready.threshold, { short: true })}`;
+            foot = `Tap to unlock ${ready.rank}${rpgEnabled ? ' + XP' : ''}`;
+            footClass = 'ach-foot-ready';
+        } else if (maxed) {
+            cardState = 'unlocked';
+            ringState = 'max';
+            ringRank = `rank-${ACHIEVEMENT_RANKS[5].toLowerCase()}`;
+            pct = 100;
+            progLabel = 'Max rank';
+            progText = formatFamilyValue(family.unit, value, { short: true });
+            foot = 'Max rank';
+            footClass = 'ach-foot-done';
+        } else {
+            pct = Math.max(0, Math.min(100, (value / next.threshold) * 100));
+            progLabel = held > 0 || true ? `Next: ${next.rank}` : '';
+            progText = `${formatFamilyValue(family.unit, value, { short: true })} / ${formatFamilyValue(family.unit, next.threshold, { short: true })}`;
+            if (family.id === 'dailygoal' && !hasGoalConfiguredForToolbox()) progLabel = 'Set a daily goal to track';
+            if (feature) { foot = 'Feature off'; progLabel = 'Turn on Payment cycles to track this'; }
+        }
+        const dots = ranks.map((r) => {
+            const cls = r.claimed ? 'ach-dot-done' : (r.completed ? 'ach-dot-ready' : (next && next.index === r.index ? 'ach-dot-next' : 'ach-dot-future'));
+            return `<span class="ach-dot rank-${r.rank.toLowerCase()} ${cls}" title="${r.rank}: ${escapeHTML(formatFamilyValue(family.unit, r.threshold))}"></span>`;
+        }).join('');
+        const lastClaimed = held > 0 ? ranks[held - 1] : null;
+        const line = lastClaimed ? `${lastClaimed.rank} unlocked ${formatAchievementDate(state.unlocked[lastClaimed.id])}` : 'No rank unlocked yet';
+        const clickId = ready ? ready.id : `family:${family.id}`;
+        return `
+            <button type="button" class="achievement-card-btn ach-card ach-family-card ach-card-${cardState}${feature ? ' ach-card-off' : ''}${justClaimedAchievementIds.has(ready?.id || '') ? ' achievement-card-just-claimed' : ''}" data-achievement-id="${clickId}" data-achievement-state="${cardState}" data-family-id="${family.id}">
+                <div class="ach-card-head">
+                    <div><div class="ach-name">${escapeHTML(family.name)}</div><div class="ach-sub">${escapeHTML(family.sub)}</div></div>
+                    <span class="ach-rank-pill ${discClass}">${heldName}</span>
+                </div>
+                <div class="ach-ring-wrap">${achievementRingHtml({ pct, icon: family.icon, rankClass: held > 0 && ringState !== 'max' ? discClass : (ringState === 'max' ? ringRank : 'rank-locked'), ringState, size: 100 }).replace('class="ach-ring ', `class="ach-ring ach-arc-${ringRank} `)}</div>
+                <div class="ach-dots">${dots}</div>
+                <div class="ach-progress">
+                    <div class="ach-progress-row"><span>${escapeHTML(progLabel)}</span><span>${escapeHTML(progText)}</span></div>
+                    <div class="ach-bar"><div class="achievement-progress-fill ach-bar-fill ${ringRank}" style="width:${pct}%"></div></div>
+                </div>
+                <div class="ach-line">${escapeHTML(line)}</div>
+                <div class="ach-foot ${footClass}">${foot}</div>
+            </button>`;
+    }
+
+    function renderSingleCardHtml(a, state, stats, rpgEnabled) {
+        const unlocked = !!state.unlocked[a.id];
+        const completed = !!state.completed[a.id];
+        const ready = completed && !unlocked;
+        const secret = !!a.hidden && !completed;
+        const cardState = unlocked ? 'unlocked' : (ready ? 'ready' : 'locked');
+        const justClaimed = justClaimedAchievementIds.has(a.id) ? ' achievement-card-just-claimed' : '';
+        if (secret) {
+            return `
+            <button type="button" class="achievement-card-btn ach-card ach-single-card ach-card-secret ach-card-locked" data-achievement-id="${a.id}" data-achievement-state="locked">
+                ${achievementRingHtml({ pct: 0, icon: 'fa-question', rankClass: 'rank-secret', ringState: 'secret', size: 64 })}
+                <div class="ach-single-copy"><div class="ach-name">Secret achievement</div><div class="ach-sub">${escapeHTML(a.hiddenHint || 'Keep playing to discover it.')}</div><div class="ach-foot ach-foot-quiet">Hidden</div></div>
+            </button>`;
+        }
+        const progress = getAchievementProgress(a, stats, completed);
+        const rankClass = completed ? `rank-${a.tier.toLowerCase()}` : 'rank-locked';
+        const ringState = unlocked ? 'done' : (ready ? 'ready' : 'progress');
+        const foot = unlocked ? `Unlocked ${formatAchievementDate(state.unlocked[a.id])}` : (ready ? `Tap to unlock${rpgEnabled ? ' + XP' : ''}` : (a.hidden ? 'Locked' : `${progress.formatter(progress.current)} / ${progress.formatter(progress.target)}`));
+        const footClass = unlocked ? 'ach-foot-done' : (ready ? 'ach-foot-ready' : 'ach-foot-quiet');
+        return `
+            <button type="button" class="achievement-card-btn ach-card ach-single-card ach-card-${cardState}${justClaimed}" data-achievement-id="${a.id}" data-achievement-state="${cardState}">
+                ${achievementRingHtml({ pct: unlocked || ready ? 100 : progress.pct, icon: a.icon, rankClass, ringState, size: 64 })}
+                <div class="ach-single-copy"><div class="ach-name">${escapeHTML(a.name)}</div><div class="ach-sub">${escapeHTML(a.description)}</div><div class="ach-foot ${footClass}">${escapeHTML(foot)}</div></div>
+            </button>`;
+    }
+
+    function renderRecordsHtml(stats) {
+        const fmtH = (h) => `${(Math.round(h * 10) / 10).toLocaleString(DISPLAY_LOCALE)} h`;
+        const tiles = [
+            { label: 'Longest day', value: stats.maxDayHours > 0 ? fmtH(stats.maxDayHours) : '-', note: 'Time on calls in one day' },
+            { label: 'Busiest day', value: stats.maxDayCalls > 0 ? `${stats.maxDayCalls} calls` : '-', note: 'Calls in one day' },
+            { label: 'Best week', value: stats.maxWeekEarnings > 0 ? `$${Math.round(stats.maxWeekEarnings).toLocaleString(DISPLAY_LOCALE)}` : '-', note: 'Earnings in one week' },
+            { label: 'Longest call', value: stats.longestCallMinutes > 0 ? `${Math.round(stats.longestCallMinutes)} min` : '-', note: 'Your longest single call' },
+            { label: 'Longest streak', value: stats.longestStreak > 0 ? `${stats.longestStreak} day${stats.longestStreak === 1 ? '' : 's'}` : '-', note: 'Days in a row' },
+            { label: 'Lifetime', value: `${stats.totalCalls.toLocaleString(DISPLAY_LOCALE)} calls`, note: `${fmtH(stats.totalHours)} on calls` }
+        ];
+        return tiles.map((t) => `<div class="ach-record"><div class="ach-record-label">${t.label}</div><div class="ach-record-value">${escapeHTML(t.value)}</div><div class="ach-record-note">${t.note}</div></div>`).join('');
+    }
+
     function renderAchievementsModal() {
         if (!achievementsGrid || !achievementsSummary) return;
         const state = getAchievementState();
-        const rpgState = getRpgProgressState();
         const stats = computeAchievementStats();
         const rpgEnabled = isRpgEnabled();
         const visibleAchievements = getVisibleAchievements();
@@ -5814,74 +5792,21 @@ if (storedDailyGoal) {
         const readyBtn = readyCount > 0
             ? `<button type="button" id="achievements-claim-all-btn" class="achievement-claim-all-btn ml-2">${readyCount > 1 ? `Unlock all (${readyCount})` : 'Unlock badge'}</button>`
             : '';
-        achievementsSummary.innerHTML = rpgEnabled
-            ? `
-            <span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s)</span>
-            <span class="hint-tooltip hint-tooltip-right ml-1" data-tooltip="Each call is boosted by the streak you had that day (starts at 3 days: +5%, then +2% per extra day, capped at +35%). Achievement rewards scale by level only and are paid when you unlock the badge.">?</span>${readyBtn}
-        `
-            : `<span>${unlockedCount} / ${visibleAchievements.length} unlocked | Current streak: ${stats.currentStreak} day(s)</span>${readyBtn}`;
+        const tip = rpgEnabled
+            ? `<span class="hint-tooltip hint-tooltip-right ml-1" data-tooltip="Each call is boosted by the streak you had that day (starts at 3 days: +5%, then +2% per extra day, capped at +35%). Achievement rewards scale by level only and are paid when you unlock a badge.">?</span>`
+            : '';
+        achievementsSummary.innerHTML = `<span>${unlockedCount} / ${visibleAchievements.length} badges unlocked | Current streak: ${stats.currentStreak} day(s)</span>${tip}${readyBtn}`;
 
-        achievementsGrid.innerHTML = visibleAchievements.map((a) => {
-            const unlocked = !!state.unlocked[a.id];
-            const completed = !!state.completed[a.id];
-            const ready = completed && !unlocked;
-            const secret = !!a.hidden && !completed;
-            const tierStyles = getTierClasses(a.tier, completed);
-            const earnedXp = Number(rpgState.achievementRewards?.[a.id]?.xp) || 0;
-            const completedAt = completed ? formatAchievementDate(state.completed[a.id]) : '';
-            const unlockedAt = unlocked ? formatAchievementDate(state.unlocked[a.id]) : '';
-            const progress = getAchievementProgress(a, stats, completed);
-            const progressText = `${progress.formatter(progress.current)} / ${progress.formatter(progress.target)}`;
-            const stateClass = unlocked ? 'achievement-card-unlocked' : (ready ? 'achievement-card-ready' : 'achievement-card-locked');
-            const justClaimed = justClaimedAchievementIds.has(a.id) ? ' achievement-card-just-claimed' : '';
-            if (secret) {
-                return `
-                <button type="button" class="achievement-card-btn achievement-card-secret settings-section-card border border-gray-200 dark:border-gray-700 achievement-card-locked" data-achievement-id="${a.id}">
-                    <div class="achievement-card-header">
-                        <div class="achievement-card-title font-semibold text-gray-800 dark:text-gray-100">
-                            <i class="fas fa-question mr-2 text-gray-400"></i>Secret achievement
-                        </div>
-                        <span class="achievement-tier-badge text-xs px-2 py-1 rounded-full ${tierStyles.badge}">${a.tier}</span>
-                    </div>
-                    <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">${a.hiddenHint || 'Keep playing to discover it.'}</p>
-                    <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">Hidden</div>
-                </button>`;
-            }
-            let footer;
-            if (unlocked) {
-                footer = `${rpgEnabled && earnedXp ? `<div class="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-semibold">XP earned: +${earnedXp.toLocaleString(DISPLAY_LOCALE)} XP</div>` : ''}
-                    <div class="text-xs text-gray-500 dark:text-gray-400">Completed ${completedAt}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Badge unlocked ${unlockedAt}</div>
-                    <div class="text-xs font-semibold text-green-600 dark:text-green-400">Unlocked</div>`;
-            } else if (ready) {
-                footer = `<div class="text-xs text-gray-600 dark:text-gray-300 mb-1">Completed ${completedAt}</div>
-                    <div class="achievement-claim-cta"><i class="fas fa-unlock mr-1"></i>Tap to unlock your badge${rpgEnabled ? ' + XP' : ''}</div>`;
-            } else {
-                footer = `${rpgEnabled ? '<div class="text-xs text-gray-500 dark:text-gray-400 mb-1">XP reward revealed when unlocked</div>' : ''}
-                    <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">Locked</div>`;
-            }
-            return `
-                <button type="button" class="achievement-card-btn settings-section-card border ${tierStyles.card} ${stateClass}${justClaimed}" data-achievement-id="${a.id}" data-achievement-state="${unlocked ? 'unlocked' : (ready ? 'ready' : 'locked')}">
-                    <div class="achievement-card-header">
-                        <div class="achievement-card-title font-semibold text-gray-800 dark:text-gray-100">
-                            <i class="fas ${a.icon} mr-2 ${completed ? 'text-amber-500' : 'text-gray-400'}"></i>${a.name}
-                        </div>
-                        <span class="achievement-tier-badge text-xs px-2 py-1 rounded-full ${tierStyles.badge}">${a.tier}</span>
-                    </div>
-                    <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">${a.description}</p>
-                    <div class="mb-2">
-                        <div class="flex items-center justify-between text-[11px] text-gray-600 dark:text-gray-400 mb-1">
-                            <span>${progress.label}</span>
-                            <span>${progressText}</span>
-                        </div>
-                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                            <div class="achievement-progress-fill ${tierStyles.progress} h-1.5 rounded-full transition-all duration-500 ease-out" style="width:${progress.pct}%"></div>
-                        </div>
-                    </div>
-                    ${footer}
-                </button>
-            `;
-        }).join('');
+        const families = ACHIEVEMENT_FAMILIES.filter((f) => (rpgEnabled || !f.rpgOnly));
+        const familyCards = families.map((f) => renderFamilyCardHtml(getFamilyStatus(f, state, stats), state, rpgEnabled)).join('');
+        const singles = ACHIEVEMENT_SINGLES.filter((a) => !a.hidden).map((a) => renderSingleCardHtml(a, state, stats, rpgEnabled)).join('');
+        const secrets = ACHIEVEMENT_SINGLES.filter((a) => a.hidden).map((a) => renderSingleCardHtml(a, state, stats, rpgEnabled)).join('');
+        const legend = ACHIEVEMENT_RANKS.map((r) => `<span class="ach-legend-item"><span class="ach-dot rank-${r.toLowerCase()} ach-dot-done"></span>${r}</span>`).join('');
+        achievementsGrid.innerHTML = `
+            <section class="ach-section"><h4 class="ach-section-title">Hall of records</h4><div class="ach-records">${renderRecordsHtml(stats)}</div></section>
+            <section class="ach-section"><div class="ach-section-head"><h4 class="ach-section-title">Achievement families</h4><div class="ach-legend">${legend}</div></div><div class="ach-family-grid">${familyCards}</div></section>
+            <section class="ach-section"><h4 class="ach-section-title">One-time achievements</h4><div class="ach-single-grid">${singles}</div></section>
+            <section class="ach-section"><h4 class="ach-section-title">Secret achievements</h4><div class="ach-single-grid">${secrets}</div></section>`;
     }
 
     function renderDailyQuestsSection(statsInput = null) {
@@ -5997,8 +5922,56 @@ if (storedDailyGoal) {
         evaluateWeeklyArc({ notify });
     }
 
+    function renderFamilyDetailModal(familyId) {
+        const family = ACHIEVEMENT_FAMILIES.find((f) => f.id === familyId);
+        if (!family) return;
+        const state = getAchievementState();
+        const status = getFamilyStatus(family, state, computeAchievementStats());
+        const { ranks, held, ready, next, value } = status;
+        const heldName = held > 0 ? ACHIEVEMENT_RANKS[held - 1] : 'Unranked';
+        if (achievementDetailTitle) {
+            achievementDetailTitle.innerHTML = `<i class="fas ${family.icon} mr-2 text-amber-500"></i>${escapeHTML(family.name)}`;
+        }
+        if (achievementDetailTier) {
+            achievementDetailTier.className = `achievement-tier-badge text-xs inline-block px-2 py-1 rounded-full mb-3 ach-rank-pill ${held > 0 ? `rank-${heldName.toLowerCase()}` : 'rank-locked'}`;
+            achievementDetailTier.textContent = heldName;
+        }
+        if (achievementDetailDescription) {
+            const ladder = ranks.map((r) => `${r.claimed ? '\u2713' : (r.completed ? '\u2605' : '\u2022')} ${r.rank}: ${formatFamilyValue(family.unit, r.threshold)}`).join('\n');
+            achievementDetailDescription.style.whiteSpace = 'pre-line';
+            achievementDetailDescription.textContent = `${family.sub}\n\n${ladder}`;
+        }
+        const progressBox = achievementDetailProgressBar?.closest('.settings-section-card');
+        if (progressBox) progressBox.style.display = '';
+        const target = (ready || next || ranks[ranks.length - 1]).threshold;
+        const pct = target > 0 ? Math.max(0, Math.min(100, (value / target) * 100)) : 0;
+        if (achievementDetailProgressLabel) {
+            achievementDetailProgressLabel.textContent = ready ? `${ready.rank} reached` : (next ? `Next: ${next.rank}` : 'Max rank');
+        }
+        if (achievementDetailProgressText) {
+            achievementDetailProgressText.textContent = `${formatFamilyValue(family.unit, value, { short: true })} / ${formatFamilyValue(family.unit, target, { short: true })} (${Math.round(pct)}%)`;
+        }
+        if (achievementDetailProgressBar) achievementDetailProgressBar.style.width = `${pct}%`;
+        if (achievementDetailEarnedRow && achievementDetailEarnedAt) {
+            if (held > 0) {
+                achievementDetailEarnedRow.style.display = '';
+                achievementDetailEarnedAt.textContent = `${heldName} unlocked ${formatAchievementDate(state.unlocked[ranks[held - 1].id])}`;
+            } else {
+                achievementDetailEarnedRow.style.display = 'none';
+                achievementDetailEarnedAt.textContent = '';
+            }
+        }
+        const claimBtn = document.getElementById('achievement-detail-claim-btn');
+        if (claimBtn) claimBtn.style.display = ready ? '' : 'none';
+    }
+
     function renderAchievementDetailModal(achievementId) {
         if (!achievementDetailModal) return;
+        if (typeof achievementId === 'string' && achievementId.startsWith('family:')) {
+            renderFamilyDetailModal(achievementId.slice(7));
+            return;
+        }
+        if (achievementDetailDescription) achievementDetailDescription.style.whiteSpace = '';
         const achievement = getAchievementById(achievementId);
         if (!achievement) return;
 
@@ -6119,8 +6092,8 @@ if (storedDailyGoal) {
         justClaimedAchievementIds.add(a.id);
         renderAchievementsModal();
         setTimeout(() => justClaimedAchievementIds.delete(a.id), 1500);
-        if (achievementDetailModal && ModalManager.isOpen(achievementDetailModal) && selectedAchievementId === a.id) {
-            renderAchievementDetailModal(a.id);
+        if (achievementDetailModal && ModalManager.isOpen(achievementDetailModal) && (selectedAchievementId === a.id || (a.family && selectedAchievementId === `family:${a.family}`))) {
+            renderAchievementDetailModal(selectedAchievementId);
         }
         return { achievement: a, xp: rewardXp };
     }
@@ -7518,7 +7491,6 @@ function saveCalls() {
         wrap.innerHTML = scopes.map((scope) => {
             const context = getPaymentCyclesTimelineContext(nowMs, scope);
             const current = context.current;
-            const payCycle = context.closestUpcomingPayCycle;
             let body;
             if (current) {
                 const index = context.normalized.indexOf(current);
@@ -7530,7 +7502,7 @@ function saveCalls() {
                 const previousPay = previous ? formatCyclePayDayLine(previous, previousEarned, nowMs) : '';
                 body = `<div class="rate-cycle-amount">${formatEarnings(earnings)}</div>
                     <div class="rate-cycle-line">${escapeHTML(formatDate(current.startDate))} - ${escapeHTML(formatDate(current.endDate))} · ${daysLeft} day${daysLeft === 1 ? '' : 's'} left</div>
-                    <div class="rate-cycle-line">${payCycle ? `Pay date: ${escapeHTML(formatDate(payCycle.payDate))}` : 'No upcoming pay date'}</div>
+                    <div class="rate-cycle-line">${Number.isFinite(Date.parse(current.payDate || '')) ? `This cycle pays: ${escapeHTML(formatDate(current.payDate))}` : 'No pay date set for this cycle'}</div>
                     <div class="rate-cycle-trend">${escapeHTML(trend)}</div>
                     ${previousPay ? `<div class="rate-cycle-payday">${escapeHTML(previousPay)}</div>` : ''}`;
             } else {
@@ -13190,7 +13162,14 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
                 });
             }
             document.getElementById('achievement-detail-claim-btn')?.addEventListener('click', () => {
-                if (selectedAchievementId) claimAchievement(selectedAchievementId);
+                if (!selectedAchievementId) return;
+                if (selectedAchievementId.startsWith('family:')) {
+                    const family = ACHIEVEMENT_FAMILIES.find((f) => f.id === selectedAchievementId.slice(7));
+                    const readyRank = family ? getFamilyStatus(family, getAchievementState(), computeAchievementStats()).ready : null;
+                    if (readyRank) claimAchievement(readyRank.id);
+                    return;
+                }
+                claimAchievement(selectedAchievementId);
             });
             if (doneAchievementDetailBtn) {
                 doneAchievementDetailBtn.addEventListener('click', closeAchievementDetailModal);
