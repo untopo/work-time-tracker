@@ -174,6 +174,21 @@ function getTierClasses(tier, unlocked) {
         card: 'border-gray-200 dark:border-gray-700',
         progress: 'achievement-progress-fill-locked'
     };
+    if (tier === 'Obsidian') return {
+        badge: 'bg-violet-200 text-violet-950 dark:bg-violet-900 dark:text-violet-100',
+        card: 'border-violet-300 dark:border-violet-700',
+        progress: 'achievement-progress-fill-diamond'
+    };
+    if (tier === 'Diamond') return {
+        badge: 'bg-cyan-200 text-cyan-950 dark:bg-cyan-900 dark:text-cyan-100',
+        card: 'border-cyan-300 dark:border-cyan-700',
+        progress: 'achievement-progress-fill-diamond'
+    };
+    if (tier === 'Platinum') return {
+        badge: 'bg-sky-100 text-sky-950 dark:bg-sky-900 dark:text-sky-100',
+        card: 'border-sky-300 dark:border-sky-700',
+        progress: 'achievement-progress-fill-silver'
+    };
     if (tier === 'Gold') return {
         badge: 'bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100',
         card: 'border-amber-300 dark:border-amber-700',
@@ -192,9 +207,7 @@ function getTierClasses(tier, unlocked) {
 }
 
 function getAchievementBaseXp(tier) {
-    if (tier === 'Gold') return 220;
-    if (tier === 'Silver') return 120;
-    return 65;
+    return ACHIEVEMENT_RANK_BASE_XP[tier] || 65;
 }
 
 function getLevelRewardMultiplier(level) {
@@ -260,10 +273,7 @@ function buildBackupProgress(rpgState, achievementsState, sessionStats) {
             weeklyArcRewards: { ...(rpg.weeklyArcRewards || {}) },
             streakShieldUses: { ...(rpg.streakShieldUses || {}) }
         },
-        achievements: {
-            unlocked: { ...(achievementsState?.unlocked || {}) },
-            completed: { ...(achievementsState?.completed || {}) }
-        },
+        achievements: migrateAchievementState(achievementsState),
         sessionStats: normalizeSessionRpgStatsState(sessionStats)
     };
 }
@@ -325,4 +335,122 @@ function stableStringify(value) {
 
 function hasBackupProgressChange(before, after) {
     return stableStringify(before) !== stableStringify(after);
+}
+
+// ---- Achievement families (v1.9.0) ----
+
+const ACHIEVEMENT_RANKS = ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Obsidian'];
+const ACHIEVEMENT_RANK_BASE_XP = { Bronze: 65, Silver: 120, Gold: 220, Platinum: 400, Diamond: 700, Obsidian: 1100 };
+
+// One family = one card that climbs six ranks. `stat` is a key of computeAchievementStats();
+// `unit` only decides how numbers are written.
+const ACHIEVEMENT_FAMILIES = [
+    { id: 'calls', name: 'Calls', sub: 'Calls completed', icon: 'fa-phone-volume', stat: 'totalCalls', unit: 'count', thresholds: [10, 50, 200, 1000, 2500, 5000], what: 'Complete {n} calls.' },
+    { id: 'hours', name: 'Hours', sub: 'Time on calls', icon: 'fa-clock', stat: 'totalHours', unit: 'hours', thresholds: [1, 10, 100, 250, 500, 1000], what: 'Log {n} total hours on calls.' },
+    { id: 'earnings', name: 'Earnings', sub: 'All-time earnings', icon: 'fa-sack-dollar', stat: 'totalEarnings', unit: 'money', thresholds: [250, 1000, 3000, 7500, 15000, 30000], what: 'Earn {n} in total.' },
+    { id: 'bestweek', name: 'Best week', sub: 'Earnings in your best week', icon: 'fa-dollar-sign', stat: 'maxWeekEarnings', unit: 'money', thresholds: [100, 150, 200, 250, 300, 400], what: 'Reach {n} in a single week.' },
+    { id: 'busiestday', name: 'Busiest day', sub: 'Calls in your busiest day', icon: 'fa-bolt', stat: 'maxDayCalls', unit: 'count', thresholds: [10, 20, 35, 45, 55, 70], what: 'Complete {n} calls in a single day.' },
+    { id: 'longestday', name: 'Longest day', sub: 'Hours on calls in one day', icon: 'fa-hourglass-half', stat: 'maxDayHours', unit: 'hours', thresholds: [2, 4, 6, 7, 8, 10], what: 'Spend {n} on calls in a single day.' },
+    { id: 'longestcall', name: 'Longest call', sub: 'Your longest call', icon: 'fa-stopwatch', stat: 'longestCallMinutes', unit: 'minutes', thresholds: [30, 45, 60, 90, 120, 180], what: 'Complete a {n} call.' },
+    { id: 'streak', name: 'Streak', sub: 'Days in a row', icon: 'fa-fire', stat: 'longestStreak', unit: 'days', thresholds: [3, 7, 14, 30, 60, 100], what: 'Work {n} in a row.' },
+    { id: 'weeklystreak', name: 'Weekly streak', sub: 'Weeks in a row with 4+ days worked', icon: 'fa-calendar-week', stat: 'weeklyStreak', unit: 'weeks', thresholds: [2, 4, 8, 12, 26, 52], what: 'Work 4 or more days for {n} in a row.' },
+    { id: 'daysworked', name: 'Days worked', sub: 'Unique days with calls', icon: 'fa-calendar-check', stat: 'uniqueDaysWorked', unit: 'days', thresholds: [10, 30, 60, 100, 250, 365], what: 'Work on {n} different days.' },
+    { id: 'dailygoal', name: 'Daily goal', sub: 'Days you hit your goal', icon: 'fa-bullseye', stat: 'goalHitDays', unit: 'days', thresholds: [7, 30, 75, 150, 300, 500], what: 'Hit your daily goal on {n} different days.' },
+    { id: 'tenure', name: 'Tenure', sub: 'Since your first call', icon: 'fa-user-clock', stat: 'tenureDays', unit: 'days', thresholds: [30, 90, 180, 365, 730, 1095], what: 'Keep tracking for {n} since your first call.' },
+    { id: 'sessions', name: 'Sessions', sub: 'Tracked sessions', icon: 'fa-business-time', stat: 'sessionsCompleted', unit: 'count', thresholds: [5, 25, 100, 250, 500, 1000], what: 'Complete {n} sessions in Session Tracker.' },
+    { id: 'shiftdays', name: 'Shift days', sub: 'Days with a tracked session', icon: 'fa-calendar-days', stat: 'sessionDaysWorked', unit: 'days', thresholds: [5, 20, 50, 100, 200, 365], what: 'Track sessions on {n} different days.' },
+    { id: 'trackedtime', name: 'Tracked time', sub: 'Hours in Session Tracker', icon: 'fa-hourglass-end', stat: 'trackedHours', unit: 'hours', thresholds: [10, 50, 150, 400, 800, 1500], what: 'Track {n} of work time in Session Tracker.' },
+    { id: 'focus', name: 'Focus', sub: 'Focused sessions', icon: 'fa-crosshairs', stat: 'focusedSessions', unit: 'count', thresholds: [1, 5, 20, 50, 100, 250], what: 'Complete {n} focused sessions (30+ min available, 5 min idle or less).' },
+    { id: 'utilization', name: 'Utilization', sub: 'Sessions with 70%+ utilization', icon: 'fa-gauge-high', stat: 'highUtilSessions', unit: 'count', thresholds: [3, 10, 25, 50, 100, 250], what: 'Complete {n} sessions with 70% utilization or more.' },
+    { id: 'paymentcycles', name: 'Payment cycles', sub: 'Completed cycles', icon: 'fa-money-check-dollar', stat: 'paymentCyclesCompleted', unit: 'count', thresholds: [1, 3, 6, 12, 24, 36], what: 'Complete {n} payment cycles.', feature: 'paymentCycles' },
+    { id: 'level', name: 'Level', sub: 'RPG level', icon: 'fa-hat-wizard', stat: 'level', unit: 'level', thresholds: [10, 20, 40, 60, 80, 100], what: 'Reach level {n} in RPG Mode.', rpgOnly: true }
+];
+
+function getFamilyRankId(familyId, rankIndex) {
+    return `${familyId}_${String(ACHIEVEMENT_RANKS[rankIndex]).toLowerCase()}`;
+}
+
+function formatFamilyValue(unit, value, { short = false } = {}) {
+    const v = Number(value) || 0;
+    const n = (x, d = 0) => x.toLocaleString('en-US', { maximumFractionDigits: d });
+    switch (unit) {
+        case 'money': return `$${n(v)}`;
+        case 'hours': return `${n(v, v < 10 && v % 1 ? 1 : 0)} h`;
+        case 'minutes': return v >= 120 && v % 60 === 0 ? `${n(v / 60)} h` : `${n(v)} min`;
+        case 'days': return short ? n(v) : `${n(v)} day${v === 1 ? '' : 's'}`;
+        case 'weeks': return short ? n(v) : `${n(v)} week${v === 1 ? '' : 's'}`;
+        case 'level': return short ? n(v) : `level ${n(v)}`;
+        default: return n(v);
+    }
+}
+
+// Old achievement ids -> the rank that replaces them. Every old threshold is at or above the rank it maps to,
+// so anything that was unlocked is still a valid, earned rank.
+const LEGACY_ACHIEVEMENT_MAP = {
+    ten_calls: 'calls_bronze', fifty_calls: 'calls_silver', two_hundred_calls: 'calls_gold', calls_500: 'calls_gold', calls_1000: 'calls_platinum', calls_2500: 'calls_diamond',
+    one_hour: 'hours_bronze', ten_hours: 'hours_silver', hundred_hours: 'hours_gold', hours_250: 'hours_platinum', hours_500: 'hours_diamond',
+    total_1000_earned: 'earnings_silver', total_5000_earned: 'earnings_gold', total_10000_earned: 'earnings_platinum', total_25000_earned: 'earnings_diamond',
+    week_100: 'bestweek_bronze',
+    hidden_busy_day: 'busiestday_gold',
+    streak_3: 'streak_bronze', streak_7: 'streak_silver', streak_14: 'streak_gold', streak_30: 'streak_platinum',
+    thirty_work_days: 'daysworked_silver', sixty_work_days: 'daysworked_gold', work_days_100: 'daysworked_platinum', work_days_250: 'daysworked_diamond',
+    goal_mastery_7: 'dailygoal_bronze', goal_mastery_30: 'dailygoal_silver',
+    session_five: 'sessions_bronze', session_days_20: 'shiftdays_silver', session_focus: 'focus_bronze', session_util_high: 'utilization_bronze',
+    long_call_30: 'longestcall_bronze', long_call_120: 'longestcall_diamond',
+    level_10: 'level_bronze', level_20: 'level_silver', level_30: 'level_silver', level_40: 'level_gold', level_50: 'level_gold',
+    level_60: 'level_platinum', level_75: 'level_platinum', level_100: 'level_obsidian'
+};
+
+function earliestIso(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    const ta = Date.parse(a);
+    const tb = Date.parse(b);
+    if (!Number.isFinite(ta)) return b;
+    if (!Number.isFinite(tb)) return a;
+    return ta <= tb ? a : b;
+}
+
+// Moves legacy ids into the rank that replaces them. Legacy keys stay in the maps (nothing is deleted),
+// the earliest date wins, and running it again changes nothing.
+function migrateAchievementState(state) {
+    const unlocked = { ...(state?.unlocked || {}) };
+    const completed = { ...(state?.completed || {}) };
+    Object.entries(LEGACY_ACHIEVEMENT_MAP).forEach(([oldId, newId]) => {
+        if (unlocked[oldId]) unlocked[newId] = earliestIso(unlocked[newId], unlocked[oldId]);
+        if (completed[oldId] || unlocked[oldId]) completed[newId] = earliestIso(completed[newId], completed[oldId] || unlocked[oldId]);
+    });
+    Object.keys(unlocked).forEach((id) => { if (!completed[id]) completed[id] = unlocked[id]; });
+    return { unlocked, completed };
+}
+
+// XP that was paid for an achievement id, including what its legacy ids paid before they became ranks.
+function getAchievementRewardXp(rewards, id) {
+    const map = rewards || {};
+    let xp = Math.max(0, Number(map[id]?.xp) || 0);
+    Object.entries(LEGACY_ACHIEVEMENT_MAP).forEach(([oldId, newId]) => {
+        if (newId === id && oldId !== id) xp += Math.max(0, Number(map[oldId]?.xp) || 0);
+    });
+    return xp;
+}
+
+function computeWeeklyStreak(dayStamps, minDays = 4) {
+    const byWeek = new Map();
+    (dayStamps || []).forEach((stamp) => {
+        const d = new Date(stamp);
+        const mondayOffset = (d.getDay() + 6) % 7;
+        const weekStart = new Date(d.getFullYear(), d.getMonth(), d.getDate() - mondayOffset).getTime();
+        byWeek.set(weekStart, (byWeek.get(weekStart) || new Set()).add(stamp));
+    });
+    const weeks = Array.from(byWeek.entries()).filter(([, set]) => set.size >= minDays).map(([w]) => w).sort((a, b) => a - b);
+    let best = 0;
+    let run = 0;
+    let prev = null;
+    weeks.forEach((w) => {
+        const expected = prev === null ? null : new Date(new Date(prev).getFullYear(), new Date(prev).getMonth(), new Date(prev).getDate() + 7).getTime();
+        run = expected === w ? run + 1 : 1;
+        best = Math.max(best, run);
+        prev = w;
+    });
+    return best;
 }
