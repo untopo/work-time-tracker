@@ -79,7 +79,7 @@ test('the level never goes down when calls\' streak is gone, and a backup carrie
     seed.wtt_rpg_progress_state_v1 = JSON.stringify({ achievementXp: 500, peakXp: 20000, xpModelMigrated: true, achievementRewards: { first_call: { xp: 500 } } });
     seed.wtt_achievements_state_v1 = JSON.stringify({ unlocked: { first_call: '2026-01-01T00:00:00.000Z' } });
     await seedEarly(a.page, seed);
-    const level = async (p) => (await p.evaluate(() => document.getElementById('rpg-level-summary')?.textContent || ''));
+    const level = async (p) => (await p.evaluate(() => (document.getElementById('rpg-level-summary')?.textContent || '') + ' ' + (document.getElementById('rpg-level-next-text')?.textContent || '')));
     assert.match(await level(a.page), /20,000 XP/, 'level uses the stored high-water mark');
 
     await a.page.click('#settings-toggle');

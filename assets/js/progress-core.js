@@ -454,3 +454,23 @@ function computeWeeklyStreak(dayStamps, minDays = 4) {
     });
     return best;
 }
+
+// Title shown next to the level in the Achievements header.
+const LEVEL_TITLES = [
+    { from: 1, title: 'Newcomer' },
+    { from: 5, title: 'Apprentice' },
+    { from: 10, title: 'Rookie Adventurer' },
+    { from: 20, title: 'Seasoned Caller' },
+    { from: 30, title: 'Veteran' },
+    { from: 45, title: 'Expert' },
+    { from: 60, title: 'Master' },
+    { from: 80, title: 'Grandmaster' },
+    { from: 100, title: 'Legend' }
+];
+
+function getLevelTitle(level) {
+    const n = Math.max(1, Math.floor(Number(level) || 1));
+    let title = LEVEL_TITLES[0].title;
+    LEVEL_TITLES.forEach((entry) => { if (n >= entry.from) title = entry.title; });
+    return title;
+}
