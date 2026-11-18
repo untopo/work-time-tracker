@@ -57,3 +57,36 @@ test('feature events list only the features that are on, by name, never their se
   assert.deepEqual(plain(core.buildFeatureUsageEvents({ rpg: true, notes: false, 'focus-mode': true, goal: 'yes' })), ['feature-on/focus-mode', 'feature-on/rpg']);
   assert.deepEqual(plain(core.buildFeatureUsageEvents(null)), []);
 });
+
+test('days of use, rate count and profile events are coarse ranges', () => {
+  assert.equal(core.bucketDaysUsing(1), '1');
+  assert.equal(core.bucketDaysUsing(5), '2-7');
+  assert.equal(core.bucketDaysUsing(30), '8-30');
+  assert.equal(core.bucketDaysUsing(45), '31-90');
+  assert.equal(core.bucketDaysUsing(400), '91-plus');
+  assert.equal(core.bucketRateCount(0), '0');
+  assert.equal(core.bucketRateCount(1), '1');
+  assert.equal(core.bucketRateCount(3), '2-3');
+  assert.equal(core.bucketRateCount(7), '4-plus');
+  assert.equal(core.daysSinceKey('2026-11-01', '2026-11-01'), 1);
+  assert.equal(core.daysSinceKey('2026-11-01', '2026-11-18'), 18);
+  assert.equal(core.daysSinceKey('2026-11-20', '2026-11-18'), 1);
+  assert.deepEqual(plain(core.buildProfileEvents({ version: '1.8.4', daysUsing: 12, rateCount: 2, theme: 'dark' })),
+    ['app-version/1.8.4', 'days-using/8-30', 'rates/2-3', 'theme/dark']);
+  assert.deepEqual(plain(core.buildProfileEvents({ version: 'x<script>', daysUsing: 1, rateCount: 0, theme: 'blue' })),
+    ['days-using/1', 'rates/0', 'theme/light']);
+});
+
+test('error events come from a fixed list only', () => {
+  assert.equal(core.buildErrorEvent('import-json'), 'error/import-json');
+  assert.equal(core.buildErrorEvent('data-reset'), 'error/data-reset');
+  assert.equal(core.buildErrorEvent('anything else'), null);
+  assert.equal(core.buildErrorEvent(undefined), null);
+});
+
+test('existing event names stay exactly as they were, so old and new data can be compared', () => {
+  assert.equal(core.bucketCallLength(4 * 60000), '3-5m');
+  assert.equal(core.bucketDayCalls(12), '11-15');
+  assert.equal(core.bucketDayHours(3.7 * 3600000), '3.5-4h');
+  assert.deepEqual(plain(core.buildFeatureUsageEvents({ rpg: true, notes: true })), ['feature-on/notes', 'feature-on/rpg']);
+});

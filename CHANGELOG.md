@@ -5,6 +5,11 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.8.4 - Unreleased
+
+### Highlights
+- Small behind-the-scenes improvements to the anonymous usage counts, so we can see which versions are in use and catch problems that put saved data at risk. You can still switch them off in Settings > Features.
+
 ## v1.8.3 - 2026-11-18
 
 ### Highlights

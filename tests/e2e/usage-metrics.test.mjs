@@ -25,7 +25,7 @@ after(async () => {
 // (an exact number, a note, a rate...) fails the test.
 const labels = allLabels(loadCore().core);
 const list = (set) => [...set].map((label) => label.replace(/[.]/g, '\\.')).join('|');
-const ALLOWED = new RegExp(`^event/(call-started|call-ended|focus-mode|report-opened|card-opened|card-saved|survey/devices/(one|two|three-plus)|survey/sync/(as-is|direct|account|both)|backup-reminder/(shown|now|later|off)|call-length/(${list(labels.length)})|day-calls/(${list(labels.calls)})|day-hours/(${list(labels.hours)})|feature-on/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done))$`);
+const ALLOWED = new RegExp(`^event/(call-started|call-ended|focus-mode|report-opened|card-opened|card-saved|survey/devices/(one|two|three-plus)|survey/sync/(as-is|direct|account|both)|backup-reminder/(shown|now|later|off)|call-length/(${list(labels.length)})|day-calls/(${list(labels.calls)})|day-hours/(${list(labels.hours)})|feature-on/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done|session-automation|payment-cycles-per-rate)|app-version/\\d+\\.\\d+\\.\\d+|days-using/(1|2-7|8-30|31-90|91-plus)|rates/(0|1|2-3|4-plus)|theme/(light|dark)|error/(storage-write-failed|data-reset|import-json|import-csv)|achievements-opened|achievement-claimed|achievements-claim-all)$`);
 
 async function openApp(seed) {
   const { context, page, problems } = await newPage(browser, baseUrl, { timezoneId: 'America/Lima' });
@@ -135,6 +135,41 @@ test('sending the counts never changes saved calls, rates or goals', async () =>
     assert.deepEqual(JSON.parse(stored.calls), JSON.parse(seed.calls));
     assert.deepEqual(JSON.parse(stored.rates), JSON.parse(seed.rates));
     assert.deepEqual(JSON.parse(stored.dailyGoal), JSON.parse(seed.dailyGoal));
+  } finally {
+    await context.close();
+  }
+});
+
+test('once a day it also sends the app version, days of use, rate count and theme, and never anything exact', async () => {
+  const { context, page, problems } = await openApp(makeSeed(60));
+  try {
+    await page.waitForTimeout(6500);
+    const paths = await sent(page);
+    assert.ok(paths.includes(`event/app-version/${VERSION}`), 'app version');
+    assert.ok(paths.some((path) => /^event\/days-using\//.test(path)), 'days of use range');
+    assert.ok(paths.some((path) => /^event\/rates\//.test(path)), 'rate count range');
+    assert.ok(paths.some((path) => /^event\/theme\/(light|dark)$/.test(path)), 'theme');
+    for (const path of paths) assert.match(path, ALLOWED, `unexpected analytics path: ${path}`);
+    await page.evaluate(() => { window.__sent = []; });
+    await page.reload();
+    await page.waitForTimeout(6500);
+    assert.deepEqual((await sent(page) || []).filter((path) => /app-version|days-using|rates\/|theme\//.test(path)), [], 'not re-sent on the same day');
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});
+
+test('opening Achievements and a failed import send only fixed names', async () => {
+  const { context, page } = await openApp(makeSeed(20));
+  try {
+    await page.waitForTimeout(1500);
+    await page.click('[data-app-nav="progress"]');
+    await page.waitForTimeout(500);
+    assert.ok((await sent(page)).includes('event/achievements-opened'));
+    await page.evaluate(() => { window.__sent = []; });
+    await page.click('[data-app-nav="progress"]');
+    assert.ok(!(await sent(page)).includes('event/achievements-opened'), 'only once per visit to the app');
   } finally {
     await context.close();
   }

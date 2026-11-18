@@ -66,3 +66,47 @@ function buildFeatureUsageEvents(featuresOn) {
     const source = featuresOn && typeof featuresOn === 'object' ? featuresOn : {};
     return Object.keys(source).filter((name) => source[name] === true).sort().map((name) => `feature-on/${name}`);
 }
+
+// How long this browser has been used, as a range (a rough stand-in for "do people come back").
+function bucketDaysUsing(days) {
+    const n = Math.max(1, Math.floor(Number(days) || 1));
+    const edges = [[1, '1'], [7, '2-7'], [30, '8-30'], [90, '31-90']];
+    for (const [limit, label] of edges) {
+        if (n <= limit) return label;
+    }
+    return '91-plus';
+}
+
+// How many rates are set up, as a range.
+function bucketRateCount(count) {
+    const n = Math.max(0, Math.floor(Number(count) || 0));
+    if (n === 0) return '0';
+    if (n === 1) return '1';
+    if (n <= 3) return '2-3';
+    return '4-plus';
+}
+
+// Whole days between two "YYYY-MM-DD" keys, counting the first day as day 1.
+function daysSinceKey(firstKey, todayKey) {
+    const a = Date.parse(`${firstKey}T12:00:00Z`);
+    const b = Date.parse(`${todayKey}T12:00:00Z`);
+    if (!Number.isFinite(a) || !Number.isFinite(b) || b < a) return 1;
+    return Math.round((b - a) / 86400000) + 1;
+}
+
+// Once a day per browser: app version, days of use, how many rates, light or dark.
+// Only coarse labels. The version is sent only when it looks like 1.2.3.
+function buildProfileEvents({ version, daysUsing, rateCount, theme } = {}) {
+    const events = [];
+    if (/^\d+\.\d+\.\d+$/.test(String(version || ''))) events.push(`app-version/${version}`);
+    events.push(`days-using/${bucketDaysUsing(daysUsing)}`);
+    events.push(`rates/${bucketRateCount(rateCount)}`);
+    events.push(`theme/${theme === 'dark' ? 'dark' : 'light'}`);
+    return events;
+}
+
+// Error names are a fixed list, so nothing unexpected is ever sent.
+const ERROR_EVENT_NAMES = ['storage-write-failed', 'data-reset', 'import-json', 'import-csv'];
+function buildErrorEvent(kind) {
+    return ERROR_EVENT_NAMES.includes(kind) ? `error/${kind}` : null;
+}
