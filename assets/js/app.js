@@ -180,6 +180,7 @@ function normalizeAppSection(value) {
         : 'work';
 }
 
+let achievementsOpenedTracked = false;
 function setActiveAppSection(section, options = {}) {
     const normalized = normalizeAppSection(section);
     const persist = options.persist !== false;
@@ -198,6 +199,10 @@ function setActiveAppSection(section, options = {}) {
     });
 
     document.body.setAttribute('data-app-section', normalized);
+    if (normalized === 'progress' && !achievementsOpenedTracked) {
+        achievementsOpenedTracked = true;
+        trackEvent('achievements-opened');
+    }
     if (persist) {
         try { appStorage.setItem(APP_ACTIVE_SECTION_KEY, normalized); } catch {}
     }
@@ -833,6 +838,23 @@ function trackEvent(name) {
 // Own storage keys, so saved calls, rates and goals are never read back or rewritten.
 const USAGE_FEATURES_DAY_KEY = 'wtt_usage_features_day';
 const USAGE_SUMMARY_DAY_KEY = 'wtt_usage_summary_day';
+const USAGE_PROFILE_DAY_KEY = 'wtt_usage_profile_day';
+const USAGE_FIRST_DAY_KEY = 'wtt_usage_first_day';
+const USAGE_PENDING_ERROR_KEY = 'wtt_usage_pending_error';
+const sentErrorKinds = new Set();
+
+// Sends one of a fixed list of error names (never details), once per page load. If the
+// counter is not ready yet, the name is kept and sent with the next daily metrics.
+function trackErrorOnce(kind) {
+    try {
+        const name = buildErrorEvent(kind);
+        if (!name || sentErrorKinds.has(kind)) return;
+        sentErrorKinds.add(kind);
+        if (!trackEvent(name)) appStorage.setItem(USAGE_PENDING_ERROR_KEY, kind);
+    } catch (error) {
+        // Analytics must never affect the app.
+    }
+}
 
 function sendDailyUsageMetrics() {
     try {
@@ -848,10 +870,37 @@ function sendDailyUsageMetrics() {
                 'rpg': featureFlags?.rpg === true,
                 'floating-controls': featureFlags?.floatingCallControls === true,
                 'daily-goal': Number(dailyGoal?.amount) > 0 || Number(dailyGoal?.minutes) > 0,
-                'backup-done': !!appStorage.getItem('wtt_last_backup_at')
+                'backup-done': !!appStorage.getItem('wtt_last_backup_at'),
+                'session-automation': sessionAutomationSettings?.enabled === true,
+                'payment-cycles-per-rate': !!paymentCyclesEnabled && Array.isArray(paymentCycles) && paymentCycles.some((cycle) => getPaymentCycleScopeNames(cycle).length > 0)
             });
             events.forEach((eventName) => trackEvent(eventName));
             appStorage.setItem(USAGE_FEATURES_DAY_KEY, today);
+        }
+
+        if (appStorage.getItem(USAGE_PROFILE_DAY_KEY) !== today) {
+            let firstDay = appStorage.getItem(USAGE_FIRST_DAY_KEY);
+            if (!firstDay) {
+                const earliestCall = Array.isArray(calls) && calls.length
+                    ? calls.map((call) => getLocalDateKey(getCallStartMs(call))).filter(Boolean).sort()[0]
+                    : '';
+                firstDay = earliestCall && earliestCall < today ? earliestCall : today;
+                appStorage.setItem(USAGE_FIRST_DAY_KEY, firstDay);
+            }
+            buildProfileEvents({
+                version: APP_VERSION,
+                daysUsing: daysSinceKey(firstDay, today),
+                rateCount: Array.isArray(rates) ? rates.length : 0,
+                theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+            }).forEach((eventName) => trackEvent(eventName));
+            appStorage.setItem(USAGE_PROFILE_DAY_KEY, today);
+        }
+
+        const pendingError = appStorage.getItem(USAGE_PENDING_ERROR_KEY);
+        if (pendingError) {
+            const errorName = buildErrorEvent(pendingError);
+            if (errorName) trackEvent(errorName);
+            appStorage.removeItem(USAGE_PENDING_ERROR_KEY);
         }
 
         const summary = buildDailyUsageSummary(
@@ -1407,6 +1456,7 @@ async function processImportedText(fileName, text) {
                 ? 'Failed to parse the CSV file. Please check the file format and required columns.'
                 : 'Failed to import file. Please ensure it is a valid JSON file from this app.');
         console.error('Import error:', error);
+        trackErrorOnce(lowerName.endsWith('.csv') ? 'import-csv' : 'import-json');
     } finally {
         pendingImportMode = null;
         if (importFile) importFile.value = '';
@@ -3847,6 +3897,7 @@ if (storedDailyGoal) {
     } catch (e) {
         console.error('Failed to parse local storage data. Resetting app data.', e);
         appStorage.clear();
+        try { appStorage.setItem(USAGE_PENDING_ERROR_KEY, 'data-reset'); } catch (markError) { /* ignore */ }
         rates = [];
         calls = [];
         dailyGoal = { amount: 0, minutes: 0 };
@@ -6083,6 +6134,7 @@ if (storedDailyGoal) {
             saveRpgProgressState(rpgState);
         }
         saveAchievementState(state);
+        trackEvent('achievement-claimed');
         flushPendingStorageWrites(); // reads go straight to storage, so write now before re-rendering
         if (isRpgEnabled()) updateRpgProgress();
         if (!silent) {
@@ -6100,6 +6152,7 @@ if (storedDailyGoal) {
     }
 
     function claimAllAchievements() {
+        trackEvent('achievements-claim-all');
         const state = getAchievementState();
         const ready = ACHIEVEMENTS.filter((a) => state.completed[a.id] && !state.unlocked[a.id]);
         let totalXp = 0;
@@ -7089,6 +7142,7 @@ function migrateLegacyRpgCallEligibility() {
                 }
             } catch (err) {
                 console.warn(`Could not persist key ${key}`, err);
+                trackErrorOnce('storage-write-failed');
             }
         });
 
