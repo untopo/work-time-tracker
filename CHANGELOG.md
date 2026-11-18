@@ -5,6 +5,14 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.8.3 - 2026-11-18
+
+### Highlights
+- Today and This week on the Achievements page are now organized in a symmetric layout: Daily Focus is one full-width row, the four Daily Quests sit side by side as equal cards, and the Weekly Arc shows its three milestones as equal cards above a slim Streak Shield row. Thank you for the feedback that it felt scattered.
+
+### Improvements
+- Weekly Arc and Daily Quests now use the same amber and green progress colors as the badges instead of the old purple.
+
 ## v1.8.2 - 2026-11-18
 
 ### Highlights

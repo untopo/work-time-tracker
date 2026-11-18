@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.8.2",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.8.2",
+  "latestVersion": "1.8.3",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.8.3",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Progress is now Achievements, all on one page with your level, Today, This week and your badges."
+  "notes": "Today and This week on the Achievements page now have a symmetric, consistent layout."
 }

@@ -12198,3 +12198,51 @@ body.ui-refresh-v1 #view-progress .ach-hub .progress-weekly-band > * { margin-bo
 .ach-hub .ach-focus-card #rpg-daily-focus-bar { background: #f59e0b; }
 body.ui-refresh-v1 #view-progress #achievements-summary.ach-hub-banner { text-align: left; align-items: flex-start; font-weight: 400; }
 body.ui-refresh-v1 #view-progress .ach-hub .progress-weekly-band { align-items: start; }
+
+/* ===== Today and This week, symmetric layout (v1.8.3) ===== */
+.ach-hub .ach-today-grid { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+/* Daily Focus: one full-width row, text on the left and the bar on the right */
+.ach-hub .ach-focus-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 2rem; row-gap: 0.25rem; align-items: center; padding: 1rem 1.25rem; margin: 0; }
+.ach-hub .ach-focus-card > div:nth-child(1) { grid-column: 1; grid-row: 1; margin: 0; }
+.ach-hub .ach-focus-card > div:nth-child(2) { grid-column: 1; grid-row: 2; margin: 0; }
+.ach-hub .ach-focus-card > div:nth-child(3) { grid-column: 2; grid-row: 1 / span 2; margin: 0; height: 8px; }
+.ach-hub .ach-focus-card > div:nth-child(3) > div { height: 8px; }
+/* Daily Quests: no outer box, four equal cards in a row */
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section { background: transparent; border: 0; padding: 0; box-shadow: none; display: flex; flex-direction: column; gap: 0.5rem; margin: 0; }
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section > .flex:first-child { display: none; }
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section > p { display: none; }
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section > #daily-quests-summary { margin: 0; font-size: 0.8rem; font-weight: 600; color: var(--ach-muted); }
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid > * { display: flex; flex-direction: column; justify-content: space-between; gap: 0.6rem; background: var(--ach-card); border: 1px solid var(--ach-border); border-radius: 1rem; padding: 1rem 1.1rem; margin: 0; box-shadow: none; }
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid .achievement-card-header { align-items: flex-start; }
+/* Weekly Arc: full width, three equal milestone cards, then a slim shield row */
+body.ui-refresh-v1 #view-progress .ach-hub .progress-weekly-band { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+body.ui-refresh-v1 #view-progress .ach-hub #rpg-weekly-arc-card { padding: 1.1rem 1.25rem; margin: 0; }
+.ach-hub #rpg-weekly-arc-card [class*="bg-indigo-50"] { background: var(--ach-track); color: var(--ach-fg); }
+.ach-hub #rpg-weekly-arc-card [class*="text-indigo"] { color: var(--ach-muted); }
+.ach-hub #rpg-weekly-arc-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.ach-hub #rpg-weekly-arc-steps.space-y-2 > * + * { margin-top: 0; }
+.ach-arc-step { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.8rem 1rem; border-radius: 0.8rem; border: 1px solid var(--ach-border); }
+.ach-arc-step-done { border-color: #10b981; background: rgba(16,185,129,.07); }
+.ach-arc-step-label { font-size: 0.85rem; font-weight: 700; color: var(--ach-fg); }
+.ach-arc-step-text { font-size: 0.75rem; color: var(--ach-muted); }
+.ach-arc-bar { height: 6px; border-radius: 999px; background: var(--ach-track); overflow: hidden; }
+.ach-arc-bar-fill { height: 100%; border-radius: 999px; background: #f59e0b; transition: width .3s ease-out; }
+.ach-arc-step-done .ach-arc-bar-fill { background: #10b981; }
+body.ui-refresh-v1 #view-progress .ach-hub #rpg-streak-shield-row { padding: 0.9rem 1.25rem; margin: 0; }
+.ach-hub #rpg-use-shield-btn { background: #f59e0b; color: #1f1300; font-weight: 700; border-radius: 999px; }
+.ach-hub #rpg-use-shield-btn:disabled { background: var(--ach-track); color: var(--ach-muted); }
+.ach-hub .ach-hub-section-head { margin-bottom: 0; }
+@media (max-width: 1000px) {
+    body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+    .ach-hub .ach-focus-card { grid-template-columns: minmax(0, 1fr); }
+    .ach-hub .ach-focus-card > div:nth-child(3) { grid-column: 1; grid-row: 3; margin-top: 0.5rem; }
+    .ach-hub #rpg-weekly-arc-steps, body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid { grid-template-columns: minmax(0, 1fr); }
+}
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid .achievement-card-header { min-height: 2.8rem; }
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid > * > p { min-height: 2.4rem; }
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid { background: transparent; box-shadow: none; border: 0; padding: 0; }
+body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section::before, body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section::after { display: none; }
+html body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section { box-shadow: none !important; }
