@@ -12153,3 +12153,48 @@ html.dark .rank-secret { --rk-m:#222836; --rk-l:#343b4d; --rk-r:#46506a; --rk-ic
 .ach-bar-fill.rank-platinum { --ach-arc: #8fb3d1; } .ach-bar-fill.rank-diamond { --ach-arc: #4cc9e6; } .ach-bar-fill.rank-obsidian { --ach-arc: #6c5fc0; }
 .ach-card-ready .ach-bar-fill { --ach-arc: #f59e0b; }
 #achievement-detail-description { text-align: left; }
+
+/* ===== Achievements, one page (v1.8.2) ===== */
+.ach-hub { --ach-card: #ffffff; --ach-border: #e1e5eb; --ach-track: #e1e5eb; --ach-muted: #667085; --ach-fg: #1f2430; gap: 1.5rem !important; }
+html.dark .ach-hub { --ach-card: #1b2030; --ach-border: #2c3346; --ach-track: #2c3346; --ach-muted: #98a2b3; --ach-fg: #f3f5f9; }
+.ach-hub-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); gap: 1.25rem; align-items: stretch; }
+.ach-hub-level, .ach-focus-card, body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section, body.ui-refresh-v1 #view-progress .ach-hub #rpg-weekly-arc-card, body.ui-refresh-v1 #view-progress .ach-hub #rpg-streak-shield-row {
+    background: var(--ach-card); border: 1px solid var(--ach-border); border-radius: 1rem; color: var(--ach-fg); box-shadow: none;
+}
+.ach-hub-level { display: flex; flex-direction: column; gap: 0.85rem; padding: 1.2rem 1.4rem; }
+.ach-hub-level-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.4rem 1rem; }
+.ach-hub-title { margin: 0; font-size: 1.75rem; font-weight: 800; line-height: 1.1; color: var(--ach-fg); }
+.ach-hub-streak, .ach-hub-level-line, .ach-hub-section-note { font-size: 0.8rem; color: var(--ach-muted); }
+.ach-hub-level-row { display: flex; align-items: center; gap: 1rem; }
+.ach-hub-level-badge { flex: 0 0 auto; width: 3.5rem; height: 3.5rem; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; background: #f59e0b; color: #1f1300; }
+.ach-hub-level-main { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.ach-hub-level-line { display: flex; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+.ach-hub-bar { height: 8px; border-radius: 999px; background: var(--ach-track); overflow: hidden; }
+.ach-hub-bar-fill { height: 100%; border-radius: 999px; background: #f59e0b; transition: width 0.5s ease-out; }
+.ach-hub-chip { padding: 0.3rem 0.6rem; border-radius: 0.6rem; background: var(--ach-track); color: var(--ach-fg); }
+.ach-hub-banner { display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; padding: 1.2rem 1.4rem; border-radius: 1rem; background: var(--ach-card); border: 1px solid var(--ach-border); }
+.ach-hub-banner-ready { background: linear-gradient(135deg, rgba(251,191,36,.2), rgba(251,191,36,.04)); border-color: #f59e0b; box-shadow: 0 0 0 1px rgba(245,158,11,.35), 0 8px 24px rgba(245,158,11,.16); }
+.ach-hub-banner-title { font-size: 1.1rem; font-weight: 800; color: var(--ach-fg); }
+.ach-hub-banner-text { font-size: 0.8rem; line-height: 1.4; color: var(--ach-muted); }
+.ach-hub-banner .achievement-claim-all-btn { align-self: flex-start; margin: 0; padding: 0.5rem 1rem; border-radius: 999px; font-weight: 700; font-size: 0.8rem; background: #f59e0b; color: #1f1300; border: 0; cursor: pointer; }
+.ach-anchors { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.ach-anchor { font-size: 0.8rem; font-weight: 600; padding: 0.4rem 0.9rem; border-radius: 999px; background: var(--ach-card); border: 1px solid var(--ach-border); color: var(--ach-fg); cursor: pointer; }
+.ach-anchor:hover { border-color: #f59e0b; }
+.ach-hub-section { display: flex; flex-direction: column; gap: 0.75rem; scroll-margin-top: 4.5rem; }
+.ach-hub-section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.ach-hub .ach-section { scroll-margin-top: 4.5rem; }
+.ach-hub-achievements { display: flex; flex-direction: column; gap: 1.5rem; }
+.ach-today-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 1rem; align-items: start; }
+.ach-focus-card { padding: 1.1rem 1.2rem; }
+body.ui-refresh-v1 #view-progress .ach-hub .progress-weekly-band { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 1rem; align-items: stretch; }
+body.ui-refresh-v1 #view-progress .ach-hub .progress-weekly-band > * { margin-bottom: 0 !important; }
+@media (max-width: 860px) {
+    .ach-hub-top, .ach-today-grid, body.ui-refresh-v1 #view-progress .ach-hub .progress-weekly-band { grid-template-columns: minmax(0, 1fr); }
+}
+.ach-hub-banner { text-align: left; align-items: flex-start; }
+.ach-hub .ach-focus-card [class*="text-indigo"] { color: var(--ach-muted); }
+.ach-hub .ach-focus-card .text-xs.font-semibold { color: var(--ach-fg); font-size: 1rem; font-weight: 700; }
+.ach-hub .ach-focus-card [class*="bg-indigo-200"], html.dark .ach-hub .ach-focus-card [class*="dark:bg-indigo-900"] { background: var(--ach-track); }
+.ach-hub .ach-focus-card #rpg-daily-focus-bar { background: #f59e0b; }
+body.ui-refresh-v1 #view-progress #achievements-summary.ach-hub-banner { text-align: left; align-items: flex-start; font-weight: 400; }
+body.ui-refresh-v1 #view-progress .ach-hub .progress-weekly-band { align-items: start; }

@@ -3,6 +3,16 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.8.2",
+        date: "2026-11-18",
+        changes: [
+        "The Progress section is now Achievements, all on one page. At the top you see your level with a title, your XP bar, your streak and a banner when badges are ready to unlock. Below it, Today, This week and your badges flow in a single scroll, with quick links to jump between them. Thank you for the feedback that Today and Week looked different from the achievements",
+        "Today (Daily Focus and Daily Quests) and This week (Weekly Arc and Streak Shield) now use the same cards, colors and light and dark look as the badges",
+        "Levels have titles, from Newcomer up to Legend",
+        "The XP breakdown is still one tap away under your level"
+        ]
+    },
+    {
         version: "1.8.1",
         date: "2026-11-17",
         changes: [

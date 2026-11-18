@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.8.1';
+    const APP_VERSION = '1.8.2';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -5205,14 +5205,18 @@ if (storedDailyGoal) {
         const xpTotals = computeTotalXp(calls);
         const streakMult = getStreakRewardMultiplier(stats.currentStreak);
         const level = getLevelState(xpTotals.totalXp);
-        rpgLevelSummary.textContent = `Level ${level.currentLevel} - ${level.totalXp.toLocaleString(DISPLAY_LOCALE)} XP total`;
+        rpgLevelSummary.textContent = `Level ${level.currentLevel} \u00b7 ${getLevelTitle(level.currentLevel)}`;
+        const levelBadge = document.getElementById('rpg-level-badge');
+        if (levelBadge) levelBadge.textContent = String(level.currentLevel);
+        const streakText = document.getElementById('achievements-streak-text');
+        if (streakText) streakText.textContent = `Current streak: ${stats.currentStreak} day(s)`;
         rpgLevelProgressBar.style.width = `${level.progressPct}%`;
         if (level.isMaxLevel) {
             rpgLevelProgressText.textContent = 'Max level reached';
             rpgLevelNextText.textContent = `Level cap: ${level.maxLevel}`;
         } else {
             rpgLevelProgressText.textContent = `${level.currentIntoLevel.toLocaleString(DISPLAY_LOCALE)} / ${level.xpToNext.toLocaleString(DISPLAY_LOCALE)} XP`;
-            rpgLevelNextText.textContent = `${level.remaining.toLocaleString(DISPLAY_LOCALE)} XP to level ${level.nextLevel}`;
+            rpgLevelNextText.textContent = `${level.remaining.toLocaleString(DISPLAY_LOCALE)} XP to level ${level.nextLevel} \u00b7 ${level.totalXp.toLocaleString(DISPLAY_LOCALE)} XP total`;
         }
 
         if (rpgCallXpDisplay) {
@@ -5789,13 +5793,14 @@ if (storedDailyGoal) {
         renderDailyQuestsSection(computeDailyQuestStats());
         const unlockedCount = visibleAchievements.filter((a) => !!state.unlocked[a.id]).length;
         const readyCount = visibleAchievements.filter((a) => !!state.completed[a.id] && !state.unlocked[a.id]).length;
-        const readyBtn = readyCount > 0
-            ? `<button type="button" id="achievements-claim-all-btn" class="achievement-claim-all-btn ml-2">${readyCount > 1 ? `Unlock all (${readyCount})` : 'Unlock badge'}</button>`
-            : '';
-        const tip = rpgEnabled
-            ? `<span class="hint-tooltip hint-tooltip-right ml-1" data-tooltip="Each call is boosted by the streak you had that day (starts at 3 days: +5%, then +2% per extra day, capped at +35%). Achievement rewards scale by level only and are paid when you unlock a badge.">?</span>`
-            : '';
-        achievementsSummary.innerHTML = `<span>${unlockedCount} / ${visibleAchievements.length} badges unlocked | Current streak: ${stats.currentStreak} day(s)</span>${tip}${readyBtn}`;
+        const readyItems = visibleAchievements.filter((a) => !!state.completed[a.id] && !state.unlocked[a.id]);
+        const readyNames = readyItems.slice(0, 3).map((a) => (a.family ? `${(ACHIEVEMENT_FAMILIES.find((f) => f.id === a.family) || {}).name || a.family} (${a.tier})` : a.name));
+        const readyList = readyNames.length > 1 ? `${readyNames.slice(0, -1).join(', ')} and ${readyNames[readyNames.length - 1]}` : (readyNames[0] || '');
+        const more = readyItems.length > 3 ? ` and ${readyItems.length - 3} more` : '';
+        achievementsSummary.classList.toggle('ach-hub-banner-ready', readyCount > 0);
+        achievementsSummary.innerHTML = readyCount > 0
+            ? `<div class="ach-hub-banner-title">${readyCount} badge${readyCount > 1 ? 's' : ''} ready to unlock</div><div class="ach-hub-banner-text">${escapeHTML(readyList)}${more} ${readyCount > 1 ? 'are' : 'is'} waiting. Click a glowing card, or claim ${readyCount > 1 ? 'them all at once' : 'it now'}.</div><button type="button" id="achievements-claim-all-btn" class="achievement-claim-all-btn">${readyCount > 1 ? `Unlock all (${readyCount})` : 'Unlock badge'}</button>`
+            : `<div class="ach-hub-banner-title">${unlockedCount} / ${visibleAchievements.length} badges unlocked</div><div class="ach-hub-banner-text">Nothing to claim right now. Keep going, the next badge is close.</div>`;
 
         const families = ACHIEVEMENT_FAMILIES.filter((f) => (rpgEnabled || !f.rpgOnly));
         const familyCards = families.map((f) => renderFamilyCardHtml(getFamilyStatus(f, state, stats), state, rpgEnabled)).join('');
@@ -5803,10 +5808,10 @@ if (storedDailyGoal) {
         const secrets = ACHIEVEMENT_SINGLES.filter((a) => a.hidden).map((a) => renderSingleCardHtml(a, state, stats, rpgEnabled)).join('');
         const legend = ACHIEVEMENT_RANKS.map((r) => `<span class="ach-legend-item"><span class="ach-dot rank-${r.toLowerCase()} ach-dot-done"></span>${r}</span>`).join('');
         achievementsGrid.innerHTML = `
-            <section class="ach-section"><h4 class="ach-section-title">Hall of records</h4><div class="ach-records">${renderRecordsHtml(stats)}</div></section>
-            <section class="ach-section"><div class="ach-section-head"><h4 class="ach-section-title">Achievement families</h4><div class="ach-legend">${legend}</div></div><div class="ach-family-grid">${familyCards}</div></section>
-            <section class="ach-section"><h4 class="ach-section-title">One-time achievements</h4><div class="ach-single-grid">${singles}</div></section>
-            <section class="ach-section"><h4 class="ach-section-title">Secret achievements</h4><div class="ach-single-grid">${secrets}</div></section>`;
+            <section id="ach-records-section" class="ach-section"><h4 class="ach-section-title">Hall of records</h4><div class="ach-records">${renderRecordsHtml(stats)}</div></section>
+            <section id="ach-families-section" class="ach-section"><div class="ach-section-head"><h4 class="ach-section-title">Achievement families</h4><div class="ach-legend">${legend}</div></div><div class="ach-family-grid">${familyCards}</div></section>
+            <section id="ach-singles-section" class="ach-section"><h4 class="ach-section-title">One-time achievements</h4><div class="ach-single-grid">${singles}</div></section>
+            <section id="ach-secrets-section" class="ach-section"><h4 class="ach-section-title">Secret achievements</h4><div class="ach-single-grid">${secrets}</div></section>`;
     }
 
     function renderDailyQuestsSection(statsInput = null) {
@@ -13758,24 +13763,15 @@ goalMinutesInput.addEventListener('input', () => {
         setupAnalyticsTabs();
         setupCallLogTabs();
         setupSessionCalendar();
-        (function setupProgressTabs() {
-            const names = ['today', 'week', 'achievements'];
-            const tabs = names.map((n) => document.getElementById(`progress-tab-${n}`));
-            const panels = names.map((n) => document.getElementById(`progress-panel-${n}`));
-            if (tabs.some((t) => !t) || panels.some((p) => !p)) return;
-            const select = (name) => {
-                names.forEach((n, i) => {
-                    const on = n === name;
-                    tabs[i].classList.toggle('is-active', on);
-                    tabs[i].setAttribute('aria-selected', String(on));
-                    panels[i].classList.toggle('hidden', !on);
+        (function setupAchievementAnchors() {
+            document.querySelectorAll('[data-ach-anchor]').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const target = document.getElementById(btn.getAttribute('data-ach-anchor'));
+                    if (!target) return;
+                    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
                 });
-                try { sessionStorage.setItem('progressTab', name); } catch (error) { /* optional convenience */ }
-            };
-            names.forEach((n, i) => tabs[i].addEventListener('click', () => select(n)));
-            let saved = 'today';
-            try { const v = sessionStorage.getItem('progressTab'); if (names.includes(v)) saved = v; } catch (error) { /* ignore */ }
-            select(saved);
+            });
         })();
         renderSessionTracker();
         renderSessionHistory();

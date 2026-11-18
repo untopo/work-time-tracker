@@ -157,3 +157,11 @@ test('weekly streak counts consecutive weeks with at least four days worked', ()
   assert.equal(core.computeWeeklyStreak([...week(2), ...week(16)]), 1, 'a missing week breaks the streak');
   assert.equal(core.computeWeeklyStreak([day(2026, 3, 2), day(2026, 3, 3), day(2026, 3, 4)]), 0, 'three days is not enough');
 });
+
+test('level titles step up with the level and never go below Newcomer', () => {
+  assert.equal(core.getLevelTitle(1), 'Newcomer');
+  assert.equal(core.getLevelTitle(0), 'Newcomer');
+  assert.equal(core.getLevelTitle(14), 'Rookie Adventurer');
+  assert.equal(core.getLevelTitle(30), 'Veteran');
+  assert.equal(core.getLevelTitle(150), 'Legend');
+});
