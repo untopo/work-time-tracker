@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.8.2';
+    const APP_VERSION = '1.8.3';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -5057,14 +5057,10 @@ if (storedDailyGoal) {
             const currentLabel = typeof step.format === 'function' ? step.format(step.current) : `${Math.round(step.current)}`;
             const targetLabel = typeof step.format === 'function' ? step.format(step.target) : `${Math.round(step.target)}`;
             return `
-                <div>
-                    <div class="flex items-center justify-between gap-2 text-[11px] mb-1">
-                        <span class="font-semibold text-indigo-700 dark:text-indigo-200">${step.label}</span>
-                        <span class="text-indigo-600 dark:text-indigo-300">${currentLabel} / ${targetLabel}</span>
-                    </div>
-                    <div class="w-full bg-indigo-200 dark:bg-indigo-900 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300 ease-out" style="width:${step.pct}%"></div>
-                    </div>
+                <div class="ach-arc-step${step.pct >= 100 ? ' ach-arc-step-done' : ''}">
+                    <div class="ach-arc-step-label">${step.label}</div>
+                    <div class="ach-arc-bar"><div class="ach-arc-bar-fill" style="width:${step.pct}%"></div></div>
+                    <div class="ach-arc-step-text">${currentLabel} / ${targetLabel}</div>
                 </div>
             `;
         }).join('');
@@ -5860,7 +5856,7 @@ if (storedDailyGoal) {
                             <span>${progressText}</span>
                         </div>
                         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                            <div class="achievement-progress-fill bg-emerald-500 h-1.5 rounded-full transition-all duration-500 ease-out" style="width:${pct}%"></div>
+                            <div class="achievement-progress-fill ${unlocked ? 'bg-emerald-500' : 'bg-amber-500'} h-1.5 rounded-full transition-all duration-500 ease-out" style="width:${pct}%"></div>
                         </div>
                     </div>
                     <div class="text-xs font-semibold ${unlocked ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}">${doneText}</div>
