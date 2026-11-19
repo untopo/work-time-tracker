@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.8.3';
+    const APP_VERSION = '1.8.4';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -1317,6 +1317,129 @@ async function requestPersistentStorageOnce() {
     } catch (error) {
         // Not supported or refused: the app keeps working exactly as before.
     }
+}
+
+
+// ---- Data recovery -------------------------------------------------------------
+// A damaged saved value never wipes the rest. Before anything is overwritten or erased, a
+// copy of the original text is kept here until the person downloads or removes it.
+const RECOVERY_SNAPSHOT_KEY = 'wtt_recovery_snapshot_v1';
+const RECOVERY_SUPPORT_EMAIL = 'worktimetrackertool@gmail.com';
+let activeRecoverySnapshot = null;
+
+function captureAllStoredData() {
+    const raw = {};
+    try {
+        const total = Number(appStorage.length) || 0;
+        for (let i = 0; i < total; i += 1) {
+            const key = appStorage.key(i);
+            if (!key || key === RECOVERY_SNAPSHOT_KEY) continue;
+            const value = appStorage.getItem(key);
+            if (value !== null) raw[key] = value;
+        }
+    } catch (error) {
+        console.warn('Could not read all saved data for a recovery copy', error);
+    }
+    return raw;
+}
+
+// Keeps the copy in memory (so it can always be downloaded while the page is open) and, when
+// there is room, in the browser. Returns true only when it was stored in the browser.
+function saveRecoverySnapshot(snapshot) {
+    try {
+        const previous = JSON.parse(appStorage.getItem(RECOVERY_SNAPSHOT_KEY) || 'null');
+        if (isRecoverySnapshot(previous)) {
+            const alreadyKept = JSON.stringify(previous.raw) === JSON.stringify(snapshot.raw);
+            if (!alreadyKept) snapshot.older = [{ ...previous, older: undefined }];
+            else snapshot.downloaded = previous.downloaded === true;
+        }
+    } catch (error) {
+        // an unreadable older copy is simply not carried over
+    }
+    activeRecoverySnapshot = snapshot;
+    try {
+        appStorage.setItem(RECOVERY_SNAPSHOT_KEY, JSON.stringify(snapshot));
+        return true;
+    } catch (error) {
+        console.warn('Could not store the recovery copy in the browser', error);
+        return false;
+    }
+}
+
+function loadRecoverySnapshot() {
+    if (activeRecoverySnapshot) return activeRecoverySnapshot;
+    try {
+        const parsed = JSON.parse(appStorage.getItem(RECOVERY_SNAPSHOT_KEY) || 'null');
+        activeRecoverySnapshot = isRecoverySnapshot(parsed) ? parsed : null;
+    } catch (error) {
+        activeRecoverySnapshot = null;
+    }
+    return activeRecoverySnapshot;
+}
+
+function removeRecoverySnapshot() {
+    activeRecoverySnapshot = null;
+    try { appStorage.removeItem(RECOVERY_SNAPSHOT_KEY); } catch (error) { /* ignore */ }
+    renderRecoveryBanner();
+}
+
+function downloadRecoveryFile() {
+    const snapshot = loadRecoverySnapshot();
+    const file = buildRecoveryFile(snapshot);
+    if (!file) return;
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadBlob(new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' }), `wtt-recovery-${stamp}.json`);
+    snapshot.downloaded = true;
+    try { appStorage.setItem(RECOVERY_SNAPSHOT_KEY, JSON.stringify(snapshot)); } catch (error) { /* ignore */ }
+    renderRecoveryBanner();
+}
+
+// Puts every saved value back exactly as it was in the copy, then reloads.
+function restoreFromRecoverySnapshot() {
+    const snapshot = loadRecoverySnapshot();
+    if (!isRestorableSnapshot(snapshot)) return;
+    try {
+        Object.keys(snapshot.raw).forEach((key) => {
+            if (key !== RECOVERY_SNAPSHOT_KEY) appStorage.setItem(key, snapshot.raw[key]);
+        });
+        appStorage.removeItem(RECOVERY_SNAPSHOT_KEY);
+    } catch (error) {
+        console.error('Restore failed', error);
+        showToast('Could not restore. Download the recovery file instead.');
+        return;
+    }
+    window.location.reload();
+}
+
+let recoveryBannerHiddenThisSession = false;
+function renderRecoveryBanner() {
+    const banner = document.getElementById('data-recovery-banner');
+    if (!banner) return;
+    const snapshot = loadRecoverySnapshot();
+    if (!snapshot || recoveryBannerHiddenThisSession) {
+        banner.classList.add('hidden');
+        return;
+    }
+    banner.classList.remove('hidden');
+    const text = document.getElementById('data-recovery-text');
+    if (text) text.textContent = describeRecovery(snapshot);
+    const restoreBtn = document.getElementById('data-recovery-restore-btn');
+    if (restoreBtn) restoreBtn.classList.toggle('hidden', !isRestorableSnapshot(snapshot));
+    const removeBtn = document.getElementById('data-recovery-remove-btn');
+    if (removeBtn) removeBtn.classList.toggle('hidden', snapshot.downloaded !== true && !isRestorableSnapshot(snapshot));
+    const mail = document.getElementById('data-recovery-help-link');
+    if (mail) mail.href = `mailto:${RECOVERY_SUPPORT_EMAIL}?subject=${encodeURIComponent('Work Time Tracker: recovering my data')}`;
+}
+
+function setupRecoveryBanner() {
+    document.getElementById('data-recovery-download-btn')?.addEventListener('click', downloadRecoveryFile);
+    document.getElementById('data-recovery-restore-btn')?.addEventListener('click', restoreFromRecoverySnapshot);
+    document.getElementById('data-recovery-remove-btn')?.addEventListener('click', removeRecoverySnapshot);
+    document.getElementById('data-recovery-later-btn')?.addEventListener('click', () => {
+        recoveryBannerHiddenThisSession = true;
+        renderRecoveryBanner();
+    });
+    renderRecoveryBanner();
 }
 
 function shouldShowBackupReminder() {
@@ -3844,19 +3967,22 @@ const scheduleModalLayoutRefresh = createRafScheduler(() => {
     
     // Load from appStorage
     let rates, calls, dailyGoal, paymentCyclesEnabled, paymentCycles, lastSelectedRate;
+    let damagedStoredData = null;
     try {
-        rates = JSON.parse(appStorage.getItem('rates')) || [];
-        calls = JSON.parse(appStorage.getItem('calls')) || [];
+        // Each saved value is read on its own. A damaged one never wipes the others.
+        const storedData = loadCoreStoredData((key) => appStorage.getItem(key));
+        rates = storedData.rates;
+        calls = storedData.calls.filter((call) => call && typeof call === 'object' && !Array.isArray(call));
         // Daily goal: primary source is 'dailyGoal'. Fallback to legacy keys if needed.
-const storedDailyGoal = appStorage.getItem('dailyGoal');
-if (storedDailyGoal) {
-  dailyGoal = JSON.parse(storedDailyGoal);
-} else {
-  const legacyAmount = Number(appStorage.getItem('dailyGoalUSD')) || 0;
-  const legacyMinutes = Number(appStorage.getItem('dailyGoalMinutes')) || 0;
-  dailyGoal = { amount: legacyAmount, minutes: legacyMinutes };
-}
-        paymentCyclesEnabled = JSON.parse(appStorage.getItem('paymentCyclesEnabled')) || false;
+        if (storedData.dailyGoal && typeof storedData.dailyGoal === 'object') {
+            dailyGoal = storedData.dailyGoal;
+        } else {
+            const legacyAmount = Number(appStorage.getItem('dailyGoalUSD')) || 0;
+            const legacyMinutes = Number(appStorage.getItem('dailyGoalMinutes')) || 0;
+            dailyGoal = { amount: legacyAmount, minutes: legacyMinutes };
+        }
+        paymentCyclesEnabled = storedData.paymentCyclesEnabled;
+        if (Object.keys(storedData.damaged).length) damagedStoredData = storedData;
         // Load payment cycles safely, prefer primary key but fallback to backup if primary is missing or corrupt
         (function() {
             try {
@@ -3895,8 +4021,14 @@ if (storedDailyGoal) {
             id: call.id || generateUUID()
         }));
     } catch (e) {
-        console.error('Failed to parse local storage data. Resetting app data.', e);
-        appStorage.clear();
+        // Something unexpected. Nothing is erased: a full copy of what is saved is kept first.
+        console.error('Could not read saved data. Keeping a copy and starting from what can be read.', e);
+        saveRecoverySnapshot(buildRecoverySnapshot({
+            reason: 'damaged-data',
+            rawByKey: captureAllStoredData(),
+            appVersion: APP_VERSION,
+            summary: { unexpected: { status: 'unreadable', recovered: 0, dropped: 0 } }
+        }));
         try { appStorage.setItem(USAGE_PENDING_ERROR_KEY, 'data-reset'); } catch (markError) { /* ignore */ }
         rates = [];
         calls = [];
@@ -3906,6 +4038,34 @@ if (storedDailyGoal) {
         lastSelectedRate = null;
     }
     dailyGoal = normalizeDailyGoal(dailyGoal);
+    if (damagedStoredData) {
+        // Keep the original text first. Only when that copy is safely stored are the damaged
+        // values replaced by what could be read; otherwise they stay exactly as they were.
+        // The copy holds everything that was saved, so the recovery file is complete. If the
+        // browser has no room for that, a smaller copy with only the damaged values is kept.
+        const damagedOnly = {};
+        Object.keys(damagedStoredData.damaged).forEach((key) => { damagedOnly[key] = damagedStoredData.damaged[key].raw; });
+        const everything = { ...captureAllStoredData(), ...damagedOnly };
+        const makeCopy = (rawByKey) => buildRecoverySnapshot({
+            reason: 'damaged-data',
+            rawByKey,
+            appVersion: APP_VERSION,
+            summary: damagedStoredData.summary
+        });
+        let stored = saveRecoverySnapshot(makeCopy(everything));
+        if (!stored) stored = saveRecoverySnapshot(makeCopy(damagedOnly));
+        try { appStorage.setItem(USAGE_PENDING_ERROR_KEY, 'data-damaged'); } catch (markError) { /* ignore */ }
+        if (stored) {
+            try {
+                if (damagedStoredData.damaged.rates) appStorage.setItem('rates', JSON.stringify(rates));
+                if (damagedStoredData.damaged.calls) appStorage.setItem('calls', JSON.stringify(calls));
+                if (damagedStoredData.damaged.dailyGoal) appStorage.setItem('dailyGoal', JSON.stringify(dailyGoal));
+                if (damagedStoredData.damaged.paymentCyclesEnabled) appStorage.setItem('paymentCyclesEnabled', JSON.stringify(paymentCyclesEnabled));
+            } catch (writeError) {
+                console.warn('Could not rewrite repaired data', writeError);
+            }
+        }
+    }
 
     let activeTimers = new Set();
     let liveCallTimerId = null;
@@ -12965,6 +13125,7 @@ function openFloatingControlsSettingsModal(triggerEl = null) {
         }
         setupLiveCallHoldToAdjust();
         setupBackupReminderBanner();
+        setupRecoveryBanner();
         setTimeout(sendDailyUsageMetrics, 5000);
         setTimeout(maybeShowBackupReminderOnLoad, 2500);
         if (floatingStartCallBtn) {
@@ -13677,9 +13838,12 @@ goalMinutesInput.addEventListener('input', () => {
         resetCallsBtn.addEventListener('click', () => {
             showConfirmation(
                 'Reset Calls',
-                'This will permanently delete all call history. Rates and settings will be kept.',
+                'This will delete all call history. Rates and settings will be kept. A copy is kept in this browser so you can restore it.',
                 'Erase',
                 () => {
+                flushPendingStorageWrites();
+                saveRecoverySnapshot(buildRecoverySnapshot({ reason: 'delete-calls', rawByKey: captureAllStoredData(), appVersion: APP_VERSION }));
+                recoveryBannerHiddenThisSession = false;
                 calls = [];
                 clearAchievementState();
                 clearDailyQuestState();
@@ -13690,6 +13854,7 @@ goalMinutesInput.addEventListener('input', () => {
                 renderSessionHistory();
                 renderAchievementsModal();
                 showToast('All call history erased.');
+                renderRecoveryBanner();
                 },
                 {
                     loadingText: 'Erasing call history...',
@@ -13701,11 +13866,15 @@ goalMinutesInput.addEventListener('input', () => {
         resetAllBtn.addEventListener('click', () => {
             showConfirmation(
                 'Reset All Data',
-                'This will permanently delete all local data (calls, rates, goals, and settings).',
+                'This will delete all local data (calls, rates, goals, and settings). A copy is kept in this browser so you can restore it.',
                 'Reset All',
                 () => {
+                flushPendingStorageWrites();
+                const resetAllCopy = buildRecoverySnapshot({ reason: 'reset-all', rawByKey: captureAllStoredData(), appVersion: APP_VERSION });
                 discardPendingStorageWrites();
                 appStorage.clear();
+                saveRecoverySnapshot(resetAllCopy);
+                recoveryBannerHiddenThisSession = false;
                 calls = [];
                 rates = [];
                 dailyGoal = { amount: 0, minutes: 0 };
@@ -13726,6 +13895,7 @@ goalMinutesInput.addEventListener('input', () => {
                 populateRateSelects();
                 showToast('All data reset.');
                 closeSettingsView();
+                renderRecoveryBanner();
                 },
                 {
                     requireText: 'RESET',

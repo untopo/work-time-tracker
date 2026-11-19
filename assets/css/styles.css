@@ -12246,3 +12246,9 @@ body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid > * > p { min-heig
 body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-grid { background: transparent; box-shadow: none; border: 0; padding: 0; }
 body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section::before, body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section::after { display: none; }
 html body.ui-refresh-v1 #view-progress .ach-hub #daily-quests-section { box-shadow: none !important; }
+
+/* Data recovery banner: hover and dark colors that the compiled utility sheet does not include. */
+#data-recovery-banner #data-recovery-download-btn:hover { background-color: #fbbf24; }
+#data-recovery-banner #data-recovery-later-btn:hover { background-color: #fcd34d; }
+html.dark #data-recovery-banner #data-recovery-later-btn { background-color: #78350f; color: #fef3c7; }
+html.dark #data-recovery-banner #data-recovery-later-btn:hover { background-color: #92400e; }

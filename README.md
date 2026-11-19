@@ -8,7 +8,7 @@
 
 Run live calls, track rates and goals, understand your patterns, manage work sessions and payment cycles, and use interpreter support tools. All in one workspace, with no account and no cloud sync.
 
-![Version](https://img.shields.io/badge/version-1.8.3-blue)
+![Version](https://img.shields.io/badge/version-1.8.4-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Privacy](https://img.shields.io/badge/privacy-local--first-success)
 ![Platforms](https://img.shields.io/badge/platforms-web%20%7C%20Windows%20%7C%20Android-informational)
@@ -335,6 +335,7 @@ Current boundaries include:
 - `metrics-core.js`: coarse usage-metric buckets
 - `report-core.js`: monthly report calculations
 - `survey-core.js`: survey question/configuration logic
+- `recovery-core.js`: reads damaged saved data safely and builds the recovery copy
 - `resources-data.js`, `resources-helpers.js` and `medical-glossary.js`: interpreter resource data and helper logic
 - `storage.js`: shared storage adapter for browser storage and the Tauri native snapshot bridge
 - `settings-manager.js`, `update-manager.js` and `update-utils.js`: settings and update UI coordination
@@ -366,6 +367,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the module map and refact
 |   |   |-- metrics-core.js
 |   |   |-- report-core.js
 |   |   |-- survey-core.js
+|   |   |-- recovery-core.js
 |   |   |-- resources-data.js
 |   |   |-- resources-helpers.js
 |   |   |-- medical-glossary.js
@@ -437,7 +439,7 @@ Safari generally works, but import/export behavior should always be verified in 
 
 ## Releases
 
-- Current Version: `v1.8.3`
+- Current Version: `v1.8.4`
 - In-app history: `What's New` modal
 - GitHub Releases: https://github.com/untopo/work-time-tracker/releases
 - Full markdown changelog: [`CHANGELOG.md`](CHANGELOG.md)

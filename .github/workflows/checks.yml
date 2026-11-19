@@ -47,6 +47,7 @@ jobs:
           node --check assets/js/metrics-core.js
           node --check assets/js/report-core.js
           node --check assets/js/survey-core.js
+          node --check assets/js/recovery-core.js
 
       - name: Unit tests (data logic)
         run: npm run test:unit
