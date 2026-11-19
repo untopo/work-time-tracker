@@ -47,6 +47,7 @@ node --check assets/js/progress-core.js
 node --check assets/js/metrics-core.js
 node --check assets/js/report-core.js
 node --check assets/js/survey-core.js
+node --check assets/js/recovery-core.js
 ```
 
 `.github/workflows/checks.yml` runs the same checks on every pull request and push to `main`.

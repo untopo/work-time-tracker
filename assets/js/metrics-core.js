@@ -106,7 +106,7 @@ function buildProfileEvents({ version, daysUsing, rateCount, theme } = {}) {
 }
 
 // Error names are a fixed list, so nothing unexpected is ever sent.
-const ERROR_EVENT_NAMES = ['storage-write-failed', 'data-reset', 'import-json', 'import-csv'];
+const ERROR_EVENT_NAMES = ['storage-write-failed', 'data-reset', 'data-damaged', 'import-json', 'import-csv'];
 function buildErrorEvent(kind) {
     return ERROR_EVENT_NAMES.includes(kind) ? `error/${kind}` : null;
 }

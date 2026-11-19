@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.8.3",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.8.3",
+  "latestVersion": "1.8.4",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.8.4",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Today and This week on the Achievements page now have a symmetric, consistent layout."
+  "notes": "Better protection for your saved data: damaged data is kept and recoverable, and resets can be undone."
 }

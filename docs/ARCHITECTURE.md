@@ -16,6 +16,7 @@ Work Time Tracker shares one frontend across GitHub Pages, the Tauri desktop app
 | `metrics-core.js` | Converts usage activity into coarse, allow-listed analytics labels |
 | `report-core.js` | Monthly report calculations and presentation data |
 | `survey-core.js` | Optional sync-survey questions, labels, and eligibility logic |
+| `recovery-core.js` | Reads damaged saved data one key at a time, keeps what is readable, and builds the recovery copy |
 | `resources-data.js` | Static data for interpreter support resources |
 | `resources-helpers.js` | Resource lookup and formatting helpers |
 | `storage.js` | Shared storage adapter; browser storage and the Tauri native snapshot bridge |

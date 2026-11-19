@@ -25,7 +25,7 @@ after(async () => {
 // (an exact number, a note, a rate...) fails the test.
 const labels = allLabels(loadCore().core);
 const list = (set) => [...set].map((label) => label.replace(/[.]/g, '\\.')).join('|');
-const ALLOWED = new RegExp(`^event/(call-started|call-ended|focus-mode|report-opened|card-opened|card-saved|survey/devices/(one|two|three-plus)|survey/sync/(as-is|direct|account|both)|backup-reminder/(shown|now|later|off)|call-length/(${list(labels.length)})|day-calls/(${list(labels.calls)})|day-hours/(${list(labels.hours)})|feature-on/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done|session-automation|payment-cycles-per-rate)|app-version/\\d+\\.\\d+\\.\\d+|days-using/(1|2-7|8-30|31-90|91-plus)|rates/(0|1|2-3|4-plus)|theme/(light|dark)|error/(storage-write-failed|data-reset|import-json|import-csv)|achievements-opened|achievement-claimed|achievements-claim-all)$`);
+const ALLOWED = new RegExp(`^event/(call-started|call-ended|focus-mode|report-opened|card-opened|card-saved|survey/devices/(one|two|three-plus)|survey/sync/(as-is|direct|account|both)|backup-reminder/(shown|now|later|off)|call-length/(${list(labels.length)})|day-calls/(${list(labels.calls)})|day-hours/(${list(labels.hours)})|feature-on/(focus-mode|payment-cycles|notes|rpg|floating-controls|daily-goal|backup-done|session-automation|payment-cycles-per-rate)|app-version/\\d+\\.\\d+\\.\\d+|days-using/(1|2-7|8-30|31-90|91-plus)|rates/(0|1|2-3|4-plus)|theme/(light|dark)|error/(storage-write-failed|data-reset|data-damaged|import-json|import-csv)|achievements-opened|achievement-claimed|achievements-claim-all)$`);
 
 async function openApp(seed) {
   const { context, page, problems } = await newPage(browser, baseUrl, { timezoneId: 'America/Lima' });

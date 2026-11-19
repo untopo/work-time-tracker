@@ -5,9 +5,13 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
-## v1.8.4 - Unreleased
+## v1.8.4 - 2026-11-19
 
 ### Highlights
+- Your data is better protected. If something saved is damaged, the app now keeps everything it can read and a copy of the original, instead of starting empty. A notice lets you download a recovery file or ask us for help.
+- Reset All and Reset Calls now keep a copy you can restore with one tap.
+
+### Improvements
 - Small behind-the-scenes improvements to the anonymous usage counts, so we can see which versions are in use and catch problems that put saved data at risk. You can still switch them off in Settings > Features.
 
 ## v1.8.3 - 2026-11-18
