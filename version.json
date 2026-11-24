@@ -1,6 +1,6 @@
 {
-  "latestVersion": "1.8.4",
-  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.8.4",
+  "latestVersion": "1.8.5",
+  "releaseUrl": "https://github.com/untopo/work-time-tracker/releases/tag/v1.8.5",
   "downloadsUrl": "https://github.com/untopo/work-time-tracker/releases",
-  "notes": "Better protection for your saved data: damaged data is kept and recoverable, and resets can be undone."
+  "notes": "Next Pay Date now shows the expected payment."
 }
