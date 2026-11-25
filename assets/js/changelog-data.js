@@ -3,6 +3,13 @@
 // Regenerate with: npm run changelog
 window.WTT_CHANGELOG = [
     {
+        version: "1.8.5",
+        date: "2026-11-23",
+        changes: [
+        "The Next Pay Date card now also shows the expected payment: the total of the cycle that pays on that date. Thank you for the suggestion!"
+        ]
+    },
+    {
         version: "1.8.4",
         date: "2026-11-19",
         changes: [

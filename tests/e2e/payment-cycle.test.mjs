@@ -116,3 +116,19 @@ test('the day a new cycle starts, it begins from zero and the old cycle\'s last 
     await context.close();
   }
 });
+
+test('Next Pay Date shows the expected payment of the cycle that pays first', async () => {
+  // Previous cycle ended 2 days ago (pays in 3 days); the current cycle is still running.
+  const prev = call('prev', limaMidnightIso(-8), 9);
+  const now = call('now', new Date(Date.now() - 60000).toISOString(), 4);
+  const { context, page, problems } = await openCycleCard({
+    startOffset: -1, endOffset: 12, calls: [prev, now], extraCycles: [[-15, -2]],
+  });
+  try {
+    assert.equal(await text(page, 'next-pay-amount'), '$9.00', 'amount is the previous cycle, not the active one');
+    assert.equal(await text(page, 'cycle-earnings'), '$4.00');
+    assert.deepEqual(problems, []);
+  } finally {
+    await context.close();
+  }
+});

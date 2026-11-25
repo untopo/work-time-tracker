@@ -8,7 +8,7 @@
     // ============================================
     // VERSION & CHANGELOG
     // ============================================
-    const APP_VERSION = '1.8.4';
+    const APP_VERSION = '1.8.5';
     // The release history now lives in CHANGELOG.md (single source of truth).
     // assets/js/changelog-data.js is generated from it with: npm run changelog
     const CHANGELOG = Array.isArray(window.WTT_CHANGELOG) ? window.WTT_CHANGELOG : [];
@@ -2003,6 +2003,7 @@ async function confirmExportOptions() {
     const daysUntilPayDisplay = document.getElementById('days-until-pay');
     const payCountdownHeadlineDisplay = document.getElementById('pay-countdown-headline');
     const nextPayCycleContextDisplay = document.getElementById('next-pay-cycle-context');
+    const nextPayAmountDisplay = document.getElementById('next-pay-amount');
     const monthlyEarningsCards = document.getElementById('monthly-earnings-cards');
     const paymentCycleEarningsCards = document.getElementById('payment-cycle-earnings-cards');
     const storageUsedDisplay = document.getElementById('storage-used');
@@ -9262,7 +9263,10 @@ function saveCalls() {
             daysUntilPayDisplay.textContent = '--';
             if (payCountdownHeadlineDisplay) payCountdownHeadlineDisplay.textContent = 'Pay in --';
             if (nextPayCycleContextDisplay) nextPayCycleContextDisplay.textContent = '--';
+            if (nextPayAmountDisplay) nextPayAmountDisplay.textContent = '--';
         } else {
+            // The expected payout is everything earned in the cycle that this pay date pays.
+            if (nextPayAmountDisplay) nextPayAmountDisplay.textContent = hasUpcomingPay ? formatEarnings(sumCycleEarnings(nearestPayCycle)) : '--';
             payDateDisplay.textContent = hasUpcomingPay ? formatDate(nearestPayCycle.payDate) : '--';
             daysUntilPayDisplay.textContent = daysUntilNearestPay === null
                 ? '--'

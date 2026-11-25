@@ -5,6 +5,11 @@ All notable changes to this project are documented here.
 For downloadable installers/APKs and release metadata, use:
 - https://github.com/untopo/work-time-tracker/releases
 
+## v1.8.5 - 2026-11-23
+
+### Highlights
+- The Next Pay Date card now also shows the expected payment: the total of the cycle that pays on that date. Thank you for the suggestion!
+
 ## v1.8.4 - 2026-11-19
 
 ### Highlights
